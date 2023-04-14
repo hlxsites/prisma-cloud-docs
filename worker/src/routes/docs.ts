@@ -1,5 +1,5 @@
-import asciidoctor from '@asciidoctor/core';
 import { responseInit, ContentType } from '../util';
+import adoc2html from '../util/adoc2html';
 
 import type { Context, Route } from "../types";
 
@@ -40,8 +40,9 @@ const Docs: Route = async (req, ctx) => {
   }
 
   const text = await resp.text();
-  const Asciidoctor = asciidoctor();
-  const html = Asciidoctor.convert(text);
+
+
+  const html = adoc2html(text);
   return new Response(html as string, responseInit(200, ContentType.HTML));
 }
 
