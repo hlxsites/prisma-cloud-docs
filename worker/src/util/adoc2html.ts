@@ -93,11 +93,13 @@ class FranklinConverter implements Converter {
       admonition: (node) => {
         const style = node.getStyle() || '';
         console.debug('process admonition: ', node);
-        const hrefsToLinks = (line: string) => {
-          return line.replace(/(https?:\/\/.*\S)/g, `<a href=$1>$1</a>`);
-        }
-        return `<div class="admonition ${style.toLowerCase()}"><div>${node.lines.map(line => `<p>${hrefsToLinks(line)}</p>`)
-          }</div></div>`
+
+        return `
+          <div class="admonition ${style.toLowerCase()}">
+            <div>
+              ${node.lines.map(line => `<p>${this.hrefsToLinks(line)}</p>`)}
+            </div>
+          </div>`;
       },
       inline_quoted: (node) => {
         // console.debug('process inline_quoted');
@@ -117,17 +119,21 @@ class FranklinConverter implements Converter {
         return content ? `<ul>${content}</ul>` : '';
       },
       list_item: (node) => {
-        const blocks = node.getBlocks();
+        // const blocks = node.getBlocks();
         const content = node.getContent();
         if (content) {
-          return `<li>${content}</li>`
+          return `<li>${this.hrefsToLinks(content)}</li>`
         }
 
         const text = node.text;
         // TODO: handle xrefs
-        return text ? `<li>${text}</li>` : '';
+        return text ? `<li>${this.hrefsToLinks(text)}</li>` : '';
       }
     }
+  }
+
+  hrefsToLinks(text: string) {
+    return text.replace(/(https?:\/\/.*\S)/g, `<a href=$1>$1</a>`);
   }
 
   closeSection() {
