@@ -1,37 +1,56 @@
 {
-  "name": "@adobe/helix-project-boilerplate",
+  "name": "prisma-cloud-docs",
   "private": true,
   "version": "1.0.0",
-  "description": "Starter project for Adobe Helix",
+  "description": "Asciidocs to Franklin",
+  "type": "module",
   "scripts": {
     "test": "wtr \"./test/**/*.test.js\" --node-resolve --port=2000 --coverage",
     "test:watch": "npm test -- --watch",
     "lint:js": "eslint .",
     "lint:css": "stylelint blocks/**/*.css styles/*.css",
-    "lint": "npm run lint:js && npm run lint:css"
+    "lint": "npm run lint:js && npm run lint:css",
+    "login": "wrangler login",
+    "build": "node worker/build.js",
+    "dev:worker": "cross-env NODE_ENV=development miniflare --no-live-reload --debug --modules worker/dist/index.mjs --port 3001",
+    "dev:franklin": "npx @adobe/helix-cli up --no-open --port 3000 --pages-url http://localhost:3001",
+    "dev": "concurrently -k \"npm:dev:*\"",
+    "deploy": "wrangler publish"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adobe/helix-project-boilerplate.git"
+    "url": "git+https://github.com/hlxsites/prisma-cloud-docs.git"
   },
   "author": "Adobe",
   "license": "Apache License 2.0",
   "bugs": {
-    "url": "https://github.com/adobe/helix-project-boilerplate/issues"
+    "url": "https://github.com/hlxsites/prisma-cloud-docs/issues"
   },
-  "homepage": "https://github.com/adobe/helix-project-boilerplate#readme",
+  "homepage": "https://github.com/hlxsites/prisma-cloud-docs#readme",
   "devDependencies": {
     "@babel/core": "7.21.0",
     "@babel/eslint-parser": "7.19.1",
+    "@cloudflare/workers-types": "^4.20230404.0",
+    "@esm-bundle/chai": "4.3.4-fix.0",
+    "@types/uuid": "^9.0.1",
+    "@web/test-runner": "0.15.1",
+    "@web/test-runner-commands": "0.6.5",
     "chai": "4.3.7",
+    "concurrently": "^8.0.1",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.17.16",
     "eslint": "8.35.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-plugin-import": "2.27.5",
-    "@esm-bundle/chai": "4.3.4-fix.0",
-    "@web/test-runner": "0.15.1",
-    "@web/test-runner-commands": "0.6.5",
+    "miniflare": "^2.13.0",
     "sinon": "15.0.1",
     "stylelint": "15.2.0",
-    "stylelint-config-standard": "30.0.1"
+    "stylelint-config-standard": "30.0.1",
+    "wrangler": "^2.15.1"
+  },
+  "dependencies": {
+    "@asciidoctor/core": "3.0.0-rc.1",
+    "itty-router": "^3.0.12",
+    "uuid": "^9.0.0"
   }
 }
