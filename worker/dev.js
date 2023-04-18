@@ -1,5 +1,14 @@
 /* eslint-disable no-underscore-dangle, import/no-extraneous-dependencies */
 
+/**
+ * This script starts dev mode, rebuilding and relaunching miniflare dev server
+ * when file changes are detected.
+ *
+ * Asciidoctor.js uses Opal to transpile Ruby to JS, which conflicts with how
+ * Miniflare cleans up the process' scope during reloads. This script is a
+ * workaround to create independent child processes for each Miniflare reload.
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -44,6 +53,8 @@ const run = async () => {
       mfProc = undefined;
       await build();
     }
+    // can't use `.bin/miniflare` for this;
+    // it spawns a process for cli.js, but that process doesn't die with it's parent
     mfProc = spawn(process.execPath, [
       '--experimental-vm-modules',
       './node_modules/miniflare/dist/src/cli.js',
@@ -84,5 +95,5 @@ const debounce = (fn, time = 1000) => {
 run().then(() => {
   console.debug(`[worker/dev.js] running at http://localhost:${port}`);
   const watcher = fs.watch(path.resolve(__dirname, 'src'), { recursive: true });
-  watcher.addListener('change', debounce(run));
+  watcher.on('change', debounce(run));
 });
