@@ -6,10 +6,11 @@ export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'OPTIONS' |
 export interface Environment {
   NODE_ENV: 'development' | undefined;
   CONTENT_UPSTREAM: string;
-  CONTENT_REPO_OWNER: string;
-  CONTENT_REPO_NAME: string;
-  CONTENT_REPO_REF: string;
-  CONTENT_REPO_ROOT_PATH?: string;
+  DOC_UPSTREAM: string;
+  DOC_REPO_OWNER: string;
+  DOC_REPO_NAME: string;
+  DOC_REPO_REF: string;
+  DOC_REPO_ROOT_PATH?: string;
   [key: string]: string;
 }
 

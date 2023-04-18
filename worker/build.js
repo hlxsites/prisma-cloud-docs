@@ -1,11 +1,10 @@
 /* eslint-disable no-underscore-dangle, import/no-extraneous-dependencies */
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { build } from 'esbuild';
+import * as esbuild from 'esbuild';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dev = process.env.NODE_ENV === 'development';
 
 // force resolves the browser bundle from asciidoctor
 const asciidoctorResolvePlugin = {
@@ -17,27 +16,38 @@ const asciidoctorResolvePlugin = {
   },
 };
 
-try {
-  await build({
-    bundle: true,
-    sourcemap: dev,
-    minify: !dev,
-    treeShaking: true,
-    format: 'esm',
-    define: {},
-    platform: 'browser',
-    target: 'esnext',
-    external: [],
-    mainFields: ['browser', 'module', 'main'],
-    conditions: ['browser', 'worker'],
-    entryPoints: [path.resolve(__dirname, 'src', 'index.ts')],
-    outdir: path.resolve(__dirname, 'dist'),
-    outExtension: { '.js': '.mjs' },
-    tsconfig: path.resolve(__dirname, './tsconfig.json'),
-    plugins: [
-      asciidoctorResolvePlugin,
-    ],
-  });
-} catch {
-  process.exitCode = 1;
-}
+let built = false;
+const build = async () => {
+  const dev = process.env.NODE_ENV === 'development';
+
+  try {
+    console.debug(`[worker/build.js] ${built ? 're' : ''}building`);
+    built = true;
+
+    await esbuild.build({
+      bundle: true,
+      sourcemap: dev,
+      minify: !dev,
+      treeShaking: true,
+      format: 'esm',
+      define: {},
+      platform: 'browser',
+      target: 'esnext',
+      external: ['__STATIC_CONTENT_MANIFEST'],
+      mainFields: ['browser', 'module', 'main'],
+      conditions: ['browser', 'worker'],
+      entryPoints: [path.resolve(__dirname, 'src', 'index.ts')],
+      outdir: path.resolve(__dirname, 'dist'),
+      outExtension: { '.js': '.mjs' },
+      tsconfig: path.resolve(__dirname, './tsconfig.json'),
+      plugins: [
+        asciidoctorResolvePlugin,
+      ],
+    });
+  } catch {
+    process.exitCode = 1;
+  }
+};
+
+build();
+export default build;

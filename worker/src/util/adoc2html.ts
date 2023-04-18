@@ -10,28 +10,31 @@ type NodeType = 'document' | 'embedded' | 'outline' | 'section' | 'admonition' |
   'ulist' | 'verse' | 'video' | 'inline_anchor' | 'inline_break' | 'inline_button' | 'inline_callout' |
   'inline_footnote' | 'inline_image' | 'inline_indexterm' | 'inline_kbd' | 'inline_menu' | 'inline_quoted';
 
-
 export interface NodeTypeMap {
   document: AdocTypes.Document;
   embedded: AdocTypes.AbstractBlock;
   outline: AdocTypes.AbstractBlock;
   section: AdocTypes.Section;
-  admonition: AdocTypes.AbstractBlock;
+  admonition: AdocTypes.Table;
   audio: AdocTypes.AbstractBlock;
   colist: AdocTypes.List;
   dlist: AdocTypes.List;
   olist: AdocTypes.List;
   ulist: AdocTypes.List;
-  list_item: AdocTypes.AbstractBlock;
-  inline_anchor: AdocTypes.AbstractBlock;
-  inline_quoted: AdocTypes.AbstractNode;
+  list_item: AdocTypes.ListItem;
+  inline_anchor: AdocTypes.Inline;
+  inline_quoted: AdocTypes.Inline;
   table: AdocTypes.Table;
   example: AdocTypes.AbstractBlock;
   paragraph: AdocTypes.AbstractBlock;
-  'floating-title': AdocTypes.AbstractBlock;
+  floating_title: AdocTypes.AbstractBlock;
   thematic_break: AdocTypes.AbstractNode;
 
   [key: string]: AdocTypes.AbstractNode;
+}
+
+export interface Options extends ProcessorOptions {
+  backend?: 'franklin' | 'html5' | string;
 }
 
 class FranklinConverter implements Converter {
@@ -40,6 +43,7 @@ class FranklinConverter implements Converter {
   templates: { [K in keyof NodeTypeMap]?: (node: NodeTypeMap[K]) => string };
   sectionDepth = 0;
   inSection = false;
+  doc: AdocTypes.Document;
 
   constructor() {
     this.baseConverter = new AsciiDoctor.Html5Converter();
@@ -51,11 +55,11 @@ class FranklinConverter implements Converter {
       },
       inline_anchor: (node) => {
         // console.debug('process inline_anchor');
-        let url = node.target;
+        let url = node.getTarget();
         if (url && url.endsWith('.html')) {
           url = url.slice(0, -'.html'.length);
         }
-        return `<a href="${url}">${node.text}</a>`;
+        return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
         console.debug('floating title: ', node);
@@ -94,17 +98,23 @@ class FranklinConverter implements Converter {
         const style = node.getStyle() || '';
         console.debug('process admonition: ', node);
 
+        let title = (node.getTitle() || '').trim();
+        if (title) {
+          title = `<h6>${title}</h6>`;
+        }
+
         return `
           <div class="admonition ${style.toLowerCase()}">
             <div>
-              ${node.lines.map(line => `<p>${this.hrefsToLinks(line)}</p>`)}
+              ${title}
+              ${node.getContent()}
             </div>
           </div>`;
       },
       inline_quoted: (node) => {
         // console.debug('process inline_quoted');
-        const content = node.text;
-        const tag = node.type === 'strong' ? 'strong' : undefined;
+        const content = node.getText();
+        const tag = node.getType() === 'strong' ? 'strong' : undefined;
         if (!tag) {
           console.warn('[inline_quoted] unhandled node: ', node);
         }
@@ -118,18 +128,31 @@ class FranklinConverter implements Converter {
         console.debug('ulist content: ', content);
         return content ? `<ul>${content}</ul>` : '';
       },
+      olist: (node) => {
+        const blocks = node.getBlocks();
+        console.debug('process olist: ', blocks.length, blocks);
+
+        const content = blocks.map(block => this.convert(block)).join('');
+        console.debug('olist content: ', content);
+        return content ? `<ol>${content}</ol>` : '';
+      },
       list_item: (node) => {
         // const blocks = node.getBlocks();
-        const content = node.getContent();
+        const content = this.hrefsToLinks(node.getContent());
         if (content) {
-          return `<li>${this.hrefsToLinks(content)}</li>`
+          return content.startsWith('<ul>') ? content : `<li>${content}</li>`;
         }
 
-        const text = node.text;
+        const text = node.getText();
+        console.log('node text: ', text);
         // TODO: handle xrefs
         return text ? `<li>${this.hrefsToLinks(text)}</li>` : '';
       }
     }
+  }
+
+  iconsEnabled(): boolean {
+    return this.doc.getAttribute('icons');
   }
 
   hrefsToLinks(text: string) {
@@ -148,6 +171,8 @@ class FranklinConverter implements Converter {
     const name = transform || node.getNodeName();
     console.log(`convert node: transform=${transform} name=${name} type=${(node as any).type}`);
 
+    this.doc = node.getDocument();
+
     const template = this.templates[name];
     if (template) {
       return template(node);
@@ -157,15 +182,38 @@ class FranklinConverter implements Converter {
     const defaultContent = this.baseConverter.convert(node, transform, opts);
     console.log('handled node with base template: ', name, node, defaultContent);
     return defaultContent;
-
   }
 }
 
-AsciiDoctor.ConverterFactory.register(new FranklinConverter(), ['html5']);
+// if (!AsciiDoctor.ConverterFactory.getRegistry()['franklin']) {
+AsciiDoctor.ConverterFactory.register(new FranklinConverter(), ['franklin']);
+// }
 
 const adoc2html = (
   content: string,
-  opts: ProcessorOptions = {}
-): string => `<main>${AsciiDoctor.convert(content, { ...opts, backend: 'html5' }) as string}</main>`;
+  options: Options = {}
+): string => {
+  const { backend = 'franklin', ...opts } = options;
+  const html = AsciiDoctor.convert(content, { ...opts, backend }) as string;
+
+  return /* html */`
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <script src="/scripts/scripts.js" type="module"></script>
+      <link rel="stylesheet" href="/styles/styles.css">
+      <link rel="icon" href="data:,">
+    </head>
+    
+    <body>
+      <header></header>
+      <main>
+        ${html}
+      </main>
+      <footer></footer>
+    </body>
+  </html>`;
+}
 
 export default adoc2html;

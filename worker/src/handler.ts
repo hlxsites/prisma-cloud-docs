@@ -12,12 +12,18 @@
 
 import { Router } from './router';
 import Docs from './routes/docs';
+import Franklin from './routes/franklin';
 
 import type { Context } from './types';
 
 const router = Router();
 
-router.get('/*', Docs);
+router
+  .get('/(scripts|blocks|styles)/*', Franklin)
+  // temp block footer & nav
+  .get('/footer.plain.html', () => new Response(null, { status: 404 }))
+  .get('/nav.plain.html', () => new Response(null, { status: 404 }))
+  .get('/*', Docs);
 
 export default function handleRequest(request: Request, ctx: Context) {
   return router.handle(request, ctx);
