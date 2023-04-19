@@ -11,6 +11,7 @@ export interface Environment {
   DOC_REPO_NAME: string;
   DOC_REPO_REF: string;
   DOC_REPO_ROOT_PATH?: string;
+  BASE_PATH?: string;
   [key: string]: string;
 }
 

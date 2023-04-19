@@ -37,6 +37,7 @@ export interface NodeTypeMap {
 
 export interface Options extends AdocTypes.ProcessorOptions {
   backend?: 'franklin' | 'html5' | string;
+  attributes?: Record<string, string>;
 }
 
 class FranklinConverter implements AdocTypes.Converter {
@@ -61,9 +62,14 @@ class FranklinConverter implements AdocTypes.Converter {
       inline_anchor: (node) => {
         // console.debug('process inline_anchor');
         let url = node.getTarget();
+        let chop = 0;
         if (url && url.endsWith('.html')) {
-          url = url.slice(0, -'.html'.length);
+          chop = '.html'.length;
+        } else if (url && url.endsWith('.franklin')) {
+          chop = '.franklin'.length;
         }
+        url = url.slice(0, -chop);
+
         return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
@@ -145,7 +151,7 @@ class FranklinConverter implements AdocTypes.Converter {
         // const blocks = node.getBlocks();
         const content = this.hrefsToLinks(node.getContent());
         if (content) {
-          return content.startsWith('<ul>') ? content : `<li>${content}</li>`;
+          return content.startsWith('<ul>') || content.startsWith('<ol>') ? content : `<li>${content}</li>`;
         }
 
         const text = node.getText();
@@ -196,8 +202,8 @@ const adoc2html = (
   content: string,
   options: Options = {},
 ): string => {
-  const { backend = 'franklin', ...opts } = options;
-  const html = AsciiDoctor.convert(content, { ...opts, backend }) as string;
+  const { backend = 'franklin', attributes, ...opts } = options;
+  const html = AsciiDoctor.convert(content, { ...opts, backend, attributes }) as string;
 
   return /* html */`
   <!DOCTYPE html>

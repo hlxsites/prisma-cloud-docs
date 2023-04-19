@@ -12,19 +12,20 @@
 
 import { Router } from './router';
 import Docs from './routes/docs';
+import Books from './routes/books';
 import Franklin from './routes/franklin';
 
 import type { Context } from './types';
 
-const router = Router();
-
-router
-  .get('/(scripts|blocks|styles)/*', Franklin)
-  // temp block footer & nav
-  .get('/footer.plain.html', () => new Response(null, { status: 404 }))
-  .get('/nav.plain.html', () => new Response(null, { status: 404 }))
-  .get('/*', Docs);
-
 export default function handleRequest(request: Request, ctx: Context) {
+  const router = Router({ base: ctx.env.BASE_PATH });
+
+  router
+    .get('/(scripts|blocks|styles)/*', Franklin)
+    .get('/nav.*.html', Franklin)
+    .get('/footer.*.html', Franklin)
+    .get('/book.*.html', Books)
+    .get('/*', Docs);
+
   return router.handle(request, ctx) as Promise<Response | undefined>;
 }

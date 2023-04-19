@@ -6,6 +6,8 @@ import * as esbuild from 'esbuild';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const dev = process.env.NODE_ENV === 'development';
+
 // force resolves the browser bundle from asciidoctor
 const asciidoctorResolvePlugin = {
   name: 'asciidoctor-resolve-plugin',
@@ -18,8 +20,6 @@ const asciidoctorResolvePlugin = {
 
 let built = false;
 const build = async () => {
-  const dev = process.env.NODE_ENV === 'development';
-
   try {
     console.debug(`[worker/build.js] ${built ? 're' : ''}building`);
     built = true;

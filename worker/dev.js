@@ -13,6 +13,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import express from 'express';
+import { config as configEnv } from 'dotenv';
 import build from './build.js';
 
 /**
@@ -22,13 +24,33 @@ import build from './build.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const port = process.env.PORT || 3001;
+// port used for miniflare dev server, this is the one to use in a browser
+const mfPort = process.env.MF_PORT || 3000;
+
+// port 3001 is used for the -website repo dev server
+
+// port used for github mock server, serves content from /docs/
+// can't use the helix-cli for this since adoc/yaml aren't supported
+const docPort = process.env.DOC_PORT || 3002;
+
+configEnv({ path: path.resolve(__dirname, '.env.dev') });
 process.env.NODE_ENV = 'development';
+
+const debounce = (fn, time = 1000) => {
+  let timer;
+  return (...args) => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = undefined;
+    }
+    timer = setTimeout(() => fn(...args), time);
+  };
+};
 
 /** @type {ChildProcess} */
 let mfProc;
 /** @type {Promise<any>|undefined} */
-let runProm;
+let runMfProm;
 
 /**
  * @param {ChildProcess} proc
@@ -41,9 +63,9 @@ const kill = (proc) => new Promise((resolve, reject) => {
   proc.kill('SIGINT');
 });
 
-const run = async () => {
-  if (runProm) {
-    return runProm;
+const runMiniflare = async () => {
+  if (runMfProm) {
+    return runMfProm;
   }
 
   const _run = async () => {
@@ -60,7 +82,8 @@ const run = async () => {
       './node_modules/miniflare/dist/src/cli.js',
       '--build-command=:',
       '--modules',
-      `--port=${port}`,
+      `--port=${mfPort}`,
+      '--env=./worker/.env.dev',
       './worker/dist/index.mjs',
     ], {
       cwd: path.resolve(__dirname, '..'),
@@ -74,26 +97,31 @@ const run = async () => {
     });
   };
 
-  runProm = _run().finally(() => {
-    runProm = undefined;
+  runMfProm = _run().finally(() => {
+    runMfProm = undefined;
   });
 
-  return runProm;
+  return runMfProm;
 };
 
-const debounce = (fn, time = 1000) => {
-  let timer;
-  return (...args) => {
-    if (timer) {
-      clearTimeout(timer);
-      timer = undefined;
-    }
-    timer = setTimeout(() => fn(...args), time);
-  };
+const runDocs = () => {
+  const {
+    DOC_REPO_OWNER: owner,
+    DOC_REPO_NAME: repo,
+    DOC_REPO_REF: ref,
+  } = process.env;
+
+  return new Promise((resolve) => {
+    express()
+      .use(`/${owner}/${repo}/${ref}/docs`, express.static(path.resolve(__dirname, '../docs')))
+      .listen(docPort, resolve);
+  });
 };
 
-run().then(() => {
-  console.debug(`[worker/dev.js] running at http://localhost:${port}`);
+Promise.all([runMiniflare(), runDocs()]).then(() => {
+  console.debug('[worker/dev.js] succeeded!');
+
+  // only need to restart miniflare on changes
   const watcher = fs.watch(path.resolve(__dirname, 'src'), { recursive: true });
-  watcher.on('change', debounce(run));
+  watcher.on('change', debounce(runMiniflare));
 });
