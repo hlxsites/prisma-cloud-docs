@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import setupCtx from './context';
 import handleRequest from './handler';
 import {
@@ -12,7 +11,7 @@ import type { Context, Environment } from './types';
 
 export default {
   async fetch(request: Request, env: Partial<Environment>) {
-    const requestId = uuidv4();
+    const requestId = crypto.randomUUID();
     let resp: Response | undefined;
     let ctx: Context;
 
