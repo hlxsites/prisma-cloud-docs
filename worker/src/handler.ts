@@ -26,5 +26,5 @@ router
   .get('/*', Docs);
 
 export default function handleRequest(request: Request, ctx: Context) {
-  return router.handle(request, ctx);
+  return router.handle(request, ctx) as Promise<Response | undefined>;
 }

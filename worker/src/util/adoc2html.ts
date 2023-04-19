@@ -1,9 +1,11 @@
+/* eslint-disable class-methods-use-this */
+
 import asciidoctor from '@asciidoctor/core';
-import type { Converter, AbstractNode, ProcessorOptions } from '@asciidoctor/core';
 import type * as AdocTypes from '@asciidoctor/core';
 
 const AsciiDoctor = asciidoctor();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type NodeType = 'document' | 'embedded' | 'outline' | 'section' | 'admonition' | 'audio' | 'colist' |
   'dlist' | 'example' | 'floating-title' | 'image' | 'listing' | 'literal' | 'stem' | 'olist' | 'open' |
   'page_break' | 'paragraph' | 'preamble' | 'quote' | 'thematic_break' | 'sidebar' | 'table' | 'toc' |
@@ -33,16 +35,19 @@ export interface NodeTypeMap {
   [key: string]: AdocTypes.AbstractNode;
 }
 
-export interface Options extends ProcessorOptions {
+export interface Options extends AdocTypes.ProcessorOptions {
   backend?: 'franklin' | 'html5' | string;
 }
 
-class FranklinConverter implements Converter {
-  baseConverter: Converter;
-  // TODO: make node type -> node interface map
+class FranklinConverter implements AdocTypes.Converter {
+  baseConverter: AdocTypes.Converter;
+
   templates: { [K in keyof NodeTypeMap]?: (node: NodeTypeMap[K]) => string };
+
   sectionDepth = 0;
+
   inSection = false;
+
   doc: AdocTypes.Document;
 
   constructor() {
@@ -63,7 +68,7 @@ class FranklinConverter implements Converter {
       },
       'floating-title': (node) => {
         console.debug('floating title: ', node);
-        return `todo`;
+        return 'todo';
       },
       embedded: (node) => {
         return node.getContent();
@@ -76,8 +81,8 @@ class FranklinConverter implements Converter {
         // console.log('section node: ', node);
 
         const level = node.getLevel();
-        const tag = `h${level + 1}`
-        const blocks = node.getBlocks();
+        const tag = `h${level + 1}`;
+        const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         console.log('section blocks: ', blocks.length);
         // const closers = new Array(level - 1).fill('</div>').join('');
 
@@ -86,7 +91,7 @@ class FranklinConverter implements Converter {
         // console.log('closer: ', closer);
 
         const content = `<${tag}>${node.getTitle()}</${tag}>
-        ${blocks.map(block => this.convert(block)).join('')}`;
+        ${blocks.map((block) => this.convert(block)).join('')}`;
         // console.log('section content: ', content);
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
@@ -121,18 +126,18 @@ class FranklinConverter implements Converter {
         return tag ? `<${tag}>${content}</${tag}>` : content;
       },
       ulist: (node) => {
-        const blocks = node.getBlocks();
+        const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         console.debug('process ulist: ', blocks.length, blocks);
 
-        const content = blocks.map(block => this.convert(block)).join('');
+        const content = blocks.map((block) => this.convert(block)).join('');
         console.debug('ulist content: ', content);
         return content ? `<ul>${content}</ul>` : '';
       },
       olist: (node) => {
-        const blocks = node.getBlocks();
+        const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         console.debug('process olist: ', blocks.length, blocks);
 
-        const content = blocks.map(block => this.convert(block)).join('');
+        const content = blocks.map((block) => this.convert(block)).join('');
         console.debug('olist content: ', content);
         return content ? `<ol>${content}</ol>` : '';
       },
@@ -147,29 +152,29 @@ class FranklinConverter implements Converter {
         console.log('node text: ', text);
         // TODO: handle xrefs
         return text ? `<li>${this.hrefsToLinks(text)}</li>` : '';
-      }
-    }
+      },
+    };
   }
 
   iconsEnabled(): boolean {
-    return this.doc.getAttribute('icons');
+    return !!this.doc.getAttribute('icons');
   }
 
   hrefsToLinks(text: string) {
-    return text.replace(/(https?:\/\/.*\S)/g, `<a href=$1>$1</a>`);
+    return text.replace(/(https?:\/\/.*\S)/g, '<a href=$1>$1</a>');
   }
 
   closeSection() {
     if (this.sectionDepth) {
-      return new Array(this.sectionDepth).fill(`</div>`).join('');
+      return new Array(this.sectionDepth).fill('</div>').join('');
     }
     return '';
   }
 
-  convert(node: AbstractNode, transform?: string, opts?: any) {
+  convert(node: AdocTypes.AbstractNode, transform?: string, opts?: any) {
     // console.log('converting node...');
     const name = transform || node.getNodeName();
-    console.log(`convert node: transform=${transform} name=${name} type=${(node as any).type}`);
+    console.log(`convert node: transform=${transform} name=${name}`);
 
     this.doc = node.getDocument();
 
@@ -185,13 +190,11 @@ class FranklinConverter implements Converter {
   }
 }
 
-// if (!AsciiDoctor.ConverterFactory.getRegistry()['franklin']) {
 AsciiDoctor.ConverterFactory.register(new FranklinConverter(), ['franklin']);
-// }
 
 const adoc2html = (
   content: string,
-  options: Options = {}
+  options: Options = {},
 ): string => {
   const { backend = 'franklin', ...opts } = options;
   const html = AsciiDoctor.convert(content, { ...opts, backend }) as string;
@@ -214,6 +217,6 @@ const adoc2html = (
       <footer></footer>
     </body>
   </html>`;
-}
+};
 
 export default adoc2html;

@@ -1,10 +1,11 @@
 import { responseInit, ContentType } from '../util';
 import adoc2html from '../util/adoc2html';
 
-import type { Context, Route } from "../types";
+import type { Context, Route } from '../types';
 
 // temp for testing
 import testStr from './test';
+
 const TEST_DOC = testStr;
 
 function resolveURL(path: string, ctx: Context) {
@@ -14,8 +15,8 @@ function resolveURL(path: string, ctx: Context) {
       DOC_REPO_OWNER,
       DOC_REPO_NAME,
       DOC_REPO_REF,
-      DOC_REPO_ROOT_PATH = ''
-    }
+      DOC_REPO_ROOT_PATH = '',
+    },
   } = ctx;
   let rootPath = DOC_REPO_ROOT_PATH;
   if (rootPath.startsWith('/')) {
@@ -25,7 +26,7 @@ function resolveURL(path: string, ctx: Context) {
     rootPath = rootPath.slice(0, -1);
   }
   const fullPath = `${rootPath}${rootPath ? '/' : ''}${path.startsWith('/') ? path.substring(1) : path}`;
-  return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${fullPath}.adoc`
+  return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${fullPath}.adoc`;
 }
 
 const Docs: Route = async (req, ctx) => {
@@ -51,7 +52,7 @@ const Docs: Route = async (req, ctx) => {
   }
 
   const html = adoc2html(text, { backend });
-  return new Response(html as string, responseInit(200, ContentType.HTML));
-}
+  return new Response(html, responseInit(200, ContentType.HTML));
+};
 
 export default Docs;

@@ -16,6 +16,9 @@ module.exports = {
         'arrow-body-style': 'off',
         'prefer-arrow-callback': 'off',
         'no-use-before-define': 'off',
+        '@typescript-eslint/no-use-before-define': 'error',
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'error',
         '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
         '@typescript-eslint/no-misused-promises': [
           'error',
@@ -23,7 +26,6 @@ module.exports = {
             checksVoidReturn: false,
           },
         ],
-        'no-underscore-dangle': 'off',
       },
       settings: {
         'import/resolver': {
