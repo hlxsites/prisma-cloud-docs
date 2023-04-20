@@ -24,9 +24,30 @@ export interface Context {
   env: Environment;
   url: URL;
   invocation: Invocation;
+  books: Book[];
 }
 
 export type Route = (
   req: Request,
   ctx: Context
 ) => Promise<Response | undefined | void> | Response | undefined | void;
+
+export interface BookData {
+  // path to the book, starting at repo root
+  path: string;
+
+  // fields from book.yml, used to remap request path to book content
+  ditamap: string;
+  dita: string;
+
+  // attributes to use for adoc conversion
+  attributes?: Record<string, string>;
+}
+
+export interface Book extends BookData {
+  // check if incoming request url path is prefixed with this book's path
+  match(path: string): boolean;
+
+  // convert from request path to doc path
+  resolve(path: string): string;
+}

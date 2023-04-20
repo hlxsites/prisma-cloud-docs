@@ -2,9 +2,10 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as esbuild from 'esbuild';
+import extractEmbedBooks from './tools/extract-embed-books.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const dev = process.env.NODE_ENV === 'development';
 
@@ -18,11 +19,10 @@ const asciidoctorResolvePlugin = {
   },
 };
 
-let built = false;
 const build = async () => {
   try {
-    console.debug(`[worker/build.js] ${built ? 're' : ''}building`);
-    built = true;
+    console.debug('[worker/build.js] building');
+    const embedBooks = await extractEmbedBooks();
 
     await esbuild.build({
       bundle: true,
@@ -30,7 +30,9 @@ const build = async () => {
       minify: !dev,
       treeShaking: true,
       format: 'esm',
-      define: {},
+      define: {
+        'process.env.EMBED_BOOKS': JSON.stringify(embedBooks),
+      },
       platform: 'browser',
       target: 'esnext',
       external: ['__STATIC_CONTENT_MANIFEST'],
@@ -44,7 +46,8 @@ const build = async () => {
         asciidoctorResolvePlugin,
       ],
     });
-  } catch {
+  } catch (e) {
+    console.error('build error: ', e);
     process.exitCode = 1;
   }
 };

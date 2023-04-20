@@ -1,5 +1,6 @@
 import { responseInit, ContentType } from '../util';
 import adoc2html from '../util/adoc2html';
+import { resolvePath } from '../util/books';
 
 import type { Context, Route } from '../types';
 
@@ -20,7 +21,15 @@ export function resolveURL(path: string, ctx: Context) {
   if (rootPath.endsWith('/')) {
     rootPath = rootPath.slice(0, -1);
   }
-  const fullPath = `${rootPath}${rootPath ? '/' : ''}${path.startsWith('/') ? path.substring(1) : path}`;
+  let filePath = resolvePath(path) || path;
+  if (filePath.startsWith('/')) {
+    filePath = filePath.substring(1);
+  }
+  console.debug('[Docs/resolve] resolved path: ', filePath);
+
+  const fullPath = `${rootPath}${rootPath ? '/' : ''}${filePath}`;
+  console.debug('[Docs/resolve] full path: ', fullPath);
+
   return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${fullPath}`;
 }
 
