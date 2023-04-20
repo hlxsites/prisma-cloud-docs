@@ -29,3 +29,10 @@ export const resolvePath = (path: string): string | undefined => {
   if (!book) return undefined;
   return book.resolve(path);
 };
+
+export const resolveAttributes = (path: string): Record<string, string> => {
+  const books = getBooks();
+  const book = books.find((one) => one.match(path));
+  if (!book) return {};
+  return book.attributes || {};
+};

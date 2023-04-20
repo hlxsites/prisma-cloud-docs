@@ -1,6 +1,6 @@
 import { responseInit, ContentType } from '../util';
 import adoc2html from '../util/adoc2html';
-import { resolvePath } from '../util/books';
+import { resolveAttributes, resolvePath } from '../util/books';
 
 import type { Context, Route } from '../types';
 
@@ -21,27 +21,32 @@ export function resolveURL(path: string, ctx: Context) {
   if (rootPath.endsWith('/')) {
     rootPath = rootPath.slice(0, -1);
   }
-  let filePath = resolvePath(path) || path;
-  if (filePath.startsWith('/')) {
-    filePath = filePath.substring(1);
+  let fullPath = resolvePath(path) || path;
+  if (!fullPath) {
+    // fallback to direct access of docs directory
+    fullPath = `${rootPath}${rootPath ? '/' : ''}${path}`;
   }
-  console.debug('[Docs/resolve] resolved path: ', filePath);
+  if (fullPath.startsWith('/')) {
+    fullPath = fullPath.substring(1);
+  }
+  console.debug('[Docs/resolve] resolved path: ', fullPath);
 
-  const fullPath = `${rootPath}${rootPath ? '/' : ''}${filePath}`;
-  console.debug('[Docs/resolve] full path: ', fullPath);
+  // const fullPath = `${rootPath}${rootPath ? '/' : ''}${filePath}`;
+  // console.debug('[Docs/resolve] full path: ', fullPath);
 
   return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${fullPath}`;
 }
 
 const Docs: Route = async (req, ctx) => {
   const { log, url } = ctx;
+  const { pathname } = ctx.url;
   const backend = url.searchParams.get('backend') ?? 'franklin';
-  log.debug('[Docs] handle GET: ', ctx.url.pathname);
+  log.debug('[Docs] handle GET: ', pathname);
 
-  const upstream = `${resolveURL(ctx.url.pathname, ctx)}.adoc`;
+  const upstream = `${resolveURL(pathname, ctx)}.adoc`;
   log.debug('[Docs] upstream: ', upstream);
 
-  const attributes = {};
+  const attributes = resolveAttributes(pathname);
   [...url.searchParams.entries()].forEach(([key, val]) => {
     if (!key.startsWith('attr-')) return;
     const [_, attr] = key.split('attr-');
