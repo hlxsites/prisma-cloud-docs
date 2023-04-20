@@ -21,8 +21,7 @@ import build from './build.js';
  * @typedef {import('child_process').ChildProcess} ChildProcess
  */
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // port used for miniflare dev server, this is the one to use in a browser
 const mfPort = process.env.MF_PORT || 3000;
