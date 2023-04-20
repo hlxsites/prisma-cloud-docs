@@ -129,7 +129,7 @@ class FranklinConverter implements AdocTypes.Converter {
             tags = ['<strong>', '</strong>'];
             break;
           case 'monospaced':
-            tags = ['`', '`'];
+            tags = ['<code>', '</code>'];
             break;
           case 'emphasis':
             tags = ['<em>', '</em>'];
