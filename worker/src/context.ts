@@ -13,7 +13,7 @@ const setupEnv = (penv: Partial<Environment>): Environment => {
 export default function setupContext(
   request: Request,
   env: Partial<Environment>,
-  requestId: string
+  requestId: string,
 ): Context {
   const ctx: Context = {
     log: console,

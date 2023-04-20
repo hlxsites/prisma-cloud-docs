@@ -1,4 +1,6 @@
-import { Router as IttyRouter, RouterOptions, RouterHints, RouterType as IttyRouterType } from 'itty-router';
+import {
+  Router as IttyRouter, RouterOptions, RouterHints, RouterType as IttyRouterType,
+} from 'itty-router';
 import { Route } from './types';
 
 export type IRouteEntry = (path: string, ...handlers: Route[]) => RouterType;

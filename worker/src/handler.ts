@@ -12,13 +12,22 @@
 
 import { Router } from './router';
 import Docs from './routes/docs';
+import Books from './routes/books';
+import Franklin from './routes/franklin';
 
 import type { Context } from './types';
-
-const router = Router();
-
-router.get('/*', Docs);
+import Media from './routes/media';
 
 export default function handleRequest(request: Request, ctx: Context) {
-  return router.handle(request, ctx);
+  const router = Router({ base: ctx.env.BASE_PATH });
+
+  router
+    .get('/(scripts|blocks|styles)/*', Franklin)
+    .get('/*/_graphics/*', Media)
+    .get('/nav.*.html', Franklin)
+    .get('/footer.*.html', Franklin)
+    .get('/book.*.html', Books)
+    .get('/*', Docs);
+
+  return router.handle(request, ctx) as Promise<Response | undefined>;
 }

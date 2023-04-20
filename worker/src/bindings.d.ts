@@ -1,4 +1,4 @@
-import type { Environment } from "./types";
+import type { Environment } from './types';
 
 declare global {
   export interface Process {

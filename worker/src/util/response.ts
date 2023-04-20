@@ -9,8 +9,8 @@ function headersInit(contentType?: string, headers = {}) {
   return {
     'access-control-allow-origin': '*',
     ...(contentType ? { 'content-type': contentType } : {}),
-    ...headers
-  }
+    ...headers,
+  };
 }
 
 export const responseInit = (status: number, contentType?: string): IResponseInit => {
@@ -18,9 +18,9 @@ export const responseInit = (status: number, contentType?: string): IResponseIni
     status,
     headers: headersInit(contentType, {
       'cache-control': 'max-age=7200',
-    })
+    }),
   };
-}
+};
 
 export const noCacheResponseInit = (status: number, contentType?: string): IResponseInit => {
   return {
@@ -29,7 +29,7 @@ export const noCacheResponseInit = (status: number, contentType?: string): IResp
       'cache-control': 'max-age=0, must-revalidate, no-cache, no-store',
     }),
   };
-}
+};
 
 export const redirectResponseInit = (location: string): IResponseInit => {
   return {
@@ -38,20 +38,19 @@ export const redirectResponseInit = (location: string): IResponseInit => {
       location,
     }),
   };
-}
+};
 
 export const errorResponse = (
   status: number,
   xError: string,
-  message?: string
+  message?: string,
 ): Response => {
   const init = noCacheResponseInit(status, message ? ContentType.JSON : undefined);
-  return new Response(
-    message ? JSON.stringify({ message }) : null, {
+  return new Response(message ? JSON.stringify({ message }) : null, {
     ...init,
     headers: {
       ...init.headers,
-      'x-error': xError
+      'x-error': xError,
     },
   });
-}
+};
