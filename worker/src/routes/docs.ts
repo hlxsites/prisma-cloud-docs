@@ -39,8 +39,6 @@ const Docs: Route = async (req, ctx) => {
     attributes[attr] = val;
   });
 
-  console.log('attrs: ', attributes);
-
   const resp = await fetch(upstream);
   if (!resp.ok) {
     if (resp.status === 404) {

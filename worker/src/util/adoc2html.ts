@@ -20,13 +20,15 @@ export interface NodeTypeMap {
   admonition: AdocTypes.Table;
   audio: AdocTypes.AbstractBlock;
   colist: AdocTypes.List;
-  dlist: AdocTypes.List;
   olist: AdocTypes.List;
   ulist: AdocTypes.List;
+  dlist: AdocTypes.Table;
   list_item: AdocTypes.ListItem;
   inline_anchor: AdocTypes.Inline;
   inline_quoted: AdocTypes.Inline;
+  literal: AdocTypes.AbstractBlock;
   table: AdocTypes.Table;
+  image: AdocTypes.AbstractBlock;
   example: AdocTypes.AbstractBlock;
   paragraph: AdocTypes.AbstractBlock;
   floating_title: AdocTypes.AbstractBlock;
@@ -73,7 +75,7 @@ class FranklinConverter implements AdocTypes.Converter {
         return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
-        console.debug('floating title: ', node);
+        console.debug('TODO: floating title: ', node);
         return 'todo';
       },
       embedded: (node) => {
@@ -83,38 +85,33 @@ class FranklinConverter implements AdocTypes.Converter {
         return '<hr>';
       },
       section: (node) => {
-        console.debug('section context, id: ', node.getContext(), node.getId(), node.getTitle(), node.getLevel());
-        // console.log('section node: ', node);
-
         const level = node.getLevel();
         const tag = `h${level + 1}`;
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        console.log('section blocks: ', blocks.length);
-        // const closers = new Array(level - 1).fill('</div>').join('');
-
         const closer = this.closeSection();
         this.sectionDepth += 1;
-        // console.log('closer: ', closer);
 
         const content = `<${tag}>${node.getTitle()}</${tag}>
         ${blocks.map((block) => this.convert(block)).join('')}`;
-        // console.log('section content: ', content);
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
-
         this.sectionDepth -= 1;
+
         return wrapper;
+      },
+      literal: (node) => {
+        const content = node.getContent();
+        return `<pre><code>${content}</code></pre>`;
       },
       admonition: (node) => {
         const style = node.getStyle() || '';
-        console.debug('process admonition: ', node);
 
         let title = (node.getTitle() || '').trim();
         if (title) {
           title = `<h6>${title}</h6>`;
         }
 
-        return `
+        return /* html */`
           <div class="admonition ${style.toLowerCase()}">
             <div>
               ${title}
@@ -125,26 +122,47 @@ class FranklinConverter implements AdocTypes.Converter {
       inline_quoted: (node) => {
         // console.debug('process inline_quoted');
         const content = node.getText();
-        const tag = node.getType() === 'strong' ? 'strong' : undefined;
-        if (!tag) {
-          console.warn('[inline_quoted] unhandled node: ', node);
+        const type = node.getType();
+        let tags = [] as unknown as [string, string];
+        switch (type) {
+          case 'strong':
+            tags = ['<strong>', '</strong>'];
+            break;
+          case 'monospaced':
+            tags = ['`', '`'];
+            break;
+          case 'emphasis':
+            tags = ['<em>', '</em>'];
+            break;
+          default:
+            console.warn('[inline_quoted] unhandled node: ', node, type);
+            return content;
         }
-        return tag ? `<${tag}>${content}</${tag}>` : content;
+        return `${tags[0]}${content}${tags[1]}`;
       },
       ulist: (node) => {
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        console.debug('process ulist: ', blocks.length, blocks);
-
         const content = blocks.map((block) => this.convert(block)).join('');
-        console.debug('ulist content: ', content);
         return content ? `<ul>${content}</ul>` : '';
+      },
+      dlist: (node) => {
+        // TODO: make into `ul` instead of a block
+        // see: https://github.com/asciidoctor/asciidoctor/blob/main/lib/asciidoctor/converter/html5.rb#L516
+        const rows = node.getBlocks() as AdocTypes.Inline[][];
+        const convertCol = (col: AdocTypes.Inline | AdocTypes.Inline[]): string => {
+          if (Array.isArray(col)) {
+            return col.map(convertCol).join('');
+          }
+          return `<p>${col.getText()}</p>`;
+        };
+        return /* html */`
+          <div class="dlist">
+            ${rows.map((row) => `<div>${row.map((col) => `<div>${convertCol(col)}</div>`).join('')}</div>`).join('')}
+          </div>`;
       },
       olist: (node) => {
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        console.debug('process olist: ', blocks.length, blocks);
-
         const content = blocks.map((block) => this.convert(block)).join('');
-        console.debug('olist content: ', content);
         return content ? `<ol>${content}</ol>` : '';
       },
       list_item: (node) => {
@@ -155,9 +173,16 @@ class FranklinConverter implements AdocTypes.Converter {
         }
 
         const text = node.getText();
-        console.log('node text: ', text);
         // TODO: handle xrefs
-        return text ? `<li>${this.hrefsToLinks(text)}</li>` : '';
+        return text ? `<li><p>${this.hrefsToLinks(text)}</p></li>` : '';
+      },
+      image: (node) => {
+        const src = node.getAttribute('target') as string | undefined;
+        if (!src) {
+          return '';
+        }
+
+        return `<img src="../_graphics/${src}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
       },
     };
   }
