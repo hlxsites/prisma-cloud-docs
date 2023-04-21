@@ -184,7 +184,29 @@ class FranklinConverter implements AdocTypes.Converter {
 
         return `<img src="../_graphics/${src}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
       },
+      table: (node) => {
+        const title = node.getTitle() || '';
+        switch (title.toLowerCase()) {
+          case 'fragment':
+            return this.tableToFragment(node);
+          default:
+            return null;
+        }
+      },
     };
+  }
+
+  tableToFragment(node: AdocTypes.Table): string {
+    const rows = node.getRows();
+    const cell = rows.body[0][0];
+    const href = (cell as unknown as { text: string }).text;
+
+    return /* html */`
+      <div class="fragment">
+        <div>
+          <a href="${href}">${href}</a>
+        </div>
+      </div>`;
   }
 
   iconsEnabled(): boolean {
@@ -211,7 +233,10 @@ class FranklinConverter implements AdocTypes.Converter {
 
     const template = this.templates[name];
     if (template) {
-      return template(node);
+      const content = template(node);
+      if (content !== null) {
+        return content;
+      }
     }
 
     console.log('handling node with base template...', name);

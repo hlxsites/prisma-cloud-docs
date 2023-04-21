@@ -21,7 +21,7 @@ export function resolveURL(path: string, ctx: Context) {
   if (rootPath.endsWith('/')) {
     rootPath = rootPath.slice(0, -1);
   }
-  let fullPath = resolvePath(path) || path;
+  let fullPath = resolvePath(path);
   if (!fullPath) {
     // fallback to direct access of docs directory
     fullPath = `${rootPath}${rootPath ? '/' : ''}${path}`;
@@ -30,9 +30,6 @@ export function resolveURL(path: string, ctx: Context) {
     fullPath = fullPath.substring(1);
   }
   console.debug('[Docs/resolve] resolved path: ', fullPath);
-
-  // const fullPath = `${rootPath}${rootPath ? '/' : ''}${filePath}`;
-  // console.debug('[Docs/resolve] full path: ', fullPath);
 
   return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${fullPath}`;
 }
