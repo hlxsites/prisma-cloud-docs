@@ -36,10 +36,15 @@ export function resolveURL(path: string, ctx: Context) {
 
 const Docs: Route = async (req, ctx) => {
   const { log, url } = ctx;
-  const { pathname } = ctx.url;
+  let { pathname } = ctx.url;
   const backend = url.searchParams.get('backend') ?? 'franklin';
   log.debug('[Docs] handle GET: ', pathname);
 
+  let plain = false;
+  if (pathname.endsWith('.plain.html')) {
+    plain = true;
+    pathname = pathname.slice(0, -'.plain.html'.length);
+  }
   const upstream = `${resolveURL(pathname, ctx)}.adoc`;
   log.debug('[Docs] upstream: ', upstream);
 
@@ -59,7 +64,7 @@ const Docs: Route = async (req, ctx) => {
   }
 
   const text = await resp.text();
-  const html = adoc2html(text, { backend, attributes });
+  const html = adoc2html(text, { backend, attributes, plain });
   return new Response(html, responseInit(200, ContentType.HTML));
 };
 

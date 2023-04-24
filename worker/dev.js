@@ -23,10 +23,10 @@ import build from './build.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// port used for miniflare dev server, this is the one to use in a browser
-const mfPort = process.env.MF_PORT || 3000;
+// port 3000 is used for the -website repo dev server
 
-// port 3001 is used for the -website repo dev server
+// port used for miniflare dev server, this is the one to use in a browser
+const mfPort = process.env.MF_PORT || 3001;
 
 // port used for github mock server, serves content from /docs/
 // can't use the helix-cli for this since adoc/yaml aren't supported

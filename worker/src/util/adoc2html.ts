@@ -40,6 +40,7 @@ export interface NodeTypeMap {
 export interface Options extends AdocTypes.ProcessorOptions {
   backend?: 'franklin' | 'html5' | string;
   attributes?: Record<string, string>;
+  plain?: boolean;
 }
 
 class FranklinConverter implements AdocTypes.Converter {
@@ -252,10 +253,12 @@ const adoc2html = (
   content: string,
   options: Options = {},
 ): string => {
-  const { backend = 'franklin', attributes, ...opts } = options;
+  const {
+    backend = 'franklin', attributes, plain, ...opts
+  } = options;
   const html = AsciiDoctor.convert(content, { ...opts, backend, attributes }) as string;
 
-  return /* html */`
+  return plain ? html : /* html */`
   <!DOCTYPE html>
   <html>
     <head>
