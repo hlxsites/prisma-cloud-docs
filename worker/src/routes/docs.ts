@@ -4,34 +4,52 @@ import { resolveAttributes, resolvePath } from '../util/books';
 
 import type { Context, Route } from '../types';
 
+function trimChar(str: string, trim: string, location: 'start' | 'end' = 'start'): string {
+  let trimmed = str;
+  while (trimmed && trimmed[`${location}sWith`](trim)) {
+    trimmed = location === 'end' ? trimmed.slice(0, -1) : trimmed.substring(1);
+  }
+  return trimmed;
+}
+
 export function resolveURL(path: string, ctx: Context) {
   const {
+    log,
     env: {
       DOC_UPSTREAM,
       DOC_REPO_OWNER,
       DOC_REPO_NAME,
       DOC_REPO_REF,
       DOC_REPO_ROOT_PATH = '',
+      BASE_PATH = '',
     },
   } = ctx;
-  let rootPath = DOC_REPO_ROOT_PATH;
-  if (rootPath.startsWith('/')) {
-    rootPath = rootPath.substring(1);
-  }
-  if (rootPath.endsWith('/')) {
-    rootPath = rootPath.slice(0, -1);
-  }
-  let fullPath = resolvePath(path);
-  if (!fullPath) {
-    // fallback to direct access of docs directory
-    fullPath = `${rootPath}${rootPath ? '/' : ''}${path}`;
-  }
-  if (fullPath.startsWith('/')) {
-    fullPath = fullPath.substring(1);
-  }
-  console.debug('[Docs/resolve] resolved path: ', fullPath);
+  const resolveDitaPaths = ['true', true].includes(ctx.env.RESOLVE_DITA_PATHS);
 
-  return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${fullPath}`;
+  let rootPath = DOC_REPO_ROOT_PATH;
+  rootPath = trimChar(rootPath, '/', 'end');
+  rootPath = trimChar(rootPath, '/', 'start');
+
+  let resolvedPath = path.substring(BASE_PATH.length);
+  resolvedPath = trimChar(resolvedPath, '/', 'start');
+
+  if (resolveDitaPaths) {
+    resolvedPath = resolvePath(resolvedPath);
+    resolvedPath = trimChar(resolvedPath, '/', 'start');
+
+    if (!resolvedPath) {
+      // fallback to direct access of docs directory
+      resolvedPath = `${rootPath}${rootPath ? '/' : ''}${resolvedPath}`;
+    }
+  } else {
+    resolvedPath = `${rootPath}${rootPath ? '/' : ''}${resolvedPath}`;
+  }
+
+  resolvedPath = trimChar(resolvedPath, '/', 'start');
+
+  log.debug('[Docs/resolve] resolved path: ', resolvedPath);
+
+  return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${resolvedPath}`;
 }
 
 const Docs: Route = async (req, ctx) => {
