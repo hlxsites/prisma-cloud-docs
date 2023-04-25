@@ -1,15 +1,18 @@
 import { responseInit, ContentType } from '../util';
-import adoc2html from '../util/adoc2html';
 import { resolveURL } from './docs';
+import book2json from '../util/book2json';
 
 import type { Route } from '../types';
 
 const Docs: Route = async (req, ctx) => {
-  const { log, url } = ctx;
-  const backend = url.searchParams.get('backend') ?? 'franklin';
-  log.debug('[Books] handle GET: ', ctx.url.pathname);
+  const { log } = ctx;
+  let { pathname } = ctx.url;
+  if (pathname.endsWith('.json')) {
+    pathname = pathname.slice(0, -'.json'.length);
+  }
+  log.debug('[Books] handle GET: ', pathname);
 
-  const upstream = `${resolveURL(ctx.url.pathname, ctx)}.yml`;
+  const upstream = `${resolveURL(pathname, ctx)}.yml`;
   log.debug('[Books] upstream: ', upstream);
 
   const resp = await fetch(upstream);
@@ -21,8 +24,8 @@ const Docs: Route = async (req, ctx) => {
   }
 
   const text = await resp.text();
-  const html = adoc2html(text, { backend });
-  return new Response(html, responseInit(200, ContentType.HTML));
+  const json = book2json(text);
+  return new Response(JSON.stringify(json), responseInit(200, ContentType.JSON));
 };
 
 export default Docs;

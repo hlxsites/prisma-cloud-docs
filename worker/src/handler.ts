@@ -22,11 +22,11 @@ export default function handleRequest(request: Request, ctx: Context) {
   const router = Router({ base: ctx.env.BASE_PATH });
 
   router
-    .get('/(scripts|blocks|styles)/*', Franklin)
+    .get('/(scripts|blocks|styles|icons)/*', Franklin)
     .get('/*/_graphics/*', Media)
     .get('/nav.*.html', Franklin)
     .get('/footer.*.html', Franklin)
-    .get('/book.*.html', Books)
+    .get('/*/book*.json', Books)
     .get('/*', Docs);
 
   return router.handle(request, ctx) as Promise<Response | undefined>;
