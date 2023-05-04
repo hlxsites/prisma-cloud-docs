@@ -1,6 +1,6 @@
 #!/usr/bin/node
+/* eslint-disable no-underscore-dangle, no-console */
 
-/* eslint-disable no-underscore-dangle */
 import fs from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -8,8 +8,10 @@ import findFilesAndFolders from '../tools/find-files-and-folders.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const ALLOWED_FOLDERS = ['_graphics'];
+const IGNORED_FOLDERS = ['_graphics'];
+const IGNORED_FILES = ['.DS_Store'];
 const IGNORED_ROOT_PATHS = [resolve(__dirname, '../docs/api')];
+
 const NON_NORM_REGEX = /[_A-Z]/g;
 
 /**
@@ -19,10 +21,13 @@ const needsNormalization = (name, path, stat) => {
   if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
     return false;
   }
-  if (stat.isDirectory() && ALLOWED_FOLDERS.includes(name)) {
+  if (stat.isDirectory() && IGNORED_FOLDERS.includes(name)) {
     return false;
   }
-  if (stat.isFile() && /.(png)|(jpg)|(html)$/.test(name)) {
+  if (stat.isFile() && IGNORED_FILES.includes(name)) {
+    return false;
+  }
+  if (stat.isFile() && /\.(png)|(PNG)|(jpg)|(html)|(gif)|(csv)$/.test(name)) {
     return false;
   }
   return NON_NORM_REGEX.test(name);
@@ -31,7 +36,7 @@ const needsNormalization = (name, path, stat) => {
 /**
  * @param {string} path
  */
-const normalizePath = async (path) => {
+const normalizePath = (path) => {
   const parts = path.split('/');
   const last = parts.pop().replace(/_/g, '-').replace(/-{2,}/, '-');
   return [...parts, last].join('/');
