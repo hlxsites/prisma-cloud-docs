@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  *   name: string,
  *   path: string,
  *   stats: import('fs').Stats
- * ) => boolean} Predicate
+ * ) => boolean|Promise<boolean>} Predicate
  */
 
 /**

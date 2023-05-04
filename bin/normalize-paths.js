@@ -65,7 +65,9 @@ const normalizePaths = async (dir) => {
     await fs.rename(path, npath);
   }
 
-  console.log(`normalized ${files.length} files and ${folders.length} folders`);
+  return { files, folders };
 };
 
-normalizePaths().catch(console.error);
+normalizePaths()
+  .then(({ files, folders }) => console.log(`normalized ${files.length} files and ${folders.length} folders`))
+  .catch(console.error);
