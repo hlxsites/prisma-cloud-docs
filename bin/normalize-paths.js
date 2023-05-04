@@ -27,7 +27,7 @@ const needsNormalization = (name, path, stat) => {
   if (stat.isFile() && IGNORED_FILES.includes(name)) {
     return false;
   }
-  if (stat.isFile() && /\.(png)|(PNG)|(jpg)|(html)|(gif)|(csv)$/.test(name)) {
+  if (stat.isFile() && !/\.adoc$/.test(name)) {
     return false;
   }
   return NON_NORM_REGEX.test(name);
@@ -38,7 +38,7 @@ const needsNormalization = (name, path, stat) => {
  */
 const normalizePath = (path) => {
   const parts = path.split('/');
-  const last = parts.pop().replace(/_/g, '-').replace(/-{2,}/, '-');
+  const last = parts.pop().replace(/_/g, '-').replace(/-{2,}/, '-').toLowerCase();
   return [...parts, last].join('/');
 };
 
