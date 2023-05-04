@@ -15,12 +15,6 @@ See also: [prisma-cloud-docs-website](https://github.com/hlxsites/prisma-cloud-d
 npm i
 ```
 
-## Tests
-
-```sh
-npm test
-```
-
 ## Local development
 
 ```sh
