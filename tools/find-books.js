@@ -1,7 +1,7 @@
-import findFilesAndFolders from '../../tools/find-files-and-folders.js';
+import findFilesAndFolders from './find-files-and-folders.js';
 
 /**
- * @type {import('../../tools/find-files-and-folders.js').Predicate}
+ * @type {import('./find-files-and-folders.js').Predicate}
  */
 const isBookYamlFilePredicate = (name, _path, stat) => stat.isFile() && /book.*.ya?ml/.test(name);
 

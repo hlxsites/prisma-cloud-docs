@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { fileURLToPath } from 'url';
 import path from 'path';
-import extractRawBooks from './extract-raw-books.js';
+import extractRawBooks from '../../tools/extract-raw-books.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
