@@ -1,6 +1,6 @@
 /**
  * Contains all the data from book*.yml files.
- * The `Book` interface in src/types is different since we omit as much data as possible.
+ * The `Book` interface in worker/src/types is different since we omit as much data as possible.
  */
 export interface RawBook {
   // directory that contains the book*.yml
