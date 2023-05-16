@@ -3,8 +3,11 @@
  * The `Book` interface in worker/src/types is different since we omit as much data as possible.
  */
 export interface RawBook {
-  // directory that contains the book*.yml
+  // absolute path to directory that contains the book*.yml
   dir: string;
+
+  // path from repo root to the directory
+  repoPath: string;
 
   // without the path
   filename: string;
