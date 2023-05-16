@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.4...v1.0.5) (2023-05-16)
+
+
+### Bug Fixes
+
+* add docs to path ([8db183b](https://github.com/hlxsites/prisma-cloud-docs/commit/8db183b73d1a5b2248c8ac7b40e3517a7e0ad534))
+
 ## [1.0.4](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.3...v1.0.4) (2023-05-16)
 
 
