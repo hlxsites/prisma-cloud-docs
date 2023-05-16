@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.5...v1.0.6) (2023-05-16)
+
+
+### Bug Fixes
+
+* folder typo ([755f5a2](https://github.com/hlxsites/prisma-cloud-docs/commit/755f5a2530d59d3c8b13a84177510e6a39dbaa03))
+
 ## [1.0.5](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.4...v1.0.5) (2023-05-16)
 
 
