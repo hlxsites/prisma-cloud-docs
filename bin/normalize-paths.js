@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import findFilesAndFolders from '../tools/find-files-and-folders.js';
+import normalizePath from '../tools/normalize-path.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -34,15 +35,6 @@ const needsNormalization = (name, path, stat) => {
 };
 
 /**
- * @param {string} path
- */
-const normalizePath = (path) => {
-  const parts = path.split('/');
-  const last = parts.pop().replace(/_/g, '-').replace(/-{2,}/, '-').toLowerCase();
-  return [...parts, last].join('/');
-};
-
-/**
 * @param {string} [dir='<repo_root>/docs'] root dir
 * @returns {Promise<void>} absolute paths
 */
@@ -69,5 +61,5 @@ const normalizePaths = async (dir) => {
 };
 
 normalizePaths()
-  .then(({ files, folders }) => console.log(`normalized ${files.length} files and ${folders.length} folders`))
+  .then(({ files, folders }) => console.log(`[bin/normalize-paths] normalized ${files.length} files and ${folders.length} folders`))
   .catch(console.error);
