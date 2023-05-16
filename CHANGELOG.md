@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.3...v1.0.4) (2023-05-16)
+
+
+### Bug Fixes
+
+* allow branch query param for worker test urls ([0cc928a](https://github.com/hlxsites/prisma-cloud-docs/commit/0cc928acf58eace0a542aa26bdeb2e2a8e788b30))
+
 ## [1.0.3](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.2...v1.0.3) (2023-05-16)
 
 
