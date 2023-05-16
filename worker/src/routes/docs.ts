@@ -24,6 +24,7 @@ export function resolveURL(path: string, ctx: Context) {
       BASE_PATH = '',
     },
   } = ctx;
+  const ref = ctx.url.searchParams.get('branch') ?? DOC_REPO_REF;
   const resolveDitaPaths = ['true', true].includes(ctx.env.RESOLVE_DITA_PATHS);
 
   let rootPath = DOC_REPO_ROOT_PATH;
@@ -49,7 +50,7 @@ export function resolveURL(path: string, ctx: Context) {
 
   log.debug('[Docs/resolve] resolved path: ', resolvedPath);
 
-  return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${DOC_REPO_REF}/${resolvedPath}`;
+  return `${DOC_UPSTREAM}/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/${ref}/${resolvedPath}`;
 }
 
 const Docs: Route = async (req, ctx) => {
