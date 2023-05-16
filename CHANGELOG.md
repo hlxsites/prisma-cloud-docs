@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.2...v1.0.3) (2023-05-16)
+
+
+### Bug Fixes
+
+* correct sitemap paths ([05345a7](https://github.com/hlxsites/prisma-cloud-docs/commit/05345a740fedb167ab5604a24bef98ffe3b56c74))
+
 ## [1.0.2](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.1...v1.0.2) (2023-05-16)
 
 
