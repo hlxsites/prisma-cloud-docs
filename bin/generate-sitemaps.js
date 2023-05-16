@@ -16,6 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const LOCALES = ['en', 'jp'];
 const ORIGIN = 'https://docs.paloaltonetworks.com';
 const ROOT_PATH = '/prisma/prisma-cloud';
+const DESTINATION = (locale) => resolve(__dirname, `../prisma/prisma-cloud/docs/sitemaps/sitemap-${locale}.xml`);
 const CHANGE_FREQ = {
   topic: 'weekly',
 };
@@ -123,13 +124,13 @@ const generateSitemaps = async () => {
           .ele('priority').txt(PRIORITY.topic).up()
           .ele('coveo:metadata')
             .ele('sitemap_modificationdate').txt(lastMod).up()
-            .ele('sitemap_docType').txt('topic').up()
+            .ele('sitemap_docType').txt('topic').up() // TODO?
             .ele('sitemap_book-name').txt(book?.title).up()
-            .ele('sitemap_productcategory').txt().up()
-            .ele('sitemap_osversion').txt().up()
+            .ele('sitemap_productcategory').txt().up() // TODO
+            .ele('sitemap_osversion').txt().up() // TODO
             .ele('sitemap_productFamily').txt('prisma-cloud').up()
-            .ele('sitemap_groupId').txt().up()
-            .ele('sitemap_isLatestVersion').txt().up()
+            .ele('sitemap_groupId').txt().up() // TODO
+            .ele('sitemap_isLatestVersion').txt().up() // TODO
             .up();
         /* eslint-enable indent */
       });
@@ -137,7 +138,7 @@ const generateSitemaps = async () => {
 
     // write to /docs/sitemaps/sitemap-${locale}.xml
     const content = doc.end();
-    const sitemapPath = resolve(__dirname, `../docs/sitemaps/sitemap-${locale}.xml`);
+    const sitemapPath = DESTINATION(locale);
     console.log(`[bin/generate-sitemaps] writing ${sitemapPath}`);
     await fs.writeFile(sitemapPath, content);
   }));
