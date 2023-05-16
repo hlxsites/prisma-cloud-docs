@@ -7,7 +7,7 @@ See also: [prisma-cloud-docs-website](https://github.com/hlxsites/prisma-cloud-d
 ## Environments
 - Preview: https://main--prisma-cloud-docs--hlxsites.hlx.page/
 - Live: https://main--prisma-cloud-docs--hlxsites.hlx.live/
-- Worker: https://prisma-cloud-docs.adobeaem.workers.dev/
+- Worker: https://prisma-cloud-docs-production.adobeaem.workers.dev/
 
 ## Installation
 
