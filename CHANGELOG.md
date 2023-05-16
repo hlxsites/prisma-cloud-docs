@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.1...v1.0.2) (2023-05-16)
+
+
+### Bug Fixes
+
+* sitemaps script initial ([50df904](https://github.com/hlxsites/prisma-cloud-docs/commit/50df904b2c4b005bc339b3815ddcbc3e3079eff8))
+
 ## [1.0.1](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.0...v1.0.1) (2023-05-12)
 
 
