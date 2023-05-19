@@ -24,7 +24,8 @@ const Docs: Route = async (req, ctx) => {
   }
 
   const text = await resp.text();
-  const json = book2json(text);
+  const path = pathname.split('/').slice(0, -1).join('/');
+  const json = book2json(text, path);
   return new Response(JSON.stringify(json), responseInit(200, ContentType.JSON));
 };
 
