@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.7...v1.0.8) (2023-05-19)
+
+
+### Bug Fixes
+
+* add last-modified header ([4331051](https://github.com/hlxsites/prisma-cloud-docs/commit/43310512233727f956cff40f2e3d0a464c75edd2))
+
 ## [1.0.7](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.6...v1.0.7) (2023-05-19)
 
 
