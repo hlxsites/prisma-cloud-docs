@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.10...v1.0.11) (2023-05-19)
+
+
+### Bug Fixes
+
+* missing script ([1152939](https://github.com/hlxsites/prisma-cloud-docs/commit/11529395b3bfba5718235f8cf171eec266a86037))
+
 ## [1.0.10](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.9...v1.0.10) (2023-05-19)
 
 
