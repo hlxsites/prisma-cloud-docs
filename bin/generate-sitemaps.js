@@ -13,6 +13,7 @@ import normalizePath from '../tools/normalize-path.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const META_SOURCE = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.live/metadata.json';
 const LOCALES = ['en', 'jp'];
 const ORIGIN = 'https://docs.paloaltonetworks.com';
 const ROOT_PATH = '/prisma/prisma-cloud';
@@ -31,8 +32,22 @@ const DOC_TYPE = 'bookDetailPage';
 const PRODUCT_CATEGORY = 'Prisma, Prisma Cloud';
 const PRODUCT_FAMILY = 'prisma-cloud';
 const GROUP_ID = (bookName) => `${PRODUCT_CATEGORY}-${bookName}`;
-const IS_LATEST_VERSION = (bookPath) => FALLBACK_IS_LATEST_VERSION;
-const OS_VERSION = (bookPath) => FALLBACK_OS_VERSION;
+const IS_LATEST_VERSION = async (bookPath) => {
+  // eslint-disable-next-line no-use-before-define
+  const row = await getMetaRow(bookPath);
+  if (!row) {
+    return FALLBACK_IS_LATEST_VERSION;
+  }
+  return row['is-latest-version'] || FALLBACK_IS_LATEST_VERSION;
+};
+const OS_VERSION = async (bookPath) => {
+  // eslint-disable-next-line no-use-before-define
+  const row = await getMetaRow(bookPath);
+  if (!row) {
+    return FALLBACK_OS_VERSION;
+  }
+  return row['os-version'] || FALLBACK_OS_VERSION;
+};
 
 /**
  * @example
@@ -61,6 +76,28 @@ const OS_VERSION = (bookPath) => FALLBACK_OS_VERSION;
  */
 
 const isParentTopic = (topic) => !!(topic).topics;
+
+let pendingMeta;
+const fetchMetadata = async () => {
+  if (pendingMeta) {
+    return pendingMeta;
+  }
+
+  pendingMeta = fetch(META_SOURCE).then((res) => res.json());
+  return pendingMeta;
+};
+
+let meta;
+async function getMetaRow(bookPath) {
+  if (!meta) {
+    meta = await fetchMetadata();
+  }
+  const arow = meta.data.find((row) => {
+    const cropped = row.book.substring(`${ROOT_PATH}/docs`.length);
+    return bookPath.endsWith(cropped);
+  });
+  return arow;
+}
 
 /**
  * @param {any} data
@@ -139,13 +176,13 @@ const generateSitemaps = async () => {
           .ele('priority').txt(PRIORITY.topic).up()
           .ele('coveo:metadata')
             .ele('sitemap_modificationdate').txt(lastMod).up()
-            .ele('sitemap_docType').txt(DOC_TYPE).up() // TODO?
+            .ele('sitemap_docType').txt(DOC_TYPE).up()
             .ele('sitemap_book-name').txt(book?.title).up()
-            .ele('sitemap_productcategory').txt(PRODUCT_CATEGORY).up() // TODO
-            .ele('sitemap_osversion').txt(OS_VERSION(dir)).up() // TODO
+            .ele('sitemap_productcategory').txt(PRODUCT_CATEGORY).up()
+            .ele('sitemap_osversion').txt(await OS_VERSION(dir)).up()
             .ele('sitemap_productFamily').txt(PRODUCT_FAMILY).up()
-            .ele('sitemap_groupId').txt(GROUP_ID(book?.title)).up() // TODO
-            .ele('sitemap_isLatestVersion').txt(IS_LATEST_VERSION(dir)).up() // TODO
+            .ele('sitemap_groupId').txt(GROUP_ID(book?.title)).up()
+            .ele('sitemap_isLatestVersion').txt(await IS_LATEST_VERSION(dir)).up()
             .up();
         /* eslint-enable indent */
       });
