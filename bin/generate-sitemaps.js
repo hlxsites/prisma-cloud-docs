@@ -155,7 +155,6 @@ const generateSitemaps = async () => {
     await Promise.all(rawBooks.map(async ({
       repoPath,
       data,
-      book,
       dir,
     }) => {
       // eslint-disable-next-line no-unused-vars
@@ -177,11 +176,11 @@ const generateSitemaps = async () => {
           .ele('coveo:metadata')
             .ele('sitemap_modificationdate').txt(lastMod).up()
             .ele('sitemap_docType').txt(DOC_TYPE).up()
-            .ele('sitemap_book-name').txt(book?.title).up()
+            .ele('sitemap_book-name').txt(data.book?.title).up()
             .ele('sitemap_productcategory').txt(PRODUCT_CATEGORY).up()
             .ele('sitemap_osversion').txt(await OS_VERSION(dir)).up()
             .ele('sitemap_productFamily').txt(PRODUCT_FAMILY).up()
-            .ele('sitemap_groupId').txt(GROUP_ID(book?.title)).up()
+            .ele('sitemap_groupId').txt(GROUP_ID(data.book?.title)).up()
             .ele('sitemap_isLatestVersion').txt(await IS_LATEST_VERSION(dir)).up()
             .up();
         /* eslint-enable indent */
