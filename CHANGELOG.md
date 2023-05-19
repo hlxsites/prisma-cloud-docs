@@ -1,3 +1,10 @@
+## [1.0.12](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.11...v1.0.12) (2023-05-19)
+
+
+### Bug Fixes
+
+* test ci ([fbd4cb5](https://github.com/hlxsites/prisma-cloud-docs/commit/fbd4cb50bd6795eb90e7172f23424d9d569c3026))
+
 ## [1.0.11](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.10...v1.0.11) (2023-05-19)
 
 
