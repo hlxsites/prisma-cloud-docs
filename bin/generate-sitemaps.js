@@ -171,8 +171,8 @@ const generateSitemaps = async () => {
         url
           .ele('loc').txt(`${ORIGIN}${ROOT_PATH}${path}`).up()
           .ele('lastmod').txt(lastMod).up()
-          .ele('changefreq').txt(CHANGE_FREQ.topic).up()
-          .ele('priority').txt(PRIORITY.topic).up()
+          .ele('changefreq').txt(CHANGE_FREQ).up()
+          .ele('priority').txt(PRIORITY).up()
           .ele('coveo:metadata')
             .ele('sitemap_modificationdate').txt(lastMod).up()
             .ele('sitemap_docType').txt(DOC_TYPE).up()
