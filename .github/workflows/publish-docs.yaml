@@ -17,12 +17,10 @@ jobs:
         # Make sure we have some code to diff.
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Get changed files
         id: changes
         run: |
-          echo "all=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
+          echo "all=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.push.before }} ${{ github.event.push.after }} | xargs)" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
