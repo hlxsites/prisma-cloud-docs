@@ -84,7 +84,7 @@ const Docs: Route = async (req, ctx) => {
 
   const text = await resp.text();
   const html = adoc2html(text, { backend, attributes, plain });
-  return new Response(html, responseInit(200, ContentType.HTML));
+  return new Response(html, responseInit(200, ContentType.HTML, { 'last-modified': resp.headers.get('last-modified') }));
 };
 
 export default Docs;

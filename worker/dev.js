@@ -112,7 +112,14 @@ const runDocs = () => {
 
   return new Promise((resolve) => {
     express()
-      .use(`/${owner}/${repo}/${ref}/docs`, express.static(path.resolve(__dirname, '../docs')))
+      .use(
+        `/${owner}/${repo}/${ref}/docs`,
+        express.static(path.resolve(__dirname, '../docs'), {
+          setHeaders: (res) => {
+            res.setHeader('last-modified', new Date().toGMTString());
+          },
+        }),
+      )
       .listen(docPort, resolve);
   });
 };

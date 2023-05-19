@@ -13,11 +13,16 @@ function headersInit(contentType?: string, headers = {}) {
   };
 }
 
-export const responseInit = (status: number, contentType?: string): IResponseInit => {
+export const responseInit = (
+  status: number,
+  contentType?: string,
+  headers: Record<string, string> = {},
+): IResponseInit => {
   return {
     status,
     headers: headersInit(contentType, {
       'cache-control': 'max-age=7200',
+      ...headers,
     }),
   };
 };
