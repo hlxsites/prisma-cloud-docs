@@ -183,7 +183,7 @@ class FranklinConverter implements AdocTypes.Converter {
           return '';
         }
 
-        return `<img src="../_graphics/${src}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
+        return `<img src="../../_graphics/${src}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
       },
       table: (node) => {
         const title = node.getTitle() || '';

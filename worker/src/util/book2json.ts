@@ -2,6 +2,7 @@
                   @typescript-eslint/no-unsafe-member-access,
                   @typescript-eslint/no-unsafe-call */
 import extractRawBook from '../../../tools/extract-raw-book.js';
+import normalizePath from '../../../tools/normalize-path.js';
 
 type ParentTopic = {
   name: string;
@@ -45,13 +46,14 @@ const isParentTopic = (topic: Topic): topic is ParentTopic => {
 //   2. chapters is used for all unique chapters
 //   3. topics is used for all topics,
 //      each with a reference to their parent chapter's key and parent topic's key (if nested)
-const book2json = (content: string): Record<string, unknown> => {
+const book2json = (content: string, path: string): Record<string, unknown> => {
   const raw = extractRawBook(content);
 
   const book = [{
     title: raw?.book?.title,
     version: raw?.book?.version,
     author: raw?.book?.author,
+    path,
   }];
 
   const chapters = [];
@@ -60,12 +62,20 @@ const book2json = (content: string): Record<string, unknown> => {
   const processTopic = (chapterKey: string, topic: Topic, parentKey?: string) => {
     if (isParentTopic(topic)) {
       // nested topics, recurse
-      const topicKey: string = topic.dir.replace(/_/g, '-').toLowerCase(); // todo: sanitize better
-      topic.topics.forEach((subtopic) => processTopic(chapterKey, subtopic, parentKey ? `${parentKey}/${topicKey}` : topicKey));
+      const topicKey: string = normalizePath(topic.dir);
+      topics.push({
+        chapter: chapterKey,
+        name: topic.name,
+        key: topicKey,
+        ...(parentKey ? { parent: parentKey } : {}),
+      });
+      topic.topics.forEach((subtopic) => {
+        processTopic(chapterKey, subtopic, parentKey ? `${parentKey}/${topicKey}` : topicKey);
+      });
       return;
     }
 
-    const topicKey = topic.file.split('.').slice(0, -1).join('.').toLowerCase();
+    const topicKey = normalizePath(topic.file.split('.').slice(0, -1).join('.'));
     topics.push({
       chapter: chapterKey,
       name: topic.name,
