@@ -18,15 +18,15 @@ const API_URL = (api, path) => `${ADMIN_API}/${api}${path}`;
  * since publish promotes the content in preview.
  * @param {string} path
  */
-async function publish(path) {
-  await fetch(API_URL('preview', path), { method: 'POST' });
-  if (path.startsWith('examples')) {
+async function publishDoc(path) {
+  const { status: preview } = await fetch(API_URL('preview', path), { method: 'POST' });
+  if (!path.startsWith('examples')) {
     // don't publish examples
-    return true;
+    return { path, preview };
   }
 
-  await fetch(API_URL('publish', path), { method: 'POST' });
-  return true;
+  const { status: publish } = await fetch(API_URL('publish', path), { method: 'POST' });
+  return { path, preview, publish };
 }
 
 function isDocPath(path) {
@@ -63,10 +63,9 @@ function cleanPath(ppath) {
 
 async function batchPublish(ppaths) {
   const paths = ppaths.filter(isDocPath).map(cleanPath);
-  const res = await processQueue(paths, publish);
-  return res;
+  return processQueue(paths, publishDoc);
 }
 
 batchPublish(process.argv.slice(2))
-  .then((res) => console.log(`published ${res.length} docs`))
+  .then((results) => console.info(JSON.stringify(results, undefined, 2)))
   .catch(console.error);
