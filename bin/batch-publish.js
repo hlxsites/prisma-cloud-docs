@@ -9,9 +9,12 @@ import { resolve, dirname, relative } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const OWNER = 'hlxsites';
+const REPO = 'prisma-cloud-docs';
+const PATH_PREFIX = '/prisma/prisma-cloud';
 const REPO_ROOT = resolve(__dirname, '..');
 const ADMIN_API = process.env.ADMIN_API ?? 'https://admin.hlx.page';
-const API_URL = (api, path) => `${ADMIN_API}/${api}${path}`;
+const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${PATH_PREFIX}${path}`;
 
 /**
  * This actually previews then publishes the resource,
@@ -20,12 +23,12 @@ const API_URL = (api, path) => `${ADMIN_API}/${api}${path}`;
  */
 async function publishDoc(path) {
   const { status: preview } = await fetch(API_URL('preview', path), { method: 'POST' });
-  if (!path.startsWith('examples')) {
-    // don't publish examples
+  if (preview === 404 || path.startsWith('examples')) {
+    // don't publish examples, or missing docs
     return { path, preview };
   }
 
-  const { status: publish } = await fetch(API_URL('publish', path), { method: 'POST' });
+  const { status: publish } = await fetch(API_URL('live', path), { method: 'POST' });
   return { path, preview, publish };
 }
 
@@ -37,7 +40,9 @@ function isDocPath(path) {
     return false;
   }
 
-  if (!relPath.endsWith('.yml') && !relPath.endsWith('.adoc')) {
+  // if (!relPath.endsWith('.adoc')) { // only adocs
+  // if (!relPath.endsWith('.yml')) { // only books
+  if (!relPath.endsWith('.yml') && !relPath.endsWith('.adoc')) { // both
     return false;
   }
 
