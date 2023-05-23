@@ -13,9 +13,9 @@ import normalizePath from '../tools/normalize-path.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const ORIGIN = process.env.ORIGIN || 'https://docs.paloaltonetworks.com';
 const META_SOURCE = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.live/metadata.json';
 const LOCALES = ['en', 'jp'];
-const ORIGIN = 'https://docs.paloaltonetworks.com';
 const ROOT_PATH = '/prisma/prisma-cloud';
 const DESTINATION = (locale) => resolve(__dirname, `../prisma/prisma-cloud/docs/sitemaps/sitemap-${locale}.xml`);
 
