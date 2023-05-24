@@ -2,6 +2,7 @@
 
 import asciidoctor from '@asciidoctor/core';
 import type * as AdocTypes from '@asciidoctor/core';
+import type { Book } from '../types';
 
 const AsciiDoctor = asciidoctor();
 
@@ -41,6 +42,7 @@ export interface Options extends AdocTypes.ProcessorOptions {
   backend?: 'franklin' | 'html5' | string;
   attributes?: Record<string, string>;
   plain?: boolean;
+  book?: Book;
 }
 
 class FranklinConverter implements AdocTypes.Converter {
@@ -54,7 +56,14 @@ class FranklinConverter implements AdocTypes.Converter {
 
   doc: AdocTypes.Document;
 
-  constructor() {
+  book: Book;
+
+  constructor({
+    book,
+  }: {
+    book: Book
+  }) {
+    this.book = book;
     this.baseConverter = new AsciiDoctor.Html5Converter();
     this.templates = {
       // TODO: complete templates
@@ -183,7 +192,8 @@ class FranklinConverter implements AdocTypes.Converter {
           return '';
         }
 
-        return `<img src="../../_graphics/${src}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
+        const href = book.resolve(`/_graphics/${src}`);
+        return `<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
       },
       table: (node) => {
         const title = node.getTitle() || '';
@@ -247,16 +257,24 @@ class FranklinConverter implements AdocTypes.Converter {
   }
 }
 
-AsciiDoctor.ConverterFactory.register(new FranklinConverter(), ['franklin']);
-
 const adoc2html = (
   content: string,
   options: Options = {},
 ): string => {
   const {
-    backend = 'franklin', attributes, plain, ...opts
+    backend = 'franklin',
+    attributes,
+    plain,
+    book,
+    ...opts
   } = options;
-  const html = AsciiDoctor.convert(content, { ...opts, backend, attributes }) as string;
+
+  AsciiDoctor.ConverterFactory.register(new FranklinConverter({ book }), ['franklin']);
+  const html = AsciiDoctor.convert(content, {
+    ...opts,
+    backend,
+    attributes,
+  }) as string;
 
   return plain ? html : /* html */`
   <!DOCTYPE html>

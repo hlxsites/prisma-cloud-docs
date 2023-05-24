@@ -3,5 +3,6 @@ Please always provide the [GitHub issue(s)](../issues) your PR is for, as well a
 Fix #<gh-issue-id>
 
 Test URLs:
-- Before: https://main--<repo>--<owner>.hlx.page/
-- After: https://<branch>--<repo>--<owner>.hlx.page/
+- Before: https://main--prisma-cloud-docs--hlxsites.hlx.page/
+- After: https://<branch>--prisma-cloud-docs--hlxsites.hlx.page/
+- Worker: https://prisma-cloud-docs-production.adobeaem.workers.dev/?branch=<branch>
