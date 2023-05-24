@@ -14,7 +14,7 @@ const REPO = 'prisma-cloud-docs';
 const PATH_PREFIX = '/prisma/prisma-cloud';
 const REPO_ROOT = resolve(__dirname, '..');
 const ADMIN_API = process.env.ADMIN_API ?? 'https://admin.hlx.page';
-const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${PATH_PREFIX}${path}`;
+const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${path}`;
 
 /**
  * This actually previews then publishes the resource,
@@ -58,11 +58,16 @@ function cleanPath(ppath) {
   if (path.startsWith('.')) {
     path = path.substring(1);
   }
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+
   if (path.endsWith('.yml')) {
     path = path.replace(/.yml$/, '.json');
   } else if (path.endsWith('.adoc')) {
     path = path.replace(/.adoc$/, '');
   }
+  path = `${PATH_PREFIX}${path}`;
   return path;
 }
 
