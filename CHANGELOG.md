@@ -1,3 +1,10 @@
+## [1.0.16](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.15...v1.0.16) (2023-05-24)
+
+
+### Bug Fixes
+
+* use repoPath from book to resolve image hrefs ([36790d4](https://github.com/hlxsites/prisma-cloud-docs/commit/36790d4caccb5284c9f5b1936e32becb07597ab1))
+
 ## [1.0.15](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.14...v1.0.15) (2023-05-20)
 
 
