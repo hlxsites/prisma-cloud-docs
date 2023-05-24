@@ -1,6 +1,6 @@
 import { responseInit, ContentType } from '../util';
 import adoc2html from '../util/adoc2html';
-import { resolveAttributes, resolvePath } from '../util/books';
+import { resolveAttributes, resolvePath, findBook } from '../util/books';
 
 import type { Context, Route } from '../types';
 
@@ -35,7 +35,7 @@ export function resolveURL(path: string, ctx: Context) {
   resolvedPath = trimChar(resolvedPath, '/', 'start');
 
   if (resolveDitaPaths) {
-    resolvedPath = resolvePath(resolvedPath);
+    resolvedPath = resolvePath(resolvedPath, ctx);
     resolvedPath = trimChar(resolvedPath, '/', 'start');
 
     if (!resolvedPath) {
@@ -67,7 +67,9 @@ const Docs: Route = async (req, ctx) => {
   const upstream = `${resolveURL(pathname, ctx)}.adoc`;
   log.debug('[Docs] upstream: ', upstream);
 
-  const attributes = resolveAttributes(pathname);
+  const book = findBook(pathname, ctx);
+  const attributes = resolveAttributes(pathname, ctx);
+
   [...url.searchParams.entries()].forEach(([key, val]) => {
     if (!key.startsWith('attr-')) return;
     const [_, attr] = key.split('attr-');
@@ -83,7 +85,12 @@ const Docs: Route = async (req, ctx) => {
   }
 
   const text = await resp.text();
-  const html = adoc2html(text, { backend, attributes, plain });
+  const html = adoc2html(text, {
+    backend,
+    attributes,
+    plain,
+    book,
+  });
   return new Response(html, responseInit(200, ContentType.HTML, { 'last-modified': resp.headers.get('last-modified') }));
 };
 
