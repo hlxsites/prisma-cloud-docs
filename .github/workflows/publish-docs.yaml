@@ -19,7 +19,10 @@ jobs:
       - name: Get changed files
         id: changes
         run: |
-          echo "all=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.event.after }} | xargs)" >> $GITHUB_OUTPUT
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "all<<$EOF" >> "$GITHUB_ENV"
+          git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.event.after }} | xargs >> "$GITHUB_ENV"
+          echo "$EOF" >> "$GITHUB_ENV"
 
   build:
     runs-on: ubuntu-latest
