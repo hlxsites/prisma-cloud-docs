@@ -1,3 +1,12 @@
+## [1.0.17](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.16...v1.0.17) (2023-05-25)
+
+
+### Bug Fixes
+
+* move non-versioned books out of pcee ([1444afb](https://github.com/hlxsites/prisma-cloud-docs/commit/1444afbdef6fb52489b1b374d4cee5cf28648dc6))
+* move to version folders ([ff36017](https://github.com/hlxsites/prisma-cloud-docs/commit/ff3601716d1fc5cbf1b0ec8f90551f380f855729))
+* use dash instead of period in version folders ([ea7cca3](https://github.com/hlxsites/prisma-cloud-docs/commit/ea7cca3443f8bc6e78626026234fb14b3c88cbe3))
+
 ## [1.0.16](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.15...v1.0.16) (2023-05-24)
 
 
