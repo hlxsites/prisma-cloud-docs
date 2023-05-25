@@ -18,7 +18,7 @@ module.exports = {
     [
       '@semantic-release/git',
       {
-        assets: ['package.json', 'CHANGELOG.md', 'prisma/prisma-cloud/docs/sitemaps/**'],
+        assets: ['package.json', 'CHANGELOG.md', 'prisma/prisma-cloud/docs/sitemaps/**/*'],
         message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
       },
     ],
