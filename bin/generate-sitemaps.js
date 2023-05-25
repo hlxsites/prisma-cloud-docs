@@ -23,30 +23,26 @@ const DESTINATION = (locale) => resolve(__dirname, `../prisma/prisma-cloud/docs/
 const CHANGE_FREQ = 'weekly';
 const PRIORITY = '1.0';
 
-// fallback values if metadata sheet doesn't have the book
-const FALLBACK_IS_LATEST_VERSION = 'not-applicable';
-const FALLBACK_OS_VERSION = 'not-applicable';
-
 // coveo metadata
 const DOC_TYPE = 'bookDetailPage';
-const PRODUCT_CATEGORY = 'Prisma, Prisma Cloud';
+const PRODUCT_CATEGORY = 'Prisma;Prisma Cloud';
 const PRODUCT_FAMILY = 'prisma-cloud';
 const GROUP_ID = (bookName) => `${PRODUCT_CATEGORY}-${bookName}`;
 const IS_LATEST_VERSION = async (bookPath) => {
   // eslint-disable-next-line no-use-before-define
   const row = await getMetaRow(bookPath);
   if (!row) {
-    return FALLBACK_IS_LATEST_VERSION;
+    return undefined;
   }
-  return row['is-latest-version'] || FALLBACK_IS_LATEST_VERSION;
+  return row['is-latest-version'];
 };
 const OS_VERSION = async (bookPath) => {
   // eslint-disable-next-line no-use-before-define
   const row = await getMetaRow(bookPath);
   if (!row) {
-    return FALLBACK_OS_VERSION;
+    return undefined;
   }
-  return row['os-version'] || FALLBACK_OS_VERSION;
+  return row['os-version'];
 };
 
 /**
@@ -77,22 +73,22 @@ const OS_VERSION = async (bookPath) => {
 
 const isParentTopic = (topic) => !!(topic).topics;
 
-let pendingMeta;
+let _pendingMeta;
 const fetchMetadata = async () => {
-  if (pendingMeta) {
-    return pendingMeta;
+  if (_pendingMeta) {
+    return _pendingMeta;
   }
 
-  pendingMeta = fetch(META_SOURCE).then((res) => res.json());
-  return pendingMeta;
+  _pendingMeta = fetch(META_SOURCE).then((res) => res.json());
+  return _pendingMeta;
 };
 
-let meta;
+let _meta;
 async function getMetaRow(bookPath) {
-  if (!meta) {
-    meta = await fetchMetadata();
+  if (!_meta) {
+    _meta = await fetchMetadata();
   }
-  const arow = meta.data.find((row) => {
+  const arow = _meta.data.find((row) => {
     const cropped = row.book.substring(`${ROOT_PATH}/docs`.length);
     return bookPath.endsWith(cropped);
   });
@@ -168,21 +164,30 @@ const generateSitemaps = async () => {
         const path = topic.path.substring('/docs'.length);
         const lastMod = (await getLastModified(`.${topic.path}.adoc`)).toISOString(); // relative to repo root
         /* eslint-disable indent */
-        url
+        const meta = url
           .ele('loc').txt(`${ORIGIN}${ROOT_PATH}${path}`).up()
           .ele('lastmod').txt(lastMod).up()
           .ele('changefreq').txt(CHANGE_FREQ).up()
           .ele('priority').txt(PRIORITY).up()
-          .ele('coveo:metadata')
+          .ele('coveo:metadata');
+
+        meta
             .ele('sitemap_modificationdate').txt(lastMod).up()
             .ele('sitemap_docType').txt(DOC_TYPE).up()
             .ele('sitemap_book-name').txt(data.book?.title).up()
             .ele('sitemap_productcategory').txt(PRODUCT_CATEGORY).up()
-            .ele('sitemap_osversion').txt(await OS_VERSION(dir)).up()
             .ele('sitemap_productFamily').txt(PRODUCT_FAMILY).up()
-            .ele('sitemap_groupId').txt(GROUP_ID(data.book?.title)).up()
-            .ele('sitemap_isLatestVersion').txt(await IS_LATEST_VERSION(dir)).up()
-            .up();
+            .ele('sitemap_groupId').txt(GROUP_ID(data.book?.title)).up();
+
+        const osVers = await OS_VERSION(dir);
+        if (osVers) {
+          meta.ele('sitemap_osversion').txt(osVers).up();
+        }
+        const isLatestVers = await IS_LATEST_VERSION(dir);
+        if (isLatestVers) {
+            meta.ele('sitemap_isLatestVersion').txt(isLatestVers).up();
+        }
+        meta.up();
         /* eslint-enable indent */
       });
     }));
