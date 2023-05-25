@@ -1,3 +1,10 @@
+## [1.0.18](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.17...v1.0.18) (2023-05-25)
+
+
+### Bug Fixes
+
+* tweak releaserc ([e2fb0e8](https://github.com/hlxsites/prisma-cloud-docs/commit/e2fb0e88f113506453d0d8337a4d97a0920aea12))
+
 ## [1.0.17](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.16...v1.0.17) (2023-05-25)
 
 
