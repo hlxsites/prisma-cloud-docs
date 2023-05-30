@@ -173,18 +173,19 @@ class FranklinConverter implements AdocTypes.Converter {
       olist: (node) => {
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         const content = blocks.map((block) => this.convert(block)).join('');
+        // console.log('olist content: ', content);
+        // console.log('olist getcontent: ', node.getContent(), node);
         return content ? `<ol>${content}</ol>` : '';
       },
       list_item: (node) => {
-        // const blocks = node.getBlocks();
         const content = this.hrefsToLinks(node.getContent());
-        if (content) {
-          return content.startsWith('<ul>') || content.startsWith('<ol>') ? content : `<li>${content}</li>`;
+        const text = this.hrefsToLinks(node.getText());
+        if (!text && !content) {
+          return '';
         }
 
-        const text = node.getText();
-        // TODO: handle xrefs
-        return text ? `<li><p>${this.hrefsToLinks(text)}</p></li>` : '';
+        const result = `<li>${text ? `<p>${text}</p>` : ''}${content || ''}</li>`;
+        return result;
       },
       image: (node) => {
         const src = node.getAttribute('target') as string | undefined;
