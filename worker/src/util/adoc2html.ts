@@ -66,13 +66,10 @@ class FranklinConverter implements AdocTypes.Converter {
     this.book = book;
     this.baseConverter = new AsciiDoctor.Html5Converter();
     this.templates = {
-      // TODO: complete templates
       paragraph: (node) => {
-        // console.log('paragraph: ', node.getContent());
         return `<p>${node.getContent()}</p>`;
       },
       inline_anchor: (node) => {
-        // console.debug('process inline_anchor');
         let url = node.getTarget();
         let chop = 0;
         if (url && url.endsWith('.html')) {
@@ -85,8 +82,8 @@ class FranklinConverter implements AdocTypes.Converter {
         return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
-        console.debug('TODO: floating title: ', node);
-        return 'todo';
+        console.error('NOT IMPLEMENTED: floating title: ', node);
+        return '';
       },
       embedded: (node) => {
         return node.getContent();
@@ -130,7 +127,6 @@ class FranklinConverter implements AdocTypes.Converter {
           </div>`;
       },
       inline_quoted: (node) => {
-        // console.debug('process inline_quoted');
         const content = node.getText();
         const type = node.getType();
         let tags = [] as unknown as [string, string];
@@ -156,7 +152,7 @@ class FranklinConverter implements AdocTypes.Converter {
         return content ? `<ul>${content}</ul>` : '';
       },
       dlist: (node) => {
-        // TODO: make into `ul` instead of a block
+        // TODO:? make into `ul` instead of a block
         // see: https://github.com/asciidoctor/asciidoctor/blob/main/lib/asciidoctor/converter/html5.rb#L516
         const rows = node.getBlocks() as AdocTypes.Inline[][];
         const convertCol = (col: AdocTypes.Inline | AdocTypes.Inline[]): string => {
@@ -173,9 +169,11 @@ class FranklinConverter implements AdocTypes.Converter {
       olist: (node) => {
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         const content = blocks.map((block) => this.convert(block)).join('');
-        // console.log('olist content: ', content);
-        // console.log('olist getcontent: ', node.getContent(), node);
-        return content ? `<ol>${content}</ol>` : '';
+        const list = content ? `<ol>${content}</ol>` : '';
+        if (node.getAttribute('role') !== 'procedure') {
+          return list;
+        }
+        return `<div class="procedure"><div>${list}<div></div>`;
       },
       list_item: (node) => {
         const content = this.hrefsToLinks(node.getContent());
