@@ -1,3 +1,11 @@
+## [1.0.20](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.19...v1.0.20) (2023-05-31)
+
+
+### Bug Fixes
+
+* nested ordered lists ([7b34ba1](https://github.com/hlxsites/prisma-cloud-docs/commit/7b34ba1d0719bf07f7eae365030629f13ce55d8f))
+* wrap procedure lists in block ([e6dc959](https://github.com/hlxsites/prisma-cloud-docs/commit/e6dc959848c5a03820b66281f9664564b48065c8))
+
 ## [1.0.19](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.18...v1.0.19) (2023-05-25)
 
 
