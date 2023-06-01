@@ -1,3 +1,10 @@
+## [1.0.21](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.20...v1.0.21) (2023-06-01)
+
+
+### Bug Fixes
+
+* missing closing div tag ([03b164c](https://github.com/hlxsites/prisma-cloud-docs/commit/03b164c440e82790e980c3bb24a4ad1f2de863f3))
+
 ## [1.0.20](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.19...v1.0.20) (2023-05-31)
 
 
