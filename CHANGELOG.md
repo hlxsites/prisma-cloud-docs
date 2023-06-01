@@ -1,3 +1,10 @@
+## [1.0.22](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.21...v1.0.22) (2023-06-01)
+
+
+### Bug Fixes
+
+* tweak procedure markdown ([15fe1be](https://github.com/hlxsites/prisma-cloud-docs/commit/15fe1beaa995591df268f6b825d295f478da819b))
+
 ## [1.0.21](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.20...v1.0.21) (2023-06-01)
 
 
