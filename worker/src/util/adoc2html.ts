@@ -173,7 +173,7 @@ class FranklinConverter implements AdocTypes.Converter {
         if (node.getAttribute('role') !== 'procedure') {
           return list;
         }
-        return `<div class="procedure"><div>${list}</div></div>`;
+        return `<div class="procedure"><div><div>${list}</div></div></div>`;
       },
       list_item: (node) => {
         const content = this.hrefsToLinks(node.getContent());
