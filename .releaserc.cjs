@@ -18,7 +18,7 @@ module.exports = {
     [
       '@semantic-release/exec',
       {
-        prepareCmd: "echo 'generating sitemaps' && npm run gen:sitemaps",
+        prepareCmd: "echo 'generating sitemaps' && ORIGIN='https://main--prisma-cloud-docs-website--hlxsites.hlx.live' npm run gen:sitemaps",
         publishCmd: "echo 'deploy worker' && npm run deploy",
       },
     ],
