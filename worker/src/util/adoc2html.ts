@@ -119,7 +119,9 @@ class FranklinConverter implements AdocTypes.Converter {
         return /* html */`
           <div class="admonition ${style.toLowerCase()}">
             <div>
-              ${title ? `${title}\n` : ''}${node.getContent()}
+              <div>
+                ${title ? `${title}\n` : ''}${node.getContent()}
+              </div>
             </div>
           </div>`;
       },
