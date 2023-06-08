@@ -3,6 +3,7 @@
 import asciidoctor from '@asciidoctor/core';
 import type * as AdocTypes from '@asciidoctor/core';
 import type { Book } from '../types';
+import { toClassName } from './string';
 
 const AsciiDoctor = asciidoctor();
 
@@ -108,14 +109,14 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       literal: (node) => {
         const content = node.getContent();
-        return `<pre><code>${content}</code></pre>`;
+        return /* html */`<pre><code>${content}</code></pre>`;
       },
       admonition: (node) => {
         const style = node.getStyle() || '';
 
         let title = (node.getTitle() || '').trim();
         if (title) {
-          title = `<h6>${title}</h6>`;
+          title = /* html */`<h6>${title}</h6>`;
         }
 
         return /* html */`
@@ -173,7 +174,7 @@ class FranklinConverter implements AdocTypes.Converter {
         if (node.getAttribute('role') !== 'procedure') {
           return list;
         }
-        return `<div class="procedure"><div><div>${list}</div></div></div>`;
+        return this.makeBlock('procedure', list, true);
       },
       list_item: (node) => {
         const content = this.hrefsToLinks(node.getContent());
@@ -182,7 +183,7 @@ class FranklinConverter implements AdocTypes.Converter {
           return '';
         }
 
-        const result = `<li>${text ? `<p>${text}</p>` : ''}${content || ''}</li>`;
+        const result = /* html */`<li>${text ? `<p>${text}</p>` : ''}${content || ''}</li>`;
         return result;
       },
       image: (node) => {
@@ -192,31 +193,56 @@ class FranklinConverter implements AdocTypes.Converter {
         }
 
         const href = book.resolve(`/_graphics/${src}`);
-        return `<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
+        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
       },
       table: (node) => {
-        const title = node.getTitle() || '';
-        switch (title.toLowerCase()) {
-          case 'fragment':
-            return this.tableToFragment(node);
-          default:
-            return null;
+        const title = node.getTitle();
+        const head = node.getHeadRows();
+
+        if (title && head.length === 0) {
+          // no header rows, only a title -> block
+          const block = this.tableToBlock(title, node);
+          if (block) {
+            return block;
+          }
         }
+
+        // otherwise, insert rows/cols in a `table` block
+        return this.tableToTableBlock(node);
       },
     };
   }
 
-  tableToFragment(node: AdocTypes.Table): string {
-    const rows = node.getRows();
-    const cell = rows.body[0][0];
-    const href = (cell as unknown as { text: string }).text;
-
+  makeBlock(name: string, content: string, singleCell = false): string {
     return /* html */`
-      <div class="fragment">
-        <div>
-          <a href="${href}">${href}</a>
-        </div>
+      <div class="${toClassName(name)}">
+        ${singleCell ? '<div><div>' : ''}
+          ${content}
+        ${singleCell ? '</div></div>' : ''}
       </div>`;
+  }
+
+  tableToTableBlock(node: AdocTypes.Table): string {
+    return this.tableToBlock('table', node);
+  }
+
+  tableToBlock(name: string, node: AdocTypes.Table): string {
+    const { head, body, foot } = node.getRows();
+
+    const processCols = (cols: AdocTypes.Table.Cell[]) => {
+      return cols.map((col) => /* html */`<div>${col.getContent()}</div>`).join('');
+    };
+
+    const processRows = (rows: AdocTypes.Table.Cell[][]) => {
+      return rows.map((row) => /* html */`<div>${processCols(row)}</div>`).join('\n');
+    };
+
+    const content = `
+    ${processRows(head)}
+    ${processRows(body)}
+    ${processRows(foot)}`;
+
+    return this.makeBlock(name, content);
   }
 
   iconsEnabled(): boolean {
