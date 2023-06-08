@@ -1,3 +1,13 @@
+## [1.0.23](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.22...v1.0.23) (2023-06-08)
+
+
+### Bug Fixes
+
+* add block variants ([c8e812b](https://github.com/hlxsites/prisma-cloud-docs/commit/c8e812bef4de89688853cb30251e7951a30e3664))
+* add table block, generalize block format ([668e12d](https://github.com/hlxsites/prisma-cloud-docs/commit/668e12d47b971bea933c9a5b687a31931648a382))
+* admonition block ([af09772](https://github.com/hlxsites/prisma-cloud-docs/commit/af097720b8f8248a94ec683f784bb73afcbad07c))
+* tweaks ([33dcfa3](https://github.com/hlxsites/prisma-cloud-docs/commit/33dcfa34f2e88bf0d55fe7fa7c38113358c8e551))
+
 ## [1.0.22](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.21...v1.0.22) (2023-06-01)
 
 
