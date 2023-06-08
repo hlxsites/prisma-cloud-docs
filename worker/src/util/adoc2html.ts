@@ -171,7 +171,7 @@ class FranklinConverter implements AdocTypes.Converter {
           return list;
         }
         // TODO: use section metadata for procedure instead
-        return this.makeBlock('procedure', list, true);
+        return this.makeBlock('procedure', list, [], true);
       },
       list_item: (node) => {
         const content = node.getContent();
@@ -211,9 +211,10 @@ class FranklinConverter implements AdocTypes.Converter {
     };
   }
 
-  makeBlock(name: string, content: string, singleCell = false): string {
+  makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
+    const variantStr = variants.map(toClassName).join(' ');
     return /* html */`
-      <div class="${toClassName(name)}">
+      <div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}">
         ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
       </div>`;
   }
@@ -238,7 +239,8 @@ class FranklinConverter implements AdocTypes.Converter {
     ${processRows(body)}
     ${processRows(foot)}`;
 
-    return this.makeBlock(name, content);
+    const variants = head.length === 0 ? ['headless'] : [''];
+    return this.makeBlock(name, content, variants);
   }
 
   iconsEnabled(): boolean {
