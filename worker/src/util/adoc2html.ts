@@ -72,14 +72,9 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       inline_anchor: (node) => {
         let url = node.getTarget();
-        let chop = 0;
-        if (url && url.endsWith('.html')) {
-          chop = '.html'.length;
-        } else if (url && url.endsWith('.franklin')) {
-          chop = '.franklin'.length;
+        if (url && url.endsWith('.franklin')) {
+          url = url.slice(0, -'.franklin'.length);
         }
-        url = url.slice(0, -chop);
-
         return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
@@ -94,13 +89,15 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       section: (node) => {
         const level = node.getLevel();
+        const title = node.getTitle();
         const tag = `h${level + 1}`;
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        const closer = this.closeSection();
+        const closer = this.sectionDepth > 0 ? '</div>' : '';
         this.sectionDepth += 1;
 
-        const content = `<${tag}>${node.getTitle()}</${tag}>
-        ${blocks.map((block) => this.convert(block)).join('')}`;
+        const content = `
+          ${title ? `<${tag}>${title}</${tag}>` : ''}
+          ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
         this.sectionDepth -= 1;
@@ -122,8 +119,7 @@ class FranklinConverter implements AdocTypes.Converter {
         return /* html */`
           <div class="admonition ${style.toLowerCase()}">
             <div>
-              ${title}
-              ${node.getContent()}
+              ${title ? `${title}\n` : ''}${node.getContent()}
             </div>
           </div>`;
       },
@@ -174,11 +170,13 @@ class FranklinConverter implements AdocTypes.Converter {
         if (node.getAttribute('role') !== 'procedure') {
           return list;
         }
+        // TODO: use section metadata for procedure instead
         return this.makeBlock('procedure', list, true);
       },
       list_item: (node) => {
-        const content = this.hrefsToLinks(node.getContent());
-        const text = this.hrefsToLinks(node.getText());
+        const content = node.getContent();
+        const text = node.getText();
+
         if (!text && !content) {
           return '';
         }
@@ -216,9 +214,7 @@ class FranklinConverter implements AdocTypes.Converter {
   makeBlock(name: string, content: string, singleCell = false): string {
     return /* html */`
       <div class="${toClassName(name)}">
-        ${singleCell ? '<div><div>' : ''}
-          ${content}
-        ${singleCell ? '</div></div>' : ''}
+        ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
       </div>`;
   }
 
@@ -250,20 +246,12 @@ class FranklinConverter implements AdocTypes.Converter {
   }
 
   hrefsToLinks(text: string) {
-    return text.replace(/(https?:\/\/.*\S)/g, '<a href=$1>$1</a>');
-  }
-
-  closeSection() {
-    if (this.sectionDepth) {
-      return new Array(this.sectionDepth).fill('</div>').join('');
-    }
-    return '';
+    return text.replace(/(https?:\/\/.*\S)/g, '<a href="$1">$1</a>');
   }
 
   convert(node: AdocTypes.AbstractNode, transform?: string, opts?: any) {
-    // console.log('converting node...');
     const name = transform || node.getNodeName();
-    console.log(`convert node: transform=${transform} name=${name}`);
+    console.debug(`convert node: transform=${transform} name=${name}`);
 
     this.doc = node.getDocument();
 
@@ -275,9 +263,9 @@ class FranklinConverter implements AdocTypes.Converter {
       }
     }
 
-    console.log('handling node with base template...', name);
+    console.warn('handling node with base template...', name);
     const defaultContent = this.baseConverter.convert(node, transform, opts);
-    console.log('handled node with base template: ', name, node, defaultContent);
+    console.info('handled node with base template: ', name, node, defaultContent);
     return defaultContent;
   }
 }
