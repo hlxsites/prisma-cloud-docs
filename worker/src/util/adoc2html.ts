@@ -3,6 +3,7 @@
 import asciidoctor from '@asciidoctor/core';
 import type * as AdocTypes from '@asciidoctor/core';
 import type { Book } from '../types';
+import { toClassName } from './string';
 
 const AsciiDoctor = asciidoctor();
 
@@ -71,14 +72,9 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       inline_anchor: (node) => {
         let url = node.getTarget();
-        let chop = 0;
-        if (url && url.endsWith('.html')) {
-          chop = '.html'.length;
-        } else if (url && url.endsWith('.franklin')) {
-          chop = '.franklin'.length;
+        if (url && url.endsWith('.franklin')) {
+          url = url.slice(0, -'.franklin'.length);
         }
-        url = url.slice(0, -chop);
-
         return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
@@ -93,13 +89,15 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       section: (node) => {
         const level = node.getLevel();
+        const title = node.getTitle();
         const tag = `h${level + 1}`;
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        const closer = this.closeSection();
+        const closer = this.sectionDepth > 0 ? '</div>' : '';
         this.sectionDepth += 1;
 
-        const content = `<${tag}>${node.getTitle()}</${tag}>
-        ${blocks.map((block) => this.convert(block)).join('')}`;
+        const content = `
+          ${title ? `<${tag}>${title}</${tag}>` : ''}
+          ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
         this.sectionDepth -= 1;
@@ -108,21 +106,22 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       literal: (node) => {
         const content = node.getContent();
-        return `<pre><code>${content}</code></pre>`;
+        return /* html */`<pre><code>${content}</code></pre>`;
       },
       admonition: (node) => {
         const style = node.getStyle() || '';
 
         let title = (node.getTitle() || '').trim();
         if (title) {
-          title = `<h6>${title}</h6>`;
+          title = /* html */`<h6>${title}</h6>`;
         }
 
         return /* html */`
           <div class="admonition ${style.toLowerCase()}">
             <div>
-              ${title}
-              ${node.getContent()}
+              <div>
+                ${title ? `${title}\n` : ''}${node.getContent()}
+              </div>
             </div>
           </div>`;
       },
@@ -173,16 +172,18 @@ class FranklinConverter implements AdocTypes.Converter {
         if (node.getAttribute('role') !== 'procedure') {
           return list;
         }
-        return `<div class="procedure"><div><div>${list}</div></div></div>`;
+        // TODO: use section metadata for procedure instead
+        return this.makeBlock('procedure', list, [], true);
       },
       list_item: (node) => {
-        const content = this.hrefsToLinks(node.getContent());
-        const text = this.hrefsToLinks(node.getText());
+        const content = node.getContent();
+        const text = node.getText();
+
         if (!text && !content) {
           return '';
         }
 
-        const result = `<li>${text ? `<p>${text}</p>` : ''}${content || ''}</li>`;
+        const result = /* html */`<li>${text ? `<p>${text}</p>` : ''}${content || ''}</li>`;
         return result;
       },
       image: (node) => {
@@ -192,31 +193,56 @@ class FranklinConverter implements AdocTypes.Converter {
         }
 
         const href = book.resolve(`/_graphics/${src}`);
-        return `<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
+        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
       },
       table: (node) => {
-        const title = node.getTitle() || '';
-        switch (title.toLowerCase()) {
-          case 'fragment':
-            return this.tableToFragment(node);
-          default:
-            return null;
+        const title = node.getTitle();
+        const head = node.getHeadRows();
+
+        if (title && head.length === 0) {
+          // no header rows, only a title -> block
+          const block = this.tableToBlock(title, node);
+          if (block) {
+            return block;
+          }
         }
+
+        // otherwise, insert rows/cols in a `table` block
+        return this.tableToTableBlock(node);
       },
     };
   }
 
-  tableToFragment(node: AdocTypes.Table): string {
-    const rows = node.getRows();
-    const cell = rows.body[0][0];
-    const href = (cell as unknown as { text: string }).text;
-
+  makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
+    const variantStr = variants.map(toClassName).join(' ');
     return /* html */`
-      <div class="fragment">
-        <div>
-          <a href="${href}">${href}</a>
-        </div>
+      <div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}">
+        ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
       </div>`;
+  }
+
+  tableToTableBlock(node: AdocTypes.Table): string {
+    return this.tableToBlock('table', node);
+  }
+
+  tableToBlock(name: string, node: AdocTypes.Table): string {
+    const { head, body, foot } = node.getRows();
+
+    const processCols = (cols: AdocTypes.Table.Cell[]) => {
+      return cols.map((col) => /* html */`<div>${col.getContent()}</div>`).join('');
+    };
+
+    const processRows = (rows: AdocTypes.Table.Cell[][]) => {
+      return rows.map((row) => /* html */`<div>${processCols(row)}</div>`).join('\n');
+    };
+
+    const content = `
+    ${processRows(head)}
+    ${processRows(body)}
+    ${processRows(foot)}`;
+
+    const variants = head.length === 0 ? ['headless'] : [''];
+    return this.makeBlock(name, content, variants);
   }
 
   iconsEnabled(): boolean {
@@ -224,20 +250,12 @@ class FranklinConverter implements AdocTypes.Converter {
   }
 
   hrefsToLinks(text: string) {
-    return text.replace(/(https?:\/\/.*\S)/g, '<a href=$1>$1</a>');
-  }
-
-  closeSection() {
-    if (this.sectionDepth) {
-      return new Array(this.sectionDepth).fill('</div>').join('');
-    }
-    return '';
+    return text.replace(/(https?:\/\/.*\S)/g, '<a href="$1">$1</a>');
   }
 
   convert(node: AdocTypes.AbstractNode, transform?: string, opts?: any) {
-    // console.log('converting node...');
     const name = transform || node.getNodeName();
-    console.log(`convert node: transform=${transform} name=${name}`);
+    console.debug(`convert node: transform=${transform} name=${name}`);
 
     this.doc = node.getDocument();
 
@@ -249,9 +267,9 @@ class FranklinConverter implements AdocTypes.Converter {
       }
     }
 
-    console.log('handling node with base template...', name);
+    console.warn('handling node with base template...', name);
     const defaultContent = this.baseConverter.convert(node, transform, opts);
-    console.log('handled node with base template: ', name, node, defaultContent);
+    console.info('handled node with base template: ', name, node, defaultContent);
     return defaultContent;
   }
 }
