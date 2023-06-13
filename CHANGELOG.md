@@ -1,3 +1,11 @@
+## [1.0.25](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.24...v1.0.25) (2023-06-13)
+
+
+### Bug Fixes
+
+* add gsheet example ([aeced77](https://github.com/hlxsites/prisma-cloud-docs/commit/aeced7798904e2b7e01f0a83dc3b60121d72637d))
+* add gsheet example ([a9836c0](https://github.com/hlxsites/prisma-cloud-docs/commit/a9836c0298b91f7c3af93fbb80d0f3ed1b383c4b))
+
 ## [1.0.24](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.23...v1.0.24) (2023-06-13)
 
 
