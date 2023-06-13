@@ -1,3 +1,10 @@
+## [1.0.24](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.23...v1.0.24) (2023-06-13)
+
+
+### Bug Fixes
+
+* sanitize urls ([44577b3](https://github.com/hlxsites/prisma-cloud-docs/commit/44577b319f404c1fcee11e84890caab450ecb786))
+
 ## [1.0.23](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.22...v1.0.23) (2023-06-08)
 
 
