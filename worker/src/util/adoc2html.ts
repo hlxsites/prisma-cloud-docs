@@ -74,6 +74,7 @@ class FranklinConverter implements AdocTypes.Converter {
         let url = node.getTarget();
         if (url && url.endsWith('.franklin')) {
           url = url.slice(0, -'.franklin'.length);
+          url = url.replace(/_/g, '-').replace(/-{2,}/, '-').toLowerCase();
         }
         return `<a href="${url}">${node.getText()}</a>`;
       },
