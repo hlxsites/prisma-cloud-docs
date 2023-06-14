@@ -77,5 +77,5 @@ async function batchPublish(ppaths) {
 }
 
 batchPublish(process.argv.slice(2))
-  .then((results) => console.info(JSON.stringify(results, undefined, 2)))
+  .then((results) => console.info(JSON.stringify(results, undefined, 2), `published ${results.length} docs`))
   .catch(console.error);
