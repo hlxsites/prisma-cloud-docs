@@ -13,6 +13,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
 
       - name: Get changed files in the docs folder
         id: changed-files-specific
@@ -22,21 +26,17 @@ jobs:
           json_raw_format: true
           files: |
             docs/**/*.adoc
-            docs/**/book.yml
 
       - name: Show preview if any *.adoc or book.yml in the docs folder change
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         uses: actions/github-script@v6
         with:
           script: |
-
             const { default: previewChanges } = await import('${{ github.workspace }}/bin/preview-changes.js')
 
             await previewChanges({
               github,
               context,
-              changes: ${{ steps.changed-files-specific.outputs.all_changed_files }}
+              glob,
+              changes: ${{ steps.changed-files-specific.outputs.all_modified_files }}
             });
-
-
-
