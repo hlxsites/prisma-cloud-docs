@@ -18,6 +18,7 @@ export default async function previewChanges({
   const host = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.page';
   const fallbackPath = '/prisma/prisma-cloud/en';
   const branch = context.payload.pull_request.head.ref;
+  const adocChanges = changes.filter((change) => change.endsWith('.adoc'));
 
   const bookGlobber = await glob.create('docs/**/book.yml');
   const books = await bookGlobber.glob();
@@ -64,7 +65,7 @@ export default async function previewChanges({
   // Remove "docs" and ".adoc" from path
   const cleanChangePath = (file) => file.slice(4, -5);
 
-  let body = changes.length ? `Preview URL(s):\n\n${changes.map((change) => `- ${host}/prisma/prisma-cloud${cleanChangePath(change)}?branch=${branch}`).join('\n')}`
+  let body = adocChanges.length ? `Preview URL(s):\n\n${adocChanges.map((change) => `- ${host}/prisma/prisma-cloud${cleanChangePath(change)}?branch=${branch}`).join('\n')}`
     : `Default Preview URL: ${host}${fallbackPath}?branch=${branch}`;
 
   if (missingReferences.length) {
