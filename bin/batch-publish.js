@@ -6,6 +6,7 @@ import processQueue from '@adobe/helix-shared-process-queue';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { resolve, dirname, relative } from 'path';
+import normalizePath from '../tools/normalize-path.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -67,7 +68,8 @@ function cleanPath(ppath) {
   } else if (path.endsWith('.adoc')) {
     path = path.replace(/.adoc$/, '');
   }
-  path = `${PATH_PREFIX}${path}`;
+
+  path = `${PATH_PREFIX}${normalizePath(path)}`;
   return path;
 }
 
