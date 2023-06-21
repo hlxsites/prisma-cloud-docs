@@ -1,3 +1,10 @@
+## [1.0.26](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.25...v1.0.26) (2023-06-21)
+
+
+### Bug Fixes
+
+* normalize paths before publish ([0d899ba](https://github.com/hlxsites/prisma-cloud-docs/commit/0d899baf2b78a7a1886ad3a1626c2a03a68de812))
+
 ## [1.0.25](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.24...v1.0.25) (2023-06-13)
 
 
