@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
-const INVALID_PATH = /[^a-z0-9/\-.]|-{2,}|(-\.)|(\.-)/g;
+const INVALID_PATH = /[^a-z0-9/\-.]|-{2,}|(-\.)|(\.-)/gi;
 const IGNORED_FOLDERS = ['_graphics'];
 const IGNORED_FILES = ['book_point_release.yml'];
 const ROOT_FOLDER = 'docs/';
@@ -17,47 +17,35 @@ function cleanPath(path) {
 }
 
 function isInvalidPath(path) {
-  const log = path.endsWith('test_sitemap.adoc') ? console.log : () => {};
-  log('path: ', path);
-
   if (!path.startsWith(ROOT_FOLDER)) {
-    log('0');
     return false;
   }
 
   if (IGNORED_FILES.find((ignored) => path.endsWith(`/${ignored}`))) {
-    log('1');
     return false;
   }
 
   if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
-    log('2');
     return false;
   }
   if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
-    log('3');
     return false;
   }
-  log('re: ', INVALID_PATH.test(path));
 
   return INVALID_PATH.test(path);
 }
 
 function checkPaths(paths) {
-  console.log('input paths: ', paths.length);
-  const badFiles = paths.map(cleanPath).filter(isInvalidPath);
-  console.log('badFiles1: ', badFiles, badFiles.length);
-  return badFiles;
+  return paths.map(cleanPath).filter((path) => isInvalidPath(path));
 }
 
 (() => {
   try {
     const badFiles = checkPaths(process.argv.slice(2));
-    console.log('badFiles2: ', badFiles, badFiles.length);
     if (!badFiles.length) return;
 
     console.error(`Invalid file paths: \n - ${badFiles.join('\n - ')}`);
-    console.info('\n*** Note: paths can only contain lowercase letters, numbers, and -');
+    console.info('\n*** Note: paths can only contain lowercase letters, numbers, and -\n');
     process.exit(1);
   } catch (e) {
     console.error(e);
