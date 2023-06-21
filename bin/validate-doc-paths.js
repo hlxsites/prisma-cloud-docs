@@ -22,24 +22,20 @@ function isInvalidPath(path) {
 
   if (!path.startsWith(ROOT_FOLDER)) {
     log('0');
-
     return false;
   }
 
   if (IGNORED_FILES.find((ignored) => path.endsWith(`/${ignored}`))) {
     log('1');
-
     return false;
   }
 
   if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
     log('2');
-
     return false;
   }
   if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
     log('3');
-
     return false;
   }
   log('re: ', INVALID_PATH.test(path));
@@ -47,23 +43,24 @@ function isInvalidPath(path) {
   return INVALID_PATH.test(path);
 }
 
-async function checkPaths(paths) {
+function checkPaths(paths) {
   console.log('input paths: ', paths.length);
   const badFiles = paths.map(cleanPath).filter(isInvalidPath);
-  console.log('badFiles1: ', badFiles);
+  console.log('badFiles1: ', badFiles, badFiles.length);
   return badFiles;
 }
 
-checkPaths(process.argv.slice(2))
-  .then((badFiles) => {
-    console.log('badFiles2: ', badFiles);
+(() => {
+  try {
+    const badFiles = checkPaths(process.argv.slice(2));
+    console.log('badFiles2: ', badFiles, badFiles.length);
     if (!badFiles.length) return;
 
     console.error(`Invalid file paths: \n - ${badFiles.join('\n - ')}`);
     console.info('\n*** Note: paths can only contain lowercase letters, numbers, and -');
     process.exit(1);
-  })
-  .catch((e) => {
+  } catch (e) {
     console.error(e);
     process.exit(1);
-  });
+  }
+})();
