@@ -48,13 +48,15 @@ function isInvalidPath(path) {
 }
 
 async function checkPaths(paths) {
-  console.log('input paths: ', paths, paths.length);
-  return paths.map(cleanPath).filter(isInvalidPath);
+  console.log('input paths: ', paths.length);
+  const badFiles = paths.map(cleanPath).filter(isInvalidPath);
+  console.log('badFiles1: ', badFiles);
+  return badFiles;
 }
 
 checkPaths(process.argv.slice(2))
   .then((badFiles) => {
-    console.log('badFiles: ', badFiles);
+    console.log('badFiles2: ', badFiles);
     if (!badFiles.length) return;
 
     console.error(`Invalid file paths: \n - ${badFiles.join('\n - ')}`);
