@@ -54,6 +54,7 @@ async function checkPaths(paths) {
 
 checkPaths(process.argv.slice(2))
   .then((badFiles) => {
+    console.log('badFiles: ', badFiles);
     if (!badFiles.length) return;
 
     console.error(`Invalid file paths: \n - ${badFiles.join('\n - ')}`);
