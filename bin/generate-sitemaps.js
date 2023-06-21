@@ -205,7 +205,7 @@ const generateSitemaps = async () => {
     }));
 
     // write to /docs/sitemaps/sitemap-${locale}.xml
-    const content = doc.end();
+    const content = doc.end({ prettyPrint: true });
     const sitemapPath = DESTINATION(locale);
     console.log(`[bin/generate-sitemaps] writing ${sitemapPath}`);
     await fs.writeFile(sitemapPath, content);
