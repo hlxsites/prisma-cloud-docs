@@ -15,12 +15,21 @@ function cleanPath(path) {
 }
 
 function isInvalidPath(path) {
+  const log = path.endsWith('test_sitemap.adoc') ? console.log : () => {};
+  log('path: ', path);
+
   if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
+    log('1');
+
     return false;
   }
   if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
+    log('2');
+
     return false;
   }
+  log('re: ', INVALID_PATH.test(path));
+
   return INVALID_PATH.test(path);
 }
 
