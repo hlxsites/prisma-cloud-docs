@@ -159,10 +159,22 @@ const generateSitemaps = async () => {
       // console.log(`[bin/generate-sitemaps] (${locale}) ${topics.length} topics`);
 
       await processQueue(topics, async (topic) => {
+        const adocPath = `.${topic.path}.adoc`;
+        try {
+          const stat = await fs.stat(adocPath);
+          if (!stat.isFile()) {
+            console.warn(`invalid adoc (directory), excluding from sitemap: ${adocPath}`);
+            return;
+          }
+        } catch (e) {
+          console.error(`invalid adoc (error), excluding from sitemap: ${adocPath}`, e);
+          return;
+        }
+
         const url = urlset.ele('url');
         // get rid of /docs prefix, since the page to visit on browser doesn't have it
         const path = topic.path.substring('/docs'.length);
-        const lastMod = (await getLastModified(`.${topic.path}.adoc`)).toISOString(); // relative to repo root
+        const lastMod = (await getLastModified(adocPath)).toISOString(); // relative to repo root
         /* eslint-disable indent */
         const meta = url
           .ele('loc').txt(`${ORIGIN}${ROOT_PATH}${path}`).up()
