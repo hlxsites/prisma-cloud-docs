@@ -8,6 +8,7 @@ const repoRoot = resolve(__dirname, '..');
 
 const INVALID_PATH = /[^a-z0-9/\-.]|-{2,}|(-\.)|(\.-)/g;
 const IGNORED_FOLDERS = ['_graphics'];
+const IGNORED_FILES = ['book_point_release.yml'];
 const ROOT_FOLDER = 'docs/';
 const IGNORED_ROOT_PATHS = ['docs/api/'];
 
@@ -16,9 +17,8 @@ function cleanPath(path) {
 }
 
 function isInvalidPath(path) {
-  console.log('path1: ', path);
   const log = path.endsWith('test_sitemap.adoc') ? console.log : () => {};
-  log('path2: ', path);
+  log('path: ', path);
 
   if (!path.startsWith(ROOT_FOLDER)) {
     log('0');
@@ -26,13 +26,19 @@ function isInvalidPath(path) {
     return false;
   }
 
-  if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
+  if (IGNORED_FILES.find((ignored) => path.endsWith(`/${ignored}`))) {
     log('1');
 
     return false;
   }
-  if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
+
+  if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
     log('2');
+
+    return false;
+  }
+  if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
+    log('3');
 
     return false;
   }
@@ -42,6 +48,7 @@ function isInvalidPath(path) {
 }
 
 async function checkPaths(paths) {
+  console.log('input paths: ', paths, paths.length);
   return paths.map(cleanPath).filter(isInvalidPath);
 }
 
