@@ -60,6 +60,7 @@ export async function resolveURL(path: string, ctx: Context) {
         // TODO replace user-agent and add Auth header to increase rate limits
         'User-Agent': 'icaraps',
         Accept: 'application/vnd.github.VERSION.sha',
+        'X-GitHub-Api-Version': '2022-11-28',
       },
     });
 
