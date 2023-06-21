@@ -7,13 +7,25 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
 const INVALID_PATH = /[^a-z0-9/\-.]|-{2,}|(-\.)|(\.-)/g;
+const IGNORED_FOLDERS = ['_graphics'];
+const IGNORED_ROOT_PATHS = ['docs/api/'];
 
 function cleanPath(path) {
   return relative(repoRoot, path.trim());
 }
 
+function isInvalidPath(path) {
+  if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
+    return false;
+  }
+  if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
+    return false;
+  }
+  return INVALID_PATH.test(path);
+}
+
 async function checkPaths(paths) {
-  return paths.map(cleanPath).filter((path) => INVALID_PATH.test(path));
+  return paths.map(cleanPath).filter(isInvalidPath);
 }
 
 checkPaths(process.argv.slice(2))
