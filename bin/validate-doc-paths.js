@@ -8,6 +8,7 @@ const repoRoot = resolve(__dirname, '..');
 
 const INVALID_PATH = /[^a-z0-9/\-.]|-{2,}|(-\.)|(\.-)/g;
 const IGNORED_FOLDERS = ['_graphics'];
+const ROOT_FOLDER = 'docs/';
 const IGNORED_ROOT_PATHS = ['docs/api/'];
 
 function cleanPath(path) {
@@ -15,8 +16,15 @@ function cleanPath(path) {
 }
 
 function isInvalidPath(path) {
+  console.log('path1: ', path);
   const log = path.endsWith('test_sitemap.adoc') ? console.log : () => {};
-  log('path: ', path);
+  log('path2: ', path);
+
+  if (!path.startsWith(ROOT_FOLDER)) {
+    log('0');
+
+    return false;
+  }
 
   if (IGNORED_ROOT_PATHS.find((ignored) => path.startsWith(ignored))) {
     log('1');
