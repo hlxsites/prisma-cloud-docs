@@ -1,0 +1,33 @@
+name: Publish sitemaps
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-sitemaps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    name: Publish sitemaps
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: generate sitemaps
+        run: ORIGIN='https://main--prisma-cloud-docs-website--hlxsites.hlx.live' npm run gen:sitemaps
+      - name: push sitemaps
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'chore(sitemap): publish sitemaps [skip ci]'
+          branch: main
+          file_pattern: 'prisma/prisma-cloud/docs/sitemaps/**/*'
+          commit_user_name: 'github-actions[bot]'
+          push_options: '--force'
+          skip_dirty_check: false    
+          skip_fetch: true    
+          skip_checkout: true
