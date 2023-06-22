@@ -12,7 +12,7 @@ const Docs: Route = async (req, ctx) => {
   }
   log.debug('[Books] handle GET: ', pathname);
 
-  const upstream = `${resolveURL(pathname, ctx)}.yml`;
+  const upstream = `${await resolveURL(pathname, ctx)}.yml`;
   log.debug('[Books] upstream: ', upstream);
 
   const resp = await fetch(upstream);
