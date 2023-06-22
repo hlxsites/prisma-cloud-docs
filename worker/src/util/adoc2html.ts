@@ -44,6 +44,7 @@ export interface Options extends AdocTypes.ProcessorOptions {
   attributes?: Record<string, string>;
   plain?: boolean;
   book?: Book;
+  topicPath: string;
 }
 
 class FranklinConverter implements AdocTypes.Converter {
@@ -59,11 +60,21 @@ class FranklinConverter implements AdocTypes.Converter {
 
   book: Book;
 
+  // the path to the topic being converted, relative to book path
+  topicPath: string;
+
+  // the directory containing the topic being converted
+  topicDirPath: string;
+
   constructor({
     book,
+    topicPath,
   }: {
-    book: Book
+    book: Book,
+    topicPath: string
   }) {
+    this.topicPath = topicPath;
+    this.topicDirPath = topicPath.split('/').slice(0, -1).join('/');
     this.book = book;
     this.baseConverter = new AsciiDoctor.Html5Converter();
     this.templates = {
@@ -72,10 +83,30 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       inline_anchor: (node) => {
         let url = node.getTarget();
-        if (url && url.endsWith('.franklin')) {
-          url = url.slice(0, -'.franklin'.length);
+        const isInclude = node.getRole() === 'bare include';
+        const variants = isInclude ? ['include'] : [];
+
+        if (url) {
+          if (url.endsWith('.franklin')) {
+            url = url.slice(0, -'.franklin'.length);
+          }
           url = url.replace(/_/g, '-').replace(/-{2,}/, '-').toLowerCase();
         }
+
+        // insert includes as fragment blocks
+        if (isInclude) {
+          // remove suffix if exists
+          if (url.endsWith('.adoc')) {
+            url = url.slice(0, -'.adoc'.length);
+          }
+          // make link absolute if needed
+          if (!/^https?:\/\//g.test(url)) {
+            url = book.resolve(`${this.topicDirPath}/${url}`);
+            variants.push('docs');
+          }
+          return this.makeBlock('fragment', `<a href="${url}">${node.getText()}</a>`, variants);
+        }
+
         return `<a href="${url}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
@@ -277,17 +308,18 @@ class FranklinConverter implements AdocTypes.Converter {
 
 const adoc2html = (
   content: string,
-  options: Options = {},
+  options: Options,
 ): string => {
   const {
     backend = 'franklin',
     attributes,
     plain,
     book,
+    topicPath,
     ...opts
   } = options;
 
-  AsciiDoctor.ConverterFactory.register(new FranklinConverter({ book }), ['franklin']);
+  AsciiDoctor.ConverterFactory.register(new FranklinConverter({ book, topicPath }), ['franklin']);
   const html = AsciiDoctor.convert(content, {
     ...opts,
     backend,

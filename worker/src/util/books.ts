@@ -33,6 +33,11 @@ export const resolvePath = (path: string, ctx: Context): string | undefined => {
   return book.resolve(path);
 };
 
+export const resolveTopicPath = (path: string, ctx: Context): string | undefined => {
+  const book = findBook(path, ctx);
+  return path.split(book.path)[1];
+};
+
 export const resolveAttributes = (path: string, ctx: Context): Record<string, string> => {
   const book = findBook(path, ctx);
   if (!book) return {};
