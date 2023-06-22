@@ -1,6 +1,8 @@
 import { responseInit, ContentType } from '../util';
 import adoc2html from '../util/adoc2html';
-import { resolveAttributes, resolvePath, findBook } from '../util/books';
+import {
+  resolveAttributes, resolvePath, resolveTopicPath, findBook,
+} from '../util/books';
 
 import type { Context, Route } from '../types';
 
@@ -96,6 +98,7 @@ const Docs: Route = async (req, ctx) => {
 
   const book = findBook(pathname, ctx);
   const attributes = resolveAttributes(pathname, ctx);
+  const topicPath = resolveTopicPath(pathname, ctx);
 
   [...url.searchParams.entries()].forEach(([key, val]) => {
     if (!key.startsWith('attr-')) return;
@@ -117,6 +120,7 @@ const Docs: Route = async (req, ctx) => {
     attributes,
     plain,
     book,
+    topicPath,
   });
   return new Response(html, responseInit(200, ContentType.HTML, { 'last-modified': resp.headers.get('last-modified') }));
 };

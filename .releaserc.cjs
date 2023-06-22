@@ -18,14 +18,13 @@ module.exports = {
     [
       '@semantic-release/exec',
       {
-        prepareCmd: "echo 'generating sitemaps' && ORIGIN='https://main--prisma-cloud-docs-website--hlxsites.hlx.live' npm run gen:sitemaps",
         publishCmd: "echo 'deploy worker' && npm run deploy",
       },
     ],
     [
       '@semantic-release/git',
       {
-        assets: ['package.json', 'CHANGELOG.md', 'prisma/prisma-cloud/docs/sitemaps/**/*'],
+        assets: ['package.json', 'CHANGELOG.md'],
         message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
       },
     ],
