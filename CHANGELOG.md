@@ -1,3 +1,13 @@
+## [1.0.27](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.26...v1.0.27) (2023-06-22)
+
+
+### Bug Fixes
+
+* handle bare include links as fragments ([89ef672](https://github.com/hlxsites/prisma-cloud-docs/commit/89ef6722524314d72205f7f57a4ea0764b981159))
+* order ci jobs that do commits ([7326e68](https://github.com/hlxsites/prisma-cloud-docs/commit/7326e68e575ad24f2558b2c06adaa082b202b859))
+* single cell for include fragment block ([30a0af0](https://github.com/hlxsites/prisma-cloud-docs/commit/30a0af0575e0be81a62f00ded0b46649d1c764c9))
+* tweak ci ([51ec113](https://github.com/hlxsites/prisma-cloud-docs/commit/51ec11318074213953ba2a92e12f6dcaac669a1f))
+
 ## [1.0.26](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.25...v1.0.26) (2023-06-21)
 
 
