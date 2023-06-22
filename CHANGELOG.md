@@ -1,3 +1,16 @@
+## [1.0.27](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.26...v1.0.27) (2023-06-22)
+
+
+### Bug Fixes
+
+* force deploy ([e9e816a](https://github.com/hlxsites/prisma-cloud-docs/commit/e9e816a26ec0d18c92811ee4a5455260939b5b51))
+* handle bare include links as fragments ([89ef672](https://github.com/hlxsites/prisma-cloud-docs/commit/89ef6722524314d72205f7f57a4ea0764b981159))
+* order ci jobs that do commits ([7326e68](https://github.com/hlxsites/prisma-cloud-docs/commit/7326e68e575ad24f2558b2c06adaa082b202b859))
+* preview with sha ref to bypass github 300s ttl cache ([#31](https://github.com/hlxsites/prisma-cloud-docs/issues/31)) ([d1a307c](https://github.com/hlxsites/prisma-cloud-docs/commit/d1a307c3d199c9a9ed30f18c0d6dff731f28f1ee))
+* show preview if any file(s) in the docs folder change ([#43](https://github.com/hlxsites/prisma-cloud-docs/issues/43)) ([a0cc85d](https://github.com/hlxsites/prisma-cloud-docs/commit/a0cc85d0787097982cddfffa77e2896e78644cbe))
+* single cell for include fragment block ([30a0af0](https://github.com/hlxsites/prisma-cloud-docs/commit/30a0af0575e0be81a62f00ded0b46649d1c764c9))
+* tweak ci ([51ec113](https://github.com/hlxsites/prisma-cloud-docs/commit/51ec11318074213953ba2a92e12f6dcaac669a1f))
+
 ## [1.0.26](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.25...v1.0.26) (2023-06-21)
 
 
