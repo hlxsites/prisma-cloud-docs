@@ -104,7 +104,7 @@ class FranklinConverter implements AdocTypes.Converter {
             url = book.resolve(`${this.topicDirPath}/${url}`);
             variants.push('docs');
           }
-          return this.makeBlock('fragment', `<a href="${url}">${node.getText()}</a>`, variants);
+          return this.makeBlock('fragment', `<a href="${url}">${node.getText()}</a>`, variants, true);
         }
 
         return `<a href="${url}">${node.getText()}</a>`;
