@@ -25,6 +25,7 @@ export async function resolveURL(path: string, ctx: Context) {
       PREVIEW_UPSTREAM,
       PREVIEW_REPO_OWNER,
       PREVIEW_REPO_NAME,
+      GITHUB_PAT,
     },
   } = ctx;
   const branch = ctx.url.searchParams.get('branch');
@@ -55,13 +56,18 @@ export async function resolveURL(path: string, ctx: Context) {
   log.debug('[Docs/resolve] resolved path: ', resolvedPath);
 
   if (branch) {
+    const headers = {
+      'User-Agent': 'prisma-cloud-docs--hlxsites',
+      Accept: 'application/vnd.github.VERSION.sha',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+
+    if (GITHUB_PAT) {
+      headers.Authorization = `Bearer ${GITHUB_PAT}`;
+    }
+
     const req = await fetch(`https://api.github.com/repos/${PREVIEW_REPO_OWNER}/${PREVIEW_REPO_NAME}/commits/${ref}`, {
-      headers: {
-        // TODO replace user-agent and add Auth header to increase rate limits
-        'User-Agent': 'icaraps',
-        Accept: 'application/vnd.github.VERSION.sha',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
+      headers,
     });
 
     if (req.ok) {

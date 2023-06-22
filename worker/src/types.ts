@@ -12,6 +12,11 @@ export interface Environment {
   DOC_REPO_REF: string;
   DOC_REPO_ROOT_PATH?: string;
   BASE_PATH?: string;
+  PREVIEW_UPSTREAM: string;
+  PREVIEW_REPO_OWNER: string;
+  PREVIEW_REPO_NAME: string;
+  // Missing in development env
+  GITHUB_PAT?: string;
   [key: string]: string;
 }
 
