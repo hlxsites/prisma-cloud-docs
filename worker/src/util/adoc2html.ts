@@ -24,6 +24,7 @@ export interface NodeTypeMap {
   colist: AdocTypes.List;
   olist: AdocTypes.List;
   ulist: AdocTypes.List;
+  listing: AdocTypes.AbstractBlock;
   dlist: AdocTypes.Table;
   list_item: AdocTypes.ListItem;
   inline_anchor: AdocTypes.Inline;
@@ -138,7 +139,7 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       literal: (node) => {
         const content = node.getContent();
-        return /* html */`<pre><code>${content}</code></pre>`;
+        return /* html */`<pre><code>${content.replace(/[\t]/g, ' ')}</code></pre>`;
       },
       admonition: (node) => {
         const style = node.getStyle() || '';
@@ -156,6 +157,10 @@ class FranklinConverter implements AdocTypes.Converter {
               </div>
             </div>
           </div>`;
+      },
+      listing: (node) => {
+        // TODO: make into a block if syntax highlighting for specific languages becomes required
+        return this.templates.literal(node);
       },
       inline_quoted: (node) => {
         const content = node.getText();
@@ -208,14 +213,20 @@ class FranklinConverter implements AdocTypes.Converter {
         return this.makeBlock('procedure', list, [], true);
       },
       list_item: (node) => {
-        const content = node.getContent();
+        const baseContent = node.getContent();
         const text = node.getText();
 
-        if (!text && !content) {
+        if (!text && !baseContent) {
           return '';
         }
 
-        const result = /* html */`<li>${text ? `<p>${text}</p>` : ''}${content || ''}</li>`;
+        const blocks = node.getBlocks() as AdocTypes.AbstractNode[];
+        let content = blocks.map((block) => this.convert(block)).join('');
+        if (!content) {
+          content = baseContent;
+        }
+
+        const result = /* html */`<li>${text ? `<p>${text || ''}</p>${content || ''}` : ''}</li>`;
         return result;
       },
       image: (node) => {

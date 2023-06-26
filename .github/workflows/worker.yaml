@@ -1,0 +1,25 @@
+name: Worker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # triggered by sitemap/publish job, since both make commits and need to act on a recent tree
+    # TODO: make semantic release push sitemaps even if no semantic release is cut
+    if: "contains(github.event.head_commit.message, '[deploy]')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run build
+      - run: npx semantic-release
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
