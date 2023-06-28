@@ -1,9 +1,14 @@
 /* eslint-disable class-methods-use-this */
 
 import asciidoctor from '@asciidoctor/core';
+import { toHtml } from 'hast-util-to-html';
+import { fromHtml } from 'hast-util-from-html';
+
 import type * as AdocTypes from '@asciidoctor/core';
-import type { Book } from '../types';
+import type { Element } from 'hast';
 import { toClassName } from './string';
+
+import type { Book } from '../types';
 
 const AsciiDoctor = asciidoctor();
 
@@ -337,7 +342,22 @@ const adoc2html = (
     attributes,
   }) as string;
 
-  return plain ? html : /* html */`
+  // Parse html to hast and wrap list elements in div for Franklin compatibility
+  const tree = fromHtml(html, { fragment: true, verbose: false });
+  const wrappedElements = ['ol', 'ul'];
+  tree.children.forEach((element: Element, index) => {
+    if (element.tagName && wrappedElements.includes(element.tagName)) {
+      const clone = { ...element };
+      tree.children[index] = {
+        type: 'element',
+        tagName: 'div',
+        properties: {},
+        children: [clone],
+      };
+    }
+  });
+
+  return plain ? toHtml(tree) : /* html */`
   <!DOCTYPE html>
   <html>
     <head>
@@ -350,7 +370,7 @@ const adoc2html = (
     <body>
       <header></header>
       <main>
-        ${html}
+        ${toHtml(tree)}
       </main>
       <footer></footer>
     </body>
