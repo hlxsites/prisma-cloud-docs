@@ -1,3 +1,10 @@
+## [1.0.30](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.29...v1.0.30) (2023-06-28)
+
+
+### Bug Fixes
+
+* inline anchor url normalization v2 ([#53](https://github.com/hlxsites/prisma-cloud-docs/issues/53)) ([f5b1500](https://github.com/hlxsites/prisma-cloud-docs/commit/f5b15001b6d3b22c480fd37621f3b42073094004))
+
 ## [1.0.29](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.28...v1.0.29) (2023-06-28)
 
 
