@@ -96,9 +96,14 @@ class FranklinConverter implements AdocTypes.Converter {
           if (href.endsWith('.franklin')) {
             href = href.slice(0, -'.franklin'.length);
           }
-          const url = new URL(href);
-          url.hostname = url.hostname.replace(/-{3,}/g, '--').toLowerCase();
-          href = url.toString();
+
+          try {
+            const url = new URL(href);
+            url.hostname = url.hostname.replace(/-{3,}/g, '--').toLowerCase();
+            href = url.toString();
+          } catch (_) {
+            // noop
+          }
         }
 
         // insert includes as fragment blocks
