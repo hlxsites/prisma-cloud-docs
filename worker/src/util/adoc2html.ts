@@ -88,32 +88,34 @@ class FranklinConverter implements AdocTypes.Converter {
         return `<p>${node.getContent()}</p>`;
       },
       inline_anchor: (node) => {
-        let url = node.getTarget();
+        let href = node.getTarget();
         const isInclude = node.getRole() === 'bare include';
         const variants = isInclude ? ['include'] : [];
 
-        if (url) {
-          if (url.endsWith('.franklin')) {
-            url = url.slice(0, -'.franklin'.length);
+        if (href) {
+          if (href.endsWith('.franklin')) {
+            href = href.slice(0, -'.franklin'.length);
           }
-          url = url.replace(/_/g, '-').replace(/-{2,}/, '-').toLowerCase();
+          const url = new URL(href);
+          url.hostname = url.hostname.replace(/-{3,}/g, '--').toLowerCase();
+          href = url.toString();
         }
 
         // insert includes as fragment blocks
         if (isInclude) {
           // remove suffix if exists
-          if (url.endsWith('.adoc')) {
-            url = url.slice(0, -'.adoc'.length);
+          if (href.endsWith('.adoc')) {
+            href = href.slice(0, -'.adoc'.length);
           }
           // make link absolute if needed
-          if (!/^https?:\/\//g.test(url)) {
-            url = book.resolve(`${this.topicDirPath}/${url}`);
+          if (!/^https?:\/\//g.test(href)) {
+            href = book.resolve(`${this.topicDirPath}/${href}`);
             variants.push('docs');
           }
-          return this.makeBlock('fragment', `<a href="${url}">${node.getText()}</a>`, variants, true);
+          return this.makeBlock('fragment', `<a href="${href}">${node.getText()}</a>`, variants, true);
         }
 
-        return `<a href="${url}">${node.getText()}</a>`;
+        return `<a href="${href}">${node.getText()}</a>`;
       },
       'floating-title': (node) => {
         console.error('NOT IMPLEMENTED: floating title: ', node);
