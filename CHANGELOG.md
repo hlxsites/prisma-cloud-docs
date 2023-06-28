@@ -1,3 +1,10 @@
+## [1.0.28](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.27...v1.0.28) (2023-06-28)
+
+
+### Bug Fixes
+
+* wrap lists in div ([#51](https://github.com/hlxsites/prisma-cloud-docs/issues/51)) ([da690dd](https://github.com/hlxsites/prisma-cloud-docs/commit/da690dd3d9e1c2780b019cafe0774fc437c2a615))
+
 ## [1.0.27](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.26...v1.0.27) (2023-06-26)
 
 
