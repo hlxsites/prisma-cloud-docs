@@ -1,3 +1,10 @@
+## [1.0.31](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.30...v1.0.31) (2023-06-30)
+
+
+### Bug Fixes
+
+* add heading slugs ([#58](https://github.com/hlxsites/prisma-cloud-docs/issues/58)) ([773a41c](https://github.com/hlxsites/prisma-cloud-docs/commit/773a41cfcab5c49a1023063b4318748e5a348b79))
+
 ## [1.0.30](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.29...v1.0.30) (2023-06-28)
 
 
