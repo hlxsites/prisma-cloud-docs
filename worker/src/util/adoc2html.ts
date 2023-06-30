@@ -3,10 +3,13 @@
 import asciidoctor from '@asciidoctor/core';
 import { toHtml } from 'hast-util-to-html';
 import { fromHtml } from 'hast-util-from-html';
+import { selectAll } from 'hast-util-select';
+import { toText } from 'hast-util-to-text';
 
 import type * as AdocTypes from '@asciidoctor/core';
 import type { Element } from 'hast';
 import { toClassName } from './string';
+import IDSlugger from './id-slugger';
 
 import type { Book } from '../types';
 
@@ -349,8 +352,10 @@ const adoc2html = (
     attributes,
   }) as string;
 
-  // Parse html to hast and wrap list elements in div for Franklin compatibility
+  // Parse html to hast
   const tree = fromHtml(html, { fragment: true, verbose: false });
+
+  // Wrap list elements in div for Franklin compatibility
   const wrappedElements = ['ol', 'ul'];
   tree.children.forEach((element: Element, index) => {
     if (element.tagName && wrappedElements.includes(element.tagName)) {
@@ -362,6 +367,13 @@ const adoc2html = (
         children: [clone],
       };
     }
+  });
+
+  // Add slugs to headings
+  const slugger = new IDSlugger();
+  const headings = selectAll('h1, h2, h3, h4, h5, h6', tree);
+  headings.forEach((heading) => {
+    heading.properties.id = slugger.slug(toText(heading).trim());
   });
 
   return plain ? toHtml(tree) : /* html */`
