@@ -370,13 +370,11 @@ const adoc2html = (
   });
 
   // Add slugs to headings
+  const slugger = new IDSlugger();
   const headings = selectAll('h1, h2, h3, h4, h5, h6', tree);
-  if (headings.length) {
-    const slugger = new IDSlugger();
-    headings.forEach((heading) => {
-      heading.properties.id = slugger.slug(toText(heading).trim());
-    });
-  }
+  headings.forEach((heading) => {
+    heading.properties.id = slugger.slug(toText(heading).trim());
+  });
 
   return plain ? toHtml(tree) : /* html */`
   <!DOCTYPE html>
