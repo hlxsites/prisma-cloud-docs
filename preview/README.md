@@ -52,6 +52,8 @@ workflow runs [here](https://docs.github.com/en/actions/managing-workflow-runs/a
 
 ![github action settings](assets/gh_action_settings.png)
 
+The workflow will also require write permissions. To enable it, go to https://github.com/OWNER/REPO/settings/actions and under the "Workflow Permissions" section, check the option "Read and Write permissions" then hit "Save".
+
 ## Env variables and secrets
 
 The env variables are defined in the [wrangler.toml](../wrangler.toml) file. For the preview feature, the following vars
