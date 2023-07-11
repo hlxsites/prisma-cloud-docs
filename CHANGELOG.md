@@ -1,3 +1,10 @@
+## [1.0.32](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.31...v1.0.32) (2023-07-11)
+
+
+### Bug Fixes
+
+* make preview comment sticky and urls shorter ([#60](https://github.com/hlxsites/prisma-cloud-docs/issues/60)) ([ba6f398](https://github.com/hlxsites/prisma-cloud-docs/commit/ba6f3983fe83d51312523d6171653ef83b3e992b))
+
 ## [1.0.31](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.30...v1.0.31) (2023-06-30)
 
 
