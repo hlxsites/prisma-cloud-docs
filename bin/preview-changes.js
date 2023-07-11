@@ -65,8 +65,10 @@ export default async function previewChanges({
   // Remove "docs" and ".adoc" from path
   const cleanChangePath = (file) => file.slice(4, -5);
 
-  let body = adocChanges.length ? `Preview URL(s):\n\n${adocChanges.map((change) => `- ${host}/prisma/prisma-cloud${cleanChangePath(change)}?branch=${branch}`).join('\n')}`
-    : `Default Preview URL: ${host}${fallbackPath}?branch=${branch}`;
+  const buildLink = (href) => `<a href="${href}" target="_blank">${href.split('?')[0].split('/').slice(5).join('/')}</a>`;
+
+  let body = adocChanges.length ? `Preview URL(s):\n\n${adocChanges.map((change) => `- ${buildLink(`${host}/prisma/prisma-cloud${cleanChangePath(change)}?branch=${branch}`)}`).join('\n')}`
+    : `Default Preview URL: ${buildLink(`${host}${fallbackPath}?branch=${branch}`)}`;
 
   if (missingReferences.length) {
     // Remove home/runner/work/repo/dir
@@ -78,10 +80,27 @@ export default async function previewChanges({
     body += `${missingReferences.map((missingReference) => `- <a href="${buildGHLink(missingReference)}" target="_blank">${cleanRefPath(missingReference)}</a>`).join('\n')}`;
   }
 
-  await github.rest.issues.createComment({
+  const comments = await github.rest.issues.listComments({
     issue_number: context.issue.number,
     owner: context.repo.owner,
     repo: context.repo.repo,
-    body,
   });
+
+  const firstComment = comments.data.find((comment) => comment.user.login === 'github-actions[bot]');
+  if (firstComment) {
+    await github.rest.issues.updateComment({
+      issue_number: context.issue.number,
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      comment_id: firstComment.id,
+      body,
+    });
+  } else {
+    await github.rest.issues.createComment({
+      issue_number: context.issue.number,
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      body,
+    });
+  }
 }
