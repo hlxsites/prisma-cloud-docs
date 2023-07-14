@@ -1,3 +1,10 @@
+## [1.0.33](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.32...v1.0.33) (2023-07-14)
+
+
+### Bug Fixes
+
+* avoid error on missing book ([1ca32f8](https://github.com/hlxsites/prisma-cloud-docs/commit/1ca32f8ad5b910e06b6552a64fc1c65d509a9c34))
+
 ## [1.0.32](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.31...v1.0.32) (2023-07-11)
 
 
