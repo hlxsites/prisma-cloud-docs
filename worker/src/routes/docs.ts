@@ -58,7 +58,7 @@ export async function resolveURL(path: string, ctx: Context) {
   log.debug('[Docs/resolve] resolved path: ', resolvedPath);
 
   if (branch) {
-    const headers = {
+    const headers: Record<string, string> = {
       'User-Agent': 'prisma-cloud-docs--hlxsites',
       Accept: 'application/vnd.github.VERSION.sha',
       'X-GitHub-Api-Version': '2022-11-28',

@@ -35,6 +35,9 @@ export const resolvePath = (path: string, ctx: Context): string | undefined => {
 
 export const resolveTopicPath = (path: string, ctx: Context): string | undefined => {
   const book = findBook(path, ctx);
+  if (!book) {
+    return '';
+  }
   return path.split(book.path)[1];
 };
 
