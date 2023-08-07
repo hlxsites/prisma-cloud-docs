@@ -1,3 +1,10 @@
+## [1.0.34](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.33...v1.0.34) (2023-08-07)
+
+
+### Bug Fixes
+
+* handle query strings and hashes in xrefs ([c3d249a](https://github.com/hlxsites/prisma-cloud-docs/commit/c3d249a1637079f1f58f439c4da6f437a125f9a0))
+
 ## [1.0.33](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.32...v1.0.33) (2023-07-14)
 
 
