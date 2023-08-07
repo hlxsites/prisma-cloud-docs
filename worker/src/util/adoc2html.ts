@@ -96,8 +96,10 @@ class FranklinConverter implements AdocTypes.Converter {
         const variants = isInclude ? ['include'] : [];
 
         if (href) {
-          if (href.endsWith('.franklin')) {
-            href = href.slice(0, -'.franklin'.length);
+          if (href.match(/\.franklin([?#]|$).*$/)) {
+            href = href.replace(/\.franklin([?#]|$).*$/, (ogStr) => {
+              return ogStr.replace('.franklin', '');
+            });
           }
 
           try {
@@ -112,8 +114,10 @@ class FranklinConverter implements AdocTypes.Converter {
         // insert includes as fragment blocks
         if (isInclude) {
           // remove suffix if exists
-          if (href.endsWith('.adoc')) {
-            href = href.slice(0, -'.adoc'.length);
+          if (href.match(/\.adoc([?#]|$).*$/)) {
+            href = href.replace(/\.adoc([?#]|$).*$/, (ogStr) => {
+              return ogStr.replace('.adoc', '');
+            });
           }
           // make link absolute if needed
           if (!/^https?:\/\//g.test(href)) {
@@ -164,11 +168,14 @@ class FranklinConverter implements AdocTypes.Converter {
           title = /* html */`<h6>${title}</h6>`;
         }
 
+        const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
+        const content = blocks.map((block) => this.convert(block)).join('');
+
         return /* html */`
           <div class="admonition ${style.toLowerCase()}">
             <div>
               <div>
-                ${title ? `${title}\n` : ''}${node.getContent()}
+                ${title ? `${title}\n` : ''}${content}
               </div>
             </div>
           </div>`;
