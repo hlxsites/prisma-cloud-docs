@@ -142,13 +142,14 @@ class FranklinConverter implements AdocTypes.Converter {
       section: (node) => {
         const level = node.getLevel();
         const title = node.getTitle();
+        const id = node.getId();
         const tag = `h${level + 1}`;
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         const closer = this.sectionDepth > 0 ? '</div>' : '';
         this.sectionDepth += 1;
 
         const content = `
-          ${title ? `<${tag}>${title}</${tag}>` : ''}
+          ${title ? `<${tag}${!id.startsWith('_') ? ` id="${id}"` : ''}>${title}</${tag}>` : ''}
           ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
@@ -268,7 +269,14 @@ class FranklinConverter implements AdocTypes.Converter {
         }
 
         const href = book.resolve(`/_graphics/${src}`);
-        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
+        const sizes = [];
+        if (node.getAttribute('width')) {
+          sizes.push(`width="${node.getAttribute('width') as string}"`);
+        }
+        if (node.getAttribute('height')) {
+          sizes.push(`height="${node.getAttribute('height') as string}"`);
+        }
+        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>`;
       },
       table: (node) => {
         const title = node.getTitle();
@@ -291,9 +299,9 @@ class FranklinConverter implements AdocTypes.Converter {
   makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
     const variantStr = variants.map(toClassName).join(' ');
     return /* html */`
-      <div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}">
-        ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
-      </div>`;
+          < div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}" >
+            ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
+        </div>`;
   }
 
   tableToTableBlock(node: AdocTypes.Table): string {
