@@ -169,7 +169,11 @@ class FranklinConverter implements AdocTypes.Converter {
         }
 
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        const content = blocks.map((block) => this.convert(block)).join('');
+        let content = blocks.map((block) => this.convert(block)).join('').trim();
+        if (!content) {
+          /** fallback to para, see {@link https://github.com/hlxsites/prisma-cloud-docs-website/issues/135} */
+          content = `<p>${node.getContent()}</p>`;
+        }
 
         return /* html */`
           <div class="admonition ${style.toLowerCase()}">
