@@ -1,3 +1,10 @@
+## [1.0.36](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.35...v1.0.36) (2023-08-29)
+
+
+### Bug Fixes
+
+* handle para admonition ([c094f19](https://github.com/hlxsites/prisma-cloud-docs/commit/c094f191decda35e040f680d11f82c4b5434a766))
+
 ## [1.0.35](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.34...v1.0.35) (2023-08-29)
 
 
