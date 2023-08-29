@@ -198,6 +198,12 @@ class FranklinConverter implements AdocTypes.Converter {
           case 'emphasis':
             tags = ['<em>', '</em>'];
             break;
+          case 'superscript':
+            tags = ['<sup>', '</sup>'];
+            break;
+          case 'subscript':
+            tags = ['<sub>', '</sub>'];
+            break;
           default:
             console.warn('[inline_quoted] unhandled node: ', node, type);
             return content;
