@@ -1,3 +1,10 @@
+## [1.0.35](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.34...v1.0.35) (2023-08-29)
+
+
+### Bug Fixes
+
+* subscript and superscript inline quotes ([ed1ffd4](https://github.com/hlxsites/prisma-cloud-docs/commit/ed1ffd44983ef62c6789d0def6919e9cfbf7ed5a))
+
 ## [1.0.34](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.33...v1.0.34) (2023-08-07)
 
 
