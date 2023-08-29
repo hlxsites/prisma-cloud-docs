@@ -146,6 +146,7 @@ class FranklinConverter implements AdocTypes.Converter {
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         const closer = this.sectionDepth > 0 ? '</div>' : '';
         this.sectionDepth += 1;
+        console.log('section node: ', node);
 
         const content = `
           ${title ? `<${tag}>${title}</${tag}>` : ''}
@@ -268,7 +269,14 @@ class FranklinConverter implements AdocTypes.Converter {
         }
 
         const href = book.resolve(`/_graphics/${src}`);
-        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}" width="${node.getAttribute('width') as string}">`;
+        const sizes = [];
+        if (node.getAttribute('width')) {
+          sizes.push(`width="${node.getAttribute('width') as string}"`);
+        }
+        if (node.getAttribute('height')) {
+          sizes.push(`height="${node.getAttribute('height') as string}"`);
+        }
+        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>`;
       },
       table: (node) => {
         const title = node.getTitle();
@@ -291,9 +299,9 @@ class FranklinConverter implements AdocTypes.Converter {
   makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
     const variantStr = variants.map(toClassName).join(' ');
     return /* html */`
-      <div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}">
-        ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
-      </div>`;
+          < div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}" >
+            ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
+        </div>`;
   }
 
   tableToTableBlock(node: AdocTypes.Table): string {
