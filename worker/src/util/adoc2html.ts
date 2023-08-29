@@ -304,7 +304,7 @@ class FranklinConverter implements AdocTypes.Converter {
   makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
     const variantStr = variants.map(toClassName).join(' ');
     return /* html */`
-          < div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}" >
+          <div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}" >
             ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
         </div>`;
   }
