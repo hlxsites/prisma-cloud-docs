@@ -142,14 +142,14 @@ class FranklinConverter implements AdocTypes.Converter {
       section: (node) => {
         const level = node.getLevel();
         const title = node.getTitle();
+        const id = node.getId();
         const tag = `h${level + 1}`;
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
         const closer = this.sectionDepth > 0 ? '</div>' : '';
         this.sectionDepth += 1;
-        console.log('section node: ', node);
 
         const content = `
-          ${title ? `<${tag}>${title}</${tag}>` : ''}
+          ${title ? `<${tag}${!id.startsWith('_') ? ` id="${id}"` : ''}>${title}</${tag}>` : ''}
           ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
