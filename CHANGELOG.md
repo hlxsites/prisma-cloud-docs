@@ -1,3 +1,11 @@
+## [1.0.37](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.36...v1.0.37) (2023-08-29)
+
+
+### Bug Fixes
+
+* add image height/width spec ([d84b272](https://github.com/hlxsites/prisma-cloud-docs/commit/d84b272ab2fe9c10bf2c4b36dbb9f708587a5191))
+* allow named section ids ([b29016c](https://github.com/hlxsites/prisma-cloud-docs/commit/b29016c0274d1634dac9ecdea563d5736820640e))
+
 ## [1.0.36](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.35...v1.0.36) (2023-08-29)
 
 
