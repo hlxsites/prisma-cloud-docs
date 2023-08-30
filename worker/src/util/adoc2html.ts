@@ -270,12 +270,17 @@ class FranklinConverter implements AdocTypes.Converter {
 
         const href = book.resolve(`/_graphics/${src}`);
         const sizes = [];
-        if (node.getAttribute('width')) {
-          sizes.push(`width="${node.getAttribute('width') as string}"`);
-        }
-        if (node.getAttribute('height')) {
-          sizes.push(`height="${node.getAttribute('height') as string}"`);
-        }
+        const extractSize = (dim: string) => {
+          let size = node.getAttribute(dim) as string;
+          if (!size) return;
+          if (size.match(/[0-9]$/)) {
+            // default to percentage
+            size += '%';
+          }
+          sizes.push(`${dim}="${size}"`);
+        };
+        extractSize('width');
+        extractSize('height');
         return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>`;
       },
       table: (node) => {
@@ -299,7 +304,7 @@ class FranklinConverter implements AdocTypes.Converter {
   makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
     const variantStr = variants.map(toClassName).join(' ');
     return /* html */`
-          < div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}" >
+          <div class="${toClassName(name)}${variantStr ? ` ${variantStr}` : ''}" >
             ${singleCell ? '<div><div>\n' : ''}${content.trim()}${singleCell ? '\n</div></div>' : ''}
         </div>`;
   }
