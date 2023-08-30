@@ -1,3 +1,11 @@
+## [1.0.38](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.37...v1.0.38) (2023-08-30)
+
+
+### Bug Fixes
+
+* default to percentage image scaling ([e3a77be](https://github.com/hlxsites/prisma-cloud-docs/commit/e3a77be49d6e4ed86e10989f0e84211ee439ac08))
+* table div spacing ([4841adb](https://github.com/hlxsites/prisma-cloud-docs/commit/4841adb1ed43586eccc4c82af02b00dc8b2793be))
+
 ## [1.0.37](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.36...v1.0.37) (2023-08-29)
 
 
