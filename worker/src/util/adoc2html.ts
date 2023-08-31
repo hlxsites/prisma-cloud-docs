@@ -335,10 +335,18 @@ class FranklinConverter implements AdocTypes.Converter {
     if (!colSpans.some((c) => c !== '1')) {
       colSpans = undefined;
     }
+
+    let colWidths = node.getRows().body[0].map((col) => col.getWidth() || '1');
+    if (!colWidths.some((c) => c !== '1')) {
+      colWidths = undefined;
+    }
     return this.tableToBlock('table', node, {
-      preRows: colSpans
+      preRows: `${colSpans
         ? /* html */`<div><div>col-spans</div><div>${colSpans.join(',')}</div></div>`
-        : undefined,
+        : ''}`
+        + `${colWidths
+          ? /* html */`<div><div>col-widths</div><div>${colWidths.join(',')}</div></div>`
+          : ''}`,
     });
   }
 
