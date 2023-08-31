@@ -1,3 +1,11 @@
+## [1.0.41](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.40...v1.0.41) (2023-08-31)
+
+
+### Bug Fixes
+
+* add colspans ([f7d6966](https://github.com/hlxsites/prisma-cloud-docs/commit/f7d6966d2ef13f42b3adb54a0083e510384d4a0f))
+* add colwidth support ([c1ff230](https://github.com/hlxsites/prisma-cloud-docs/commit/c1ff230511a58307e3c3ce35121e2ddbb686bf8b))
+
 ## [1.0.40](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.39...v1.0.40) (2023-08-31)
 
 
