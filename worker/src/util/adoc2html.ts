@@ -129,7 +129,18 @@ class FranklinConverter implements AdocTypes.Converter {
 
         let text: string;
         if (node.getType() === 'xref') {
-          text = (node.getDocument().getRefs() as Record<string, { title: string; }>)[node.getAttribute('refid') as string]?.title;
+          const refId = node.getAttribute('refid') as string;
+          const refs = node.getDocument().getRefs() as Record<string, { title: string; }>;
+          const refNodeKeys = Object.keys(refs);
+          let refNodeKey = refNodeKeys.find((key) => key === refId);
+          if (!refNodeKey) {
+            refNodeKey = refNodeKeys.find((key) => {
+              return key.replace(/_/g, '-').replace(/^-/, '') === refId;
+            });
+          }
+          if (refNodeKey) {
+            text = refs[refNodeKey]?.title;
+          }
         } else {
           text = node.getText();
         }
