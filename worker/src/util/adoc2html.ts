@@ -331,10 +331,22 @@ class FranklinConverter implements AdocTypes.Converter {
   }
 
   tableToTableBlock(node: AdocTypes.Table): string {
-    return this.tableToBlock('table', node);
+    let colSpans = node.getHeadRows()[0].map((col) => col.getColumnSpan() || '1');
+    if (!colSpans.some((c) => c !== '1')) {
+      colSpans = undefined;
+    }
+    return this.tableToBlock('table', node, {
+      preRows: colSpans
+        ? /* html */`<div><div>col-spans</div><div>${colSpans.join(',')}</div></div>`
+        : undefined,
+    });
   }
 
-  tableToBlock(name: string, node: AdocTypes.Table): string {
+  tableToBlock(
+    name: string,
+    node: AdocTypes.Table,
+    { preRows = '', postRows = '' }: { preRows?: string; postRows?: string } = {},
+  ): string {
     const { head, body, foot } = node.getRows();
 
     const processCols = (cols: AdocTypes.Table.Cell[]) => {
@@ -345,10 +357,11 @@ class FranklinConverter implements AdocTypes.Converter {
       return rows.map((row) => /* html */`<div>${processCols(row)}</div>`).join('\n');
     };
 
-    const content = `
+    const content = `${preRows}
     ${processRows(head)}
     ${processRows(body)}
-    ${processRows(foot)}`;
+    ${processRows(foot)}
+    ${postRows}`;
 
     const variants = head.length === 0 ? ['headless'] : [''];
     return this.makeBlock(name, content, variants);
