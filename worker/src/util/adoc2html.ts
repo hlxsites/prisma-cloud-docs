@@ -127,7 +127,14 @@ class FranklinConverter implements AdocTypes.Converter {
           return this.makeBlock('fragment', `<a href="${href}">${node.getText()}</a>`, variants, true);
         }
 
-        return `<a href="${href}">${node.getText()}</a>`;
+        let text: string;
+        if (node.getType() === 'xref') {
+          text = (node.getDocument().getRefs() as Record<string, { title: string; }>)[node.getAttribute('refid') as string]?.title;
+        } else {
+          text = node.getText();
+        }
+
+        return `<a href="${href}">${text}</a>`;
       },
       'floating-title': (node) => {
         console.error('NOT IMPLEMENTED: floating title: ', node);
@@ -153,9 +160,12 @@ class FranklinConverter implements AdocTypes.Converter {
           ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
+        const sectionMeta = !id.startsWith('_')
+          ? `\n${this.makeBlock('section-metadata', `<div><div>id</div><div>${id}</div></div>`)}`
+          : '';
         this.sectionDepth -= 1;
 
-        return wrapper;
+        return wrapper + sectionMeta;
       },
       literal: (node) => {
         const content = node.getContent();
