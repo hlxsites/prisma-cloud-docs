@@ -1,3 +1,10 @@
+## [1.0.39](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.38...v1.0.39) (2023-08-31)
+
+
+### Bug Fixes
+
+* section meta ids, in document xrefs ([4e10218](https://github.com/hlxsites/prisma-cloud-docs/commit/4e1021844adfddfc07ee698eb7d641ec04bcd20e))
+
 ## [1.0.38](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.37...v1.0.38) (2023-08-30)
 
 
