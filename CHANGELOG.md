@@ -1,3 +1,10 @@
+## [1.0.40](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.39...v1.0.40) (2023-08-31)
+
+
+### Bug Fixes
+
+* better search for refid anchors ([e70552c](https://github.com/hlxsites/prisma-cloud-docs/commit/e70552cb6f53a79fb4dec7ee9f948f7491595307))
+
 ## [1.0.39](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.38...v1.0.39) (2023-08-31)
 
 
