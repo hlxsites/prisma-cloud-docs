@@ -82,6 +82,9 @@ class FranklinConverter implements AdocTypes.Converter {
     book: Book,
     topicPath: string
   }) {
+    if (!book) {
+      console.error('book is undefined, path resolution may fail');
+    }
     this.topicPath = topicPath;
     this.topicDirPath = topicPath.split('/').slice(0, -1).join('/');
     this.book = book;
@@ -331,7 +334,12 @@ class FranklinConverter implements AdocTypes.Converter {
   }
 
   tableToTableBlock(node: AdocTypes.Table): string {
-    let colSpans = node.getHeadRows()[0].map((col) => col.getColumnSpan() || '1');
+    let colSpans = (
+      node.getHeadRows()[0]
+      ?? node.getBodyRows()[0]
+      ?? []
+    ).map((col) => col.getColumnSpan() || '1');
+
     if (!colSpans.some((c) => c !== '1')) {
       colSpans = undefined;
     }
