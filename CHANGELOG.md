@@ -1,3 +1,10 @@
+## [1.0.45](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.44...v1.0.45) (2023-09-11)
+
+
+### Bug Fixes
+
+* table colspan fallback ([a071995](https://github.com/hlxsites/prisma-cloud-docs/commit/a0719957ebc0ea758e3f0840accefa75d9ff51c4))
+
 ## [1.0.44](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.43...v1.0.44) (2023-09-11)
 
 
