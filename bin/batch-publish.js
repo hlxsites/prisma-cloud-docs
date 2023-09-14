@@ -74,7 +74,16 @@ function cleanPath(ppath) {
 }
 
 async function batchPublish(ppaths) {
-  const paths = ppaths.filter(isDocPath).map(cleanPath);
+  let paths = ppaths;
+
+  // get file as array, whitespace delimited
+  if (paths[0] === '-f' || paths[0] === '--file') {
+    const data = fs.readFileSync(paths[1]);
+    const text = data.toString('utf8');
+    paths = text.split(/\s+/);
+  }
+
+  paths = paths.filter(isDocPath).map(cleanPath);
   return processQueue(paths, publishDoc);
 }
 

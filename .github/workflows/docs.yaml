@@ -19,16 +19,19 @@ jobs:
       - name: Get changed files
         id: changedfiles
         run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "all<<$EOF" >> "$GITHUB_OUTPUT"
-          git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.event.after }} | xargs >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
-          cat "$GITHUB_OUTPUT"
+          ARG_FILE="${{ runner.temp }}/to_publish"
+          echo "arg file: $ARG_FILE"
+          #EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          #echo "all<<$EOF" >> "$GITHUB_OUTPUT"
+          git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.event.after }} | xargs > "$ARG_FILE"
+          #echo "$EOF" >> "$GITHUB_OUTPUT"
+          #cat "$GITHUB_OUTPUT"
+          cat "$ARG_FILE"
 
   publish:
     runs-on: ubuntu-latest
     needs: changedfiles
-    if: ${{ needs.changedfiles.outputs.all }}
+    # if: ${{ needs.changedfiles.outputs.file }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -37,4 +40,4 @@ jobs:
         with:
           node-version: '18'
       - run: npm ci
-      - run: npm run publish:batch ${{ needs.changedfiles.outputs.all }}
+      - run: npm run publish:batch -f ${{ runner.temp }}/to_publish
