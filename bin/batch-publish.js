@@ -34,6 +34,10 @@ async function publishDoc(path) {
 }
 
 function isDocPath(path) {
+  if (!path) {
+    return false;
+  }
+
   const absPath = resolve(REPO_ROOT, path);
   const relPath = relative(REPO_ROOT, absPath);
 
