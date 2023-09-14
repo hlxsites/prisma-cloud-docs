@@ -24,7 +24,7 @@ const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${path}
  */
 async function publishDoc(path) {
   const { status: preview } = await fetch(API_URL('preview', path), { method: 'POST' });
-  if (preview === 404 || path.startsWith('examples')) {
+  if (preview === 404 || preview === 502 || path.startsWith('examples')) {
     // don't publish examples, or missing docs
     return { path, preview };
   }
