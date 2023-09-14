@@ -24,7 +24,7 @@ const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${path}
  */
 async function publishDoc(path) {
   const { status: preview } = await fetch(API_URL('preview', path), { method: 'POST' });
-  if (preview === 404 || path.startsWith('examples')) {
+  if (preview === 404 || preview === 502 || path.startsWith('examples')) {
     // don't publish examples, or missing docs
     return { path, preview };
   }
@@ -34,6 +34,10 @@ async function publishDoc(path) {
 }
 
 function isDocPath(path) {
+  if (!path) {
+    return false;
+  }
+
   const absPath = resolve(REPO_ROOT, path);
   const relPath = relative(REPO_ROOT, absPath);
 
@@ -74,7 +78,17 @@ function cleanPath(ppath) {
 }
 
 async function batchPublish(ppaths) {
-  const paths = ppaths.filter(isDocPath).map(cleanPath);
+  let paths = ppaths;
+
+  // get file as array, whitespace delimited
+  if (paths[0] === '-f' || paths[0] === '--file') {
+    const data = fs.readFileSync(paths[1]);
+    const text = data.toString('utf8');
+    paths = text.split(/\s+/);
+    console.log('file paths: ', paths);
+  }
+
+  paths = paths.filter(isDocPath).map(cleanPath);
   return processQueue(paths, publishDoc);
 }
 
