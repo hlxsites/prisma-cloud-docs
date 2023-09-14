@@ -1,3 +1,12 @@
+## [1.0.46](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.45...v1.0.46) (2023-09-14)
+
+
+### Bug Fixes
+
+* test arg file ([ba20a08](https://github.com/hlxsites/prisma-cloud-docs/commit/ba20a08bbfe72c45db85ee9b50047aebcdb98625))
+* test touched file ([3eebbaf](https://github.com/hlxsites/prisma-cloud-docs/commit/3eebbafe978196811348d218a2fc4ac7c46d7650))
+* use arg file for publish script ([f2251ea](https://github.com/hlxsites/prisma-cloud-docs/commit/f2251ea95e43ea92025e7737e0fb269e0eb60d47))
+
 ## [1.0.45](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.44...v1.0.45) (2023-09-11)
 
 
