@@ -1,0 +1,119 @@
+== Unified Vulnerability Management
+
+Prerequisites
+
+Policy should be enabled in the platform (Link to the platform Cloud accounts page).
+CSPM, IAM mis-configs, internet exposed assets
+
+This section helps you to:
+
+* Get an overview of the vulnerabilities trend across your workload (Discovery) > Vulnerabilities Overview
+** Get a report of all your compute assets' vulnerabilities.
+** View the trend of vulnerabilities fixed and closed over a defined period of time (say, month, and year)
+* Narrow down your search to identify what are the important/critical vulnerabilities (Investigate) > Prioritized Vulnerabilities
+* View the vulnerabilities that are patchable and have a fix action item to remediate.
+* Identify what assets are affected by a known vulnerability and where the vulnerable assets are used in your lifecycle. > Vulnerability Impact by Stage
+** Assess if your container images have vulnerabilities using a CI scan (Jenkins, Shell).
+** Check if any of your container registries, Host VM images, deployed containers, or Serverless functions have vulnerabilities.
+
+* Access the impact of the vulnerability on assets (Risk assessment) > Top Impacting Vulnerabilities
+** Pick the most impacted vulnerability with the highest CVE score and explore remediation options.
+** Identify if one of the compute assets is vulnerable to CVE-XXXX-XXXX (Investigate > Search or Top Impacting Vulnerabilities)
+** Or find vulnerabilities equal to CVE-XXXX-XXXX.
+* Review the CVE (or assets) for threat details and explore the remediation options
+** Remediate the vulnerabilities at runtime and create a PR to fix the vulnerability at the source.
+** What vulnerabilities to fix and how to fix for container images or hosts?
+
+=== Vulnerabilities Overview
+
+You can visualize the trends with *Total Vulnerable Assets*, and their metadata, *Total Vulnerabilities Remediated*, and *Total Vulnerabilities* count in the current snapshot.
+
+=== Prioritized Vulnerabilities
+
+Discover all the vulnerabilities sourced from Compute and CAS (Cloud App Sec) prioritized and aggregated based on the most urgent, exploitable, patchable, and vulnerable packages in use. This prioritization helps you to identify the top-priority vulnerabilities to focus on.
+
+The vulnerabilities are aggregated based on vulnerabilities that are:
+Urgent: Critical, High
+Exploitable: Exploit in the Wild and Exploit in POC
+Patachable: Vulnerabilities that are actionable and have a patch to fix or mitigate.
+Vulnerable packages in use
+
+You can further filter your vulnerability search and investigate the 3 top most risky vulnerabilities for a selected vulnerability type.
+
+Prisma Cloud provides real-time runtime protection with its Defender. With the Defender's scanning, you can know, for example, which of the application packages are actually being used. 
+The Packages in Use are indicated across your workflow in a CBDR graph/tabular view under Investigate > Search.
+
+You need to deploy agents to get real-time OS data to determine if the vulnerability is in use by any of the packages.
+
+==== Assess the Risk and Remediate
+
+You get a comprehensive view of the assets in the lifecycle from Code to Cloud and actions to remediate.
+
+<gif>
+
+=== Top Impacting Vulnerabilities
+
+Out of that highly prioritized list of vulnerabilities, you can review the top-impacting vulnerabilities based on the CVE severity, CVSS score, Risk Factors, and the assets impacted across your CI/CD pipeline.
+
+==== Assess the Risk and Remediate
+
+Review a CVE closer and assess its impact across a CBDR graph. You can further select a CVE and explore the assets identified across the lifecycle, from the packages and IaC files in code & build to the images in the registry that are being deployed to the runtime as Hosts, Containers, and Serverless functions.
+
+[#remediate-cve]
+==== Remediate a CVE
+
+Investigate the *Top Impacting Vulnerabilities* 
+
+image::vuln-dashboard-top-impacting-vuln.gif[]
+
+Let's say, you want to investigate a specific CVE that is critical, exploitable, has a patch, and is affecting the runtime instances.
+
+Select the most critical CVE under *Dashboards > Vulnerabilities > Top Impacting Vulnerabilities*.
+
+In the vulnerability side panel, you can remediate the affected asset with one of the remediation options, such as *Send To* Jira, or take actions such as *Submit Pull Request*, or *Suppress* the alert.
+
+//<add-note-for-RLP-110563?focusedCommentId=784561>
+Note: *Dashboard > Vulnerabilities* shows a total count of all the vulnerabilities across all the distro releases in your workload, which is higher than the total count of only the CVEs affecting your assets shown under *Investigate > Search*.
+For example, when multiple vulnerabilities are attached to a single CVE, the vulnerability search shows a total count of only the CVEs impacted by these vulnerabilities.
+
+=== Vulnerability Impact by Stage
+
+The *Dashboard > Vulnerabilities > Vulnerability Impact by Stage* helps you visualize the sources of the vulnerabilities and the impact of the vulnerability across app stages of your application lifecycle.
+
+At each stage, you can select and investigate any of the impacted assets such as Packages, Images in IaC Files, Host VM Images, Registry Images, Deployed Images, Serverless Functions, and Hosts.
+This makes it easier for you to trace back the packages and images that were used to build a workload that is now vulnerable in deploy stage, or in runtime.
+
+==== Assess the Risk and Remediate
+
+<gif>
+You can filter the assets under *Investigate > Search* based on the Prisma Cloud https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-rql-reference/rql-reference/rql[Resource Query Language (RQL)].
+Say, for example, to view Serverless functions affected by a vulnerability, run the following RQL:
+`find asset where asset type in (Lambda Function, Azure Function, Google Cloud Function, Google Cloud Function v2) that has a vulnerability where severity >= high`
+
+[Give some/or of the RQL examples for vulnerabilities]
+
+You can select a CVE to assess the threat details and focus on remediation options.
+
+=== Remediate
+
+<gif>
+
+As you access the vulnerability Overview, Top Impacting Vulnerabilities, and Vulnerability Impact by Stage, you can now explore the remediation options.
+Following are the remediation actions you can take for different asset types:
+Submit Pull Request for CVEs and packages
+Suppress for packages
+Create Jira ticket for hosts, registry images, and deployed images
+
+For Serverless functions, you can view the vulnerabilities details config file.
+
+<Asset type and mitigation mapping>
+
+**Remediate an Asset**
+
+You can also select an asset in any of the app stages (Code and build, Deploy, or Runtimes) under *Vulnerabilities Impact by Stage* or from under *Investigate > Search*.
+In the assets' sidecar (side panel), review the assets for threat details and for possible remediation, such as creating an issue with the complete context and *Send To* Jira or Fixing the vulnerability in Cloud or fixing in code.
+
+=== Vulnerabilities Queries (RQL)
+
+Add the Vuln RQL page in *Investigate*.
+xref:search-and-investigate/vulnerability-queries/vulnerability-queries.adoc[Vulnerabilities Queries].

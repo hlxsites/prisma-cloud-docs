@@ -1,0 +1,230 @@
+[#view-respond-to-alerts]
+== View and Respond to Prisma Cloud Alerts
+//Enable Prisma™ Cloud alerts so that you can see all policy violations across all of your cloud environments from a central location, amd learn how to take action.
+
+Alerts on Prisma Cloud are  generated for a wide variety of attack vectors that are represented in the console as policy types.
+Prisma Cloud generates an alert when it detects a violation in a policy that is included in an active alert rule. These alerts are categorized as incidents and risks across your complex cloud environment.
+
+The Alerts are prioritized and grouped into specific saved views to help you easily access the most urgent and pertinent alerts for a focus area. 
+Each saved view is named and has preset filters to display the relevant alerts. For instance, the Overview displays all open alerts within the past 24 hours and the Highest Priority displays open alerts for critical and high severity policies that were opened within the past 24 hours.
+
+To secure your cloud environments, you must monitor alerts. You can either monitor alerts from Prisma Cloud or you can xref:send-prisma-cloud-alert-notifications-to-third-party-tools.adoc#idcda01586-a091-497d-87b5-03f514c70b08[Send Prisma Cloud Alert Notifications to Third-Party Tools] to ensure that policy violations in your cloud environments are resolved. This section helps you with how to view and take action on *Alerts* from the Prisma Cloud console.
+
+
+
+=== Alert States
+
+Alert States
+
+The status of an alert can be one of the following:
+
+* *Open*—Prisma Cloud identified a policy violation that triggered the alert and the violation is not yet resolved.
+
+* *Pending Resolution*—If you enabled an alert rule with Auto Remediation for Config policies that are remediable or Attack Path policies, the alerts is marked with pending_resolution  which is an interim state. As soon as the CLI is executed and the resource misconfguration is addressed, the alert transitions from the *Pending Resolution* state to the *Resolved* state.
+
+* *Resolved*—When the issue that caused the policy violation is resolved, alerts automatically transition to the Resolved state. Some other reasons for when an alert can transition to the Resolved state include a change in the policy or alert rule that triggered the alert, or when a cloud account with an automatically created account group is modified and re-attached to an account group that you created manually. A resolved alert can also transition back to the open state if the issue resurfaces or there is a policy or alert rule change that causes the alert to trigger again.
+
+* *Snoozed*—A Prisma Cloud administrator temporarily dismissed an alert for a specified time period. When the timer expires, the alert automatically changes to an Open or Resolved state depending on whether the issue is fixed.
+
+* *Dismissed*—A Prisma Cloud administrator manually dismissed the alert even though the underlying issue was not resolved. You can manually reopen a dismissed alert if needed. Alerts that are manually dismissed remain in the *Dismissed* state even when the same policy violation happens again.
++
+Depending on volume of alerts, the time to update the status of an alert can vary when you update an alert rule. For example, if you remove a policy from an alert rule, all open alerts will transition to a resolved state and the time to reflect this change on the interface can depend on the number of corresponding alerts. In addition, when you modify an alert rule, and the conditions that triggered the alert are no longer valid, the alert is updated as *Resolved*.
++
+[NOTE]
+====
+Bulk editing actions to resolve, dismiss, or snooze alerts take a while to reflect the updated status.
+====
+
+On the Prisma Cloud Home page, you can click *View Attack Paths* to view the most important alerts that you need to prioritize.
+
+From the Alerts Overview page, you can see the alert coverage, based on percentage as well as severity and also drill down based on policies. You can easily access the policy that triggered the alert, view the details on the resources and the policy recommendations in separate tabs.
+
+[.task]
+=== View Alerts on the Prisma Cloud Console
+
+An alert is an issue that needs your attention. It informs you about an asset with a potential problem such as a misconfiguration, exposure to the internet or malware. Alerts are prioritized and grouped into specific saved views to help you easily access the most urgent and pertinent alerts for a focus area. 
+
+Each saved view is system-defined and has a default name and preset filters to display the relevant alerts.For instance, the Overview displays all open alerts within the past 24 hours and the Highest Priority displays open alerts for critical and high severity policies that were opened within the past 24 hours.
+
+When you view an alert, you have context on the alert itself that includes the impact as displayed by the different finding types and the details on the issue that triggered the violation. For some policy types, such as Attack Path policies that combine multiple security signals to identify an incident, you can also use the evidence graph to visualize the impact.
+
+In addition to the alert context, you also have context on the asset such as information on the host, IAM details, Attack path graphs, and relationships with other assets to help you understand other associations.
+
+
+[.procedure]
+. Select *Alerts* to view alerts from within Prisma Cloud.*
++
+Prisma Cloud displays all alerts for which your role has permissions. 
+For each saved view the filters determine what you see on the page. You can Add or update filters. With the exception of the Overview, when you modify the filters in a system-defined view, you can either copy to a new view to save changes or clear edits. Any custom view is prefixed with an icon (image:alerts/custom-view-icon.png[]). 
+
+
+** To show, hide and reorder the columns to suit your preferences, click (image:alerts/column-picker.png[]) and add,remove columns and change the order of columns.
+ 
+
+** To sort on a specific column, click the corresponding *Sort* icon (image:alerts/sort-column.png[]).
++
+Most filters have a value you can select in the dropdown, and some such as the Asset Tag support a key and value as input.  It performs an exact match, and does not support white spaces or wildcard characters. You can for example, enter Key as `env` and leave the Value as empty to match on all values for the key `env`, or specify value as `prod` or `stage`.
++
+[NOTE]
+====
+The filters act as a union (OR) operator to combine the results from multiple selections within a filter and the intersection (AND) operator across different filters. 
+The exception to this behavior is the combination of the Cloud Account with Account Group filter, and the Cloud Account with Cloud Account Name filter which use the OR logic instead of AND logic across different filters.
+====
+
+** Use the Group By and Sort By to modify how you prefer to see the alerts.
++
+By default, the alerts are grouped by policy name and sorted by severity so that you can quickly see the most severe violations and the count of issues.
++
+Except when grouped by policy name, each row displays the total number of policies, the total number of alerts and the number of critical and high severity alerts and the different cloud environments in which these alerts were generated.
+
+** Select a specific policy name to view the details on the asset on which the alert was generated, the alert ID, alert time, the account name and ID, and additional details. 
++
+Select the asset name link to open the side panel and review the rich asset metadata, including the json configuration for the asset 
+//(<< when is this View Config json available?>>)
++
+To view the details for the asset on the Cloud Service Provider directly, select the View in Console link next to the asset name.
++
+Select the alert ID link to open the side panel and review the alert details.
+
+** As needed, *Download* (image:alerts/download-alerts.png[]) the filtered list of alert details to a CSV file.
++
+When you add a cloud account on Prisma Cloud and then delete it, you can no longer view alerts associated with that account on menu:Alerts[Overview], and the alert count does not include alerts for a deleted cloud account. If you add the account back on Prisma Cloud within a 24-hour period, the existing alerts will display again. After 24 hours, the alerts are resolved with the resolution reason *Account Deleted* and then permanently deleted.
++
+NOTE: Alerts associated with active cloud accounts are currently kept for the duration of the service. When cloud accounts are deleted from Prisma Cloud, the associated alerts are held for an additional 24 hours after which they are permanently deleted. Configuration of assets active in the cloud environment is retained for the duration of the service as well. Upon termination of the service, data in live systems is stored for up to 60 days, after which it will be deleted from live systems. Purge of backup data may take up to an additional 60 days.
+
+
+[.task]
+=== Take Action on  Alerts
+
+You can take action and manage alerts in a few different ways. 
+dismiss, snooze, remediate, reopen, investigate, send to Jira, View in Console, and Investigate from alert ID side panel
+
+Fix in Cloud - Automated remediations with CLI. To remediate issues, Prisma Cloud requires limited read-write access to your cloud accounts. With the correct permissions, Prisma Cloud can automatically run the CLI command required to remediate the policy violation directly on your cloud platform. Because the action to remediate requires you to assess each alert individually and ensure that it is the appropriate action, you cannot enable automatic remediation for multiple alerts as a bulk action.
+
+Fix in Code - Submit PR for CVEs detected in all packages affected by a vulnerability in your onboarded repositories
+To access this action, select a CVE in the Attack Path policy graph, Select the View Details link in the Quick View to Remediate > Submit Pull Request
+
+Manual Fix - for helping you trace the source where the issue is an take action 
+
+Suggest Least Privilege Access
+
+Send to Jira
+
+[.procedure]
+. *Address alerts.*
++
+Prisma Cloud generates an alert each time that it finds policy violations in one or more of the account groups that are associated with an alert rule. You can monitor alerts in the cloud accounts for which you are responsible to see any security risks you have and to ensure that any critical issues get _resolved_ or _remediated_. An alert is resolved when the underlying conditions that generated the alert are fixed or changed such as when the resource is no longer being scanned or the policy is no longer in effect. When you fix the issue on the Cloud Service Provider such as AWS or GCP, the issue is resolved automatically and the resolution reason is displayed on Prisma Cloud. For a list of different reasons, see xref:prisma-cloud-alert-resolution-reasons.adoc#id97d61277-e387-43b1-8a54-ec644bc02fdc[Prisma Cloud Alert Resolution Reasons].
++
+You can xref:send-prisma-cloud-alert-notifications-to-third-party-tools.adoc#idcda01586-a091-497d-87b5-03f514c70b08[Send Prisma Cloud Alert Notifications to Third-Party Tools]and xref:configure-prisma-cloud-to-automatically-remediate-alerts.adoc#id77ff61ca-a7ae-4830-9c47-516c79be3f9a[Configure Prisma Cloud to Automatically Remediate Alerts], or manually resolve the issues. By reviewing these alerts, you can also decide whether you need to make a change to a policy or alert rule. Depending on the policy type that triggered the alert, you can go directly from the alert to the cloud resource where the violation occurred or you can resolve the issue from the Prisma Cloud *Alerts* page:
++
+.. Filter the alerts to show only *Open* alerts that are *Remediable*.
+
+.. Select the policy for which you want to remediate alerts.
++
+In the table, select the link in the *Alerts* column to review the recommendations for addressing the policy rule violation. You can also click the policy name to go directly to the policy.
+
+.. Select the alert you want Prisma Cloud to resolve and then click *Remediate*.
++
+To remediate issues, Prisma Cloud requires limited read-write access to your cloud accounts. With the correct permissions, Prisma Cloud can automatically run the CLI command required to remediate the policy violation directly on your cloud platform. Because the action to remediate requires you to assess each alert individually and ensure that it is the appropriate action, you cannot enable automatic remediation for multiple alerts as a bulk action.
+
+
+. *Find alerts that are opened or have an updated status within a given time range.*
++
+In conjunction with the Time Range, the Time Range Type filter gives you the ability to view alerts for:
++
+Alert Opened - Filter on alerts based on when they were opened.
++
+Alert Status Updated - Filter on alerts based on when the alert status last changed from one state to another.
++
+Alert Updated - Filter on alerts based on when a resource was updated on the cloud service provider.
+
+
+. *View alerts in the NA view.*
++
+The Alert Rule name associated with an alert displays as N/A in the Alerts for Policy View. This N/A state means the match criteria changes because:
++
+** The alert rule that triggered the alert is disabled or deleted.
+
+** The cloud account is no longer included in the alert rule that triggered the alert.
+
+** The policy that triggered the alert is removed from the alert rule.
++
++++<draft-comment>Added 4 here</draft-comment>+++
+
+
+. *Pivot from an alert into the cloud resource that triggered the alert to manually resolve the issue.*
++
+Prisma Cloud allows you to pivot directly from an alert to view the violating cloud resource and resolve the issue manually.
++
+.. Filter the alert list to show alerts with Alert Status *Open* and select the Policy Type. For example, *Network* or *Config*.
+
+.. Select the policy for which you want to resolve alerts.
++
+Review the recommendations for resolving the policy violation.
+
+.. Click *Resource* (image:pivot-icon.png[]) to pivot to the cloud resource containing the violation you want to resolve and follow the recommended steps.
++
+When you click *Resource*, Prisma Cloud redirects the request to the cloud platform. To view the resource details in the cloud platform, you must be logged in to the same account on the cloud platform where you want to further investigate.
+
+
+. *View details of an alert on the alerts details page.*
++
+Prisma Cloud enables you to click on alerts so that you can view the details organized in a table. The default values that are displayed in the table are:
++
+** *Alert ID*—A unique string that corresponds to the alert.
+
+** *Resource Name*—The name of the violating resource.
+
+** *Account*—The corresponding cloud account of the violating resource.
+
+** *Region*—The geographic location of where your cloud account is located.
+
+** *Account Owners*—The five account owners associated with a cloud account in alphabetical order.
+
+. *View the build-time details in an alert.*
++
+To shift left and fix issues earlier in the development lifecycle, you need a way to easily identify misconfigurations caused by drift between your code (IaC) resource and deployed resource. The Traceability information helps you connect an alert from the production environment back to the origin templates in your upstream development environment. If you want the alert details to include information to trace and attribute which build-time resource has caused a policy violation for a runtime resource deployed in your cloud account, complete the following steps.
+
+.. Enable a *Configuration* policy with the subtype Run, Build and attach it to an alert rule on Prisma Cloud.
+
+.. Onboard your IaC templates through a VCS integration.
+
+.. Make sure the Terraform resources include the *yor_trace* https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-code-security/scan-monitor/iac-tag-and-trace[tag] so that your IaC resources are tagged with a unique UUID for tracing the relationship between the code resource and the runtime resource that is deployed from it. This is not necessary for CloudFormation.
+
+
+
+
+[.task]
+[#id7c53e13f-afbc-4f38-97dc-c9db1aa025ba]
+== Create Views
+
+Create customized views to prioritize alerts.
+
+Create *Saved Views* to organize your alerts into appropriate threat vector categories. Prisma Cloud provides a set of default views—Overview, Highest Priority, Incidents, Risky Attack Paths, Exposure, Vulnerabilities, Misconfigurations, CIEM, Malware, and Data.
+
+[.procedure]
+. *Add View*.
+
+.. Select menu:Alerts to see the default views. Each view includes preset filters that display the most relevant alerts for the category.
++
+[NOTE]
+====
+Because the default (*System*) views are an opinionated suggestion of the filters that provide the results for a specific problem. If you make changes to a *System* view, you will either need to save it as a custom view with a new name or clear your edits. 
+====
+
+
+.. *Add View* to clone the view that you’re currently on and then make changes. You can create a maximum of 20 views.
+
+. *Manage Views*.
+
+.. *Manage Views* to reorder (image:alerts/alerts-views-reorder.png[]), hide/show (image:alerts/alerts-views-visible.png[]), duplicate (image:alerts/alerts-views-duplicate.png[]), and delete (image:alerts/alerts-views-delete.png[]) your saved views.
++
+[NOTE]
+====
+You cannot delete or rename the *System* views.
+====
++
+image::alerts/alerts-views-4.png[]
+
+.. *Done* and *Confirm* to view your changes (the Confirm option displays only when you want to delete a view).
+ 

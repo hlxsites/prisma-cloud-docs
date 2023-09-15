@@ -1,0 +1,64 @@
+:topic_type: task
+
+[.task]
+== Connect CircleCI  
+
+Integrate Prisma Cloud with your CircleCI system to allow dynamic, automated, and context-specific scans within your development workflow. This includes continuous scanning of your workflow whenever changes are pushed or triggered, integrating security checks, and catching issues as soon as they are introduced. Additionally, it automates shift-left actions such as notifying developers or creating tickets, based on scan results.
+
+[.procedure]
+. Before you begin:
++
+.. Add the Prisma Cloud IP addresses and hostname for Application Security to an https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/get-started-with-prisma-cloud/enable-access-prisma-cloud-console.html[allow list], to enable access to the Prisma Cloud Console.
+.. https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-code-security/get-started/generate-access-keys[Generate and copy the Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a key ID and secret.
+.. Grant the Prisma user integrating Prisma Cloud with CircleCI *Administrator* user permissions. 
+
+. On the Prisma Cloud Application Security console.
+.. In Application Security, select *Settings > *Connect Provider* > *Code & Build Providers* > *CircleCI* (under CI/CD Runs).
++
+The *Add Environment Variable* step of the integration wizard opens.
+. Add the Prisma Cloud access key as an environment variable in CircleCI.
+.. Copy the Prisma access key name from the *Name* field.
+.. Enter your access key ID and secret generated in step 1.1 above in the *Value* step > *Next*.
++
+NOTE: Access key format: `PRISMA_ACCESS_KEY::PRISMA_SECRET_KEY`.
+
+. Modify your *.circleci/config.yaml* file using the following code, and select *Done*.
++
+NOTE: Replace the prisma-api-url value according to your environment. 
++
+[source.yml]
+----
+version: 2.1
+orbs:
+  bridgecrew: bridgecrew/checkov@1.0.5
+jobs:
+  build:
+    executor: checkov/default
+    steps:
+      - checkout
+      - checkov/scan:
+          directory: .
+          api-key-variable: BC_API_KEY 
+          prisma-api-url: https://api2.prismacloud.io
+----
+
+
+. Verify integration: Select *Settings* > *CI/CD Runs* tab.
++
+Your integrated CircleCI repositories will be displayed. 
+
+. Next step: Monitor and manage scan results.
++
+The next CircleCI scan will automatically include the selected repositories. 
+
+To view scan results and resolve issues, select *Application Security* > *Projects* > *CI/CD Runs* tab. See xref:../../../risk-management/monitor-code-build-issues.adoc[here] for more information.  
+
+
+
+////
+. Verify integration: Select *Settings* > *Code & Build Providers* > Click the *CI/CD Runs* tab.
++
+Confirm that the status of your integrated repositories is displayed as successful.
++
+NOTE: You may have to wait for up to three minutes before the status of the integration is updated and displays *Succeeded*.
+////
