@@ -6,35 +6,21 @@ on:
       - main
 
 jobs:
-  changedfiles:
+  publish:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    outputs:
-      all: ${{ steps.changedfiles.outputs.all }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Get changed files
-        id: changedfiles
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "all<<$EOF" >> "$GITHUB_OUTPUT"
-          git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.event.after }} | xargs >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
-          cat "$GITHUB_OUTPUT"
-
-  publish:
-    runs-on: ubuntu-latest
-    needs: changedfiles
-    if: ${{ needs.changedfiles.outputs.all }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: '18'
       - run: npm ci
-      - run: npm run publish:batch ${{ needs.changedfiles.outputs.all }}
+      - name: Get changed files
+        run: |
+          ARG_FILE="${{ runner.temp }}/to_publish"
+          git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.event.after }} | xargs > "$ARG_FILE"
+      - run: node ./bin/batch-publish.js -f ${{ runner.temp }}/to_publish
