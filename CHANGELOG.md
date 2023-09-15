@@ -1,3 +1,10 @@
+## [1.0.47](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.46...v1.0.47) (2023-09-15)
+
+
+### Bug Fixes
+
+* force deploy ([fe8114e](https://github.com/hlxsites/prisma-cloud-docs/commit/fe8114e7db28f1e9acac9a9eb04c18f59f10e908))
+
 ## [1.0.46](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.45...v1.0.46) (2023-09-14)
 
 
