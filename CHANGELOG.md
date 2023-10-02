@@ -1,3 +1,10 @@
+## [1.0.52](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.51...v1.0.52) (2023-10-02)
+
+
+### Bug Fixes
+
+* more selective section metadata ([1261ffd](https://github.com/hlxsites/prisma-cloud-docs/commit/1261ffd1e706bda277526eb12970f4cffe579fc5))
+
 ## [1.0.51](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.50...v1.0.51) (2023-10-02)
 
 
