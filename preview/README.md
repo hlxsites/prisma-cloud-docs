@@ -9,7 +9,7 @@ The preview functionality is only enabled on `.hlx.page` sites and for local dev
 search parameter `?branch=` to the Franklin site URL. The branch value should be the name of the pushed branch in the 
 repository where the documentation stays.
 
-Example URL with branch param: https://main--prisma-cloud-docs-website--hlxsites.hlx.page/prisma/prisma-cloud/en/compute/ops-guide/getting-started/test-sitemap?branch=ian-test-multi-commit-preview.
+Example URL with branch param: https://main--prisma-cloud-docs-website--hlxsites.hlx.page/en/compute/ops-guide/getting-started/test-sitemap?branch=ian-test-multi-commit-preview.
 The branch `test-multi-commit-preview` maps to the pushed branch `ian-test-multi-commit-preview` https://github.com/hlxsites/prisma-cloud-docs/tree/ian-test-multi-commit-preview.
 
 Once the PR is merged and the branch is deleted, the preview URL will only display the chapter title.

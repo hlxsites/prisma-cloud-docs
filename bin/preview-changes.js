@@ -16,7 +16,7 @@ export default async function previewChanges({
   github, context, glob, changes,
 }) {
   const host = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.page';
-  const fallbackPath = '/prisma/prisma-cloud/en';
+  const fallbackPath = '/en';
   const branch = context.payload.pull_request.head.ref;
   const adocChanges = changes.filter((change) => change.endsWith('.adoc'));
 
@@ -67,7 +67,7 @@ export default async function previewChanges({
 
   const buildLink = (href) => `<a href="${href}" target="_blank">${href.split('?')[0].split('/').slice(5).join('/')}</a>`;
 
-  let body = adocChanges.length ? `Preview URL(s):\n\n${adocChanges.map((change) => `- ${buildLink(`${host}/prisma/prisma-cloud${cleanChangePath(change)}?branch=${branch}`)}`).join('\n')}`
+  let body = adocChanges.length ? `Preview URL(s):\n\n${adocChanges.map((change) => `- ${buildLink(`${host}${cleanChangePath(change)}?branch=${branch}`)}`).join('\n')}`
     : `Default Preview URL: ${buildLink(`${host}${fallbackPath}?branch=${branch}`)}`;
 
   if (missingReferences.length) {

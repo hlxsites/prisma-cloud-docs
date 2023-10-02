@@ -16,8 +16,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ORIGIN = process.env.ORIGIN || 'https://docs.paloaltonetworks.com';
 const META_SOURCE = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.live/metadata.json';
 const LOCALES = ['en', 'jp'];
-const ROOT_PATH = '/prisma/prisma-cloud';
-const DESTINATION = (locale) => resolve(__dirname, `../prisma/prisma-cloud/docs/sitemaps/sitemap-${locale}.xml`);
+const ROOT_PATH = '';
+const DESTINATION = (locale) => resolve(__dirname, `../docs/sitemaps/sitemap-${locale}.xml`);
 
 // metadata
 const CHANGE_FREQ = 'weekly';
@@ -50,7 +50,7 @@ const OS_VERSION = async (bookPath) => {
  * ```xml
  * <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:coveo="https://www.coveo.com/schemas/metadata">
  *  <url>
- *   <loc>https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/get-started-with-prisma-cloud/prisma-cloud-licenses</loc>
+ *   <loc>https://docs.paloaltonetworks.com/en/enterprise-edition/admin/get-started-with-prisma-cloud/prisma-cloud-licenses</loc>
  *   <lastmod>2023-03-09T18:27:45.191-08:00</lastmod>
  *   <changefreq>weekly</changefreq>
  *   <priority>1.0</priority>
