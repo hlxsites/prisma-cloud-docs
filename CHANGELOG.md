@@ -1,3 +1,10 @@
+## [1.0.50](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.49...v1.0.50) (2023-10-02)
+
+
+### Bug Fixes
+
+* better sitemap generation, fix sitemap bug ([a6e9341](https://github.com/hlxsites/prisma-cloud-docs/commit/a6e9341176ea8d44eab922b265fb17e89cae6666))
+
 ## [1.0.49](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.48...v1.0.49) (2023-10-02)
 
 
