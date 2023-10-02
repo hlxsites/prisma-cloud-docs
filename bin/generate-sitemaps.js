@@ -69,6 +69,23 @@ const OS_VERSION = async (bookPath) => {
  * ```
  *
  * @see https://docs.google.com/spreadsheets/d/1bf3i1YpdE61-Vc06NBCbm1-x1znJfd2kd2tL-oinvV8/edit
+ *
+ * @typedef {{
+ *   loc: string;
+ *   lastmod: string;
+ *   changefreq: string;
+ *   priority: string;
+ *   'coveo:metadata': {
+ *     sitemap_modificationdate: string;
+ *     sitemap_docType: string;
+ *     'sitemap_book-name': string;
+ *     sitemap_productcategory: string;
+ *     sitemap_osversion: string;
+ *     sitemap_productFamily: string;
+ *     sitemap_groupId: string;
+ *     sitemap_isLatestVersion: boolean;
+ *   }
+ * }} SitemapEntry
  */
 
 const isParentTopic = (topic) => !!(topic).topics;
@@ -79,7 +96,14 @@ const fetchMetadata = async () => {
     return _pendingMeta;
   }
 
-  _pendingMeta = fetch(META_SOURCE).then((res) => res.json());
+  _pendingMeta = fetch(META_SOURCE)
+    .then((res) => res.json())
+    .then((meta) => {
+      // sort by `URL` key length descending,
+      // since the longest common path will be the most specific matching entry
+      meta.data = meta.data.sort((a, b) => b.URL.length - a.URL.length);
+      return meta;
+    });
   return _pendingMeta;
 };
 
@@ -136,7 +160,76 @@ const processBook = (data, repoPath) => {
 };
 
 /**
- * @returns {Promise<any[]>}
+ * @param {{
+ *   topic: {
+ *     title: string;
+ *     path: string;
+ *   }
+ *   adocPath: string;
+ *   data: RawBookData;
+ *   dir: string;
+ * }} param0
+ * @returns {Promise<SitemapEntry>}
+ */
+const getSitemapEntry = async ({
+  topic,
+  adocPath,
+  data,
+  dir,
+}) => {
+// get rid of /docs prefix, since the page to visit on browser doesn't have it
+  const path = topic.path.substring('/docs'.length);
+  const lastMod = (await getLastModified(adocPath)).toISOString(); // relative to repo root
+
+  const entry = {
+    loc: `${ORIGIN}${ROOT_PATH}${path}`,
+    lastmod: lastMod,
+    changefreq: CHANGE_FREQ,
+    priority: PRIORITY,
+    'coveo:metadata': {
+      sitemap_modificationdate: lastMod,
+      sitemap_docType: DOC_TYPE,
+      'sitemap_book-name': data.book?.title,
+      sitemap_productcategory: PRODUCT_CATEGORY,
+      sitemap_productFamily: PRODUCT_FAMILY,
+      sitemap_groupId: GROUP_ID(data.book?.title),
+    },
+  };
+
+  const osVers = await OS_VERSION(dir);
+  if (osVers) {
+    entry['coveo:metadata'].sitemap_osversion = osVers;
+  } else {
+    console.warn('os version not defined for topic: ', topic.path, dir);
+  }
+
+  const isLatestVers = await IS_LATEST_VERSION(dir);
+  if (isLatestVers) {
+    entry['coveo:metadata'].sitemap_isLatestVersion = isLatestVers;
+  }
+
+  return entry;
+};
+
+/**
+ * @param {Record<string, unknown>} obj
+ * @param {import('xmlbuilder2/lib/interfaces.js').XMLBuilder} builder
+ */
+const addXMLObject = (obj, builder) => {
+  Object.entries(obj).forEach(([key, val]) => {
+    if (!val) return;
+
+    const next = builder.ele(key);
+    if (typeof val === 'object') {
+      addXMLObject(val, next);
+    } else {
+      next.txt(val);
+    }
+  });
+};
+
+/**
+ * @returns {Promise<void>}
  */
 const generateSitemaps = async () => {
   await Promise.all(LOCALES.map(async (locale) => {
@@ -147,6 +240,9 @@ const generateSitemaps = async () => {
       'xmlns:xhtml': 'http://www.w3.org/1999/xhtml',
       'xmlns:coveo': 'https://www.coveo.com/schemas/metadata',
     });
+
+    /** @type {SitemapEntry[]} */
+    const entries = [];
 
     await Promise.all(rawBooks.map(async ({
       repoPath,
@@ -167,40 +263,31 @@ const generateSitemaps = async () => {
             return;
           }
         } catch (e) {
-          console.error(`invalid adoc (error), excluding from sitemap: ${adocPath}`, e);
+          if (e.code === 'ENOENT') {
+            console.error(`invalid adoc (missing), excluding from sitemap: ${adocPath}`);
+          } else {
+            console.error(`error with adoc file, excluding from sitemap: ${adocPath}`);
+          }
           return;
         }
 
+        const entry = await getSitemapEntry({
+          dir,
+          adocPath,
+          topic,
+          data,
+        });
+        entries.push(entry);
+      });
+
+      // sort entries by path alphabetically to try to avoid blowing up git history size
+      // eslint-disable-next-line no-nested-ternary
+      entries.sort((a, b) => ((a.loc < b.loc) ? -1 : (a.loc > b.loc) ? 1 : 0));
+
+      // add them to the xml
+      entries.forEach((entry) => {
         const url = urlset.ele('url');
-        // get rid of /docs prefix, since the page to visit on browser doesn't have it
-        const path = topic.path.substring('/docs'.length);
-        const lastMod = (await getLastModified(adocPath)).toISOString(); // relative to repo root
-        /* eslint-disable indent */
-        const meta = url
-          .ele('loc').txt(`${ORIGIN}${ROOT_PATH}${path}`).up()
-          .ele('lastmod').txt(lastMod).up()
-          .ele('changefreq').txt(CHANGE_FREQ).up()
-          .ele('priority').txt(PRIORITY).up()
-          .ele('coveo:metadata');
-
-        meta
-            .ele('sitemap_modificationdate').txt(lastMod).up()
-            .ele('sitemap_docType').txt(DOC_TYPE).up()
-            .ele('sitemap_book-name').txt(data.book?.title).up()
-            .ele('sitemap_productcategory').txt(PRODUCT_CATEGORY).up()
-            .ele('sitemap_productFamily').txt(PRODUCT_FAMILY).up()
-            .ele('sitemap_groupId').txt(GROUP_ID(data.book?.title)).up();
-
-        const osVers = await OS_VERSION(dir);
-        if (osVers) {
-          meta.ele('sitemap_osversion').txt(osVers).up();
-        }
-        const isLatestVers = await IS_LATEST_VERSION(dir);
-        if (isLatestVers) {
-            meta.ele('sitemap_isLatestVersion').txt(isLatestVers).up();
-        }
-        meta.up();
-        /* eslint-enable indent */
+        addXMLObject(entry, url);
       });
     }));
 
