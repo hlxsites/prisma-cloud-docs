@@ -176,7 +176,9 @@ class FranklinConverter implements AdocTypes.Converter {
           ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
-        const sectionMeta = !id.startsWith('_')
+
+        // only apply section meta anchors on sections, and when an id is explicitly authored
+        const sectionMeta = !id.startsWith('_') && this.sectionDepth > 1
           ? `\n${this.makeBlock('section-metadata', `<div><div>id</div><div>${id}</div></div>`)}`
           : '';
         this.sectionDepth -= 1;
