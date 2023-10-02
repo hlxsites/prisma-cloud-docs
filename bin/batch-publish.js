@@ -85,7 +85,6 @@ async function batchPublish(ppaths) {
     const data = fs.readFileSync(paths[1]);
     const text = data.toString('utf8');
     paths = text.split(/\s+/);
-    console.log('file paths: ', paths);
   }
 
   paths = paths.filter(isDocPath).map(cleanPath);

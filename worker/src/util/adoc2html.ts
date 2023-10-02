@@ -144,7 +144,9 @@ class FranklinConverter implements AdocTypes.Converter {
           if (refNodeKey) {
             text = refs[refNodeKey]?.title;
           }
-        } else {
+        }
+
+        if (!text) {
           text = node.getText();
         }
 
