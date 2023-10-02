@@ -12,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const OWNER = 'hlxsites';
 const REPO = 'prisma-cloud-docs';
-const PATH_PREFIX = '/prisma/prisma-cloud';
+const PATH_PREFIX = '';
 const REPO_ROOT = resolve(__dirname, '..');
 const ADMIN_API = process.env.ADMIN_API ?? 'https://admin.hlx.page';
 const API_URL = (api, path) => `${ADMIN_API}/${api}/${OWNER}/${REPO}/main${path}`;
