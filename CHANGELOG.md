@@ -1,3 +1,10 @@
+## [1.0.49](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.48...v1.0.49) (2023-10-02)
+
+
+### Bug Fixes
+
+* remove path prefix ([b44831b](https://github.com/hlxsites/prisma-cloud-docs/commit/b44831bff7a0ec529849c0809df21c9900ff0f29))
+
 ## [1.0.48](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.47...v1.0.48) (2023-09-16)
 
 
