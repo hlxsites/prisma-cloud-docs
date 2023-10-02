@@ -1,3 +1,10 @@
+## [1.0.51](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.50...v1.0.51) (2023-10-02)
+
+
+### Bug Fixes
+
+* undefined xref titles ([11c1b14](https://github.com/hlxsites/prisma-cloud-docs/commit/11c1b147641a53dcb1e79c80a247f6d9623be4d6))
+
 ## [1.0.50](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.49...v1.0.50) (2023-10-02)
 
 
