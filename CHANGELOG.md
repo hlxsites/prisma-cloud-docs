@@ -1,3 +1,10 @@
+## [1.0.53](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.52...v1.0.53) (2023-10-03)
+
+
+### Bug Fixes
+
+* remove japan locale, change default origin ([9fa54d5](https://github.com/hlxsites/prisma-cloud-docs/commit/9fa54d5ade1397a1c7cdc4e624afc166f943feae))
+
 ## [1.0.52](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.51...v1.0.52) (2023-10-02)
 
 
