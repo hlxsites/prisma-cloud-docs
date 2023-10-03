@@ -13,11 +13,12 @@ import normalizePath from '../tools/normalize-path.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const SITEMAP_MAX_BYTES = 8 * 1000 * 1000; // 8MB
 const ORIGIN = process.env.ORIGIN || 'https://docs.paloaltonetworks.com';
 const META_SOURCE = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.live/metadata.json';
 const LOCALES = ['en', 'jp'];
 const ROOT_PATH = '';
-const DESTINATION = (locale) => resolve(__dirname, `../docs/sitemaps/sitemap-${locale}.xml`);
+const DESTINATION = (locale, index) => resolve(__dirname, `../docs/sitemaps/sitemap-${locale}-${index}.xml`);
 
 // metadata
 const CHANGE_FREQ = 'weekly';
@@ -200,7 +201,7 @@ const getSitemapEntry = async ({
   if (osVers) {
     entry['coveo:metadata'].sitemap_osversion = osVers;
   } else {
-    console.warn('os version not defined for topic: ', topic.path, dir);
+    // console.warn('os version not defined for topic: ', topic.path, dir);
   }
 
   const isLatestVers = await IS_LATEST_VERSION(dir);
@@ -229,76 +230,142 @@ const addXMLObject = (obj, builder) => {
 };
 
 /**
+ * Get size in bytes of entry in
+ * @param {Record<string, unknown>} [obj]
+ * @returns {number} bytes
+ */
+const estimateEntrySize = (obj = {}) => {
+  const doc = create({ version: '1.0', encoding: 'utf-8' });
+  const urlset = doc.ele('urlset');
+  const url = urlset.ele('url');
+  addXMLObject(obj, url);
+  const xmlStr = doc.end({ prettyPrint: true });
+
+  // get just the entry size
+  const entry = /(\s*<url>(\s|.)*<\/url>)/gm.exec(xmlStr)[1];
+  return Buffer.byteLength(entry, 'utf8');
+};
+
+/**
+ * Make a single sitemap XML string.
+ *
+ * @param {SitemapEntry[]} entries
+ * @returns {string}
+ */
+const makeSitemap = (entries) => {
+  const doc = create({ version: '1.0', encoding: 'utf-8' });
+  const urlset = doc.ele('urlset', {
+    xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9',
+    'xmlns:xhtml': 'http://www.w3.org/1999/xhtml',
+    'xmlns:coveo': 'https://www.coveo.com/schemas/metadata',
+  });
+  entries.forEach((entry) => {
+    const url = urlset.ele('url');
+    addXMLObject(entry, url);
+  });
+  return doc.end({ prettyPrint: true });
+};
+
+/**
+ * @param {RawBook[]} rawBooks
+ * @returns {Promise<SitemapEntry[]>}
+ */
+const getBookEntries = async (rawBooks) => {
+  /** @type {SitemapEntry[]} */
+  const entries = [];
+
+  await Promise.all(rawBooks.map(async ({
+    repoPath,
+    data,
+    dir,
+  }) => {
+    const { topics } = processBook(data, repoPath);
+
+    await processQueue(topics, async (topic) => {
+      const adocPath = `.${topic.path}.adoc`;
+      try {
+        const stat = await fs.stat(adocPath);
+        if (!stat.isFile()) {
+          console.warn(`invalid adoc (directory), excluding from sitemap: ${adocPath}`);
+          return;
+        }
+      } catch (e) {
+        if (e.code === 'ENOENT') {
+          // console.error(`invalid adoc (missing), excluding from sitemap: ${adocPath}`);
+        } else {
+          console.error(`error with adoc file, excluding from sitemap: ${adocPath}`);
+        }
+        return;
+      }
+
+      const entry = await getSitemapEntry({
+        dir,
+        adocPath,
+        topic,
+        data,
+      });
+      entries.push(entry);
+    });
+  }));
+  return entries;
+};
+
+/**
+ * @param {string} locale
+ */
+const generateLocaleSitemaps = async (locale) => {
+  console.info(`[bin/generate-sitemaps] processing locale: ${locale}`);
+  const rawBooks = await extractRawBooks(resolve(__dirname, `../docs/${locale}`));
+  const entries = await getBookEntries(rawBooks);
+
+  console.info(`[bin/generate-sitemaps] (${locale}) total entries: ${entries.length}`);
+
+  // sort entries by path alphabetically to try to avoid blowing up git history size
+  // eslint-disable-next-line no-nested-ternary
+  entries.sort((a, b) => ((a.loc < b.loc) ? -1 : (a.loc > b.loc) ? 1 : 0));
+
+  // estimate largest entry by URL length, roughly true
+  const largestEntry = entries.reduce((a, b) => ((!a || b.loc.length > a.loc.length) ? b : a));
+
+  const bytesPerEntry = estimateEntrySize(largestEntry);
+  const entryLimit = Math.floor(SITEMAP_MAX_BYTES / bytesPerEntry);
+  console.info(`[bin/generate-sitemaps] (${locale}) entry limit per file: ${entryLimit} (est. ${bytesPerEntry}B per entry)`);
+
+  /** @type {string[]} */
+  const sitemaps = [];
+  let i = 0;
+  while (i < entries.length) {
+    const segment = entries.slice(i, i + entryLimit);
+    sitemaps.push(makeSitemap(segment));
+    i += entryLimit;
+  }
+
+  return sitemaps;
+};
+
+/**
  * @returns {Promise<void>}
  */
 const generateSitemaps = async () => {
-  await Promise.all(LOCALES.map(async (locale) => {
-    const rawBooks = await extractRawBooks(resolve(__dirname, `../docs/${locale}`));
-    const doc = create({ version: '1.0', encoding: 'utf-8' });
-    const urlset = doc.ele('urlset', {
-      xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9',
-      'xmlns:xhtml': 'http://www.w3.org/1999/xhtml',
-      'xmlns:coveo': 'https://www.coveo.com/schemas/metadata',
-    });
+  const localeSitemapsList = await Promise.all(LOCALES.map(generateLocaleSitemaps));
 
-    /** @type {SitemapEntry[]} */
-    const entries = [];
+  await Promise.all(localeSitemapsList.map(
+    async (localeSitemaps, localeIndex) => {
+      const locale = LOCALES[localeIndex];
 
-    await Promise.all(rawBooks.map(async ({
-      repoPath,
-      data,
-      dir,
-    }) => {
-      // eslint-disable-next-line no-unused-vars
-      const { chapters, topics } = processBook(data, repoPath);
-      // console.log(`[bin/generate-sitemaps] (${locale}) ${chapters.length} chapters`);
-      // console.log(`[bin/generate-sitemaps] (${locale}) ${topics.length} topics`);
-
-      await processQueue(topics, async (topic) => {
-        const adocPath = `.${topic.path}.adoc`;
-        try {
-          const stat = await fs.stat(adocPath);
-          if (!stat.isFile()) {
-            console.warn(`invalid adoc (directory), excluding from sitemap: ${adocPath}`);
-            return;
-          }
-        } catch (e) {
-          if (e.code === 'ENOENT') {
-            console.error(`invalid adoc (missing), excluding from sitemap: ${adocPath}`);
-          } else {
-            console.error(`error with adoc file, excluding from sitemap: ${adocPath}`);
-          }
-          return;
-        }
-
-        const entry = await getSitemapEntry({
-          dir,
-          adocPath,
-          topic,
-          data,
-        });
-        entries.push(entry);
-      });
-
-      // sort entries by path alphabetically to try to avoid blowing up git history size
-      // eslint-disable-next-line no-nested-ternary
-      entries.sort((a, b) => ((a.loc < b.loc) ? -1 : (a.loc > b.loc) ? 1 : 0));
-
-      // add them to the xml
-      entries.forEach((entry) => {
-        const url = urlset.ele('url');
-        addXMLObject(entry, url);
-      });
-    }));
-
-    // write to /docs/sitemaps/sitemap-${locale}.xml
-    const content = doc.end({ prettyPrint: true });
-    const sitemapPath = DESTINATION(locale);
-    console.log(`[bin/generate-sitemaps] writing ${sitemapPath}`);
-    await fs.writeFile(sitemapPath, content);
-  }));
+      await Promise.all(localeSitemaps.map(
+        async (sitemap, i) => {
+          const sitemapPath = DESTINATION(locale, i);
+          console.info(`[bin/generate-sitemaps] writing ${
+            (Buffer.byteLength(sitemap, 'utf8') / 1000 / 1000).toFixed(2)
+          }mb to ${sitemapPath}`);
+          await fs.writeFile(sitemapPath, sitemap);
+        },
+      ));
+    },
+  ));
 };
 
 generateSitemaps()
-  .then(() => console.log(`[bin/generate-sitemaps] generated sitemaps for ${LOCALES.length} locales`))
+  .then(() => console.info(`[bin/generate-sitemaps] generated sitemaps for ${LOCALES.length} locales`))
   .catch(console.error);
