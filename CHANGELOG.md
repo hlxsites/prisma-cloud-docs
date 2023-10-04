@@ -1,3 +1,10 @@
+## [1.0.54](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.53...v1.0.54) (2023-10-04)
+
+
+### Bug Fixes
+
+* validate-doc-paths regex ([6869f15](https://github.com/hlxsites/prisma-cloud-docs/commit/6869f158a78d909fa65bdbcb20f71a4ffbfaf173))
+
 ## [1.0.53](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.52...v1.0.53) (2023-10-03)
 
 
