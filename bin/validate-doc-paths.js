@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
-const INVALID_PATH = /[^a-z0-9/\-.]|-{2,}|(-\.)|(\.-)/gi;
+const INVALID_PATH = /[^a-z0-9/\-.]|[-_]{2,}|(-\.)|(\.-)/i;
 const IGNORED_FOLDERS = ['_graphics'];
 const IGNORED_FILES = ['book_point_release.yml'];
 const ROOT_FOLDER = 'docs/';
@@ -31,7 +31,6 @@ function isInvalidPath(path) {
   if (IGNORED_FOLDERS.find((folder) => path.includes(`/${folder}/`))) {
     return false;
   }
-
   return INVALID_PATH.test(path);
 }
 
