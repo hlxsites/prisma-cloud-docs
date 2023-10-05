@@ -36,8 +36,8 @@ const processBook = (data, repoPath) => {
       // check if the topic has the same key as it's parent,
       // in which case add a redirect from the `/x/x` to `/x` path.
       if (topicKey === parentKey) {
-        const source = `${parentPath}/${topicKey}.plain.html`;
-        const destination = `${parentPath}.plain.html`;
+        const source = `${parentPath}.plain.html`;
+        const destination = `${parentPath}/${topicKey}.plain.html`;
         redirects[source] = destination;
       }
       return;
