@@ -1,3 +1,10 @@
+## [1.0.55](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.54...v1.0.55) (2023-10-09)
+
+
+### Bug Fixes
+
+* workaround for incorrect mime types for some gifs ([8f79fff](https://github.com/hlxsites/prisma-cloud-docs/commit/8f79fff107eca293ba1af0d065223880c21f5d5e))
+
 ## [1.0.54](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.53...v1.0.54) (2023-10-04)
 
 
