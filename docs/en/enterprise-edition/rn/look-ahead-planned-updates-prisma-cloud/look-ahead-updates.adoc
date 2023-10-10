@@ -15,7 +15,7 @@ The information and functionality described below are in preview, and the actual
 * <<new-policies>>
 * <<policy-updates>>
 * <<api-ingestions>>
-* <<compute-enhamcement>>
+* <<compute-enhancement>>
 * <<deprecation-notices>>
 * <<compute-eos-notices>>
 
@@ -100,30 +100,6 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |POLICY UPDATES
 |DESCRIPTION
 
-2+|*Policy Updates—RQL*
-
-|*GCP Kubernetes Engine Clusters have Network policy disabled*
-//RLP-116618
-
-|*Changes—* The RQL will be updated as per the current network policy settings for GCP Kubernetes Engine Clusters.
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = 'networkPolicy does not exist or networkPolicy.[*] is empty'
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = networkConfig.datapathProvider does not equal ADVANCED_DATAPATH and (addonsConfig.networkPolicyConfig.disabled is true or networkPolicy.enabled does not exist or networkPolicy.enabled is false )
-----
-
-*Severity—* Low
-
-*Policy Type—* Config
-
-*Impact—* Low. Existing alerts where the cluster is configured with *ADVANCED_DATAPATH* will be resolved as *Policy_Updated*. New alerts will be generated where it checks for *Calico Kubernetes Network policy* not being configured.
 
 |===
 
@@ -136,111 +112,10 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-conta
 |SERVICE
 |API DETAILS
 
-|*Amazon EC2*
-//RLP-116078
-|*aws-waf-v2-rule-group*
-
-Additional permissions required:
-
-* screen:[wafv2:GetRuleGroup]
-
-You must manually add or update the CFT template to enable the permission.
-
-|*AWS DataSync*
-//RLP-116076
-|*aws-datasync-task-execution*
-
-Additional permissions required:
-
-* screen:[datasync:ListTaskExecutions]
-* screen:[datasync:DescribeTaskExecution]
-* screen:[datasync:ListTagsForResource]
-
-The Security Audit role includes the permissions.
-
-|*AWS Transfer Family*
-//RLP-116077	
-|*aws-transfer-family-security-policy*
-
-Additional permissions required:
-
-* screen:[transfer:DescribeSecurityPolicy]
-* screen:[transfer:DescribeServer]
-* screen:[transfer:ListServers]
-
-The Security Audit role includes the permissions.
-
-|*Azure AD B2C*
-//RLP-115879
-|*azure-active-directory-b2c-tenants*
-
-Additional permission required:
-
-* screen:[Microsoft.AzureActiveDirectory/b2cDirectories/read]
-
-The Reader role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-115492
-
-|*gcloud-vertex-ai-aiplatform-feature-store*
-
-Additional permissions required:
-
-* screen:[aiplatform.featurestores.list]
-* screen:[aiplatform.featurestores.getIamPolicy]
-
-The Viewer role includes the permissions.
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-115501
-
-|*gcloud-vertex-ai-aiplatform-metadata-store*
-
-Additional permission required:
-
-* screen:[aiplatform.metadataStores.list]
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-115502
-
-|*gcloud-vertex-ai-aiplatform-tensor-board*
-
-Additional permission required:
-
-* screen:[aiplatform.tensorboards.list]
-
-The Viewer role includes the permission.
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-115503
-
-|*gcloud-vertex-ai-aiplatform-index-endpoint*
-
-Additional permission required:
-
-* screen:[aiplatform.indexEndpoints.list]
-
-The Viewer role includes the permission.
-
-|*OCI Cloud Guard*
-//RLP-115883
-|*oci-cloudguard-target*
-
-Additional permissions required:
-
-* screen:[CG_TARGET_INSPECT]
-* screen:[CG_TARGET_READ]
-
-You must update the Terraform template to enable the permissions.
 
 |===
 
-[#compute-enhamcement]
+[#compute-enhancement]
 
 ===  Compute Enhancements
 
@@ -333,26 +208,6 @@ You can continue to use the above endpoints for the Alibaba and OCI cloud accoun
 |The Prisma Cloud Microsegmentation module was announced as End-of-Sale effective 31 August 2022. As of the 24.1.2 release planned in end January 2024, the subscription is going End of Life and will be no longer available for use. 
 
 In preparation for the EoL, make sure to uninstall all instances of the Enforcer, the Microsegmentation agent deployed in your environment, as these agents will no longer enforce any security policies on traffic on or across your hosts.
-
-|tt:[*Date Filter Support*]
-//RLP-115176
-
-| 23.10.2
-| -
-
-|The Date filter is being deprecated on *Inventory > Assets*, *Asset Explorer*, and *Compliance > Overview*. 
-
-With the 23.10.2 release, the date filter will no longer be supported. With this change, links in Compliance reports that were generated before 23.10.2 will be removed.
-
-|tt:[*Data Dashboard*]
-//RLP-110472
-
-| 23.10.2
-| -
-
-|The Data Dashboard is being deprecated on *Dashboards > Data*. 
-
-With the 23.10.2 release, the widgets in the *Data dashboard* will be available in a custom dashboard. To view the Data Security information, you will be able to create a custom dashboard and add the data security widgets.
 
 
 |tt:[*Prisma Cloud CSPM REST API for Alerts*]
