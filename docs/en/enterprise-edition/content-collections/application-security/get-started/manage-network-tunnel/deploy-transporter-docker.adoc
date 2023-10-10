@@ -8,29 +8,26 @@ Setup the Transporter network tunnel using Docker containers.
 [.procedure]
 
 . Verify the prerequisites.
+.. Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console 
+.. Configure your firewall or proxy to allow egress network access for the IP addresses in the allow list
+.. xref:../../../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a key ID and secret
+.. https://docs.docker.com/engine/install/[Install Docker]
 +
-* Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console 
-* Configure your firewall or proxy to allow egress network access for the IP addresses in the allow list
-
-* xref:../../../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a key ID and secret
-
-* https://docs.docker.com/engine/install/[Install Docker]
-+
-NOTE: The Transporter Client requires Docker to be installed in your environment with network access to your self-hosted VCS 
+NOTE: The Transporter Client requires Docker to be installed in your environment with network access to your self-hosted VCS. 
 
 //You also need egress network access to establish a communication channel with Prisma Cloud.
 
-* *SSL Certificate and path access*: To establish a secure webhook connection to your VCS, you need to provide Transporter with an SSL certificate. The webhook is established in your environment, so you need to define to the certificate storage path and key
+.. *SSL Certificate and path access*: To establish a secure webhook connection to your VCS, you need to provide Transporter with an SSL certificate. The webhook is established in your environment, so you need to define to the certificate storage path and key
 
-* Hardware resources: Before you start make sure you have the following resources available:
+.. Hardware resources: Before you start make sure you have the following resources available:
 
-** For environments where the total size of all scanned repositories is under 4 GB, use a machine with 2 CPUs and 8 GB of RAM (tested on m5.large EC2 instance)
+* For environments where the total size of all scanned repositories is under 4 GB, use a machine with 2 CPUs and 8 GB of RAM (tested on m5.large EC2 instance)
 
-** For environments where the total size of all scanned repositories is over 4 GB, use a machine with 4 CPUs and 16 GB of RAM (tested on m5.xlarge EC2 instance)
+* For environments where the total size of all scanned repositories is over 4 GB, use a machine with 4 CPUs and 16 GB of RAM (tested on m5.xlarge EC2 instance)
 
 //. Access Manage Network Tunnels to configure the Transporter on Prisma Cloud.
 
-. In Application Security, select *Settings > Manage Network Tunnels*.
+. In Application Security, select *Settings* > *Manage Network Tunnels*.
 //+
 //image::application-security/transporter-1.png[]
 
@@ -124,6 +121,7 @@ You can view the integrated Transporter through *Settings > Manage Network Tunne
 You can add ta new Transporter to an VCS integration through *Settings* > *Manage Network Tunnels* > *Manage Integrations* > *New Transporter*.
 Adding the Transporter to an integration establishes the communication channel between the VCS and Prisma Cloud.
 In this example, the GitLab Self-managed integration to Prisma Cloud uses the Transporter.
+
 +
 image::application-security/transporter-18.png[]
 
@@ -134,60 +132,68 @@ You can manage the existing Transporter configuration through *Settings* > *Mana
 * *Edit* Transporter: Select a Transporter from the menu in the Transporter field > edit required the values in the same manner as the integration process above 
 * *Delete* Transporter: Select a Transporter from the menu in the Transporter field > Click *Delete Transporter*
 
-* *Health Check*
-+
-The health check shows you how many VCS integrations you have and the last time the connection was established. The Transporter runs health checks every hour, but you can also refresh the connection anytime on Prisma Cloud..
+=== Health Check
+
+The health check shows you how many VCS integrations you have and the last time the connection was established. The Transporter runs health checks every hour, but you can also refresh the connection anytime on Prisma Cloud.
 
 Prisma Cloud scans every Transporter configuration for a secure connection. After authenticating the secure connection, you will view the health check of the Transporter.
+
 +
 image::application-security/transporter-19.png[]
-+
-Prisma cloud supports three types of client health checks:
-+
-** *Transporter Client at VCS Domain*
-+
-`Route - /internalcheck`
-+
-Checks if there is a connection with your VCS machine using Transporter.
-+
-*** Apply additional headers to a `CURL` command in order to point to the VCS that the check should be applied to:
-+
-**** `x-forwarded-host`: The VCS machine hostname for the check
-**** `x-forwarded-path`: The path of the request to send to the VCS machine
-**** `x-forwarded-proto`: The protocol which to check connectivity on - https or http
 
-** *Transporter Client at Prisma Cloud Server*
-+
+Prisma cloud supports three types of client health checks:
+
+=== Transporter Client at VCS Domain
+
+`Route - /internalcheck`
+
+Checks if there is a connection with your VCS machine using Transporter.
+
+* Apply additional headers to a `CURL` command in order to point to the VCS that the check should be applied to:
+
+** `x-forwarded-host`: The VCS machine hostname for the check
+
+** `x-forwarded-path`: The path of the request to send to the VCS machine
+
+** `x-forwarded-proto`: The protocol which to check connectivity on - https or http
+
+=== Transporter Client at Prisma Cloud Server
+
 `Route - /externalcheck`
-+
+
 Checks if there is internet access to Prisma server from the machine. Uses `/login` route with `accessKey` and `secretKey`.
 
-** *Transporter Client in client environment and Transporter Client at Prisma Cloud environment*
-+
+=== Transporter Client in client environment and Transporter Client at Prisma Cloud environment
+
 `Route - /selfcheck`
-+
+
 Checks if the certificates provided are valid for the domain of the machine and runs on request over HTTPS.
-+
+
 `/healthz`, is used for docker `healthcheck` on the internal port of docker `8080`.
 +
 NOTE: You must run at least 3 test checks before running the Docker image. The responses must be `ok:true` when the checks pass, or `ok:false` when they fail.
 
+[.task]
 
-* *Delete Transporter*
-+
+=== Delete Transporter
+
 Deleting the Transporter is only possible if you have removed existing VCS  integrations with the Transporter.
-+
-. Select *Settings > Code & Build Providers > Manage Network Tunnel* and then select a specific Transporter name.
-+
+
+[.procedure]
+
+. Select *Settings > Code & Build Providers > Manage Network Tunnel* > select a specific Transporter name.
 . Select *Delete Transporter*.
 +
 image::application-security/transporter-20.png[]
 
-* *Edit Transporter*
-+
-You can choose to edit the configuration of an existing Transporter.
-+
-. Select *Settings > Code & Build Providers > Manage Network Tunnel* and then select a specific Transporter name.
-+
+[.task]
+
+=== Edit Transporter
+
+You can edit the configuration of an existing Transporter.
+
+[.procedure]
+
+. Select *Settings > Code & Build Providers > Manage Network Tunnel* > select a specific Transporter name.
 . Edit the configurations and then select *Next*.
 
