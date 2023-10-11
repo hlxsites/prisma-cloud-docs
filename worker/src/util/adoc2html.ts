@@ -380,6 +380,10 @@ class FranklinConverter implements AdocTypes.Converter {
     const processCols = (cols: AdocTypes.Table.Cell[]) => {
       return cols.map((col) => {
         let content = col.getContent();
+        if (Array.isArray(content)) {
+          content = content.join('\n');
+        }
+
         // wrap cell data in para if not already
         if (!content.startsWith('<p>')) {
           content = `<p>${content}</p>`;
