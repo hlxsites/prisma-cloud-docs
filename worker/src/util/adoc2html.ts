@@ -378,7 +378,14 @@ class FranklinConverter implements AdocTypes.Converter {
     const { head, body, foot } = node.getRows();
 
     const processCols = (cols: AdocTypes.Table.Cell[]) => {
-      return cols.map((col) => /* html */`<div>${col.getContent()}</div>`).join('');
+      return cols.map((col) => {
+        let content = col.getContent();
+        // wrap cell data in para if not already
+        if (!content.startsWith('<p>')) {
+          content = `<p>${content}</p>`;
+        }
+        return /* html */`<div>${content}</div>`;
+      }).join('');
     };
 
     const processRows = (rows: AdocTypes.Table.Cell[][]) => {
