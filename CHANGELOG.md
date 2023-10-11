@@ -1,3 +1,11 @@
+## [1.0.56](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.55...v1.0.56) (2023-10-11)
+
+
+### Bug Fixes
+
+* col width ([820ed12](https://github.com/hlxsites/prisma-cloud-docs/commit/820ed1230564456a3160216f139bb9ab22d730ca))
+* colspans for all cells ([9ef9180](https://github.com/hlxsites/prisma-cloud-docs/commit/9ef9180fa098687dc93eba70cf9003f2af03db78))
+
 ## [1.0.55](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.54...v1.0.55) (2023-10-09)
 
 
