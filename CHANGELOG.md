@@ -1,3 +1,10 @@
+## [1.0.57](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.56...v1.0.57) (2023-10-11)
+
+
+### Bug Fixes
+
+* wrap table cells in paragraphs ([70ad15e](https://github.com/hlxsites/prisma-cloud-docs/commit/70ad15e548c2d47d55f1006870c8dff52819bc80))
+
 ## [1.0.56](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.55...v1.0.56) (2023-10-11)
 
 
