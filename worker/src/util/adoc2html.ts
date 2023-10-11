@@ -348,10 +348,16 @@ class FranklinConverter implements AdocTypes.Converter {
       colSpans = undefined;
     }
 
-    let colWidths = node.getRows().body[0].map((col) => col.getWidth() || '1');
+    // use the row with most columns for col widths
+    const longestRow = [
+      ...node.getRows().body,
+    ].sort((rowa, rowb) => (rowa.length > rowb.length ? -1 : 1))[0] || [];
+
+    let colWidths = longestRow.map((col) => col.getWidth() || '1');
     if (!colWidths.some((c) => c !== '1')) {
       colWidths = undefined;
     }
+
     return this.tableToBlock('table', node, {
       preRows: `${colSpans
         ? /* html */`<div><div>col-spans</div><div>${colSpans.join(',')}</div></div>`
