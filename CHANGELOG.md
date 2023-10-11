@@ -1,3 +1,10 @@
+## [1.0.58](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.57...v1.0.58) (2023-10-11)
+
+
+### Bug Fixes
+
+* handle array cells ([2d3e4a2](https://github.com/hlxsites/prisma-cloud-docs/commit/2d3e4a210427b1179781d4decfaf58d253b13fe5))
+
 ## [1.0.57](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.56...v1.0.57) (2023-10-11)
 
 
