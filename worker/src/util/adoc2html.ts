@@ -338,23 +338,31 @@ class FranklinConverter implements AdocTypes.Converter {
   }
 
   tableToTableBlock(node: AdocTypes.Table): string {
-    let colSpans = (
-      node.getHeadRows()[0]
-      ?? node.getBodyRows()[0]
-      ?? []
-    ).map((col) => col.getColumnSpan() || '1');
+    const { head, body, foot } = node.getRows();
+    // 2D array of cell colspans
+    let colSpans: number[][] = ([
+      ...head,
+      ...body,
+      ...foot,
+    ]).map((row) => row.map((col) => col.getColumnSpan() || 1));
 
-    if (!colSpans.some((c) => c !== '1')) {
+    if (!colSpans.some((row) => row.some((col) => col !== 1))) {
       colSpans = undefined;
     }
 
-    let colWidths = node.getRows().body[0].map((col) => col.getWidth() || '1');
+    // use the row with most columns for col widths
+    const longestRow = [
+      ...node.getRows().body,
+    ].sort((rowa, rowb) => (rowa.length > rowb.length ? -1 : 1))[0] || [];
+
+    let colWidths = longestRow.map((col) => col.getWidth() || '1');
     if (!colWidths.some((c) => c !== '1')) {
       colWidths = undefined;
     }
+
     return this.tableToBlock('table', node, {
       preRows: `${colSpans
-        ? /* html */`<div><div>col-spans</div><div>${colSpans.join(',')}</div></div>`
+        ? /* html */`<div><div>col-spans</div><div>${colSpans.map((row) => row.join(',')).join(';')}</div></div>`
         : ''}`
         + `${colWidths
           ? /* html */`<div><div>col-widths</div><div>${colWidths.join(',')}</div></div>`
