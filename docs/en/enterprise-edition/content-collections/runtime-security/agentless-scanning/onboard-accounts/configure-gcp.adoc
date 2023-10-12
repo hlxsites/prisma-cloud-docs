@@ -1,11 +1,17 @@
-:topic_type: task
 [#configure-gcp-agentless]
+== Agentless Scanning of GCP Accounts
+
+Prisma Cloud gives you the flexibility to choose between agentless security and agent-based security using Defenders. Agentless scanning lets you inspect the risks and vulnerabilities of a cloud workload or container image without installing an agent or affecting the execution of your workload. Prisma Cloud supports agentless scanning for vulnerabilities and compliance on GCP hosts, containers, and clusters. To learn more about how agentless scanning works, see the xref:../agentless-scanning.adoc[How Agentless Scanning Works?][How Agentless Scanning Works?]
+
+When you xref:../../../connect/connect-cloud-accounts/onboard-gcp/onboard-gcp.adoc[onboard your GCP account], you can enable agentless scanning.
+Complete the steps below to configure agentless scanning based on the needs of your deployment.
+
 [.task]
-== Configure Agentless Scanning for GCP
+=== Configure Agentless Scanning for GCP
 
 [.procedure]
 
-. Log in to the Prisma Cloud administrative console.
+. Log in to Prisma Cloud Runtime Security.
 
 . Select *Runtime Security > Manage > Cloud Accounts*.
 
@@ -17,7 +23,7 @@
 
 . Expand the *Advanced settings*.
 +
-image::runtime-security/agentless-gcp-pcee-advanced-settings.png[width=400]
+image::runtime-security/agentless-gcp-pcee-advanced-settings.png[]
 
 .. *Select where to scan*: For GCP accounts, you can decide between xref:../agentless-scanning.adoc#scanning-modes[two scanning modes].
 
@@ -102,6 +108,8 @@ Refer to the GCP documentation to https://cloud.google.com/vpc/docs/shared-vpc[l
 
 . Click *Save*.
 
+include::frag-start-agentless-scan.adoc[leveloffset=1]
+
 [.task]
 [#gcp-encrypted-volumes]
 === Scan Encrypted Volumes When Using Hub Mode
@@ -128,4 +136,18 @@ gcloud projects add-iam-policy-binding KMS_PROJECT_ID \
 . Replace `KMS_PROJECT_ID` with any project you need to use.
 The KMS project isn't required to be the hub account or the target accounts you wish to scan.
 
-include::frag-start-agentless-scan.adoc[leveloffset=1]
+=== Troubleshooting
+
+If you have organization-level policies blocking external connections, GCP applies the policies at the project level, which includes all the VMs in the applicable projects.
+When using agentless scanning in same account mode in GCP, the policy blocks the external connection to the Prisma Cloud console causing errors.
+There are to options to resolve the errors.
+
+* You can use custom network resources to manage the external connections of your deployment.
+
+If you have organization-level policies blocking external connections using public IPs, GCP applies the policies at the project level, which includes all the VMs in the applicable projects.
+When using agentless scanning in same account mode in GCP, this policy blocks the external connection to the Prisma Cloud console, resulting in errors and scan failure.
+
+You have the following options to solve this issue.
+
+* You can create custom network resources to manage the external connections that Prisma Cloud uses to communicate with its backend. - see the *Network resources* step in the *Configure Agentless Scanning for GCP* section.
+* You can configure agentless scanning to operate in hub account mode and exclude the hub project from the organization-level policy blocking external connections.

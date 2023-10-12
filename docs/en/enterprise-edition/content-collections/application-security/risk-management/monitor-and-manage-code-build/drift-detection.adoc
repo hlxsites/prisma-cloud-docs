@@ -81,26 +81,25 @@ Suppressing a drift will continue to display the drift detection result until th
 +
 image::application-security/drift-3.png[]
 
-[.task]
-
 === Create Alert Rules for Detecting Drift
 
 An alert rule for Drift Detection generates alerts when a drift occurs for resources deployed on AWS (Amazon Web Services), Google Cloud Platform (GCP) and Azure. When creating a drift alert rule, you must specify the account groups for which you would like to receive alerts and include the policies for which you want to generate alerts.
 // You can create a single alert rule that includes all account groups and policies. You can also customize alert rules to include details like Policy Severity, Policy Compliance or Policy Label with regions, and even resource tags.
 // You can create a single rule alert for all account groups or choose to customize an alert rule for a specific requirement.
+Learn more on how to create an alert rule xref:../../..//alerts/create-an-alert-rule-cloud-infrastructure.adoc[here].
 
-[.procedure]
-
+////
 . Verify that the policies for AWS, GCP and Azure are enabled.
 
-.. Select *Policies* and verify if the specific policies are enabled for AWS, GCP and Azure cloud accounts..
+.. Select *Governance* and verify if the specific policies are enabled for AWS, GCP and Azure cloud accounts.
++
 In this example, the policy `AWS traced resources are manually modified` is enabled.
 +
 image::application-security/drift-5.png[]
 
 . Add an alert rule.
 
-.. Select *Alerts > Alert Rules* and then select *Add Alert Rules*.
+.. Select *Alerts* 
 +
 image::application-security/drift-6.png[]
 
@@ -163,69 +162,73 @@ To make changes, *Edit*, the *Added Details*, *Assigned Targets* and *Assigned P
 image::application-security/drift-14.png[]
 +
 You can view the alert counts for the new drift detection on *Alerts > Overview.*
+////
 
 [.task]
 
-=== View Drift Alerts on Prisma Cloud
+=== View Drift Alerts
 
-Prisma Cloud generates alerts on drifts detected for policies included in the alert rule monitoring AWS and Azure cloud resources for runtime resources that deviate in configuration from IaC templates used to deploy these resources.
+Prisma Cloud operates a comprehensive alerting system designed to identify and report on configuration drifts. These alerts are triggered when deviations from the originally defined Infrastructure as Code (IaC) templates are detected within the runtime configuration of AWS, GCP, and Azure cloud resources.
+
+Prisma Cloud closely monitors your cloud resources and actively compares the live configurations against the specifications laid out in your IaC templates. Whenever a discrepancy is detected, an alert is generated to promptly notify you of the inconsistency. This ensures that any runtime deviations from your intended configurations are promptly identified and brought to your attention, enabling you to take timely corrective actions.
 
 [.procedure]
 
-. Select *Alerts > Alerts Overview*.
-
-. Search or filter the policy in the list.
+. Search or filter the policy.
 +
 In this example, using the word 'traced' to search for `AWS traced resources are manually modified.`
 +
 image::application-security/drift-16.png[]
 
-. Select *Alert Count* to view the alerts with granular information.
+. Select *Alerts*.
 +
-In this example, for the `AWS traced resources are manually modified` policy, there are 15 alert counts. Accessing each alert gives you granular information for each drift alert with IaC Resource Details.
+image::application-security/drift-25.png[]
++
+In this example, for the `AWS traced resources are manually modified` policy, there are 2 alert counts. Accessing each alert gives you granular information for each drift alert with IaC Resource Details.
 +
 image::application-security/drift-17.png[]
 
-. Select *Resource Name* to view information on drifts identified in a specific resource.
+. View Contextual Information on Drift.
 
-. Select *Alert ID* to view the traceability of drifts within the resource.
+.. Select *Asset Name* or *Alert ID* to gain insight into drifts identified within a specific asset.
 +
-For each drift alert, you can view the following details.
-
-* *Resource Name*
+For each drift alert, you can see the following details.
 +
-When selecting a  resource name within the drift policy violation, you can view granular information about the resource and when and where the resource is likely to be modified.
+* *Asset Name*
 +
-Using the information here on *Details, Audit Trail, Alerts, Findings* and *Relationship* you can understand where the drift may originate.
+Selecting the asset name within the drift policy violation allows you to view detailed information about the resource. This includes when and where the resource is likely to be modified.
++
+Use the information in *Details, Attack Paths, Audit Trail, Alerts, Findings, Vulnerabilities, Relationships and Objects* you can understand understand the origin of the drift.
 +
 image::application-security/drift-18.png[]
-
++
 * *Alert ID*
 +
-When selecting an alert ID within a resource where the drift policy violation occurs, you can view granular information on the time and status of the alert across *Overview, Traceability, Alert Rules, Resource Config, Action Log,* and *Attribution Event*.
+By selecting an alert ID within a resource where the drift policy violation occurs, you can view detailed information about the time and status of the alert. This includes *Overview, Traceability, Alert Rules, Resource Config, Action Log, and Attribution Event*.
 +
-In *Overview* you can see *Details* and *IaC Resource Details* which include information on IaC Framework the resource is using, *Git Provider* and *Git Organization* from where the resource is hosted, including the IaC filename, last modification information and update.
+In *Overview*, find *Details* and *IaC Resource Details*, containing information about the IaC Framework, Git Provider, Git Organization, IaC filename, last modification details, and updates.
 +
 image::application-security/drift-19.png[]
 +
-In *Traceability* you can see Details and Build-time Resource which include information on the resource IaC State, if the resource has drifted or not. Traceability tag includes the `yor_trace` tag that Prisma Cloud uses to trace drifts using Checkov. In summary on the build-time resource you can see *Repository, File Path* and *Resource* the alert originates.
+In *Traceability*, find information about the resource's IaC State and whether it has drifted or not. The traceability tag includes the yor_trace tag used by Prisma Cloud to trace drifts with Checkov. On the build-time resource, you'll see Repository, File Path, and Resource information related to the alert's origin.
 +
 image::application-security/drift-20.png[]
 +
-Using *View Drift Details*, you can access the drift on *Projects* and choose to *Fix* or *Suppress* the drift (if the status is open). You can also choose to view the alert origin on the AWS or Azure cloud platform by selecting *View in Console*.
+Using *View Drift Details*, you can access the drift on *Projects* and choose to *Fix* or *Suppress* the drift (if the status is open). You can also choose to view the alert origin on the AWS, Azure or GCP cloud platform by selecting *View in Console*.
 +
 image::application-security/drift-21.png[]
 
-* *Dismiss and Snooze*
-In addition to monitoring which resource you choose to receive an alert,  you choose to Dismiss or Snooze an alert within a policy violation.
-In this example, you see the Dismiss and Snooze actions corresponding to the resource and  alert ID.
-+
+=== Dismiss and Snooze Drifts
+
+In addition to monitoring which resource you choose to receive an alert, you choose to Dismiss or Snooze an alert within a policy violation.
+In this example, you see the Dismiss and Snooze actions after selecting a specific policy violation.
+
 image::application-security/drift-22.png[]
 
 ** *Dismiss*: You can manually dismiss an alert even when the issue is not resolved with a mandatory reason for dismissing the alert. You can choose to reopen a dismissed alert if needed manually. Alerts that are manually dismissed remain *Dismissed* even when the same policy violation reoccurs.
 +
 image::application-security/drift-23.png[]
-+
+
 ** *Snooze*: You can temporarily snooze an active alert for a specific period with a mandatory reason for snoozing the alert. At the expiration of the specific timer, the alert automatically changes to an *Open* or *Resolved* status depending on if the drift was fixed.
 +
 image::application-security/drift-24.png[]
