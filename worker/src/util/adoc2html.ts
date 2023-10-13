@@ -63,6 +63,8 @@ class FranklinConverter implements AdocTypes.Converter {
 
   sectionDepth = 0;
 
+  sectionMetadata: Record<string, string> = {};
+
   inSection = false;
 
   doc: AdocTypes.Document;
@@ -165,23 +167,42 @@ class FranklinConverter implements AdocTypes.Converter {
       section: (node) => {
         const level = node.getLevel();
         const title = node.getTitle();
-        const id = node.getId();
         const tag = `h${level + 1}`;
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        const closer = this.sectionDepth > 0 ? '</div>' : '';
+        const id = node.getId();
+        const customId = !id.startsWith('_');
+        if (customId) {
+          this.sectionMetadata.id = id;
+        }
+
+        // NOTE: the following order is important,
+        // particularly when using with section depth.
         this.sectionDepth += 1;
 
         const content = `
           ${title ? `<${tag}${!id.startsWith('_') ? ` id="${id}"` : ''}>${title}</${tag}>` : ''}
           ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
+        let sectionMeta = '';
+        if (this.sectionDepth > 1) {
+          // only apply section meta anchors on sections, and when an id is explicitly authored
+          sectionMeta = `\n${this.makeBlock(
+            'section-metadata',
+            this.makeSectionMetadataValue({
+              ...this.sectionMetadata,
+              ...(customId ? { id } : {}),
+            }),
+          )}`;
+        }
+
+        const closer = this.sectionDepth > 0 ? '</div>' : '';
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
 
-        // only apply section meta anchors on sections, and when an id is explicitly authored
-        const sectionMeta = !id.startsWith('_') && this.sectionDepth > 1
-          ? `\n${this.makeBlock('section-metadata', `<div><div>id</div><div>${id}</div></div>`)}`
-          : '';
         this.sectionDepth -= 1;
+        if (this.sectionDepth < 1) {
+          // reset section metadata for next section
+          this.sectionMetadata = {};
+        }
 
         return wrapper + sectionMeta;
       },
@@ -265,13 +286,19 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       olist: (node) => {
         const blocks = node.getBlocks() as AdocTypes.AbstractBlock[];
-        const content = blocks.map((block) => this.convert(block)).join('');
-        const list = content ? `<ol>${content}</ol>` : '';
+        const content = blocks.map((block) => this.convert(block)).join('\n');
+        const list = content ? `<ol>\n${content}\n</ol>` : '';
         if (node.getAttribute('role') !== 'procedure') {
           return list;
         }
-        // TODO: use section metadata for procedure instead
-        return this.makeBlock('procedure', list, [], true);
+
+        // procedures are entirely contained inside a section, alone
+        const pre = this.closeSection();
+        this.sectionMetadata.style = 'procedure';
+        const section = this.makeBlock('procedure', list, [], true);
+        // const section = `<div>${list || ''}</div>`;
+        const post = this.closeSection();
+        return `${pre}${section}${post}`;
       },
       list_item: (node) => {
         const baseContent = node.getContent();
@@ -327,6 +354,37 @@ class FranklinConverter implements AdocTypes.Converter {
         return this.tableToTableBlock(node);
       },
     };
+  }
+
+  closeSection() {
+    if (this.sectionDepth < 1) {
+      return '';
+    }
+
+    let sectionMeta = '';
+    if (this.sectionDepth > 1 && Object.keys(this.sectionMetadata).length > 0) {
+      // only apply section meta anchors on sections, and when an id is explicitly authored
+      sectionMeta = `\n${this.makeBlock(
+        'section-metadata',
+        this.makeSectionMetadataValue({
+          ...this.sectionMetadata,
+        }),
+      )}`;
+    }
+
+    // const closer = this.sectionDepth > 0 ? '</div>' : '';
+    // const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
+
+    this.sectionDepth = 0;
+    this.sectionMetadata = {};
+
+    return `</div>${sectionMeta}`;
+  }
+
+  makeSectionMetadataValue(data: Record<string, string>): string {
+    return `<div>${Object.entries(data).map(([key, val]) => {
+      return `<div>${key}</div><div>${val}</div>`;
+    }).join('\n')}</div>`;
   }
 
   makeBlock(name: string, content: string, variants: string[] = [], singleCell = false): string {
