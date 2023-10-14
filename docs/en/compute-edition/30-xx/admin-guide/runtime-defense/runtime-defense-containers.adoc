@@ -50,8 +50,8 @@ For example, Jenkins containers dynamically build and run numerous processes, an
 Constructing accurate models to monitor processes in containers that build, run, test, and deploy software is impractical, although other aspects of the model can still have utility.
 Prisma Cloud automatically detects known containers and overrides one more aspect of the model with _capabilities_.
 
-Capabilities are discrete enhancements to the model that tune runtime behaviours for specific apps and configurations.
-Rather than changing what's learned in the model, they modify how Prisma Cloud acts on observed behaviours.
+Capabilities are discrete enhancements to the model that tune runtime behaviors for specific apps and configurations.
+Rather than changing what's learned in the model, they modify how Prisma Cloud acts on observed behaviors.
 
 For example, the following model for the Jenkins container is enhanced with the capability for writing and executing binaries.
 
@@ -70,7 +70,7 @@ Prisma Cloud automatically detects when new images are added anywhere in the env
 
 image::runtime_defense_792723.png[width=600]
 
-* Relearn: You can relearn an existing model by clicking the *Relearn* button in the *Actions* menu.
+* Extend Learning: You can relearn an existing model by clicking the *Extend Learning* button in the *Actions* menu.
 This is an additive process, so any existing static and behavioral modeling remain in place.
 
 * Manual Learning: You can manually alter the duration of learning at any time by starting and stopping the *Manual Learning* option in the *Actions* menu.
@@ -131,7 +131,7 @@ An empty policy disables runtime defense entirely.
 To enable runtime defense, create a rule.
 New runtime rules can be created in Console in *Defend > Runtime > Container policy*.
 
-As with every other subsystem in Prisma Cloud, you can customize how it works by creating rules, scoping rules to desired objects with filtering and pattern matching, and xref:../configure/rule_ordering_pattern_matching.adoc[properly ordering the rules] in the policy.
+As with every other subsystem in Prisma Cloud, you can customize how it works by creating rules, scoping rules to desired objects with filtering and pattern matching, and xref:../configure/rule-ordering-pattern-matching.adoc[properly ordering the rules] in the policy.
 Rules are evaluated sequentially from top to bottom.
 Once a match is found for the scope, the actions in the rule are executed and enforced.
 Only a single rule is ever enforced for a given event.
@@ -150,7 +150,7 @@ It is an alternative to stopping an entire container when a violation of a runti
 // Good info here:
 // https://github.com/twistlock/twistlock/issues/8521
 
-Prisma Cloud's runtime defense system compares the state of a running container to the predictive model created for it during its xref:../runtime_defense/runtime_defense.adoc#learning-mode[learning period].
+Prisma Cloud's runtime defense system compares the state of a running container to the predictive model created for it during its xref:../runtime-defense/runtime-defense.adoc#learning-mode[learning period].
 When abnormal activity is detected, such as executing an unknown process, Prisma Cloud can:
 
 * Raise an alert by generating an audit.
@@ -307,6 +307,8 @@ This control lets developers and DevOps engineers troubleshoot and investigate i
 It applies to all types of attach sessions, including `kubectl exec` and `docker exec`.
 Only Linux containers are supported; Windows containers aren't supported.
 +
+NOTE: This feature is not applicable for Tanzu Application Service Defender (Windows and Linux).
++
 Note that this control bypasses all runtime activity - process, network, and file system - even though it's situated in the process tab.
 +
 The following event types can't be bypassed by this control: DNS queries, listening ports, and raw sockets.
@@ -319,13 +321,13 @@ Prisma Cloud can detect anomalous process activity. You can independently set di
 - *Processes started from modified binaries* -- Detect when binaries from a container image have been modified and executed.
 
 - *Crypto miners* -- Prisma Cloud can detect crypto miners.
-If detected, a xref:../runtime_defense/incident_types/crypto_miners.adoc#[crypto miner incident type] is created in Incident Explorer.
+If detected, a xref:../runtime-defense/incident-types/crypto-miners.adoc#[crypto miner incident type] is created in Incident Explorer.
 When this option is enabled, Defender takes action on this type of incident according to the configured <<_effect,effect>>.
 
-- *Reverse shell attacks* -- Detect usage of xref:../runtime_defense/incident_types/reverse_shell.adoc[reverse shell].
+- *Reverse shell attacks* -- Detect usage of xref:../runtime-defense/incident-types/reverse-shell.adoc[reverse shell].
 
 - *Detect processes used for lateral movement* -- Prisma Cloud can detect processes, such as netcat, known to facilitate lateral movement between resources on a network.
-If detected, a xref:../runtime_defense/incident_types/lateral_movement.adoc#[lateral movement incident type] is created in Incident Explorer.
+If detected, a xref:../runtime-defense/incident-types/lateral-movement.adoc#[lateral movement incident type] is created in Incident Explorer.
 When this option is enabled, Defender takes action on this type of incident according to the configured <<_effect,effect>>.
 
 - *Processes started with SUID* -- Detect suspicious privilege escalation by watching for binaries with the setuid bit. 
@@ -336,7 +338,7 @@ However, if `ls` is explicitly permitted by your policy, but `sudo ls` is detect
 If you explicitly allow `sudo`, and then run `sudo ls`, this control is bypassed.
 
 - *Explicitly denied processes* - Enter a denied *Processes list* to tailor your runtime model, and choose the *Processes effect*.
-Processes can be listed by name or MD5 hash.
+Processes can be listed by a process name.
 
 
 ===== Runtime container models
@@ -386,7 +388,7 @@ Defining network policy through runtime rules lets you specify permitted and for
 - *Port scanning* -- Port scans are used by attackers to find which ports on a network are open and listening.
 If enabled, Defenders detect network behavior indicative of port scanning.
 The events generated from *Port scanning* can have alert or block effects.
-If detected, a xref:../runtime_defense/incident_types/port_scanning.adoc#[port scanning incident] is created in Incident Explorer.
+If detected, a xref:../runtime-defense/incident-types/port-scanning.adoc#[port scanning incident] is created in Incident Explorer.
 
 - *Raw sockets* -- Prisma Cloud can monitor your environment for raw sockets, which can indicate suspicious activity.
 Raw sockets let programs manipulate packet headers and implement custom protocols to do things such as port scanning.
@@ -452,7 +454,7 @@ Prisma Cloud's runtime defense for container file systems continuously monitors 
 
 Prisma Cloud monitors and protects against the following types of suspicious file system activity:
 
-* Changes to any file in folders _not_ in the xref:../runtime_defense/runtime_defense.adoc#models[runtime model].
+* Changes to any file in folders _not_ in the xref:../runtime-defense/runtime-defense.adoc#models[runtime model].
 * Changes to binaries or certificates anywhere in the container.
 * Changes to SSH administrative account configuration files anywhere in the container.
 * Presence of malware anywhere in the container.
@@ -527,4 +529,4 @@ An alert will be only raised once with a message saying there is a low likelihoo
 
 ==== Custom rules
 
-For details on custom rules policy refer to xref:../runtime_defense/custom_runtime_rules.adoc[this] section.
+For details on custom rules policy refer to xref:../runtime-defense/custom-runtime-rules.adoc[this] section.
