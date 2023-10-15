@@ -2,11 +2,23 @@
 
 Custom image checks give you a way to write and run your own compliance checks to assess, measure, and enforce security baselines in your environment.
 
-Prisma Cloud lets you implement your own custom image checks with simple scripts.
-Custom compliance checks are supported for Linux containers (docker or CRI-O), Windows containers (docker) and Linux Hosts 
+Prisma Cloud lets you implement your custom image checks with simple scripts.
+
+Custom compliance checks are supported for:
+
+- Linux and Windows hosts (Host configured for docker, containerd, or CRI-O)
+- Docker images on Linux hosts
+- OCI images
+
+Custom compliance checks are not supported for:
+
+- Linux and Windows containers
+- Docker images on Windows hosts
+- Tanzu Application Service (TAS) defender
+- GKE Autopilot
 
 A custom image check consists of a single script.
-The script's exit code determines the result of the check, where 0 is pass and 1 is fail.
+The script's exit code determines the result of the check, where "0" stands for pass and "1" stands for fail.
 
 Scripts are executed in the default shell.
 The most common default shell for Linux is bash, but that's not always the case.
@@ -24,66 +36,61 @@ For example, `#!/bin/bash` specifies that the Linux Bourne-again (bash) shell sh
 For containers, Defender runs the compliance checks inside a restricted sandboxed container instantiated from the image being scanned, thus avoiding the unnecessary risk associated with running arbitrary code.
 
 For hosts, Defender runs the compliance checks on the host itself with unrestricted privileges to allow execution of any script.
-In order to limit exposure, this feature is disabled by default.
+To limit exposure, this feature is disabled by default.
 
 Every compliance check in the system has a unique ID.
 Custom checks are automatically assigned an ID, starting with the number 9000.
 As new custom checks are added, they are automatically assigned the next available ID (9001, 9002, and so on).
 
-NOTE: If a new rule with custom compliance checks is added, or an existing rule is updated with a new custom compliance check, Prisma Cloud drops the cached compliance and vulnerability scan results for registries, and rescans registry images.
-In a scaled-out environment with large registries, repeated changes to custom compliance checks could have a negative impact on Prisma Cloud's performance.
+//https://redlock.atlassian.net/browse/CWP-35759
+[NOTE]
+====
+Prisma Cloud drops the cached compliance and vulnerability scan results for registries, and rescans registry images, whenever:
 
+* A new rule referencing a custom compliance check is added, or
+* An existing compliance check referenced by some existing rule is updated, or
+* An existing rule is updated with a new custom compliance check.
+
+In a scaled-out environment with large registries, repeated changes to custom compliance checks could adversely impact on the performance of Prisma Cloud.
+====
 
 [.task]
-=== Enabling custom compliance checks for hosts
+=== Create a new Custom Check
 
-By default, custom compliance checks for hosts is disabled.
+Create a new compliance rule that includes your custom check, and specify the action to take when the check fails (ignore, alert, block).
 
+*Prerequisite*
+
+* Enable custom compliance checks for hosts (By default, this is disabled).
+** Go to *Manage > Defenders > Advanced Settings*.
+** Set *Custom Compliance Checks for hosts* to enabled.
+*** Deploy Defenders to your environment. Or if already deployed, xref:../install/deploy-defender/redeploy-defender.adoc[redeploy your Defenders].
+
+NOTE: You must redeploy the Defenders everytime you enable *Custom Compliance Checks for hosts*.
 If you enable the feature, and then later disable it, the disabled state is effective immediately.
-You don't need to redeploy Defenders when you switch to the disabled state.
-You only need to redeploy Defenders when switching to the enabled state.
+You don't have to redeploy Defenders when you switch to the disabled state.
 
 [.procedure]
-. Go to *Manage > Defenders > Advanced Settings*.
 
-. Set *Custom Compliance Checks for hosts* to enabled.
+. Go to *Defend > Compliance > Custom*.
 
-. Deploy Defenders to your environment.
-Or if already deployed, redeploy your Defenders.
+. Select *Add check*.
 
+.. Enter a *Name* and a *Description*.
 
-[.task]
-=== Creating a new custom check
+.. Specify the *Severity* of the compliance issue.
 
-The flow for writing and operationalizing a custom check is:
+.. Enter a <<example-scripts,script>>.
 
-* Write a custom check.
-* Create a new compliance rule that includes your custom check, and specifies the action to take when the check fails (ignore, alert, block).
-
-[.procedure]
-. Open Console
-
-. Write a new custom check.
-
-.. Go to *Defend > Compliance > Custom*.
-
-.. Click *Add check*.
-
-.. Enter a name and description.
-
-.. Specify the severity of the compliance issue.
-
-.. Enter a <<_example_scripts,script>>.
-
-.. Click *Save*.
+.. Select *Save*.
 
 . Update the compliance policy to run your check.
 
 .. Go to *Defend > Compliance > Containers and Images* for containers or *Defend > Compliance > Hosts* for hosts.
 
-.. Click *Add rule*.
+.. Select *Add rule*.
 
-.. Enter a rule name.
+.. Enter a *Rule name*, *Notes*, and select the *Scope* for the resources.
 
 .. Under *Compliance actions*, narrow the compliance checks displayed.
 +
@@ -95,16 +102,16 @@ You should see a list of custom checks you've implemented, starting with ID 9000
 
 .. Select an action for your custom check (*Ignore*, *Alert*, or *Block*).
 
-.. Click *Save*.
+.. Select *Save*.
 
 . Validate your setup by reviewing the compliance reports under *Monitor > Compliance*.
 
 
-[#_example_scripts]
+[#example-scripts]
 === Example scripts
 
 The following example scripts show how to run some basic checks, such as checking file permissions.
-Use them as starting point for your own scripts.
+Use them as starting point for your scripts.
 Any special utilities or programs required by your script must be installed in the image being evaluated.
 
 [.section]
@@ -143,7 +150,7 @@ Otherwise, it fails.
 
 [source,bash]
 ----
-if grep -Fxq "John" /etc/passwd
+if grep -F "John" /etc/passwd
 then
     echo yes
 else
