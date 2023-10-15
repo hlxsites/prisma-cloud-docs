@@ -68,7 +68,7 @@ image::./waas_bot_flowchart.png[]
 +
 image::./waas_known_bots.png[width=500]
 
-. Choose <<bot_actions, actions>> for each bot category.
+. Choose <<bot-actions, actions>> for each bot category.
 
 ==== Unknown bots
 
@@ -76,7 +76,7 @@ image::./waas_known_bots.png[width=500]
 +
 image::./waas_unknown_bots.png[width=500]
 
-. Choose <<bot_actions, actions>> for each bot category.
+. Choose <<bot-actions, actions>> for each bot category.
 
 .. If `Request anomalies` are enabled, choose sensitivity threshold
 +
@@ -108,7 +108,7 @@ image:./waas_add_user_bot.png[width=500]
 
 .. *Inbound IP sources* - specify xref:./waas-advanced-settings.adoc#network-lists[Network list] of IP addresses from which the bot originates.
 
-. Choose an <<bot_actions, action>> to apply.
+. Choose an <<bot-actions, action>> to apply.
 
 
 ==== Enabling active detections
@@ -120,7 +120,7 @@ image::./waas_active_bot_detections.png[width=500]
 NOTE: Active Bot detection requires xref:./waas-advanced-settings.adoc#prisma_session[Prisma Sessions Cookies] to be enabled in the `advanced settings` tab.
 
 [start=3]
-. Choose <<bot_actions, actions>> to apply.
+. Choose <<bot-actions, actions>> to apply.
 
 .. *Session Validation* - action to apply when WAAS is unable to validate the session, either due to cookie tampering or cookie replay.
 
@@ -129,10 +129,10 @@ NOTE: Active Bot detection requires xref:./waas-advanced-settings.adoc#prisma_se
 .. *Javascript injection timeout* - once javascript is enabled, choose action to apply when the browser does not send a response to the javascript injection on time.
 
 .. *reCAPTCHA v2 integration* - enable https://developers.google.com/recaptcha/intro[Google's reCAPTCHA v2] integration by specifying the site key, secret key and challenge type.
-For more details please refer to the elaborated <<_recaptcha,section>> on reCAPTCHA below.
+For more details please refer to the elaborated <<recaptcha,section>> on reCAPTCHA below.
 
 
-[#_recaptcha]
+[#recaptcha]
 === reCAPTCHA v2 integration
 
 WAAS Users can enable https://developers.google.com/recaptcha/intro[Google's reCAPTCHA v2] integration by specifying the site key, secret key and challenge type.
@@ -193,10 +193,10 @@ Once the expiration date has passed, a new reCAPTCHA challenge will be presented
 * *Javascript Injection Timeout* - the web client failed to pass the bot-detection JavaScript injection check in reasonable time (timeout).
 * *Missing Cookie* -  client made a non GET request without a cookie.
 * *Failed reCAPTCHA verification: <error returned from Google verification API>* - Google's reCAPTCHA verification API has responded with an error message.
-* *<HTTP method> request when a reCAPTCHA page is required* - As mentioned in the <<_recaptcha,reCAPTCHA v2 integration section>>, reCAPTCHA will ONLY be served for GET HTTP requests.
+* *<HTTP method> request when a reCAPTCHA page is required* - As mentioned in the <<recaptcha,reCAPTCHA v2 integration section>>, reCAPTCHA will ONLY be served for GET HTTP requests.
 WAAS will block requests sent using other methods until a reCAPTCHA challenge is solved and an event carrying this message will be registered.
 
-[#bot_actions]
+[#bot-actions]
 
 === Bot Protection Actions
 
@@ -204,7 +204,7 @@ Requests that trigger a WAAS bot protection are subject to one of the following 
 
 * *Alert* - The request is passed to the protected application and an audit is generated for visibility.
 * *Prevent* - The request is denied from reaching the protected application, an audit is generated and WAAS responds with an HTML page indicating the request was blocked.
-* *Ban* - Can be applied on either IP or <<./waas_advanced_settings.adoc#prisma_session,Prisma Session IDs>>. All requests originating from the same IP/Prisma Session to the protected application are denied for the configured time period (default is 5 minutes) following the last detected attack. 
+* *Ban* - Can be applied on either IP or <<./waas-advanced-settings.adoc#prisma-session,Prisma Session IDs>>. All requests originating from the same IP/Prisma Session to the protected application are denied for the configured time period (default is 5 minutes) following the last detected attack. 
 * *Allow (available for user-defined bots)* - request is forwarded to the protected application and no audit is generated.
 * *reCAPTCHA* - a page will be served with a reCAPTCHA v2 challenge to be solved before proceeding to the website.
 
@@ -212,7 +212,7 @@ Requests that trigger a WAAS bot protection are subject to one of the following 
 ====
 A message at the top of the page indicates the entity by which the ban will be applied (IP or Prisma Session ID). When the X-Forwarded-For HTTP header is included in the request headers, ban will apply based on the first IP listed in the header value (true client IP).
 
-To enable ban by Prisma Session ID, <<./waas_advanced_settings.adoc#prisma_session,Prisma Session Cookies>> has to be enabled in the Advanced Settings tab. for more information please refer to the xref:./waas-advanced-settings.adoc#prisma_session[Advanced Settings] help page.
+To enable ban by Prisma Session ID, <<./waas-advanced-settings.adoc#prisma-session,Prisma Session Cookies>> has to be enabled in the Advanced Settings tab. for more information please refer to the xref:./waas-advanced-settings.adoc#prisma_session[Advanced Settings] help page.
 
 WAAS implements state, which is required for banning user sessions by IP address or Prisma Sessions.
 Because Defenders do not share state, any application that is replicated across multiple nodes must enable IP stickiness on the load balancer.
