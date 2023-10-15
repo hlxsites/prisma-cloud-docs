@@ -2,22 +2,24 @@
 
 To create code-based policies for your infrastructure, use these examples as guidance. They showcase how to use different attributes for working with IaC templates.
 
-* <<_terraform-examples, Terraform Examples>>
-* <<_cloudformation-examples, Cloud Formation Examples>>
+* <<terraform-examples, Terraform Examples>>
+* <<cloudformation-examples, CloudFormation Examples>>
+* <<secrets-examples, Secrets Examples>>
+* <<kubernetes-examples, Kubernetes Examples>>
 
-[#_terraform-examples]
+[#terraform-examples]
 === Terraform Examples
 
 If you are using Terraform to create policies, here are some examples you can use to create a custom build policy.
 
-* <<_t-basic-policy-definition, Basic Policy Definition>>
-* <<_t-policy-definition-using-and-attribute, Policy Definition using AND Attribute>>
-* <<_t-policy-definition-using-and-or-logic-attribute, Policy Definition using AND/OR Logic Attribute>>
-* <<_t-policy-definition-using-or-attribute, Policy Definition using OR Attribute>>
-* <<_t-connection-state, Connection State>>
-* <<_t-array-, Array>>
+* <<t-basic-policy-definition, Basic Policy Definition>>
+* <<t-policy-definition-using-and-attribute, Policy Definition using AND Attribute>>
+* <<t-policy-definition-using-and-or-logic-attribute, Policy Definition using AND/OR Logic Attribute>>
+* <<t-policy-definition-using-or-attribute, Policy Definition using OR Attribute>>
+* <<t-connection-state, Connection State>>
+* <<t-array-, Array>>
 
-[#_t-basic-policy-definition]
+[#t-basic-policy-definition]
 ==== Basic Policy Definition
 
 Use the sample guideline to create a basic policy definition using one attribute.
@@ -38,7 +40,7 @@ definition:
   operator: "exists"
 ----
 
-[#_t-policy-definition-using-and-attribute]
+[#t-policy-definition-using-and-attribute]
 ==== Policy Definition using AND Attribute
 
 Use the sample guideline to create a two policy definitions using attribute `AND`.
@@ -93,7 +95,7 @@ definition:
     value: 8.0.4.19/92
 ----
 
-[#_t-policy-definition-using-and-or-logic-attribute]
+[#t-policy-definition-using-and-or-logic-attribute]
 ==== Policy Definition using AND/OR Logic Attribute
 
 Use the sample guideline to create a two policy definitions using attribute `AND/OR Logic`.
@@ -103,7 +105,7 @@ Use the sample guideline to create a two policy definitions using attribute `AND
 metadata:
   name: "Check that all encrypted RDS clusters are tagged with encrypted: true"
   guidelines: "Tags Governance - in case of the matched condition below -> add/modify a tag of encrypted:true"
-  category: "secrets"
+  category: "storage"
   severity: "critical"
 scope:
   provider: "aws"
@@ -129,7 +131,7 @@ definition:
       value: "true"
 ----
 
-[#_t-policy-definition-using-or-attribute]
+[#t-policy-definition-using-or-attribute]
 ==== Policy Definition using OR Attribute
 
 Use the sample guideline to create multiple policy definition using `OR`.
@@ -177,7 +179,7 @@ definition:
     operator: "exists"
 ----
 
-[#_t-connection-state]
+[#t-connection-state]
 ==== Connection State
 
 A Connection State Block indicates a type of resource that has or does not have a connection to another type of resource. Use the sample guideline to create a connection state with attributes and filter.
@@ -403,7 +405,7 @@ definition:
           value: "22"
 ----
 
-[#_t-array-]
+[#t-array-]
 ==== Array
 
 In addition to creating policies using multiple attributes, you can create a policy to check multiple entries, of the same type, within an array.
@@ -428,16 +430,16 @@ definition:
   value: "0.0.0.0/0"
 ----
 
-[#_cloudformation-examples]
+[#cloudformation-examples]
 === CloudFormation Examples
 
 If you are using CloudFormation to create policies, here are some examples you can use to create a custom build policy code.
 
-* <<_cf-basic-policy-definition, Basic Policy Definition>>
-* <<_cf-policy-definition-using-or-attribute, Policy Definition using OR Attribute>>
-* <<_cf-connection-state, Connection State>>
+* <<cf-basic-policy-definition, Basic Policy Definition>>
+* <<cf-policy-definition-using-or-attribute, Policy Definition using OR Attribute>>
+* <<cf-connection-state, Connection State>>
 
-[#_cf-basic-policy-definition]
+[#cf-basic-policy-definition]
 ==== Basic Policy Definition
 
 Use the sample guideline to create a basic policy definition using one attribute.
@@ -459,7 +461,7 @@ definition:
     - AWS::SageMaker::NotebookInstance
 ----
 
-[#_cf-policy-definition-using-or-attribute]
+[#cf-policy-definition-using-or-attribute]
 ==== Policy Definition using OR Attribute
 
 Use the sample guideline to create multiple policy definition using `OR`.
@@ -495,7 +497,7 @@ definition:
       - "AWS::MSK::Cluster"
 ----
 
-[#_cf-connection-state]
+[#cf-connection-state]
 ==== Connection State
 
 A Connection State Block indicates a type of resource that has or does not have a connection to another type of resource. Use the sample guideline to create a connection state with attributes and filter.
@@ -575,4 +577,119 @@ definition:
             value: "HTTPS"
             resource_types:
             - AWS::ElasticLoadBalancingV2::Listener
+----
+
+[#secrets-examples]
+=== Secrets Examples
+
+You can define Secrets signatures using the following format.
+
+[source,yaml]
+----
+metadata:
+  guidelines: "Don't commit this secret"
+  category: "secrets" 
+definition: 
+  cond_type: "secrets"
+  value:
+    - "exact-match"
+    - "[A-Z0-9]{20}"
+----
+
+
+[#kubernetes-examples]
+=== Kubernetes Examples
+
+If you are creating policies for Kubernetes, here are some examples you can use to create a custom build policy code.
+* <<k8s-basic-policy-definition, Basic Policy Definition>>
+* <<k8s-connection-state, Connection State>>
+
+[#k8s-basic-policy-definition]
+==== Basic Policy Definition
+
+Use the sample guideline to create a basic policy definition using one attribute.
+
+[source,yaml]
+----
+metadata:
+  name: "Basic K8s Policy"
+  guidelines: "..."
+  category: "Kubernetes"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "Pod"
+  attribute: "spec.containers.*.securityContext.privileged"
+  operator: "not_equals"
+  value: "true"
+----
+
+
+[#k8s-connection-state]
+==== Connection State
+
+A Connection State Block indicates a type of resource that has or does not have a connection to another type of resource. Use the sample guideline to create a connection state with attributes and filter.
+
+[source,yaml]
+----
+metadata:
+  name: "No ServiceAccount/Node should be able to read all secrets"
+  guidelines: "..."
+  category: "Kubernetes"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - ClusterRoleBinding
+        - RoleBinding
+      operator: within
+      attribute: kind
+    - or:
+        - cond_type: connection
+          operator: not_exists
+          resource_types:
+            - ClusterRoleBinding
+            - RoleBinding
+          connected_resource_types:
+            - ClusterRole
+            - Role
+        - cond_type: attribute
+          attribute: 'subjects.*.kind'
+          operator: not_within
+          value:
+            - 'Node'
+            - 'ServiceAccount'
+          resource_types:
+            - ClusterRoleBinding
+            - RoleBinding
+        - and:
+            - cond_type: connection
+              operator: exists
+              resource_types:
+                - ClusterRoleBinding
+                - RoleBinding
+              connected_resource_types:
+                - ClusterRole
+                - Role
+            - or:
+              - cond_type: attribute
+                attribute: rules.resources
+                operator: not_intersects
+                value:
+                  - 'secrets'
+                  - '*'
+                resource_types:
+                  - ClusterRole
+                  - Role
+              - cond_type: attribute
+                attribute: rules.verbs
+                operator: not_intersects
+                value:
+                  - 'get'
+                  - 'watch'
+                  - 'list'
+                  - '*'
+                resource_types:
+                  - ClusterRole
+                  - Role
 ----
