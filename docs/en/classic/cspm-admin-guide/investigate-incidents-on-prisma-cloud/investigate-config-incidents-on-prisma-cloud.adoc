@@ -33,51 +33,51 @@ The reason for this difference in results is that the policy engine functions sl
 
 *Criteria for creating a policy using a saved search*
 
-* Saved search must be valid to create a policy. For Config queries ( userinput:[config from cloud.resource where] ), you may see the error *RQL invalid for policy creation*. This error indicates that the saves search RQL is not valid to create a policy.
+* Saved search must be valid to create a policy. For Config queries ( `config from cloud.resource where` ), you may see the error *RQL invalid for policy creation*. This error indicates that the saves search RQL is not valid to create a policy.
 
 * Currently, to create a policy the saved search must meet these guidelines:
 +
-** Does not have the userinput:[azure.resource.group] attribute
+** Does not have the `azure.resource.group` attribute
 
-** when a userinput:[tag] attribute is within the json.rule, it does not have a resource list (reference with userinput:[{]  userinput:[}] )
+** when a `tag` attribute is within the json.rule, it does not have a resource list (reference with `{`  `}` )
 
-** has either the userinput:[api.name] attribute or the userinput:[finding.type] attribute
+** has either the `api.name` attribute or the `finding.type` attribute
 +
-*** when it has the userinput:[api.name] attribute, it includes a userinput:[json.rule] or the userinput:[group by] or userinput:[count] function
+*** when it has the `api.name` attribute, it includes a `json.rule` or the `group by` or `count` function
 
-*** when has the userinput:[finding.type] attribute the specified values for the attribute do not contain userinput:[Prisma Cloud Alert] 
+*** when has the `finding.type` attribute the specified values for the attribute do not contain `Prisma Cloud Alert` 
 +
-You can however, have the operator userinput:[Not Equal Prisma Cloud Alert] or userinput:[Not IN (Prisma Cloud Alert, boo, etc.)] .
+You can however, have the operator `Not Equal Prisma Cloud Alert` or `Not IN (Prisma Cloud Alert, boo, etc.)` .
 
 *Criteria for updating a saved search used in a policy*
 
 If you use a saved search to create a policy, you cannot update the following:
 
-*  userinput:[cloud.type] 
+*  `cloud.type` 
 
-*  userinput:[api.name] ** For non-join queries, userinput:[api.name] cannot be changed
+*  `api.name` ** For non-join queries, `api.name` cannot be changed
 
-** For join queries, the userinput:[api.name] in the clause used for userinput:[Show] cannot be changed.
+** For join queries, the `api.name` in the clause used for `Show` cannot be changed.
 +
-Example query structure: userinput:[X; Y; Z; filter…; Show Y] 
+Example query structure: `X; Y; Z; filter…; Show Y` 
 +
-userinput:[api.name] in Y *cannot* be updated (because X is used for Show)
+`api.name` in Y *cannot* be updated (because X is used for Show)
 +
-userinput:[api.name] in X, Z *can* be updated
+`api.name` in X, Z *can* be updated
 
 *Criteria for what is ignored or replaced when displaying results*
 
 The values for the following attributes in a saved search are replaced by the scope you define in an alert rule:
 
-*  userinput:[cloud.account] or userinput:[cloud.accountgroup] 
+*  `cloud.account` or `cloud.accountgroup` 
 
-*  userinput:[cloud.region] 
+*  `cloud.region` 
 
-*  userinput:[tag] (tag filter used within the userinput:[json.rule] will be ignored)
+*  `tag` (tag filter used within the `json.rule` will be ignored)
 
-*  userinput:[cloud.type] , userinput:[cloud.service] 
+*  `cloud.type` , `cloud.service` 
 
-* When userinput:[resource.status] is not specified in the query, both the Investigate page and the policy engine will return active **and** deleted resources.
+* When `resource.status` is not specified in the query, both the Investigate page and the policy engine will return active **and** deleted resources.
 +
 However, the deleted resources for the policy engine includes only the _resources deleted since the last scan_ within the search scope, while the Investigate page scans all deleted resources available in the database. Specifically:
 +
