@@ -25,8 +25,6 @@ IAM automatic remediation is different from Prisma Cloud automatic remediation. 
 Automatic remediation for GCP IAM alerts is not supported.
 ====
 
-+++<draft-comment>The “Deny Policies” feature is a public Beta version in GCP, as a result, the “automatic remediation” feature, which relies on the “Deny Policies” feature stays as a Beta version in the GCP GA release as well.</draft-comment>+++
-
 
 [.task]
 [#idddd91dfc-b4d5-43fe-96cf-4b3cc447451d]
@@ -185,9 +183,9 @@ for message in all_messages:
 
 . Install the 3rd party libraries.
 +
-This script uses a total of five python libraries. Three of the libraries: varname:[json], varname:[os], and varname:[subprocess] are part of the python core which allows you to import them into your programs after you install python. The other two libraries are varname:[boto3] and varname:[requests] which are 3rd party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called varname:[pip], which can install 3rd party libraries and frameworks via the command line.
+This script uses a total of five python libraries. Three of the libraries: `json`, `os`, and `subprocess` are part of the python core which allows you to import them into your programs after you install python. The other two libraries are `boto3` and `requests` which are 3rd party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called `pip`, which can install 3rd party libraries and frameworks via the command line.
 
-.. Install varname:[boto3].
+.. Install `boto3`.
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
@@ -198,7 +196,7 @@ pip install boto3
 This is the AWS SDK for python that allows you to create, configure, and manage AWS services such as SQS.
 ====
 
-.. Install varname:[requests].
+.. Install `requests`.
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
@@ -215,14 +213,14 @@ These are mandatory variables to specify in the python script to run the command
 +
 tt:[Optional (mac/linux only)]—Use the export command to set your environment variables.
 +
-If you’re not familiar with python and don’t want to edit the script then you can use the varname:[export] command to set the environment variables. Here’s the syntax for doing so:
+If you’re not familiar with python and don’t want to edit the script then you can use the `export` command to set the environment variables. Here’s the syntax for doing so:
 +
-* screen:[% export API_ENDPOINT=api_tenant]
-* screen:[% export YOUR_ACCOUNT_NUMBER=123456789]
-* screen:[% export SQS_QUEUE_NAME=your_sqs_queue_name ]
-* screen:[% export YOUR_ACCOUNT_NUMBER=123456789]
-* screen:[% export AUTH_KEY=your_jwt_token]
-* screen:[% python script.py]
+* `% export API_ENDPOINT=api_tenant`
+* `% export YOUR_ACCOUNT_NUMBER=123456789`
+* `% export SQS_QUEUE_NAME=your_sqs_queue_name `
+* `% export YOUR_ACCOUNT_NUMBER=123456789`
+* `% export AUTH_KEY=your_jwt_token`
+* `% python script.py`
 +
 The following instructions can be executed on any operating system that has python installed. For example, Windows, macOS, and Linux.
 +
@@ -232,31 +230,30 @@ The following instructions can be executed on any operating system that has pyth
 |Value
 
 
-|varname:[SQS_QUEUE_NAME]
-|A string that represents the name of the SQS queue that you created in step 1. For example, varname:[Queue2_Policy_UUID].
+|`SQS_QUEUE_NAME`
+|A string that represents the name of the SQS queue that you created in step 1. For example, `Queue2_Policy_UUID`.
 
 
-|varname:[API_ENDPOINT]
-|Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the varname:[API_ENDPOINT] will be varname:[api].
+|`API_ENDPOINT`
+|Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the `API_ENDPOINT` will be `api`.
 
 
-|tt:[varname:[DEBUG\]]
+|tt:[`DEBUG\`]
 |Displays the debug logs for your script which is enabled by default.
 
 
-|varname:[YOUR_ACCOUNT_NUMBER]
-+++<draft-comment>not sure if this is an environment variable?</draft-comment>+++
-|The 12-digit number, such as varname:[123456789012], that uniquely identifies an AWS account. A user could have multiple account numbers.
+|`YOUR_ACCOUNT_NUMBER`
+|The 12-digit number, such as `123456789012`, that uniquely identifies an AWS account. A user could have multiple account numbers.
 
 
-|varname:[AUTH_KEY]
+|`AUTH_KEY`
 |Your JWT authentication token string (x-redlock-auth). See the https://pan.dev/prisma-cloud/api/cspm/[API reference] for more details.
 
 |===
 
-.. tt:[Edit varname:[DEBUG\]].
+.. tt:[Edit `DEBUG\`].
 +
-varname:[DEBUG] is enabled or set to varname:[True] by default. To disable logs, update the code snippet as follow:
+`DEBUG` is enabled or set to `True` by default. To disable logs, update the code snippet as follow:
 +
 ----
 if os.environ['DEBUG'] = False:
@@ -264,7 +261,7 @@ if os.environ['DEBUG'] = False:
 
 .. Edit YOUR_ACCOUNT_NUMBER.
 +
-Replace varname:[YOUR_ACCOUNT_NUMBER] with the 12-digit account ID. The portion of the script to modify is:
+Replace `YOUR_ACCOUNT_NUMBER` with the 12-digit account ID. The portion of the script to modify is:
 +
 ----
 account_number_to_profile = {    'YOUR_ACCOUNT_NUMBER_1': 'YOUR_ACCOUNT_NAME_1',    'YOUR_ACCOUNT_NUMBER_2': 'YOUR_ACCOUNT_NAME_2'}
@@ -278,15 +275,15 @@ account_number_to_profile = {'123456789123': 'default','512478725627': 'user1'}
 
 .. Edit API_ENDPOINT.
 +
-Replace varname:[API_ENDPOINT] with the Prisma Cloud tenant sub domain that you’re using. The portion of the script to modify is:
+Replace `API_ENDPOINT` with the Prisma Cloud tenant sub domain that you’re using. The portion of the script to modify is:
 +
 ----
 url=f'{os.environ["API_ENDPOINT"]}/api/v1/permission/alert/remediation'
 ----
 +
-For example, replace varname:[API_ENDPOINT] with varname:[app,]  varname:[app2], varname:[app3], or varname:[app.gov].
+For example, replace `API_ENDPOINT` with `app,`  `app2`, `app3`, or `app.gov`.
 
-.. Edit the varname:[SQS_QUEUE_NAME].
+.. Edit the `SQS_QUEUE_NAME`.
 +
 This stores the value of your queue name. The portion of the script to modify is:
 +
@@ -294,7 +291,7 @@ This stores the value of your queue name. The portion of the script to modify is
 queue = sqs.get_queue_by_name(QueueName=os.environ['SQS_QUEUE_NAME'])
 ----
 +
-Replace varname:[SQS_QUEUE_NAME] with the name of your actual queue—for example, if varname:[Queue2_Policy_UUID] is the name of your queue, then the code snippet will be updated as follow:
+Replace `SQS_QUEUE_NAME` with the name of your actual queue—for example, if `Queue2_Policy_UUID` is the name of your queue, then the code snippet will be updated as follow:
 +
 ----
 queue = sqs.get_queue_by_name(QueueName=os.environ['Queue2_Policy_UUID'])
@@ -302,13 +299,13 @@ queue = sqs.get_queue_by_name(QueueName=os.environ['Queue2_Policy_UUID'])
 
 .. Edit the AUTH_KEY.
 +
-Generate a JWT token and replace the value in varname:[AUTH_KEY] of the python script. The portion of the script to modify is as follows:
+Generate a JWT token and replace the value in `AUTH_KEY` of the python script. The portion of the script to modify is as follows:
 +
 ----
 'x-redlock-auth': os.environ['AUTH_KEY']
 ----
 +
-Replace varname:[AUTH_KEY] with the JWT token that you generated.
+Replace `AUTH_KEY` with the JWT token that you generated.
 
 . View the remediation results.
 +
@@ -382,7 +379,7 @@ running the CLI commands
 Deleting message
 ----
 +
-The output shows that we’re processing an alert for a resource named varname:[test-resource] which should now be gone when we view *Alerts*. The CLI commands for executing the remediation steps are shown in the output; these commands are automatically executed on your behalf by the python script. A new policy will be created in AWS that removes the excess permissions of the user.
+The output shows that we’re processing an alert for a resource named `test-resource` which should now be gone when we view *Alerts*. The CLI commands for executing the remediation steps are shown in the output; these commands are automatically executed on your behalf by the python script. A new policy will be created in AWS that removes the excess permissions of the user.
 
 
 [#ide69e3eac-d058-4804-8d58-8e648893a030]
@@ -496,13 +493,13 @@ def get_messages_from_queue():
 
 . Install the 3rd party libraries.
 +
-This script uses a total of five python libraries. Three of the libraries: varname:[subprocess], varname:[logging], and varname:[json] are part of the python core which allows you to import them into your programs after you install python. The other two libraries are varname:[requests] and varname:[azure.servicebus] which are 3rd party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called varname:[pip], which can install 3rd party libraries and frameworks through the command line.
+This script uses a total of five python libraries. Three of the libraries: `subprocess`, `logging`, and `json` are part of the python core which allows you to import them into your programs after you install python. The other two libraries are `requests` and `azure.servicebus` which are 3rd party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called `pip`, which can install 3rd party libraries and frameworks through the command line.
 
 .. Install requests.
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
-userinput:[pip install requests] 
+`pip install requests` 
 +
 [NOTE]
 ====
@@ -513,11 +510,11 @@ requests is a 3rd party library for making simple HTTP requests
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
-userinput:[pip install azure.servicebus] 
+`pip install azure.servicebus` 
 +
 [NOTE]
 ====
-varname:[azure.servicebus] is a client library for python to communicate between applications and services and implement asynchronous messaging patterns.
+`azure.servicebus` is a client library for python to communicate between applications and services and implement asynchronous messaging patterns.
 ====
 
 . Edit the environment variables.
@@ -526,13 +523,13 @@ These are mandatory variables to specify in the python script to run the command
 +
 tt:[Optional (mac/linux only)]—Use the export command to set your environment variables.
 +
-If you’re not familiar with python and don’t want to edit the script then you can use the varname:[export] command to set the environment variables. Here’s the syntax for doing so:
+If you’re not familiar with python and don’t want to edit the script then you can use the `export` command to set the environment variables. Here’s the syntax for doing so:
 +
-* screen:[% export SB_QUEUE_KEY=your_sb_queue_key]
-* screen:[% export SB_QUEUE_KEY_NAME=your_sb_queue_key_name]
-* screen:[% export SB_QUEUE_NAME_SPACE=your_sb_queue_name_space]
-* screen:[% export API_ENDPOINT=api_tenant]
-* screen:[% export AUTH_KEY=your_jwt_token]
+* `% export SB_QUEUE_KEY=your_sb_queue_key`
+* `% export SB_QUEUE_KEY_NAME=your_sb_queue_key_name`
+* `% export SB_QUEUE_NAME_SPACE=your_sb_queue_name_space`
+* `% export API_ENDPOINT=api_tenant`
+* `% export AUTH_KEY=your_jwt_token`
 +
 The following instructions can be executed on any operating system that has python installed. For example, Windows, macOS, and Linux.+
 +
@@ -542,26 +539,23 @@ The following instructions can be executed on any operating system that has pyth
 |VALUE
 
 
-|varname:[SB_QUEUE_KEY]
+|`SB_QUEUE_KEY`
 |A string that represents the Service Bus queue key value.
-+
-
-+++<draft-comment>is this the Azure queue key value?</draft-comment>+++
 
 
-|varname:[SB_QUEUE_KEY_NAME]
+|`SB_QUEUE_KEY_NAME`
 |A string that represents your Service Bus key name.
 
 
-|varname:[SB_QUEUE_NAME_SPACE]
+|`SB_QUEUE_NAME_SPACE`
 |A string that represents your Service Bus namespace.
 
 
-|varname:[API_ENDPOINT]
-|Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the varname:[API_ENDPOINT] will be api.
+|`API_ENDPOINT`
+|Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the `API_ENDPOINT` will be api.
 
 
-|varname:[AUTH_KEY]
+|`AUTH_KEY`
 |Your JWT authentication token string (x-redlock-auth). See the https://pan.dev/api/cloud[api reference] for more details.
 
 |===
