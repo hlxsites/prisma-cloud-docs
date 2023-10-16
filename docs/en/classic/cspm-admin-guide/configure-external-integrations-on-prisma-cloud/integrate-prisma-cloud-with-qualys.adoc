@@ -22,11 +22,11 @@ image::qualys-azure-api-server-url.png[scale=50]
 
 * You must enable Qualys API and Qualys EC2 API access for Qualys users.
 
-* (tt:[]) You must configure Qualys Sensors for AWS cloud, such as Virtual Scanner Appliances, Cloud Agents, AWS Cloud Connectors, and Internet Scanners. The cloud agents or cloud connectors enable Prisma Cloud to retrieve vulnerability data so that you can correlate this data with your AWS asset inventory. (Refer to the https://www.qualys.com/[Qualys documentation] for more information.)
+* You must configure Qualys Sensors for AWS cloud, such as Virtual Scanner Appliances, Cloud Agents, AWS Cloud Connectors, and Internet Scanners. The cloud agents or cloud connectors enable Prisma Cloud to retrieve vulnerability data so that you can correlate this data with your AWS asset inventory. (Refer to the https://www.qualys.com/[Qualys documentation] for more information.)
 
-* (tt:[]) For Azure accounts, deploy the Qualys Virtual Scanner Appliance using Microsoft Azure Resource Manager (ARM) (see the https://community.qualys.com/docs/DOC-5725-scanning-in-microsoft-azure-using-resource-manager-arm#group[Qualys documentation]). You can use Qualys Cloud Agents (Windows and Linux) for Azure instances from the Azure Security Center console to view vulnerability assessment findings within Azure Security Center and your Qualys subscription (see https://community.qualys.com/docs/DOC-5823-deploying-qualys-cloud-agents-from-microsoft-azure-security-center[Qualys Documentation].)
+* For Azure accounts, deploy the Qualys Virtual Scanner Appliance using Microsoft Azure Resource Manager (ARM) (see the https://community.qualys.com/docs/DOC-5725-scanning-in-microsoft-azure-using-resource-manager-arm#group[Qualys documentation]). You can use Qualys Cloud Agents (Windows and Linux) for Azure instances from the Azure Security Center console to view vulnerability assessment findings within Azure Security Center and your Qualys subscription (see https://community.qualys.com/docs/DOC-5823-deploying-qualys-cloud-agents-from-microsoft-azure-security-center[Qualys Documentation].)
 
-* (tt:[]) Make sure that *Azure VM Information* is visible in Qualys.
+* Make sure that *Azure VM Information* is visible in Qualys.
 +
 image::qualys-azure-vm-info.png[scale=50]
 
@@ -58,7 +58,9 @@ After you configure Prisma Cloud with access to the Qualys findings, you can use
 
 .. Use *Config Query* for visibility for host vulnerabilities.
 +
-`config from cloud.resource where finding.type = 'Host Vulnerability'`
+----
+config from cloud.resource where finding.type = 'Host Vulnerability'
+----
 +
 image::qualys-host-vulnerability.png[scale=45]
 +
@@ -70,7 +72,11 @@ Click *Host Findings* for information related to vulnerabilities. The Source col
 +
 image::qualys-host-findings.png[scale=30]
 +
-*Network Query*  `network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' ) `
+*Network Query*
++
+----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' )
+----
 +
 image::qualys-network-query.png[scale=30]
 
@@ -78,17 +84,14 @@ image::qualys-network-query.png[scale=30]
 +
 If you have trouble connecting with Qualys API, enter your username, password, and the URL for the Qualys service in the following Curl examples:
 +
-[userinput]
 ----
 curl -H “X-Requested-With: Curl Sample” -u “Username:Password” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/?action=list&echo_request=1”
 ----
 +
-[userinput]
 ----
 curl -k “https://qualysapi.qg1.apps.qualys.in/msp/asset_group_list.php” -u “Username:Password”
 ----
 +
-[userinput]
 ----
 curl -k -H “X-Requested-With:curl” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/stats/?action=list” -u “Username:Password”
 ----

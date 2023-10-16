@@ -4,11 +4,9 @@
 == Integrate Prisma Cloud with Tenable
 Learn how to integrate Prisma™ Cloud with Tenable.
 
-Prisma™ Cloud ingests vulnerability data from Tenable to provide you with additional context about risks in the cloud. With this integration, you can, for example, identify suspicious traffic to sensitive workloads such as databases with known vulnerabilities.
+Prisma Cloud ingests vulnerability data from Tenable to provide you with additional context about risks in the cloud. With this integration, you can, for example, identify suspicious traffic to sensitive workloads such as databases with known vulnerabilities.
 
 AWS, Azure, and GCP clouds support the Prisma Cloud integration with Tenable.
-
-
 
 
 [.procedure]
@@ -16,9 +14,8 @@ AWS, Azure, and GCP clouds support the Prisma Cloud integration with Tenable.
 +
 The Tenable API requires an access key and a secret key to be added to the request header. Generate an access key and secret key for each user on the Tenable.io app. (See https://developer.tenable.com/docs/authorization[Tenable documentation] for information.) Also, ensure that the Tenable role you are using to enable this integration has administrator permissions that include userinput:[vulns-request-export] and userinput:[assets-request-export] API access.
 
-
 . Set up Tenable integration on Prisma Cloud.
-+
+
 .. Login to Prisma Cloud.
 
 .. Select "Settings > Integrations".
@@ -39,14 +36,15 @@ image::tenable-int-2.png[scale=40]
 
 .. Review the Summary and *Save* the integration.
 
-
 . View vulnerabilities detected by Tenable in Prisma Cloud.
 +
 After Prisma Cloud has access to the Tenable findings, you can use the following RQL queries for visibility into the host vulnerability information collected from Tenable.
 
 .. *Config Query*  
 +
-`config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.source = 'Tenable' AND finding.severity = 'high' `
+----
+config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.source = 'Tenable' AND finding.severity = 'high'
+----
 +
 image::tenable-hostfinding-config-query.png[scale=35]
 +
@@ -60,16 +58,12 @@ image::tenable-findings-trail.png[scale=30]
 +
 .. *Network Query* 
 +
-`network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' )`
+----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' )
+----
 +
 ... Select a resource to get the information about host vulnerabilities.
 +
 ... Navigate to *Alert Summary* and choose *Host Vulnerability* to see details.
 +
 image::tenable-host-findings-view.png[scale=40]
-
-
-
-
-
-

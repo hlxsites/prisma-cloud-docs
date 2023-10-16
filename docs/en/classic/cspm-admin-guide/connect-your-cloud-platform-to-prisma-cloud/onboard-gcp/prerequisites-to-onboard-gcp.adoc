@@ -41,9 +41,7 @@ The API calls from Prisma Cloud use quota from the GCP project that you've onboa
 To ensure continuous insights in to all your GCP resources and to prevent rate limit exception errors from occurring for Prisma Cloud's authorized API calls to GCP, make sure to:
 
 * Grant either a new permission _serviceusage.services.use_ or add a new role *Service Usage Consumer* (_roles/serviceusage.serviceUsageConsumer_) to the service account that Prisma Cloud uses to access GCP APIs.
-
 * [Optional] For the GCP services (_appengine.googleapis.com, recommender.googleapis.com, sqladmin.googleapis.com, apikeys.googleapis.com, iam.googleapis.com,cloudresourcemanager.googleapis.com, orgpolicy.googleapis.com, cloudasset.googleapis.com, accessapproval.googleapis.com, essentialcontacts.googleapis.com_):
-+
 ** Disable them on the source project where the service account is created, and 
 ** Enable them on the target project from which Prisma Cloud gets resource metadata.
 
@@ -59,11 +57,9 @@ When you use the Terraform template that Prisma Cloud provides to automate the o
 ====
 
 * In the GCP project where you create the service account, you must enable the Stackdriver Logging API (logging.googleapis.com) to monitor audit logs, and any other GCP APIs for which you want Prisma Cloud to monitor resources.
-
-*  If a cloud service API is not enabled on a GCP project, Prisma Cloud skips the ingestion for the respective service; you must, however, ensure that *Service Usage* API is enabled on each GCP project that you want Prisma Cloud to monitor under your GCP organization hierarchy.
+* If a cloud service API is not enabled on a GCP project, Prisma Cloud skips the ingestion for the respective service; you must, however, ensure that *Service Usage* API is enabled on each GCP project that you want Prisma Cloud to monitor under your GCP organization hierarchy.
 +
 To skip ingestion for a cycle, Prisma cloud watches the response from the Service Usage API for the details on which cloud services are enabled in a GCP project. For example, if you have not enabled cloud functions in one or more GCP projects within the GCP organization, Prisma cloud can learn about it and skip the ingestion cycle for this cloud service.
-
 * Prisma Cloud recommends you create the service account in a dedicated GCP project.
 +
 GCP enforces a limit on the API calls allowed to a GCP project/IAM service account. When you create the service account in a dedicated GCP project, you can ensure that the API calls that Prisma Cloud makes do not interfere with any quota limits against your production workloads and services hosted in the separate GCP project.
@@ -74,13 +70,16 @@ If the service account does not have the IAM permissions required to retrieve da
 +
 [TIP]
 ====
-To enable the APIs that allow Prisma Cloud to monitor your GCP projects, use it as shown in this example (that uses some of the APIs listed in the table below): userinput:[gcloud services enable serviceusage.googleapis.com appengine.googleapis.com bigquery.googleapis.com cloudfunctions.googleapis.com dataflow.googleapis.com dns.googleapis.com dataproc.googleapis.com cloudresourcemanager.googleapis.com cloudkms.googleapis.com sqladmin.googleapis.com compute.googleapis.com storage-component.googleapis.com recommender.googleapis.com iam.googleapis.com container.googleapis.com monitoring.googleapis.com logging.googleapis.com]
+To enable the APIs that allow Prisma Cloud to monitor your GCP projects, use it as shown in this example (that uses some of the APIs listed in the table below):
 
-Verify the APIs that you have enabled with userinput:[gcloud services list].
+----
+gcloud services enable serviceusage.googleapis.com appengine.googleapis.com bigquery.googleapis.com cloudfunctions.googleapis.com dataflow.googleapis.com dns.googleapis.com dataproc.googleapis.com cloudresourcemanager.googleapis.com cloudkms.googleapis.com sqladmin.googleapis.com compute.googleapis.com storage-component.googleapis.com recommender.googleapis.com iam.googleapis.com container.googleapis.com monitoring.googleapis.com logging.googleapis.com
+----
+
+Verify the APIs that you have enabled with `gcloud services list`.
 ====
-+
+
 The following table lists the APIs and associated granular permissions if you want to xref:create-custom-role-on-gcp.adoc[Create a Service Account With a Custom Role] to onboard your GCP account. When the APIs are enabled and the service account has the correct set of roles and associated permissions, Prisma Cloud can retrieve data on your resources from GCP cloud accounts. Make sure to create a custom role before you continue to add your xref:onboard-gcp-org.adoc[GCP Organization] or xref:onboard-gcp-project.adoc[GCP Project] to Prisma Cloud.
-+
 
 [cols="15%a,19%a,10%a,12%a,28%a,16%a"]
 |===
@@ -667,7 +666,6 @@ Source project where the service account is created for enabling monitoring and 
 
 `resourcemanager.organizations.get``resourcemanager.projects.list``resourcemanager.organizations.getIamPolicy`
 |N/A
-
 
 |===
 
