@@ -1,3 +1,11 @@
+## [1.0.59](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.58...v1.0.59) (2023-10-16)
+
+
+### Bug Fixes
+
+* ignore undefined anchors ([8eaba7f](https://github.com/hlxsites/prisma-cloud-docs/commit/8eaba7f7a68c755babfc9d0361f2822ee687db77))
+* support row spans ([7df8d30](https://github.com/hlxsites/prisma-cloud-docs/commit/7df8d3045470eb789cf3ac17fd6ab74095fcfa84))
+
 ## [1.0.58](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.57...v1.0.58) (2023-10-11)
 
 
