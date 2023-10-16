@@ -346,8 +346,17 @@ class FranklinConverter implements AdocTypes.Converter {
       ...foot,
     ]).map((row) => row.map((col) => col.getColumnSpan() || 1));
 
-    if (!colSpans.some((row) => row.some((col) => col !== 1))) {
+    let rowSpans: number[][] = ([
+      ...head,
+      ...body,
+      ...foot,
+    ]).map((row) => row.map((col) => col.getRowSpan() || 1));
+
+    if (!colSpans.some((row) => row.some((span) => span !== 1))) {
       colSpans = undefined;
+    }
+    if (!rowSpans.some((row) => row.some((span) => span !== 1))) {
+      rowSpans = undefined;
     }
 
     // use the row with most columns for col widths
@@ -361,9 +370,12 @@ class FranklinConverter implements AdocTypes.Converter {
     }
 
     return this.tableToBlock('table', node, {
-      preRows: `${colSpans
-        ? /* html */`<div><div>col-spans</div><div>${colSpans.map((row) => row.join(',')).join(';')}</div></div>`
+      preRows: `${rowSpans
+        ? /* html */`<div><div>row-spans</div><div>${rowSpans.map((row) => row.join(',')).join(';')}</div></div>`
         : ''}`
+        + `${colSpans
+          ? /* html */`<div><div>col-spans</div><div>${colSpans.map((row) => row.join(',')).join(';')}</div></div>`
+          : ''}`
         + `${colWidths
           ? /* html */`<div><div>col-widths</div><div>${colWidths.join(',')}</div></div>`
           : ''}`,
