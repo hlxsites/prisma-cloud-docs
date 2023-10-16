@@ -95,6 +95,12 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       inline_anchor: (node) => {
         let href = node.getTarget();
+        if (!href) {
+          // ignore undefined anchors
+          // this omits the inline anchor ID syntax as well, meaning it isn't supported
+          // see: https://docs.asciidoctor.org/asciidoc/latest/attributes/id/#as-an-inline-anchor
+          return '';
+        }
         const isInclude = node.getRole() === 'bare include';
         const variants = isInclude ? ['include'] : [];
 
