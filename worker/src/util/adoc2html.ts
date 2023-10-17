@@ -296,6 +296,7 @@ class FranklinConverter implements AdocTypes.Converter {
         const result = /* html */`<li>${text ? `<p>${text || ''}</p>${content || ''}` : ''}</li>`;
         return result;
       },
+      inline_image: (node) => this.templates.image(node as AdocTypes.AbstractBlock),
       image: (node) => {
         const src = node.getAttribute('target') as string | undefined;
         if (!src) {
@@ -315,7 +316,10 @@ class FranklinConverter implements AdocTypes.Converter {
         };
         extractSize('width');
         extractSize('height');
-        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>`;
+        return /* html */`\
+<picture>
+  <img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>
+</picture>`;
       },
       table: (node) => {
         const title = node.getTitle();
