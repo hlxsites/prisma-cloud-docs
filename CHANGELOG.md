@@ -1,3 +1,10 @@
+## [1.0.60](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.59...v1.0.60) (2023-10-17)
+
+
+### Bug Fixes
+
+* change sitemap origin ([7f38eaf](https://github.com/hlxsites/prisma-cloud-docs/commit/7f38eafe1567da8d444b72779ba55656449f0b72))
+
 ## [1.0.59](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.58...v1.0.59) (2023-10-16)
 
 
