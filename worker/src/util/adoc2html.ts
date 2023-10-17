@@ -315,7 +315,10 @@ class FranklinConverter implements AdocTypes.Converter {
         };
         extractSize('width');
         extractSize('height');
-        return /* html */`<img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>`;
+        return /* html */`\
+<picture>
+  <img src="${href}" alt="${node.getAttribute('alt') as string || ''}"${sizes.length ? `${sizes.join(' ')}` : ''}>
+</picture>`;
       },
       table: (node) => {
         const title = node.getTitle();
