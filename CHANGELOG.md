@@ -1,3 +1,11 @@
+## [1.0.61](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.60...v1.0.61) (2023-10-17)
+
+
+### Bug Fixes
+
+* add inline_image template type ([db70223](https://github.com/hlxsites/prisma-cloud-docs/commit/db70223f81d1c61a986554acee303fe39590c8de))
+* wrap imgs in pictures ([92dcf07](https://github.com/hlxsites/prisma-cloud-docs/commit/92dcf073dd5436b1b97447b86378d5e609f9805e))
+
 ## [1.0.60](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.59...v1.0.60) (2023-10-17)
 
 
