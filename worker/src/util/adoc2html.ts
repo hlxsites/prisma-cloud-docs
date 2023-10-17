@@ -296,6 +296,7 @@ class FranklinConverter implements AdocTypes.Converter {
         const result = /* html */`<li>${text ? `<p>${text || ''}</p>${content || ''}` : ''}</li>`;
         return result;
       },
+      inline_image: (node) => this.templates.image(node as AdocTypes.AbstractBlock),
       image: (node) => {
         const src = node.getAttribute('target') as string | undefined;
         if (!src) {
