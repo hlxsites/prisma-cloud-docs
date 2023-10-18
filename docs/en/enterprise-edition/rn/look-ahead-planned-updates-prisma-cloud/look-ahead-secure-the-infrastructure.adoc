@@ -45,6 +45,9 @@ Here is the roll out schedule for all Prisma Cloud environments except app.gov. 
 
 * 23.1.2 (Jan 29-Feb 6) - app.cn
 
+When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
+
+
 |===
 
 
@@ -78,14 +81,37 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-No policy updates planned for 23.11.1 release.
+[cols="50%a,50%a"]
+|===
+|POLICY UPDATES
+|DESCRIPTION
 
-//[cols="50%a,50%a"]
-//|===
-//|POLICY UPDATES
-//|DESCRIPTION
+2+|*Policy Updates—RQL*
 
-//|===
+|*Azure Application Gateway is configured with SSL policy having TLS version 1.1 or lower*
+//RLP-115351
+|*Changes—* The RQL willl be updated to not report Application gateways with default policy created using API versions 2023-02-01 or higher as the minimum protocol version is set to 1.2.
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway' AND json.rule = ['properties.sslPolicy'] does not exist or (['properties.sslPolicy'].['policyType'] equal ignore case Predefined and (['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20150501 or ['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20170401)) or (['properties.sslPolicy'].['policyType'] equal ignore case Custom and (['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_0 or ['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_1))
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway' AND json.rule = (['properties.sslPolicy'] does not exist and ['properties.defaultPredefinedSslPolicy'] does not equal ignore case AppGwSslPolicy20220101) or (['properties.sslPolicy'].['policyType'] equal ignore case Predefined and (['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20150501 or ['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20170401)) or (['properties.sslPolicy'].['policyType'] equal ignore case Custom and (['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_0 or ['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_1))
+----
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts where the application gateways were created with default policy using API versions 2023-02-01 or higher will be resolved as *Policy_Updated*.
+
+
+|===
 
 
 [#api-ingestions]
@@ -102,10 +128,10 @@ No policy updates planned for 23.11.1 release.
 
 Additional permissions required:
 
-* screen:[ec2:GetLaunchTemplateData]
-* screen:[ec2:DescribeInstances]
+* `ec2:GetLaunchTemplateData`
+* `ec2:DescribeInstances`
 
-The Security Audit role only includes the screen:[ec2:GetLaunchTemplateData] permission. You must manually add the screen:[ec2:DescribeInstances] permission to the CFT template to enable the permission.
+The Security Audit role only includes the `ec2:GetLaunchTemplateData` permission. You must manually add the `ec2:DescribeInstances` permission to the CFT template to enable the permission.
 
 
 |*AWS Audit Manager*
@@ -114,10 +140,10 @@ The Security Audit role only includes the screen:[ec2:GetLaunchTemplateData] per
 
 Additional permissions required:
 
-* screen:[auditmanager:ListAssessments]
-* screen:[auditmanager:GetAssessment]
+* `auditmanager:ListAssessments`
+* `auditmanager:GetAssessment`
 
-The Security Audit role only includes the screen:[auditmanager:ListAssessments] permission. You must manually add the screen:[auditmanager:GetAssessment] permission to the CFT template to enable the permission.
+The Security Audit role only includes the `auditmanager:ListAssessments` permission. You must manually add the `auditmanager:GetAssessment` permission to the CFT template to enable the permission.
 
 |*AWS Audit Manager*
 //RLP-117712
@@ -125,10 +151,10 @@ The Security Audit role only includes the screen:[auditmanager:ListAssessments] 
 
 Additional permissions required:
 
-* screen:[auditmanager:ListControls]
-* screen:[auditmanager:GetControl]
+* `auditmanager:ListControls`
+* `auditmanager:GetControl`
 
-The Security Audit role only includes the screen:[auditmanager:ListControls] permission. You must manually add the screen:[auditmanager:GetControl] permission to the CFT template to enable the permission.
+The Security Audit role only includes the `auditmanager:ListControls` permission. You must manually add the `auditmanager:GetControl` permission to the CFT template to enable the permission.
 
 |*AWS Application Migration Service*
 //RLP-117706
@@ -136,7 +162,7 @@ The Security Audit role only includes the screen:[auditmanager:ListControls] per
 
 Additional permission required:
 
-* screen:[mgn:DescribeLaunchConfigurationTemplates]
+* `mgn:DescribeLaunchConfigurationTemplates`
 
 The Security Audit role includes the permission.
 
@@ -146,8 +172,8 @@ The Security Audit role includes the permission.
 
 Additional permissions required:
 
-* screen:[Microsoft.Synapse/workspaces/read]
-* screen:[Microsoft.Synapse/workspaces/auditingSettings/read]
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Synapse/workspaces/auditingSettings/read`
 
 The Reader role includes the permissions.
 
@@ -157,8 +183,8 @@ The Reader role includes the permissions.
 
 Additional permissions required:
 
-* screen:[Microsoft.Synapse/workspaces/read]
-* screen:[Microsoft.Synapse/workspaces/firewallRules/read]
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Synapse/workspaces/firewallRules/read`
 
 The Reader role includes the permissions.
 
@@ -169,8 +195,8 @@ The Reader role includes the permissions.
 
 Additional permissions required:
 
-* screen:[alloydb.locations.list]
-* screen:[alloydb.clusters.list]
+* `alloydb.locations.list`
+* `alloydb.clusters.list`
 
 The Viewer role includes the permissions.
 
@@ -180,9 +206,9 @@ The Viewer role includes the permissions.
 
 Additional permissions required:
 
-* screen:[alloydb.locations.list]
-* screen:[alloydb.clusters.list]
-* screen:[alloydb.users.list]
+* `alloydb.locations.list`
+* `alloydb.clusters.list`
+* `alloydb.users.list`
 
 The Viewer role includes the permissions.
 
@@ -192,9 +218,9 @@ The Viewer role includes the permissions.
 
 Additional permissions required:
 
-* screen:[alloydb.locations.list]
-* screen:[alloydb.clusters.list]
-* screen:[alloydb.instances.list]
+* `alloydb.locations.list`
+* `alloydb.clusters.list`
+* `alloydb.instances.list`
 
 The Viewer role includes the permissions.
 
@@ -204,8 +230,8 @@ The Viewer role includes the permissions.
 
 Additional permissions required:
 
-* screen:[alloydb.locations.list]
-* screen:[alloydb.backups.list]
+* `alloydb.locations.list`
+* `alloydb.backups.list`
 
 The Viewer role includes the permissions.
 
@@ -215,8 +241,8 @@ The Viewer role includes the permissions.
 
 Additional permissions required:
 
-* screen:[CG_CONFIG_INSPECT]
-* screen:[CG_CONFIG_READ]
+* `CG_CONFIG_INSPECT`
+* `CG_CONFIG_READ`
 
 You must update the Terraform template to enable the permissions.
 
@@ -234,6 +260,44 @@ You must update the Terraform template to enable the permissions.
 |*Deprecated Release*
 |*Sunset Release*
 |*Replacement Endpoints*
+
+|The following endpoints are deprecated as the date filters—time object or time string in query parameters or the request body—used by these APIs will be removed in the updated API endpoints. The updated API endpoints will always return current data.
+
+tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
+
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend/[get /compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend/[post /compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-standard/[get /compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-standard/[post /compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-requirement/[get /compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-requirement/[post /compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-standard/[get /compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-standard/[post /compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-requirement/[get /compliance/posture/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-requirement/[post /compliance/posture/{complianceId}/{requirementId}]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Explorer and Reports*]
+
+* https://pan.dev/prisma-cloud/api/cspm/save-report/[post /report]
+* https://pan.dev/prisma-cloud/api/cspm/get-resource-scan-info/[get /resource/scan_info]
+* https://pan.dev/prisma-cloud/api/cspm/post-resource-scan-info/[post /resource/scan_info]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
+
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-v-2/[get /v2/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-for-asset-inventory-v-2/[post /v2/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-2/[get /v2/inventory/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-2/[post /v2/inventory/trend]
+
+
+|23.10.1
+
+|Will be announced
+
+|Will be announced
+
 
 |tt:[*Prisma Cloud CSPM REST API for Resources*]
 //RLP-114802
@@ -265,31 +329,31 @@ In preparation for the EoL, make sure to uninstall all instances of the Enforcer
 
 Some Alert API request parameters and response object properties are now deprecated.
 
-Query parameter varname:[risk.grade] is deprecated for the following requests:
+Query parameter `varname:[risk.grade]` is deprecated for the following requests:
 
-*  userinput:[GET /alert] 
-*  userinput:[GET /v2/alert] 
-*  userinput:[GET /alert/policy] 
+*  `GET /alert`
+*  `GET /v2/alert`
+*  `GET /alert/policy` 
 
-Request body parameter varname:[risk.grade] is deprecated for the following requests:
+Request body parameter `varname:[risk.grade]` is deprecated for the following requests:
 
-*  userinput:[POST /alert] 
-*  userinput:[POST /v2/alert] 
-*  userinput:[POST /alert/policy] 
+*  `POST /alert`
+*  `POST /v2/alert`
+*  `POST /alert/policy`
 
-Response object property varname:[riskDetail] is deprecated for the following requests:
+Response object property `varname:[riskDetail]` is deprecated for the following requests:
 
-*  userinput:[GET /alert] 
-*  userinput:[POST /alert] 
-*  userinput:[GET /alert/policy] 
-*  userinput:[POST /alert/policy] 
-*  userinput:[GET /alert/{id}] 
-*  userinput:[GET /v2/alert] 
-*  userinput:[POST /v2/alert] 
+*  `GET /alert`
+*  `POST /alert`
+*  `GET /alert/policy`
+*  `POST /alert/policy`
+*  `GET /alert/{id}`
+*  `GET /v2/alert`
+*  `POST /v2/alert`
 
 Response object property varname:[risk.grade.options] is deprecated for the following request:
 
-* userinput:[GET /filter/alert/suggest]
+* `GET /filter/alert/suggest`
 
 | -
 | -
