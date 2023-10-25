@@ -1,0 +1,350 @@
+== Features Introduced in November 2023
+
+Learn what's new on Prisma™ Cloud in November 2023.
+
+[#new-features-nov]
+=== New Features Introduced in November 2023
+
+* <<new-features>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<changes-in-existing-behavior>>
+* <<rest-api-updates>>
+* <<deprecation-notices>>
+
+
+[#new-features]
+=== New Features
+
+[cols="50%a,50%a"]
+|===
+|FEATURE
+|DESCRIPTION
+
+|*Prisma Cloud Darwin Release*
+//received the blurb on Slack from Matangi. No Jira ticket for this.
+ 
+|The *Prisma Cloud Darwin Release* is here for Prisma Cloud environments on app.ind, app.ca, app.uk, and app.fr except app.gov. With the  Code to Cloud™ intelligence capabilities in this release, your security and development teams can work together to reduce application risks and prevent breaches.
+
+With this change, your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities]. 
+
+Connect with your Customer Success team for more details.
+
+When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation].
+
+|===
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+|SERVICE
+|API DETAILS
+
+|*Amazon EC2*
+
+tt:[23.11.1]
+
+//RLP-117703
+|*aws-ec2-launch-template-data*
+
+Additional permissions required:
+
+* `ec2:GetLaunchTemplateData`
+* `ec2:DescribeInstances`
+
+The Security Audit role only includes the `ec2:GetLaunchTemplateData` permission. You must manually add the `ec2:DescribeInstances` permission to the CFT template to enable the permission.
+
+|*AWS Audit Manager*
+
+tt:[23.11.1]
+
+//RLP-117743
+|*aws-audit-manager-assessment*
+
+Additional permissions required:
+
+* `auditmanager:ListAssessments`
+* `auditmanager:GetAssessment`
+
+The Security Audit role only includes the `auditmanager:ListAssessments` permission. You must manually add the `auditmanager:GetAssessment` permission to the CFT template to enable the permission.
+
+|*AWS Audit Manager*
+
+tt:[23.11.1]
+
+//RLP-117712
+|*aws-audit-manager-control*
+
+Additional permissions required:
+
+* `auditmanager:ListControls`
+* `auditmanager:GetControl`
+
+The Security Audit role only includes the `auditmanager:ListControls` permission. You must manually add the `auditmanager:GetControl` permission to the CFT template to enable the permission.
+
+|*AWS Application Migration Service*
+
+tt:[23.11.1]
+
+//RLP-117706
+|*aws-mgn-launch-configuration-template*
+
+Additional permission required:
+
+* `mgn:DescribeLaunchConfigurationTemplates`
+
+You must manually add the `mgn:DescribeLaunchConfigurationTemplates` permission to the CFT template to enable the permission.
+
+|*Azure Synapse Analytics*
+
+tt:[23.11.1]
+
+//RLP-117493
+|*azure-synapse-workspace-managed-sql-server-blob-auditing-policies*
+
+Additional permissions required:
+
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Synapse/workspaces/auditingSettings/read`
+
+The Reader role includes the permissions.
+
+|*Azure Synapse Analytics*
+
+tt:[23.11.1]
+
+//RLP-115881
+|*azure-synapse-workspace-ip-firewall-rules*
+
+Additional permissions required:
+
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Synapse/workspaces/firewallRules/read`
+
+The Reader role includes the permissions.
+
+
+|*Google AlloyDB for PostgreSQL*
+
+tt:[23.11.1]
+
+//RLP-117228
+|*gcloud-alloydb-cluster*
+
+Additional permissions required:
+
+* `alloydb.locations.list`
+* `alloydb.clusters.list`
+
+The Viewer role includes the permissions.
+
+|*Google AlloyDB for PostgreSQL*
+
+tt:[23.11.1]
+
+//RLP-117227
+|*gcloud-alloydb-cluster-user*
+
+Additional permissions required:
+
+* `alloydb.locations.list`
+* `alloydb.clusters.list`
+* `alloydb.users.list`
+
+The Viewer role includes the permissions.
+
+|*Google AlloyDB for PostgreSQL*
+
+tt:[23.11.1]
+
+//RLP-117226
+|*gcloud-alloydb-cluster-instance*
+
+Additional permissions required:
+
+* `alloydb.locations.list`
+* `alloydb.clusters.list`
+* `alloydb.instances.list`
+
+The Viewer role includes the permissions.
+
+|*Google AlloyDB for PostgreSQL*
+
+tt:[23.11.1]
+
+//RLP-117225
+|*gcloud-alloydb-backup*
+
+Additional permissions required:
+
+* `alloydb.locations.list`
+* `alloydb.backups.list`
+
+The Viewer role includes the permissions.
+
+|*OCI Cloud Guard*
+
+tt:[23.11.1]
+
+//RLP-117502
+|*oci-cloudguard-configuration*
+
+Additional permissions required:
+
+* `CG_CONFIG_INSPECT`
+* `CG_CONFIG_READ`
+
+You must update the Terraform template to enable the permissions.
+
+|===
+
+[#new-policies]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|NEW POLICIES
+|DESCRIPTION
+
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on HTTP/HTTPS ports*
+
+tt:[23.11.1]
+
+//RLP-119529
+|Identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). EC2 instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Policy Type—* Network
+
+*Policy Severity—* Low
+
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/80' , 'tcp/443' )
+----
+
+|*Azure VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on HTTP/HTTPS ports*
+
+tt:[23.11.1]
+
+//RLP-119531
+|Identifies Azure VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). Azure VM instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Policy Type—* Network
+
+*Policy Severity—* Low
+
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AZURE' and protocol.ports in ( 'tcp/80' , 'tcp/443' )
+----
+
+|*Azure Virtual Machine (Linux) does not authenticate using SSH keys*
+
+tt:[23.11.1]
+
+//RLP-118461
+|Identifies Azure Virtual Machines that have basic authentication, not authenticating using SSH keys. Azure Virtual Machines with basic authentication could allow attackers to brute force and gain unauthorized access, which might lead to potential data leaks. It is recommended to use SSH keys for authentication to avoid brute force attacks on virtual machines.
+
+*Policy Type—* Config
+
+*Policy Severity—* Low
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-vm-list' AND json.rule = powerState equal ignore case "PowerState/running" and (['properties.osProfile'].['linuxConfiguration'] exists and ['properties.osProfile'].['linuxConfiguration'].['disablePasswordAuthentication'] is false) 
+----
+
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on HTTP/HTTPS ports*
+
+tt:[23.11.1]
+
+//RLP-119530
+|Identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). GCP VM instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Policy Type—* Network
+
+*Policy Severity—* Low
+
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'GCP' and protocol.ports in ( 'tcp/80' , 'tcp/443' )
+----
+
+|===
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|POLICY UPDATES
+|DESCRIPTION
+
+2+|*Policy Updates—RQL*
+
+|*Azure Application Gateway is configured with SSL policy having TLS version 1.1 or lower*
+
+tt:[23.11.1]
+
+//RLP-115351
+|*Changes—* The RQL willl be updated to not report Application gateways with default policy created using API versions 2023-02-01 or higher as the minimum protocol version is set to 1.2.
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway' AND json.rule = ['properties.sslPolicy'] does not exist or (['properties.sslPolicy'].['policyType'] equal ignore case Predefined and (['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20150501 or ['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20170401)) or (['properties.sslPolicy'].['policyType'] equal ignore case Custom and (['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_0 or ['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_1))
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway' AND json.rule = (['properties.sslPolicy'] does not exist and ['properties.defaultPredefinedSslPolicy'] does not equal ignore case AppGwSslPolicy20220101) or (['properties.sslPolicy'].['policyType'] equal ignore case Predefined and (['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20150501 or ['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20170401)) or (['properties.sslPolicy'].['policyType'] equal ignore case Custom and (['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_0 or ['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_1))
+----
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts where the application gateways were created with default policy using API versions 2023-02-01 or higher will be resolved as *Policy_Updated*.
+
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|COMPLIANCE BENCHMARK
+|DESCRIPTION
+
+|*Support for CMMC v2 Level 2 standard*
+//RLP-109609
+|Prisma Cloud now supports the Cybersecurity Maturity Model Certification (CMMC) v2 Level 2 compliance standard. This framework includes cybersecurity practices, standards, and processes published by the Department of Defense (DoD) as part of the CMMC program, which aims to protect national security by standardizing how Defense contractors and subcontractors handle Federal Contract Information (FCI) and Controlled Unclassified Information (CUI).
+
+You can now view this built-in standard and the associated policies on the "Compliance > Standards" page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|===
+
+
+//[#changes-in-existing-behavior]
+//=== Changes in Existing Behavior
+
+//[cols="37%a,63%a"]
+//|===
+//|FEATURE
+//|DESCRIPTION
+
+//|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|CHANGE
+|DESCRIPTION
+|===
+
