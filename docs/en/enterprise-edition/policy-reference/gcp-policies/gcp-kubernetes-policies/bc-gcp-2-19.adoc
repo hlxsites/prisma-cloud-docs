@@ -1,0 +1,53 @@
+
+== The 'alpha cluster' feature is disabled on GCP Kubernetes engine clusters.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPdisableAlphaClusterFeatureInKubernetesEngineClusters.yaml[CKV2_GCP_19]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy identified by 'CKV2_GCP_19' is checking to ensure that the 'alpha cluster' feature is disabled in Google Cloud Platform's (GCP) Kubernetes engine clusters. This is important because enabling the alpha cluster feature can present several potential issues.
+
+First, it reduces stability: Alpha features are not stable and are likely to change in future Kubernetes versions, which can cause disruptions to the functioning of deployed applications. Second, it increases security risks: These features are not subject to the same level of scrutiny as stable API versions, so their usage can inadvertently expose the cluster to potential security vulnerabilities. Lastly, it can lead to poor resource management because some alpha features might consume more resources than stable features — leading to inefficiency and increased costs. For these reasons, it's important to disable the 'alpha cluster' feature in GCP Kubernetes engine clusters.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* TBD
+* *Arguments:* TBD
+
+In order to fix the issue, you have to make sure that the 'enable_kubernetes_alpha' option is set to false for all GCP Kubernetes Engine Clusters. This can be done using the following Terraform code:
+
+[source,hcl]
+```hcl
+resource "google_container_cluster" "my_cluster" {
+  name = "my-cluster"
+  
+  ...
+
+  enable_kubernetes_alpha = false
+}
+```
+
+The above code makes sure that the 'alpha cluster' feature is disabled. Google GKE alpha clusters are based on the alpha version of the GKE API, which is not recommended for production use as it includes features that are not fully tested, and may undergo significant changes in terms of stability, security, and breaking changes. Therefore, production environments should always use GKE standard clusters which are stable and secure.
+

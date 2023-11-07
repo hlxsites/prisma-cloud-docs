@@ -1,42 +1,71 @@
-== Ensure  Azure spring cloud is configured with  Virtual network ( Vnet)
+== Azure Spring Cloud should be configured with Virtual Network (VNet)
 
-=== Policy Details 
+=== Policy Details
 
 [width=45%]
 [cols="1,1"]
-|=== 
+|===
 |Prisma Cloud Policy ID 
 | TBD
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master//Users/taysmith/Documents/GitHub/tsmithv11/prisma-cloud-docs-1[CKV2_AZURE_23]
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureSpringCloudConfigWithVnet.yaml[CKV2_AZURE_23]
 
 |Severity
-|MEDIUM
+|HIGH
 
 |Subtype
 |Build
 
 |Frameworks
-|Terraform,TerraformPlan
+|Terraform, TerraformPlan
 
-|=== 
+|===
 
-=== Description 
+=== Description
 
-This policy ensures that the Ensure Azure spring cloud is configured with Virtual network (Vnet) is configured according to security best practices.
+This policy detects whether Azure Spring Cloud is configured with a Virtual Network. By leveraging a Virtual Network, you can isolate and secure Azure Spring Cloud within your own virtual network environment. This helps protect your resources and enables you to have more control over network traffic.
 
 === Fix - Buildtime
 
-*Terraform* 
+*Terraform*
 
-* *Resource:* TODO_resource_name
-* *Arguments:* TODO_arguments_list
+* *Resource:* azurerm_spring_cloud_service
+* *Arguments:* sku_name, network.service_runtime_subnet_id
 
-Fix this issue by TODO_fix_description.
-
-
-[source,hcl]
+[source,go]
 ----
-TODO_terraform_code_example
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_virtual_network" "example" {
+  name                = "example-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = "East US"
+  resource_group_name = "example-resources"
+}
+
+resource "azurerm_subnet" "example" {
+  name                 = "example-subnet"
+  resource_group_name  = "example-resources"
+  virtual_network_name = azurerm_virtual_network.example.name
+  address_prefixes     = ["10.0.1.0/24"]
+}
+
+resource "azurerm_spring_cloud_service" "example" {
+  name                = "example-spring-cloud-service"
+  resource_group_name = "example-resources"
+  location            = "East US"
+  sku_name            = "S0" # SKU is not B0
+
+  network {
+    service_runtime_subnet_id = azurerm_subnet.example.id
+    # app_subnet_id can also be included if needed
+  }
+  
+  # Include other necessary configurations
+}
 ----
+
+This configuration includes a virtual network and a subnet. Then it creates an Azure Spring Cloud service that references the subnet ID under the network block with service_runtime_subnet_id, ensuring the Spring Cloud service is configured with a Virtual Network. The sku_name is set to S0, which is different from B0. As a result, this satisfies both conditions of the Checkov policy: it ensures the SKU is not B0 and the Spring Cloud service is associated with a subnet in a Virtual Network.

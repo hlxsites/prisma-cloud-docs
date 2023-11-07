@@ -1,0 +1,54 @@
+
+== Azure Container Registry (ACR) has HTTPS enabled for webhook.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureACR_HTTPSwebhook.yaml[CKV2_AZURE_30]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks that the Azure Container Registry (ACR) has HTTPS (Hypertext Transfer Protocol Secure) enabled for its webhook. It's crucial for security reasons as enabling HTTPS ensures that the data transferred between the ACR and the webhook endpoint is encrypted and secure. Without HTTPS, the data could potentially be intercepted and exploited by malicious actors, leading to sensitive information leaks or breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_container_registry_webhook
+* *Arguments:* service_uri
+
+To fix the issue, you have to configure your Azure Container Registry (ACR) to use HTTPS for webhook communications. This involves declaring it within your respective provider section or alternatively within the resource. You can ensure this with the `service_uri` attribute:
+
+[source,hcl]
+----
+resource "azurerm_container_registry_webhook" "example" {
+  name                = "example-acrwebhook"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  registry_name       = azurerm_container_registry.example.name
+  
+  service_uri = "https://example.com/api/webhook"
+  
+  ...
+}
+----
+
+This code is secure because it ensures that HTTPS is used to communicate with the webhook's `service_uri`, which is a requirement for modern web services. This ensures your ACR webhook communications are encrypted and secure against potential man-in-the-middle (MITM) attacks.
+

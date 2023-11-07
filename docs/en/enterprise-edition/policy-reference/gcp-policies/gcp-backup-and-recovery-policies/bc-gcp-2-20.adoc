@@ -1,0 +1,65 @@
+
+== The MySQL DB instance has point-in-time recovery backup configured.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled.yaml[CKV2_GCP_20]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a MySQL DB instance has a point-in-time recovery backup configured. Point-in-time recovery allows you to restore your database to any second during your retention period, up to the last five minutes. Not having this setup can be risky as it might result in data loss if there is an issue or outage. By not using point-in-time recovery backup, you are potentially putting your data at risk in the event of a disaster or data corruption issue. Therefore, it's crucial to have this backup configuration in place to safeguard your data.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* TBD
+* *Arguments:* TBD
+
+To fix this, you need to enable Point-In-Time Recovery (PITR) in your MySQL DB instance. Please ensure the `backup_window` and `backup_retention_period` attributes are configured optimally. Here's some example code:
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "mysql-instance"
+  region           = "us-central1"
+  database_version = "MYSQL_5_6"
+
+  settings {
+    tier  = "db-f1-micro"
+
+    backup_configuration {
+      enabled            = true
+      binary_log_enabled = true
+      start_time         = "05:00" // specify a convenient time
+    }
+  }
+
+  backup_window {
+    start_time = "05:00"
+  }
+
+  backup_retention_period = 30
+}
+----
+
+In the above example, we've enabled backups by setting `enabled` to `true` under `backup_configuration`. `binary_log_enabled` is also set to `true` to ensure binary logging (necessary for point-in-time recovery) is enabled. The `start_time` attribute is set to schedule the backup at a specific time. Also, `backup_retention_period` has been set to `30` days to hold backups. This will make your MySQL DB instance comply with the Checkov policy CKV2_GCP_20, ensuring point-in-time recovery backup is properly configured.
+

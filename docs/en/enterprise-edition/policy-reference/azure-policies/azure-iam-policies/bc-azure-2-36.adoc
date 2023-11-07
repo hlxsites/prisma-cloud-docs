@@ -1,0 +1,56 @@
+
+== The Azure automation account is not configured with a managed identity
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureAutomationAccConfigManagedIdentity.yaml[CKV2_AZURE_36]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking if an Azure automation account is configured with managed identity. Azure automation account enables managing Azure resources. If not handled with managed identities, it can pose a significant security risk as it reduces the control and security boundary around the resources. Not using managed identity can lead to human errors, non-compliance to security standards, or exposure of sensitive data or resources. Therefore, it's bad to run an Azure automation account without configuring a managed identity. An identity should be assigned to limit the exposure and increase the security of Azure resources.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_automation_account
+* *Arguments:* identity.type
+
+To fix the issue, you need to enable the managed identity feature for the Azure Automation Account in your Terraform code. Specify 'identity' block with type 'SystemAssigned' in your 'azurerm_automation_account' resource as below:
+
+[source,hcl]
+----
+resource "azurerm_automation_account" "example" {
+  name                = "example-automation-account"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  sku_name = "Basic"
+
+  identity {
+    type = "SystemAssigned"
+  }
+  
+}
+----
+
+The above code is secure because it enables a Managed Identity for the Azure Automation Account. A Managed Identity provides an Azure service with an automatically managed identity which is used to authenticate, grant and manage permissions to services supporting Azure Active Directory authentication. This reduces the need for storing credentials in code and hence decreases the risk of credentials being compromised.
+

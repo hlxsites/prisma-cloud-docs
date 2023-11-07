@@ -1,0 +1,65 @@
+== A Policy is not Defined for KMS Key
+                
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/KmsKeyPolicyIsDefined.yaml[CKV2_AWS_64]
+
+|Severity
+|MEDIUM
+
+|Subtype
+| Build
+
+|Frameworks
+|Terraform, TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy is designed to detect situations where the KMS key policy is undefined within your AWS environment. KMS keys are essential for data encryption and it's crucial to monitor and manage the policies that define their use to ensure data security is maintained.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_kms_key
+* *Arguments:* policy
+
+The policy argument should be specified to define the KMS key policy. 
+
+Secure code example:
+
+[source,hcl]
+----
+resource "aws_kms_key" "example" {
+  description = "KMS key for example"
+  policy      = <<POLICY
+  {
+    "Version": "2012-10-17",
+    "Id": "default",
+    "Statement": [
+      {
+        "Sid": "DefaultAllow",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::123456789012:root"
+        },
+        "Action": "kms:*",
+        "Resource": "*"
+      }
+    ]
+  }
+POLICY
+}
+----
+
+The above code is secure because it defines a valid key policy for the KMS key, ensuring that access and usage are managed according to the organization's requirements.
+

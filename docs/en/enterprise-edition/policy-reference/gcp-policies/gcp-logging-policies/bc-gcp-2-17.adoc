@@ -1,0 +1,57 @@
+
+== The PostgreSQL database flag 'log_statement_stats' is set to 'off'.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF.yaml[CKV2_GCP_17]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is examining whether the 'log_statement_stats' flag for PostgreSQL databases is set to 'off'. The 'log_statement_stats' setting controls whether detailed statistics on each statement that is executed are included in the server's logs. If it is set to 'on', this would generate a lot of log output, especially for systems executing complex operations, which can easily fill up the storage media, affect database performance, and make the logs difficult to read. Moreover, the information collected by the 'log_statement_stats' could potentially contain sensitive data, thus posing a data exposure risk. Hence, it's recommended to set it to 'off' by default and only enable it temporarily when needed for debugging.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* TBD
+* *Arguments:* TBD
+
+To fix this issue, you need to ensure that the PostgreSQL database flag 'log_statement_stats' is set to 'off'. This can be achieved by including the flag in the settings of the managed PostgreSQL database instance like this:
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "default" {
+   name             = "default"
+   database_version = "POSTGRES_9_6"
+   region           = "us-central1"
+
+   settings {
+     database_flags {
+        name  = "log_statement_stats"
+        value = "off"
+     }
+   }
+}
+----
+
+The provided code is secure because it turns off the PostgreSQL database flag 'log_statement_stats'. This flag, when turned on, causes the system to compute and report the detailed statement-level statistics about the workload of the PostgreSQL server. Turning off this flag is a good practice for the production database because intensive statistics gathering will likely have substantial overhead on the server's performance. Thus, setting 'log_statement_stats' to 'off' will enhance the performance of your PostgreSQL database.
+
+

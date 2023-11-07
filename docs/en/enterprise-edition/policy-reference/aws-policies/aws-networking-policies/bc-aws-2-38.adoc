@@ -1,0 +1,57 @@
+== Domain Name System Security Extensions (DNSSEC) signing is not enabled for Amazon Route 53 public hosted zones
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/Route53ZoneEnableDNSSECSigning.yaml[CKV2_AWS_38]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+                
+=== Description
+
+This policy detects when Domain Name System Security Extensions (DNSSEC) signing is not enabled for Amazon Route 53 public hosted zones.
+
+=== Fix - Buildtime
+                
+*Terraform*
+                
+* *Resource:* aws_route53_zone, aws_route53_hosted_zone_dnssec, aws_route53_key_signing_key, aws_route53_zone_association
+
+
+[source,go]
+----
+# Define a Route 53 public hosted zone
+resource "aws_route53_zone" "example" {
+  name = "example.com"
+}
+
+# Enable DNSSEC for the hosted zone
+resource "aws_route53_hosted_zone_dnssec" "example" {
+  hosted_zone_id = aws_route53_zone.example.zone_id
+}
+
+# Optionally, define a key signing key (KSK) for DNSSEC
+resource "aws_route53_key_signing_key" "example" {
+  hosted_zone_id         = aws_route53_zone.example.zone_id
+  name                   = "example-key"
+  key_management_service_arn = "arn:aws:kms:us-west-2:123456789012:key/your-kms-key-id" # Replace with your KMS key ARN
+  status                 = "ACTIVE"
+}
+----
+
+By including both the aws_route53_hosted_zone_dnssec and aws_route53_key_signing_key resources and not associating the zone with a VPC, this configuration will securely sign the hosted zone.

@@ -1,0 +1,58 @@
+
+== The PostgreSQL database flag 'log_executor_stats' is set to 'off'.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF.yaml[CKV2_GCP_14]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that the 'log_executor_stats' flag is set to 'off' for PostgreSQL databases in Google Cloud Platform (GCP). The 'log_executor_stats' flag, when enabled, logs information about the performance of the executor stage of query execution in PostgreSQL. While this information can be useful for performance tuning, it can also generate a significant amount of log data, potentially leading to increased storage costs and making important log entries harder to find. Therefore, unless this level of logging is necessary, the policy suggests setting this flag to 'off' to discourage unnecessary logging.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* TBD
+* *Arguments:* TBD
+
+To fix this issue, you should set the 'log_executor_stats' flag value to 'off' for PostgreSQL database instances in your Terraform configuration. Before disabling, understand that this flag can provide useful metrics but may add extra overhead, so it's important to balance your needs accordingly.
+
+[source,hcl]
+```
+resource "google_sql_database_instance" "default" {
+  project  = "my-gcp-project"
+  name     = "my-database"
+  region   = "us-central1"
+
+  settings {
+    tier = "db-f1-micro"
+
+    database_flags {
+      name  = "log_executor_stats"
+      value = "off"
+    }
+  }
+}
+```
+
+The above code block configures a Google Cloud SQL PostgreSQL database instance with the 'log_executor_stats' flag set to 'off'. This will ensure that executor-level statistics for each query are not in the database log, thereby meeting the Checkov policy requirements, reducing unnecessary overhead, and potentially improving performance.
+

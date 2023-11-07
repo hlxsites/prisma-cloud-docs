@@ -1,0 +1,62 @@
+
+== The Google Cloud Platform network is ensured to define a firewall and does not utilize the default firewall.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPNetworkDoesNotUseDefaultFirewall.yaml[CKV2_GCP_18]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that a Google Cloud Platform (GCP) network has a defined firewall and is not using the default firewall settings. By using the default firewall settings, a network may expose vulnerabilities or unnecessary access points, thereby increasing the risk of unauthorized access and potential data breaches. Therefore, it is essential to define a custom firewall rule that aligns with the specific security needs of the network.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* TBD
+* *Arguments:* TBD
+
+To fix this issue, you need to create a new firewall in the GCP network and make sure it does not use the default firewall. You can do this by defining it in your Terraform scripts. 
+
+For example:
+[source,hcl]
+---
+resource "google_compute_firewall" "default" {
+  name    = "test-firewall"
+  network = google_compute_network.default.self_link
+
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443"]
+  }
+}
+
+resource "google_compute_network" "default" {
+  name                    = "test-network"
+  auto_create_subnetworks = "false"
+}
+---
+
+This Terraform code creates custom network and firewall which does not rely on default firewall. The firewall rule `test-firewall` is associated with the custom network `test-network`, thus the GCP network no longer uses the default firewall. It has specific rules which only allows traffic on ICMP protocol and TCP ports 80 and 443, reducing the attack surface.
+
