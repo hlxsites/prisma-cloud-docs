@@ -1,0 +1,75 @@
+
+== The global security scope is not defined in the securityDefinitions
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/GlobalSecurityScopeUndefined.py[CKV_OPENAPI_19]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a global security scope is defined in the securityDefinitions of 2.0 version files in an OpenAPI framework. This is crucial for API security because failure to define this might mean that APIs may not have a standard security measure throughout their operations, which can leave them vulnerable to attacks. This can lead to unauthorized data access, data manipulation, or other forms of security breaches. Hence, it's important to have consistent security definitions in place to ensure a secure API environment.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, define a securityDefinitions section in your OpenAPI specification version 2.0 file which contains scopes for OAuth according to what is provided at API level on global security section.
+
+[source,json]
+----
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Swagger Sample API"
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
+    "petstore_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://petstore.swagger.io/api/oauth/dialog",
+      "flow": "implicit",
+      "scopes": {
+        "write:pets": "modify pets in your account",
+        "read:pets": "read your pets"
+      }
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    },
+    {
+      "petstore_auth": [
+        "write:pets",
+        "read:pets"
+      ]
+    }
+  ]
+}
+----
+
+The above code is secure because it defines the securityDefinitions section properly. It includes both API Key and OAuth2 security schemes and references them in the security section at the root level of the API specification. Plus, OAuth2 utilizing 'implicit' flow involves scopes, and the scopes are defined at the global level, thus enforcing security at the API level.
+

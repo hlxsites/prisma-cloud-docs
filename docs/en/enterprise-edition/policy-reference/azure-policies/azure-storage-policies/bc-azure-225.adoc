@@ -1,0 +1,50 @@
+
+== App Service Plan is not zone redundant
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AppServicePlanZoneRedundant.py[CKV_AZURE_225]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to see if the App Service Plan for Azure is zone redundant. Zone redundancy means that the application's resources are distributed across multiple zones, which can protect against failures. If the plan isn't zone redundant, it could be a potential vulnerability. For instance, if there was an issue in one zone - like a natural disaster, power outage, or hardware failure - and the plan wasn't zone redundant, it could result in an application outage. Thus, not having an App Service Plan that is zone redundant could lead to service interruptions, which could negatively affect user experience, data, and potentially revenue.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_service_plan
+* *Arguments:* zone_balancing_enabled
+
+To fix this issue, you need to ensure that your App Service Plan is geographically distributed and has a failover policy. This can be achieved by turning on the "zone_balancing_enabled" attribute in your Terraform configuration.
+
+[source,hcl]
+----
+resource "azurerm_service_plan" "pass" {
+  name                   = "example"
+  resource_group_name    = azurerm_resource_group.example.name
+  location               = azurerm_resource_group.example.location
+  os_type                = "Linux"
+  sku_name               = "P1v2"
++ zone_balancing_enabled = true
+}
+----
+

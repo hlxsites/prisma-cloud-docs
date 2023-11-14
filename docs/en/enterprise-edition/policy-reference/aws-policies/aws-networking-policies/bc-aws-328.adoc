@@ -1,0 +1,48 @@
+
+== ALB is not configured with the defensive or strictest desync mitigation mode
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ALBDesyncMode.py[CKV_AWS_328]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking whether the Application Load Balancer (ALB) in AWS has been configured with defensive or strictest desync mitigation mode. The desync mitigation mode determines how the ALB handles mismatches between the request and the response sizes, which can be a potential cause for HTTP Desync attacks. The HTTP Desync attack can cause Distributed Denial of Service (DDoS) attacks, cache poisoning, and the theft of sensitive data. Therefore, having the ALB in a defensive or strictest mode helps in the mitigation of this potential risk by monitoring the size mismatches and acting accordingly. Thus, if the policy doesn't have this set, it implies a higher risk of vulnerability to HTTP Desync attacks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* "aws_lb", "aws_alb", "aws_elb"
+* *Arguments:* desync_mitigation_mode
+
+To fix this issue, you should specify the `desync_mitigation_mode` to a value other than `monitor`. This setting should be set to either `defensive` or `strictest`. Here's an example of how you might do this:
+
+[source,hcl]
+----
+resource "aws_lb" "example" {
+  name               = "example"
+  ...
+  desync_mitigation_mode = "defensive"
+  ...
+}
+----
+

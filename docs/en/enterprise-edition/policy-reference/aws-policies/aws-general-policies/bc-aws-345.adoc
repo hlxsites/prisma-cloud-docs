@@ -1,0 +1,49 @@
+
+== Network firewall encryption does not use a CMK
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NetworkFirewallUsesCMK.py[CKV_AWS_345]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a Network firewall is using encryption via a Customer Master Key (CMK). If a Network firewall is not using a CMK for encryption, it can potentially leave the network vulnerable to unauthorized data access, breaches, and misuse of hosts inside the network. CMKs provide very high levels of security control including key rotation, key usage policies and audit trail, further facilitating secure and controlled access to the network. Thus, not implementing encryption via a CMK for Network firewall can have severe implications for network security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'aws_networkfirewall_firewall', 'aws_networkfirewall_rule_group'
+* *Arguments:* encryption_configuration.key_id
+
+To fix the issue, you need to create a Customer Managed Key (CMK) and use it for Network Firewall encryption.
+
+[source,hcl]
+----
+resource "aws_networkfirewall_firewall" "example" {
+  name                = "example"
+  ...
+  encryption_configuration {
+    key_id   = aws_kms_key.my_key.arn
+  }
+}
+----
+

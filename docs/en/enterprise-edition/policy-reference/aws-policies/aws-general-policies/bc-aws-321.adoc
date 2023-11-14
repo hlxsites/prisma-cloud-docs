@@ -1,0 +1,54 @@
+
+== Redshift clusters are not using enhanced VPC routing
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RedshiftClusterUseEnhancedVPCRouting.py[CKV_AWS_321]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Redshift clusters utilise Enhanced Virtual Private Cloud (VPC) routing. Redshift clusters often interact with data placed in S3 buckets, and if not correctly setup, data transit can occur over the public internet. In a scenario where Enhanced VPC routing is not enabled, data transferred between Redshift and S3 doesn't traverse in the confines of the Amazon network, resulting in an increased risk of data exposure. It is critical that data remains secure during transfer, and Enhanced VPC routing helps achieve this as it forces all COPY and UNLOAD traffic between Redshift and S3 to stay within the Amazon network, therefore adding an extra layer of security to the data. Failure to use enhanced VPC routing could potentially lead to data breaches, resulting in regulatory infractions and damage to the business's reputation.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_redshift_cluster
+* *Arguments:* enhanced_vpc_routing
+
+To fix this issue, you should enable the `enhanced_vpc_routing` option on AWS Redshift. 
+
+[source,hcl]
+----
+resource "aws_redshift_cluster" "default" {
+  cluster_identifier      = "my_cluster"
+  availability_zone       = "us-west-2a"
+  database_name           = "mydb"
+  master_username         = "administrator"
+  master_password         = "MyPassword"
+  node_type               = "dc1.large"
++ enhanced_vpc_routing    = true
+  ...
+}
+----
+
+The above code is secure because it contains the `enhanced_vpc_routing` argument set to `true`. This forces all COPY and UNLOAD traffic between the cluster and data repositories to go through the Amazon VPC. This can prevent data leakage and provide better control over data traffic.
+

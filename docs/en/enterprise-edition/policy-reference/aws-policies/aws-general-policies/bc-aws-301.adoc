@@ -1,0 +1,49 @@
+
+== AWS Lambda function is publicly accessible
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LambdaFunctionIsNotPublic.py[CKV_AWS_301]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is examining AWS Lambda functions to ensure they aren't publicly accessible. Having AWS Lambda functions that can be accessed by anyone can lead to sinister activities such as data theft, data manipulation, or other forms of unauthorized access. It's considered bad practice and a security risk, as it allows any anonymous user to invoke the function, potentially leading to misuse of the function or exposure of sensitive information. Therefore, it's important to have controls on who can execute the function, for example, authenticated or identified users only.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_lambda_permission
+* *Arguments:* principal
+
+To fix this issue, ensure the AWS Lambda function is not publicly accessible by restricting access to trusted entities only. Set 'principal' to a specific AWS resource or user-account other than '*'.
+
+[source,hcl]
+----
+resource "aws_lambda_permission" "with_s3" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.example.function_name
+- principal     = "*"
+  source_arn    = "arn:aws:s3:::example_bucket"
+}
+----
+

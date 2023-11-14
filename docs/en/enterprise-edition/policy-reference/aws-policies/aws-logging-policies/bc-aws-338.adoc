@@ -1,0 +1,49 @@
+
+== CloudWatch log groups must retain logs for a minimum duration of one year
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CloudWatchLogGroupRetentionYear.py[CKV_AWS_338]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that CloudWatch log groups in AWS are set to retain logs for at least one year. Logging is a crucial aspect of maintaining a secure and reliable environment in systems. Logs can provide valuable insights into system operations, errors, access, usage patterns and potential security incidents. If a log group in CloudWatch is not configured to retain logs for a certain period of time, important data could be lost. In some cases, regulations and standards may also require logs to be retained for specific periods. Failing to retain logs for at least one year could hinder system troubleshooting, vulnerability detection, auditing, and compliance verification.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cloudwatch_log_group
+* *Arguments:* retention_in_days
+
+To fix the issue, you should add a retention_in_days attribute to your aws_cloudwatch_log_group resource and set its value to at least 365 to retain logs for one year as follows:
+
+[source,hcl]
+----
+resource "aws_cloudwatch_log_group" "example" {
+  name = "example"
+
+  retention_in_days = 365
+}
+----
+
+This code is secure because it ensures CloudWatch Log Groups retain logs for at least one year, which is essential for audit and incident response purposes. AWS CloudWatch logs are important for troubleshooting and understanding the interactions between different internal services, and retaining these logs for an extended period is a good practice from a security perspective.
+

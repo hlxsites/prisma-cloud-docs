@@ -1,0 +1,51 @@
+
+== Kubernetes engine cluster is not configured with NSG(s)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/oci/OCI_KubernetesEngineClusterEndpointConfigWithNSG.yaml[CKV2_OCI_3]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a Kubernetes engine cluster is configured with Network Security Group(s), or NSG(s). Failure to do so can greatly increase the security risk. NSGs offer an additional layer of security, acting as a firewall at the subnet level, controlling ingress and egress by defining rules based on the source and destination IP addresses, ports, and protocols. Without an NSG, a Kubernetes cluster could be more vulnerable to network attacks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* oci_containerengine_cluster
+* *Arguments:* endpoint_config.nsg_ids
+
+To address this issue, you should associate a Network Security Group (NSG) with the cluster's subnet. An NSG contains a list of access control lists (ACLs) that allow or deny traffic to subnets or network interfaces. 
+
+[source,hcl]
+----
+resource "oci_containerengine_cluster" "pass" {
+
+  endpoint_config {
+    nsg_ids = [
++      "ocid1.networksecuritygroup.oc1..pud_cki_1",
++      "ocid2.networksecuritygroup.oc1..pud_cki_2",
+    ]
+  }
+}
+----
+

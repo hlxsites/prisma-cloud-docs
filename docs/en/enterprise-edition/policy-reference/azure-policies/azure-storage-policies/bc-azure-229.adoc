@@ -1,0 +1,52 @@
+
+== Azure SQL Database Namespace is not zone redundant
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/SQLDatabaseZoneRedundant.py[CKV_AZURE_229]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying whether the Azure SQL Database Namespace is zone redundant. Zone redundancy is a crucial factor in ensuring high availability and disaster recovery if a zone failure occurs. When an Azure SQL Database namespace is not zone redundant, it may lead to potential data loss or unavailability in case of a zone-wide issue in Azure. Thus, to prevent any disruptions in service or data loss, it's essential to have this redundancy setup.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mssql_database
+* *Arguments:* zone_redundant
+
+To fix this issue, you need to set the `zone_redundant` parameter to `true` within the `azurerm_mssql_database` resource section of your Terraform code.
+
+[source, go]
+----
+resource "azurerm_mssql_database" "example" {
+  name                = "example-sql-db"
+  resource_group_name = azurerm_resource_group.example.name
+  server_name         = azurerm_sql_server.example.name
+  location            = azurerm_resource_group.example.location
+  edition             = "Standard"
+  collation           = "SQL_Latin1_General_CP1_CI_AS"
+  max_size_bytes      = "1073741824"
+  zone_redundant      = true
+}
+----
+

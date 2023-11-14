@@ -1,0 +1,55 @@
+
+== Data Trace is not enabled in the API Gateway Method Settings
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/APIGatewayMethodSettingsDataTrace.py[CKV_AWS_276]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies that Data Trace is not enabled in the settings for API Gateway Methods on AWS. If Data Trace is enabled, it could pose a security risk as it allows verbose logging of all data between the client and server. This includes potentially sensitive information like API keys and personal data. Enabling Data Trace can also incur unnecessary costs and hamper performance due to increased logging activities, making it desirable to keep it off.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_api_gateway_method_settings
+* *Arguments:* settings.data_trace_enabled
+
+To fix this issue, you need to ensure that 'dataTraceEnabled' is set to false in your AWS API Gateway Method Settings. The dataTraceEnabled field provides detailed information about request or response HTTP headers, status codes, and timings which can be very information-intensive. Therefore, it's recommended to disable it so as to not overload your system with too much data.
+
+[source,go]
+----
+resource "aws_api_gateway_method_settings" "example" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  stage_name  = aws_api_gateway_deployment.example.stage_name
+  method_path = "*/*"
+  
+  settings {
+    metrics_enabled = false
+    logging_level   = "OFF"
+    data_trace_enabled = false
+  }
+}
+----
+
+The above code is considered secure because it explicitly sets 'dataTraceEnabled' to false in AWS API Gateway Method Settings. This ensures that no extensive, potentially overwhelming, data is traced and logged.
+

@@ -1,0 +1,69 @@
+
+== IAM policies allow exposure of credentials
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMCredentialsExposure.py[CKV_AWS_287]
+
+|Severity
+|CRITICAL
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is used to verify if Identity and Access Management (IAM) policies are configured in a way that prevents the exposure of credentials. This is paramount for security as exposure of credentials could allow unauthorized users access to sensitive resources and operations. This includes viewing, modifying or deleting data, which can expose the organization to a range of risks, from data breaches to the potential shut down of systems. Therefore, it's crucial to ensure IAM policies are correctly configured to prevent credentials exposure.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy
+* *Arguments:* policy
+
+To fix this issue, you need to review and ensure that the IAM policies do not allow the exposure of credentials. IAM Policies should enforce the least privileges principle.
+
+[source,hcl]
+----
+resource "aws_iam_policy" "example" {
+  name        = "example"
+  path        = "/"
+  description = "An example policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "ec2:Describe*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "test-attach" {
+  role       = aws_iam_role.test_role.name
+  policy_arn = aws_iam_policy.example.arn
+}
+----
+
+The provided Terraform code fixes the identified issue as it strictly follows the least privilege principle, it only provides the resources required permissions to perform "Describe" operations within EC2, and it does not allow any write operations which can possibly change the configuration of the resource leading to potential credentials exposure.
+

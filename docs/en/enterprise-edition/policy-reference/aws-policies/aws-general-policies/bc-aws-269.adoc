@@ -1,0 +1,57 @@
+== Connect Instance Kinesis Video Stream Storage Config is not using CMK for encryption
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ConnectInstanceKinesisVideoStreamStorageConfigUsesCMK.py[CKV_AWS_269]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy pertains to Amazon Connect instances leveraging Kinesis Video Stream Storage and checks if the Customer Master Key (CMK) is used for encryption. If the CMK is not utilized, the security of the stored video streams can be compromised. CMK allows for stringent access control and monitoring, providing an additional layer of security. Without it, unauthorized individuals can gain access to the video streams, raising potential confidentiality and privacy issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_connect_instance_storage_config
+* *Arguments:* storage_config.kinesis_video_stream_config.encryption_config.key_id
+
+To fix the issue, you should make sure that the AWS Connect Instance Kinesis Video Stream Storage is configured to use a CMK (Customer Master Key) for encryption.
+
+[source,go]
+----
+resource "aws_connect_instance_storage_config" "pass" {
+  instance_id   = aws_connect_instance.pass.id
+  resource_type = "MEDIA_STREAMS"
+
+  storage_config {
+    kinesis_video_stream_config {
+      prefix                 = "pass"
+      retention_period_hours = 3
+
+      encryption_config {
+        encryption_type = "KMS"
++       key_id          = aws_kms_key.test.arn
+      }
+    }
+    storage_type = "KINESIS_VIDEO_STREAM"
+  }
+}
+----

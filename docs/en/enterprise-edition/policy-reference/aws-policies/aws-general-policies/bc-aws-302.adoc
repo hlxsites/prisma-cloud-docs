@@ -1,0 +1,48 @@
+
+== database snapshots are public
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/DBSnapshotsArePrivate.py[CKV_AWS_302]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that database snapshots are not publicly accessible. Database snapshots are backups of your database that allow you to restore data from a particular point in time. Making these snapshots public can expose sensitive information, compromising the integrity and security of the data stored in your database. Therefore, it's crucial to keep these snapshots private to prevent unauthorized access and the potential misuse of your data.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_db_snapshot
+* *Arguments:* shared_accounts
+
+To fix this issue, you need to ensure that `shared_accounts` is not set to `all`.
+
+[source,go]
+----
+resource "aws_db_snapshot" "fail" {
+  db_instance_identifier = aws_db_instance.bar.id
+  db_snapshot_identifier = "testsnapshot1234"
+- shared_accounts=["all"]
+}
+----
+
+

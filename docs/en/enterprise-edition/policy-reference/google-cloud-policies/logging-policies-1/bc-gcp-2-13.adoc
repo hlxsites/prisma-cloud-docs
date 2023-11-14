@@ -1,0 +1,58 @@
+
+== PostgreSQL database flag 'log_duration' is not set to 'on'
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPPostgreSQLDatabaseFlaglog_durationIsSetToON.yaml[CKV2_GCP_13]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies if the 'log_duration' flag is set to 'on' for a PostgreSQL database in Google Cloud Platform (GCP). The 'log_duration' flag, when turned on, logs the duration of each completed SQL command that was run on the PostgreSQL instance.
+
+If this configuration is not enabled, it could lead to less visibility in monitoring and diagnosing database performance issues. This lack of insight can introduce difficulties when trying to troubleshoot or optimize performance because durations of SQL commands are crucial to understanding where potential slowdowns or bottlenecks may lie. So, leaving 'log_duration' off can limit the ability to effectively manage the database.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+* *Arguments:* settings.database_flags
+
+To fix this issue, you need to ensure that the 'log_duration' flag in the PostgreSQL database is set to 'on'. 
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "db" {
+  name             = "db-instance"
+  database_version = "POSTGRES_9_6"
+  region           = "us-central1"
+
+  settings {
+    database_flags {
+      name  = "log_duration"
+      value = "on"
+    }
+  }
+}
+----
+
+In the above code, 'log_duration' is set to 'on' for the PostgreSQL instance. This means that each statement's duration will be logged, enhancing the visibility and traceability of operations conducted on your database, further strengthening its security against any potential unauthorized access or actions.
+

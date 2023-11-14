@@ -1,0 +1,66 @@
+
+== Security configuration for the EMR Cluster does not use encryption
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/EMRClusterConfEncryptsLocalDisk.py[CKV_AWS_349]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies whether the EMR (Elastic MapReduce) Cluster security configuration in AWS (Amazon Web Services) is set up to encrypt local disks. Not having an appropriate encryption for local disks exposes the data stored in them to potential attacks, breaches, or unauthorized disclosures. This encryption is critical to protect sensitive data and maintain the confidentiality and integrity of the information.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_emr_security_configuration
+* *Arguments:* configuration.EncryptionConfiguration.EnableAtRestEncryption
+
+To fix the issue, you should enable the local disk encryption in your EMR cluster configuration. You will need to specify the "SecurityConfiguration" property in your AWS EMR Cluster resource. This property should reference a Security Configuration resource that has "LocalDiskEncryptionConfiguration" enabled.
+
+[source,go]
+----
+resource "aws_emr_security_configuration" "pass" {
+  name = "emrsc_other"
+
+  configuration = <<EOF
+{
+  "EncryptionConfiguration": {
+    "AtRestEncryptionConfiguration": {
+      "S3EncryptionConfiguration": {
+        "EncryptionMode": "SSE-S3"
+      },
+      "LocalDiskEncryptionConfiguration": {
+        "EnableEbsEncryption": true,
+        "EncryptionKeyProviderType": "AwsKms",
+        "AwsKmsKey": "arn:aws:kms:eu-west-2:680235478471:key/27b6fd31-ca6d-4c71-8dca-06ebd0f94174"
+      }
+    },
+    "EnableInTransitEncryption": false,
+    "EnableAtRestEncryption": true
+  }
+}
+EOF
+}
+----
+
+In the code above, the local disk encryption is set to be enabled by specifying the "EncryptionKeyProviderType" and "AwsKmsKey" properties in the "LocalDiskEncryptionConfiguration". This ensures that data stored in the local disks of instances in your EMR cluster is encrypted. The referenced KMS key is used for encryption, ensuring a secure key management process. This process reduces the risk of data compromise or loss by protecting it from unauthorized access which makes the code secure.
+

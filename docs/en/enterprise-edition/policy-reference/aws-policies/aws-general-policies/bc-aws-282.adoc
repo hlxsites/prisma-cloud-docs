@@ -1,0 +1,46 @@
+
+== Redshift Serverless namespace is not encrypted by KMS using a customer managed key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RedshiftServerlessNamespaceKMSKey.py[CKV_AWS_282]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a Redshift Serverless namespace in AWS is encrypted using a customer managed key (CMK) provided by Key Management Service (KMS). This is crucial because encryption adds an additional layer of security to protect data. A customer-managed key offers more flexibility and control over the cryptographic keys, including the ability to implement key rotation, disable, or delete a key. If Redshift Serverless namespaces are not encrypted by a CMK, it implies that default AWS managed keys are being used or data is not encrypted, which can increase the risk of unauthorized data access or breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_redshiftserverless_namespace
+* *Arguments:* kms_key_id
+
+To fix this issue, you need to ensure that your Redshift Serverless namespace is using encryption by a customer-managed key.
+
+[source,go]
+----
+resource "aws_redshiftserverless_namespace" "pass" {
+  namespace_name = "test-pass-namespace"
++ kms_key_id = aws_kms_key.example.arn
+}
+----
+

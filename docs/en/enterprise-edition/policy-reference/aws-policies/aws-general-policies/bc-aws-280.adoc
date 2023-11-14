@@ -1,0 +1,54 @@
+
+== Neptune snapshot is encrypted by KMS using a customer managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NeptuneClusterSnapshotEncryptedWithCMK.py[CKV_AWS_280]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Neptune snapshots are encrypted using a Customer Managed Key (CMK). This is important because Neptune snapshots can contain sensitive data, and encryption helps protect this data from unauthorized access. Specifically, using a Customer Managed Key gives you full control and autonomy over the key management, including its rotation, enabling auditing, and defining the permissions who can use this key. Unencrypted snapshots, or snapshots encrypted with less secure options, can compromise data security, potentially leading to data breaches. Hence, not adhering to this policy can pose significant data security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_neptune_cluster_snapshot
+* *Arguments:* kms_key_id
+
+To fix this issue, you need to ensure that Neptune snapshots are encrypted using a KMS CMK. Use the `kms_key_id` argument in the `aws_neptune_cluster_snapshot` resource to specify the CMK.
+
+[source,go]
+----
+resource "aws_kms_key" "key" {
+  description             = "Key for encrypting Neptune snapshots"
+  deletion_window_in_days = 7
+}
+
+resource "aws_neptune_cluster_snapshot" "snapshot" {
+  cluster_identifier = aws_neptune_cluster.default.id
+  snapshot_identifier = "neptune-snapshot-${aws_neptune_cluster.default.id}"
+  kms_key_id = aws_kms_key.key.arn  //specify the CMK here
+}
+----
+
+This code is secure because it ensures that Neptune snapshots are encrypted with the specified AWS Key Management Service (KMS) customer managed key (CMK). Encryption of sensitive data at rest adds another layer of security and makes it harder for unauthorized individuals to access your data.
+

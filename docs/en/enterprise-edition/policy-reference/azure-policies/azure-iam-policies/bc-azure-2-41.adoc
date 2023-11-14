@@ -1,0 +1,59 @@
+
+== Storage account is not configured with a SAS expiration policy
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureStorageAccConfig_SAS_expirePolicy.yaml[CKV2_AZURE_41]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that your Azure storage account has a Shared Access Signature (SAS) expiration policy configured. A SAS is a string containing a security token that can be appended to a URL granting access to resources in your storage account. If this does not have an expiration policy set, it can pose a significant security risk. It means that once someone obtains the SAS, they can have potentially ongoing access to sensitive data in your storage account, even if they should no longer have that access. Therefore, not having a SAS expiration policy can lead to unauthorized data access, data loss or corruption.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account
+* *Arguments:* sas_policy.expiration_period
+
+To fix this issue, you need to configure your Azure Storage Account with a Shared Access Signature (SAS) expiration policy. This ensures that the SAS tokens, which are used for delegating access to your storage account resources, have an expiration time so as not to indefinitely expose your resources.
+
+[source,go]
+----
+resource "azurerm_storage_account" "pass_1" {
+  name                     = "pud-storage2023abc1"
+  resource_group_name      = var.rg-name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  shared_access_key_enabled = false
+
+  sas_policy {
++   expiration_period = "90.00:00:00"
+    expiration_action = "Log"
+  }
+
+  tags = {
+    bc_status = "pass"
+  }
+}
+----
+

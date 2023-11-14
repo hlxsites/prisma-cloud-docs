@@ -1,0 +1,62 @@
+
+== Kubernetes Engine Cluster pod security policy is not enforced
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/oci/OCI_K8EngineClusterPodSecPolicyEnforced.yaml[CKV2_OCI_6]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the pod security policy is enforced for Kubernetes Engine Clusters. A pod security policy is a cluster-level resource that controls the security-sensitive aspects of the pod specification. This policy checks if this safety protocol is in place.
+
+If this policy is not enforced, it may leave the Kubernetes Engine Clusters vulnerable to security issues. The absence of this policy may allow the creation and modification of pods that may affect the stability and integrity of the overall cluster. Therefore, not having a Kubernetes Engine Cluster pod security policy enforced is recognized as a bad practice due to its potential risks to security and stability.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* oci_containerengine_cluster
+* *Arguments:* options.admission_controller_options.is_pod_security_policy_enabled
+
+This Checkov policy indicates that the Kubernetes Engine Cluster pod security policy is not enforced. 
+
+To fix this issue, you need to enable PodSecurityPolicy in your Kubernetes Engine. A Kubernetes Pod Security Policy is a cluster-level resource that controls security sensitive aspects of the pod specification.
+
+[source,go]
+----
+resource "oci_containerengine_cluster" "pass" {
+
+  options {
+    admission_controller_options {
++      is_pod_security_policy_enabled = "True"
+    }
+    persistent_volume_config {
+      freeform_tags = {
+        "ClusName" = pud_cluster
+      }
+    }
+  }
+  vcn_id = oci_core_vcn.pud_oci_core_vcn.id
+}
+----
+
+In the secure code above, "is_pods_security_enabled" is set to true, meaning that the Pod Security Policy is being enforced. This will ensure that any pod that violates the policy will not be created. This enhances the security of your cluster by ensuring that only secure pods are allowed to be run.
+

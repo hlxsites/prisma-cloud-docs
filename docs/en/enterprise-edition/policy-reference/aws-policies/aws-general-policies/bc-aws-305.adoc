@@ -1,0 +1,46 @@
+
+== Cloudfront distribution does not have a default root object configured
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CloudfrontDistributionDefaultRoot.py[CKV_AWS_305]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking if a default root object has been configured for Cloudfront distribution in Amazon Web Services (AWS). If not properly configured, it may lead to an undesirable user experience. For example, if a user requests the root URL of your distribution and a root object is not set, Cloudfront returns an XML document that lists contents of the distribution. This is not only unprofessional, but it could potentially expose sensitive information about the infrastructure of your website. Therefore, a default root object, such as index.html, should be configured to provide a more controlled and secure user experience.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* default_root_object
+
+To fix this issue, you need to set a default root object in your Cloudfront distribution. 
+
+[source,hcl]
+----
+resource "aws_cloudfront_distribution" "s3_distribution" {
+  ....
+  default_root_object = "index.html"
+  ....
+}
+----

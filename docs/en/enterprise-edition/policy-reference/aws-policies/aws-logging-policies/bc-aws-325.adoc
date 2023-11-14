@@ -1,0 +1,48 @@
+
+== RDS Cluster audit logging for MySQL engine is disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSClusterAuditLogging.py[CKV_AWS_325]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies if audit logging is enabled for RDS Clusters running the MySQL engine in AWS (Amazon Web Services). Audit logging is vital because it helps in tracking and examining activities within the database. If audit logging is not enabled, it could lead to a lack of visibility which is crucial for identifying suspicious activities or understanding the cause of unexpected changes or errors. Consequently, it can pose serious risks, including data breaches and hinder compliance-related responsibilities.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_rds_cluster
+* *Arguments:* enabled_cloudwatch_logs_exports
+
+To fix this issue, you should enable audit logging for your RDS Cluster which is using the MySQL engine. Audit logging helps in recording actions and events that are happening in the AWS environment and reviewing these logs enables identification of patterns and spotting unusual activities.
+
+[source,hcl]
+----
+resource "aws_rds_cluster" "pass" {
+  master_username = "username"
+  master_password = "password"
++ enabled_cloudwatch_logs_exports = ["audit"]
+  iam_database_authentication_enabled = true
+}
+----
+

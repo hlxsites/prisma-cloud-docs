@@ -1,0 +1,53 @@
+
+== Operation objects for PUT, POST, and PATCH operations do not have a 'consumes' field defined
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/OperationObjectConsumesUndefined.py[CKV_OPENAPI_17]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy checks if operation objects in the API version 2.0 files have the 'consumes' field defined for PUT, POST and PATCH operations. The 'consumes' field is important because it specifies the MIME types that the operation or endpoint can handle. If this field is not defined, the API may process requests with unspecified or incorrect content types, leading to errors or security vulnerabilities. It may also invite compatibility issues, as some clients may send requests in a format that the API does not support. Therefore, it's crucial to define the 'consumes' field for ensuring the correct operation of the API and safeguarding it from potential threats.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you need to ensure that every operation object for PUT, POST and PATCH in your OpenAPI description (version 2.0 files) has the 'consumes' field defined. The 'consumes' field indicates what MIME types the operation can consume.
+
+[source,yaml]
+----
+paths:
+  /users:
+    post:
+      summary: Creates a new user.
+      consumes: # Add this field
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          description: The user to create.
+          schema:
+            $ref: '#/definitions/User'
+----
+
+In the fixed code, the 'consumes' field is clearly defined under the POST operation. This is important as it informs clients what type of content the operation can consume, further avoiding any client sending the wrong content type to the server. This also ensures that the API is secure as it only accepts the defined format.
+

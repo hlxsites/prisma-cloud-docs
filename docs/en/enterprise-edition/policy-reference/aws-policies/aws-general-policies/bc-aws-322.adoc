@@ -1,0 +1,51 @@
+
+== ElastiCache for Redis cache clusters do not have auto minor version upgrades enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ElasticCacheAutomaticMinorUpgrades.py[CKV_AWS_322]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that auto minor version upgrades are enabled for ElastiCache for Redis cache clusters on AWS. Enabling auto minor version upgrades is important for maintaining the latest security patches and updates, thus preventing potential vulnerabilities. If auto minor version upgrades are not enabled, the cache clusters could be exposed to security risks, performance issues, and might lack new features. Therefore, not turning on auto minor version upgrades is considered a bad practice in terms of security and operational efficiency.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_elasticache_cluster
+* *Arguments:* auto_minor_version_upgrade
+
+To fix this issue, we need to ensure that the elasticache being provisioned have the attribute `auto_minor_version_upgrade` set to `true`. This can be achieved by modifying the Terraform code as follows:
+
+[source,go]
+----
+resource "aws_elasticache_cluster" "example" {
+  cluster_id                   = "cluster-example"
+  engine                       = "redis"
+  node_type                    = "cache.m4.large"
+  num_cache_nodes              = 2
+  parameter_group_name         = "default.redis3.2"
+  auto_minor_version_upgrade   = true
+  ...
+}
+----
+

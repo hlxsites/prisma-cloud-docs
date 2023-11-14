@@ -1,0 +1,86 @@
+
+== CloudFront distributions do not have origin failover configured
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CloudfrontDistributionOriginFailover.py[CKV_AWS_310]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy refers to the configuration of origin failover for CloudFront distributions in AWS. An origin failover setup guarantees that if one resource fails, another takes over to keep applications running. Not having an origin failover configuration in CloudFront can lead to service disruptions if the primary resource fails. The policy checks whether origin failover is properly configured and recommends setting it up if not, to ensure resources' high availability and reliability.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* failover_criteria and origin_id
+
+To fix this issue, you need to configure origin failover for your CloudFront distributions in your Terraform code and ensure you have two `member` parameters.
+
+[source,go]
+----
+resource "aws_cloudfront_distribution" "pass" {
+  origin_group {
+    origin_id = "groupS3"
+
++   failover_criteria {
++     status_codes = [403, 404, 500, 502]
++   }
+
++   member {
++     origin_id = "primaryS3"
++   }
+
++   member {
++     origin_id = "failoverS3"
++   }
+  }
+
+  origin {
+    domain_name = aws_s3_bucket.primary.bucket_regional_domain_name
+    origin_id   = "primaryS3"
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+    }
+  }
+
+  origin {
+    domain_name = aws_s3_bucket.failover.bucket_regional_domain_name
+    origin_id   = "failoverS3"
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+    }
+  }
+
+  default_cache_behavior {
+    # ... other configuration ...
+    target_origin_id = "groupS3"
+  }
+
+  enabled = false
+  restrictions {}
+  viewer_certificate {}
+}
+----
+

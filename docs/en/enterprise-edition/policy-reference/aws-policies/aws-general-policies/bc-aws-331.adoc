@@ -1,0 +1,46 @@
+
+== Transit Gateways must not automatically accept VPC attachment requests
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/Ec2TransitGatewayAutoAccept.py[CKV_AWS_331]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies whether Transit Gateways are configured not to automatically accept Virtual Private Cloud (VPC) attachment requests. Transit Gateways allow for the connection of multiple VPCs and on-premises networks in a single gateway. The issue arises when these gateways are set to automatically accept VPC attachment requests, as this could potentially allow unauthorized or unintended networks to connect to the gateway. This could therefore provide a malicious entity or user with access to all networks connected to the gateway, leading to a potential breach of security and loss of sensitive data. Therefore, Transit Gateways should be securely configured to manually review and accept VPC attachment requests.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ec2_transit_gateway
+* *Arguments:* auto_accept_shared_attachments
+
+To fix the issue, you need to disable automatic acceptance of VPC attachment requests in your Terraform code. This can be done by setting the `"auto_accept_shared_attachments"` variable to `"disable"` in your AWS Transit Gateways configuration. Here is how to do this:
+
+[source,hcl]
+----
+resource "aws_ec2_transit_gateway" "example" {
+  description = "example"
+  auto_accept_shared_attachments = "disable"
+}
+----
+

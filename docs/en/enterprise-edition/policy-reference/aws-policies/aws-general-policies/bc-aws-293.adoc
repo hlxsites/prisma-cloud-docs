@@ -1,0 +1,50 @@
+
+== AWS database instances do not have deletion protection enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSInstanceDeletionProtection.py[CKV_AWS_293]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking for whether AWS database instances have deletion protection enabled or not. If deletion protection is disallowed, there could be potential accidental loss of valuable or critical data. This can happen due to an inadvertent user action. Therefore, it's important for AWS database instances to have deletion protection enabled to prevent the unexpected removal of database that might cause data loss or downtime issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_db_instance
+* *Arguments:* deletion_protection
+
+To fix the issue:
+
+You need to enable `deletion_protection` parameter in the AWS instance block. This ensures that the termination of this DB instance is prevented when this parameter is set to 'true'. 
+
+[source,hcl]
+----
+resource "aws_db_instance" "default" {
+  ...
++ deletion_protection  = true
+}
+----
+
+The above code is secure because the `deletion_protection` is set to `true`. This parameter ensures that the AWS database instance cannot be deleted. This adds an extra layer of security against accidental deletions of the AWS database instances.
+

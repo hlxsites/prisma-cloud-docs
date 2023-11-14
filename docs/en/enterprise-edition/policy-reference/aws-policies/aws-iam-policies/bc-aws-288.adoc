@@ -1,0 +1,63 @@
+
+== IAM policies allow data exfiltration
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMDataExfiltration.py[CKV_AWS_288]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Identity and Access Management (IAM) policies do not permit data exfiltration. It is part of the IAM category of policies. Data exfiltration, or data theft, is a security breach that occurs when an organization's data is copied, transferred or retrieved from a computer or server without authorization. If an IAM policy allows data exfiltration, it could lead to serious security incidents and potential loss of sensitive data to unauthorized individuals or organizations. Therefore, it's extremely important to ensure that IAM policies are robustly designed to prevent data exfiltration.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy
+* *Arguments:* policy
+
+To fix this issue, you need to limit the permissions of your IAM policies to prevent data exfiltration. You should deny any actions that allow the read or write of data to AWS services outside of the ones required. More detail can be found here: https://cloudsplaining.readthedocs.io/en/latest/glossary/data-exfiltration/
+
+[source,go]
+----
+resource "aws_iam_policy" "restrict_exfil" {
+  name        = "prevent_data_exfil"
+  path        = "/"
+  description = "IAM policy to prevent data exfiltration"
+  policy      = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyAllOutsideTraffic",
+      "Effect": "Deny",
+      "NotAction": [
+        "s3:GetObject",
+        "dynamodb:GetItem",
+        "kms:Decrypt"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+----

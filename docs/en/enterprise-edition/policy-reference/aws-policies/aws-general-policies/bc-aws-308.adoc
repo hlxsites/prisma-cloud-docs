@@ -1,0 +1,54 @@
+== API Gateway method setting is not set to encrypted caching
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/APIGatewayMethodSettingsCacheEncrypted.py[CKV_AWS_308]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying whether the API Gateway method setting caching is encrypted. The data caching in API Gateway is necessary to improve the latency of requests. However, if caching is not encrypted, sensitive information can be at risk as attackers could gain unauthorized access to it. Thus, failing to set this feature to encrypted can potentially compromise the security and data privacy, resulting in a data breach.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_api_gateway_method_settings
+* *Arguments:* settings.cache_data_encrypted
+
+To fix this policy, ensure that the settings for API Gateway methods have caching set to encrypted. For example, set the 'settings' block in your terraform code as shown below:
+
+[source,go]
+----
+resource "aws_api_gateway_method_settings" "pass" {
+  rest_api_id = aws_api_gateway_rest_api.fail.id
+  stage_name  = aws_api_gateway_stage.fail.stage_name
+  method_path = "path1/GET"
+
+  settings {
+    caching_enabled      = true
+    metrics_enabled      = false
+    logging_level        = "INFO"
++   cache_data_encrypted = true
+    data_trace_enabled   = false
+  }
+}
+----
+

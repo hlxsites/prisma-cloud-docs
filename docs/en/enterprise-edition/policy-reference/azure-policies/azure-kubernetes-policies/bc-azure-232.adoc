@@ -1,0 +1,51 @@
+
+== Non-Critical System Pods Run on System Nodes
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AKSOnlyCriticalPodsOnSystemNodes.py[CKV_AZURE_232]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks to ensure that only critical system pods are running on system nodes in a Kubernetes environment on Azure. This is important because allowing non-critical pods to run on system nodes can introduce security vulnerabilities, potential performance issues, and a decrease in reliability. If a non-critical pod is compromised, it could potentially impact the critical system pods by using up system resources or creating other issues due to cohabitation. As such, following this policy aids in ensuring system stability and security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* default_node_pool.only_critical_addons_enabled
+
+To fix this issue, you need to ensure that only critical system pods are allowed to run on your system nodes. You can do this by adding the Pod Tolerations and Node Affinity settings.
+
+[source,hcl]
+----
+resource "azurerm_kubernetes_cluster" "pass" {
+  name                      = "example"
+
+  default_node_pool {
+    name                         = "defaultpool"
++   only_critical_addons_enabled = true
+  }
+}
+----
+
+

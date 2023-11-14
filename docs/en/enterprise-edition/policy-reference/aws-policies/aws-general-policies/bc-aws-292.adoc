@@ -1,0 +1,48 @@
+
+== DocDB Global Cluster is not encrypted at rest
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/DocDBGlobalClusterEncryption.py[CKV_AWS_292]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to see if a DocDB Global Cluster is encrypted at rest. The default setting for this is unencrypted. Data encryption at rest is critical for securing sensitive data and protecting it from unauthorized access. If data is not encrypted, it could potentially be exposed to cybercriminals, which could lead to data breaches and other significant security incidents. Therefore, failing to encrypt sensitive data at rest is a significant security risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_docdb_global_cluster
+* *Arguments:* storage_encrypted
+
+To fix this issue, you should enable encryption at rest for your DocDB Global Cluster. This can be done by setting the `storage_encrypted` parameter to `true` in your Terraform configuration file.
+
+[source,hcl]
+----
+resource "aws_docdb_global_cluster" "example" {
+  global_cluster_identifier                  = "example"
+  storage_encrypted                          = true
+}
+----
+
+The above code is secure because setting `storage_encrypted = true` encrypts all data at rest for the DocDB Global Cluster instance. This protects your data by preventing unauthorized access and maintaining its confidentiality even when the storage is compromised. AWS takes care of the encryption and decryption process transparently with minimal impact on performance.
+

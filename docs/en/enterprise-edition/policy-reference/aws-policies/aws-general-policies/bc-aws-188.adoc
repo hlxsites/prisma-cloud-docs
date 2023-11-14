@@ -1,0 +1,57 @@
+== The RedShift Cluster not encrypted by KMS using a customer-managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RedshiftClusterEncryptedWithCMK.py[CKV_AWS_188]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Amazon Redshift clusters are encrypted by Key Management Services (KMS) using a customer-managed key (CMK). Amazon Redshift is a data warehouse product used for data analytics. The policy is essential as it checks the configuration of security measures regarding data at rest. 
+
+Encryption is vital to protect sensitive data and meet regulatory needs. Without encryption, data could be read if access was obtained maliciously. Using a customer-managed key adds a layer of security because the user has full control over the key: they can enable, disable, and rotate it, according to the organization's needs and security policies. 
+
+If Redshift clusters are not encrypted and, in particular, do not utilize CMKs for this encryption, the potential risk of data breach or loss of company privacy increases significantly.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_redshift_cluster
+* *Arguments:* kms_key_id
+
+To fix this issue, you need to provide a KMS key identifier for your RedShift cluster to use for encryption. You can do this by setting the `kms_key_id` property under the `aws_redshift_cluster` resource in your Terraform code.
+
+[source,go]
+----
+resource "aws_redshift_cluster" "default" {
+  cluster_identifier = "tf-redshift-cluster"
+  database_name      = "mydb"
+  master_username    = "foo_admin"
+  master_password    = "Mustbe8characters"
+  node_type          = "dc1.large"
+  cluster_type       = "single-node"
+  
+  kms_key_id         = "arn:aws:kms:us-west-2:123456789012:key/abcd1234a1234fdcaabcd1234a1234fdcaabcd12"  // a valid KMS ID
+}
+----
+
+The above code sets the KMS key to be used for cluster encryption explicitly, which ensures that the RedShift cluster data is encrypted at rest using a CMK (Costumer Managed Key). The CMK offers more flexible management features than AWS managed keys. You can create, rotate, disable, and define fine-grained permissions using your AWS management console or programmatically using the KMS API. Also, when a CMK is used, you have control over who uses the key and who can administer it.
+

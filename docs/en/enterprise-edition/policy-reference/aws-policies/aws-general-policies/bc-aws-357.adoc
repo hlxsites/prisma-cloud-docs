@@ -1,0 +1,59 @@
+
+== Transfer server does not force secure protocols.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/TransferServerAllowsOnlySecureProtocols.py[CKV_AWS_357]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that the Transfer Server only allows secure protocols. The reason why this is crucial is because insecure protocols can be exploited to potentially access sensitive data, perform unauthorized actions, or compromise the system. Unsecure protocols are more vulnerable to cyber attacks like eavesdropping, man-in-the-middle attacks, and injection attacks. By ensuring the use of secure protocols, the network communication is encrypted and safeguarded from potential breaches. It's an important factor in maintaining the confidentiality, integrity, and availability of data and services.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_transfer_server
+* *Arguments:* protocols
+
+To fix this issue, you need to ensure that the given AWS Transfer Server only allows secure protocols.
+
+[source,go]
+----
+resource "aws_transfer_server" "example" {
+  endpoint_type     = "VPC"
+  endpoint_details {
+    vpc_id = aws_vpc.example.id
+  
+    subnet_ids = [
+      aws_subnet.example1.id,
+      aws_subnet.example2.id,
+    ]
+  }
+
+  identity_provider_type = "SERVICE_MANAGED"
++ protocols              = ["SFTP"]
+  logging_role           = aws_iam_role.example.arn
+}
+----
+
+The above Terraform code is secure because it configures the AWS Transfer Server to only use the SFTP protocol, which is a secure protocol. This guarantees that any data transferred will be encrypted and secured against potential eavesdropping attacks.
+

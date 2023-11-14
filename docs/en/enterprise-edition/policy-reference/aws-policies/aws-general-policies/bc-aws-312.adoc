@@ -1,0 +1,57 @@
+
+== Elastic Beanstalk environments do not have enhanced health reporting enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ElasticBeanstalkUseEnhancedHealthChecks.py[CKV_AWS_312]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that Elastic Beanstalk environments have enhanced health reporting enabled. Enhanced health reporting is a feature that provides additional information about resource utilization and instance health, making it easier to identify and troubleshoot issues. Not having this feature enabled could potentially lead to undetected operational issues, resulting in downtime or impaired system performance. Monitoring and troubleshooting are key elements in maintaining system stability and performance, thus the absence of enhanced health reporting is a high risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_elastic_beanstalk_environment
+* *Arguments:* namespace, HealthStreamingEnabled
+
+In order to fix this issue, you need to enable enhanced health reporting in your Elastic Beanstalk environment configuration.
+
+[source,go]
+----
+resource "aws_elastic_beanstalk_environment" "pass" {
+  name                   = "beany"
+  application            = var.elastic_beanstalk_application_name
+  description            = var.description
+  tier                   = var.tier
+  solution_stack_name    = var.solution_stack_name
+  wait_for_ready_timeout = var.wait_for_ready_timeout
+  version_label          = var.version_label
+  tags                   = local.tags
++ setting {
++   namespace = "aws:elasticbeanstalk:healthreporting:system"
++   name      = "HealthStreamingEnabled"
++   value     = "true"
++ }
+}
+----
+

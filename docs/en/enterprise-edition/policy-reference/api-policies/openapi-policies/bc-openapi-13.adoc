@@ -1,0 +1,50 @@
+
+== Security definitions uses basic auth
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/SecurityDefinitionBasicAuth.py[CKV_OPENAPI_13]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy checks to ensure that security definitions in a version 2.0 file do not use basic authentication. Using basic authentication is predominantly not considered a secure practice as it involves sending user credentials (username and password) in an unencrypted form over the network. This increases the risk of sensitive data being intercepted by unauthorized personnel, which can lead to possible data breaches or other security incidents. It is generally recommended to use more secure authentication methods such as tokens, hashes, or keys.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+You should avoid using basic authentication in security definitions for version 2.0 files as it is not considered a secure method of authorization. Instead, opt for more secure forms of authentication. This could include certificate-based client authentication, third-party single sign-on, or other more secure methods which provide stronger security and data protection.
+
+[source,json]
+----
+securityDefinitions: {
+ bearerAuth: {
+   type: "apiKey",
+   name: "Authorization",
+   in: "header"
+ }
+}
+----
+
+In the above code, we have replaced the basic authentication with the use of an API key which is known to offer higher security. 
+
+This config is secure because it allows for a secure way to authenticate user requests. 'Bearer authentication' (also called token authentication) is an HTTP authentication scheme that involves security tokens called bearer tokens. This type of HTTP authentication scheme is more secure than basic authentication as it can encrypt the user data while transmitting over the network.
+

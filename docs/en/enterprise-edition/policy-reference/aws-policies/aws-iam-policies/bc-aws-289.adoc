@@ -1,0 +1,66 @@
+
+== IAM policies allow permissions management or resource exposure without constraints
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMPermissionsManagement.py[CKV_AWS_289]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that IAM (Identity and Access Management) permissions don't allow unfettered management of permissions or exposure of resources without any limitations or safeguards. 
+
+The risk associated with not adhering to this policy is quite high. If IAM policies allow unconstrained permissions management or unrestricted resource exposure, it creates an opportunity for unauthorized access or manipulation of critical resources, potentially leading to data breaches or compromising the security of the system. Therefore, it's crucial to apply constraints or conditions to manage who can do what and prevent unnecessary exposure of resources.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy
+* *Arguments:* policy
+
+To fix this issue, you need to ensure that your IAM policies are correctly scoped and that resource exposure and permissions management are conducted with constraints. Avoiding overly permissive policies decreases the potential attack surface should any entity with those permissions be compromised.
+
+[source,hcl]
+----
+# Sample IAM Policy
+resource "aws_iam_policy" "my_custom_policy" {
+  name   = "my_custom_policy"
+  description = "A custom policy with only necessary permissions"
+  
+  policy = jsonencode(
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": [
+            "s3:ListBucket"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::my_bucket"
+        }
+      ]
+    }
+  )
+}
+----
+
+The above Terraform code creates a custom IAM policy, named "my_custom_policy". The policy uses the 'jsonencode' function to clearly define permitted actions. In this case, only 's3:ListBucket' operation is permitted and the resource to which these permissions apply is limited to 'arn:aws:s3:::my_bucket'. This significantly reduces the attack surface as only one specific resource is exposed with limited permissions.
+

@@ -1,0 +1,71 @@
+
+== IAM policies allow write access without constraints
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMWriteAccess.py[CKV_AWS_290]
+
+|Severity
+|CRITICAL
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to determine whether IAM (Identity and Access Management) policies within your AWS (Amazon Web Services) environment allow write access without any imposed restrictions. The violation of this policy could be potentially dangerous as the absence of constraints means that an entity with write access is capable of making unlimited changes. This can include, but is not limited to, the modification of resources or data, or the launching of instances. Particularly in a situation where the entity's credentials are compromised, unrestricted write access could lead to severe damage, such as data breaches or loss. Therefore, to enhance security and minimize risks, it is advisable to enforce appropriate constraints on IAM policies wherever possible.
+
+For more info, visit https://cloudsplaining.readthedocs.io/en/latest/glossary/resource-exposure/[cloudsplaning documentation].
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy
+* *Arguments:* policy
+
+To fix this issue, you would need to set conditions to your IAM policy which restricts the write access as per your business requirements. 
+
+[source,go]
+----
+
+resource "aws_iam_policy" "policy" {
+  name        = "test_policy"
+  path        = "/"
+  description = "A test policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::bucket/*",
+      "Condition": {
+        "IpAddress": {"aws:SourceIp": "203.0.113.0/24"}
+      }
+    }
+  ]
+}
+EOF
+}
+
+-----
+
+The above code is secure because, besides providing write access to the specified 's3:PutObject' action, it also adds a condition to the policy that restricts the access only to the IP addresses in the range of '203.0.113.0/24'. This constraint significantly reduces the possible attack surface.
+

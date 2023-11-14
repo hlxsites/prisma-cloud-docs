@@ -1,0 +1,51 @@
+
+== pgAudit is disabled for your GCP PostgreSQL database
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleCloudPostgreSqlEnablePgaudit.py[CKV_GCP_110]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that pgAudit is activated for your Google Cloud Platform PostgreSQL database. The pgAudit extension provides detailed session and/or object audit logging via the standard logging facility provided by PostgreSQL. The reason this is important is that it enables tracking of who did what and when in the database, providing valuable information if there's ever a security breach or an unexpected change. Not having this could expose the database to risk as you would lack the ability to conduct a proper investigation or audit.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+
+To fix this issue, you need to enable pgAudit for your GCP PostgreSQL database. This can be done by setting the `database_flags` attribute to `pgaudit.log` in the `google_sql_database_instance` resource block to capture the database activities. 
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "default" {
+  settings {
+    database_flags {
+      name  = "pgaudit.log"
+      value = "'all'"
+    }
+  }
+}
+----
+
+In the above code, the `pgaudit.log` flag is set to `'all'` which means that all queries and operations that occur on the PostgreSQL database will be logged. This ensures a comprehensive audit log is maintained for the data operations in the database, therefore adhering to the best practices and improving the security of the GCP PostgreSQL database setup. This is crucial for maintaining compliance and for post-incident investigations.
+

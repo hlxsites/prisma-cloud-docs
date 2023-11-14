@@ -1,0 +1,58 @@
+
+== ECS Fargate services are not ensured to run on the latest Fargate platform version
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ECSServiceFargateLatest.py[CKV_AWS_332]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Amazon Elastic Container Service (ECS) Fargate services are running on the most recent Fargate platform version. Not using the latest version of any software or platform can expose the system to several security vulnerabilities, as older versions may lack critical security patches and updates. Also, staying updated with the latest Fargate platform ensures you benefit from the improved performance, new features, and bug fixes provided by AWS in newer releases.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ecs_service
+* *Arguments:* launch_type
+
+To fix this issue, the ECS Fargate service task definition must be configured to use the latest Fargate platform version. A sample is shown below:
+
+[source,hcl]
+----
+resource "aws_ecs_service" "example" {
+  name            = "example"
+  cluster         = aws_ecs_cluster.example.id
+  task_definition = aws_ecs_task_definition.example.arn
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    assign_public_ip = false
+    subnets          = ["subnet-abcde012", "subnet-bcde012a"]
+    security_groups  = [aws_security_group.example.id]
+  }
+
+  platform_version = "LATEST"
+}
+----
+
+The "LATEST" value for the 'platform_version' configuration makes sure that the ECS Fargate service always use the latest Fargate platform version. This adoption of the latest version increases the security level of your infrastructure due to the newer versions always having fixes to vulnerabilities and enhancements in security configurations.
+

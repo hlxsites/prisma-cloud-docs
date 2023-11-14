@@ -1,0 +1,52 @@
+
+== Basic roles used at the folder level
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleFolderBasicRole.py[CKV_GCP_116]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking for the use of basic roles at the folder level within Google Cloud Platform (GCP). Basic roles include primitive roles (Owner, Editor, Viewer) and predefined roles that have a wide range of permissions. Using these basic roles at the folder level can be a security risk as it might grant more permissions than necessary to users or services, violating the principle of least privilege. Accessibility or modification of sensitive data beyond what's required can lead to data breaches or unwanted changes. Therefore, it's recommended to grant only specific, necessary permissions to users or services.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'google_folder_iam_member', 'google_folder_iam_binding'
+
+Apply the principle of least privilege. Always provide only the level of access necessary to the services your applications need, no more and no less.
+
+[source,go]
+----
+resource "google_folder_iam_binding" "folder_iam_binding" {
+  members = [
+    "user:jane@example.com",
+  ]
+
+  role = "roles/monitoring.editor"
+}
+----
+
+This provides the user 'jane@example.com' with the 'Monitoring editor' role. This is one step up from 'basic roles', and is expected to be secure enough as per the policy because it restricts the broad access provided by basic roles. 
+
+Avoid running basic roles at folder level, like 'roles/editor', 'roles/viewer' or 'roles/owner'. These roles are legacy and over-grant permissions. In contrast, predefined roles offer more granular access control to resources.
+

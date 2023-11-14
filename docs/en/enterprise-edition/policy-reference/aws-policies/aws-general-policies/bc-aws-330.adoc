@@ -1,0 +1,51 @@
+
+== User identity should be enforced by EFS access points
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/EFSAccessUserIdentity.py[CKV_AWS_330]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to ensure that access points for the Elastic File System (EFS) on AWS enforce a specific user identity. If EFS access points do not enforce user identity, it allows for the possibility that unauthorized individuals could gain access to sensitive data. This poses a significant security risk, especially for businesses dealing with confidential or personal information. Therefore, it is essential to implement measures for user identity enforcement to protect data and maintain secure EFS access points.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_efs_access_point
+* *Arguments:* posix_user.gid
+
+To fix this issue, you need to enforce a user identity in your EFS access points using the `posix_user` block within the `access_point` configuration settings. Define the user's ID, group ID, and the secondary group ID as shown in the following script:
+
+[source,hcl]
+----
+resource "aws_efs_access_point" "test" {
+  filesystem_id = aws_efs_file_system.test.id
+
+  posix_user {
+    uid = 1000
++   gid = 1000
+  }  
+}
+----
+
+

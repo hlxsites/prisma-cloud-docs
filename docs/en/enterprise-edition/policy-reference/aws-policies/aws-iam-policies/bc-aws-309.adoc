@@ -1,0 +1,50 @@
+
+== Authorization type for API GatewayV2 routes is not specified
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/APIGatewayV2RouteDefinesAuthorizationType.py[CKV_AWS_309]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is reviewing AWS API GatewayV2 configurations to ensure that all routes specify an authorization type. Without specifiying an authorization type within the routes, it might allow unauthorized users to access sensitive data or execute harmful operations. Therefore, not setting an authorization type can potentially lead to data leakage or other security issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_apigatewayv2_route
+* *Arguments:* authorization_type
+
+To fix this issue, you should explicitly define the authorization type for the API GatewayV2 route of either "AWS_IAM", "CUSTOM", or "JWT".
+
+[source,hcl]
+----
+resource "aws_apigatewayv2_route" "example" {
+  api_id    = aws_apigatewayv2_api.example.id
+  route_key = "$default"
+  target    = "integrations/${aws_apigatewayv2_integration.example.id}"
+  authorization_type = "AWS_IAM"
+}
+----
+
+The provided code is secure because it specifies the authorization type for the API GatewayV2 route which controls who can access the API. In this specific case, we are using AWS_IAM as the authorization type which restricts access to users with the necessary IAM policies. By specifying the authorization type, you can ensure that only authorized users can access your API, thus reducing the risk of unauthorized access.
+

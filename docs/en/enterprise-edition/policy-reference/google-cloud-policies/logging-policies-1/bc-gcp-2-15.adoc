@@ -1,0 +1,57 @@
+
+== PostgreSQL database flag 'log_parser_stats' is not set to 'off'
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF.yaml[CKV2_GCP_15]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to verify if the 'log_parser_stats' flag in the PostgreSQL database is set to 'off'. This flag, when turned on, logs statistical information about query parsing and rewriting. While this might be useful for debugging, it can generate a vast amount of log data significantly consuming disk space, and may potentially lead to performance degradation. Therefore, for optimal performance and saving resources, it is generally recommended to set the 'log_parser_stats' flag to 'off' in a production environment.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+* *Arguments:* settings.database_flags
+
+To fix the issue, you should ensure that the 'log_parser_stats' flag for your PostgreSQL database is set to 'off'. Here is an example of how to do it in your Terraform file:
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "database"
+  region           = "us-central1"
+
+  database_version = "POSTGRES_11"
+
+  settings {
+    database_flags {
+      name  = "log_parser_stats"
+      value = "off"
+    }
+  }
+}
+----
+
+The above code is secure because the 'log_parser_stats' flag is explicitly set to 'off'. The 'log_parser_stats' flag in PostgreSQL enables detailed statistics for the parser stage of query execution, including the number of created and used tokens and the number of created and used parse nodes. Logging these statistics can have a significant performance impact. So, having this flag off helps in reducing the overhead of unnecessary logging, decreasing the chance of slowed performance of your PostgreSQL database.
+

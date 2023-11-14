@@ -1,0 +1,53 @@
+
+== RDS Aurora Clusters do not have backtracking enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSClusterAuroraBacktrack.py[CKV_AWS_326]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that AWS RDS Aurora Clusters have a feature called "backtracking" enabled. Backtracking allows users to navigate through the changes made to their database and revert back to any previous state without using a backup. This can be incredibly useful in situations where mistakes have been made or data has been lost. Not having this feature enabled could potentially result in data loss, increased recovery time in the event of an error, or the inability to recover data if a backup has not been recently made.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_rds_cluster
+* *Arguments:* backtrack_window
+
+To fix this issue, you need to enable backtracking on your RDS Aurora Clusters. You can do this by including the `backtrack_window` argument in your `aws_rds_cluster` resource. The `backtrack_window` parameter specifies the target backtrack window, in seconds. If not specified or set to 0, backtracking is disabled.
+
+[source,go]
+----
+resource "aws_rds_cluster" "example" {
+  cluster_identifier              = "example"
+  engine                          = "aurora"
+  master_username                 = "example"
+  master_password                 = "example"
+  db_subnet_group_name            = aws_db_subnet_group.example.name
+  vpc_security_group_ids          = [aws_security_group.example.id]
+  skip_final_snapshot             = true
+  backtrack_window                = 43200 //set the value in seconds
+  ...
+}
+----
+

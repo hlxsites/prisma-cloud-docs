@@ -1,0 +1,47 @@
+
+== Global schemes use 'httpa' protocol instead of 'https'
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/GlobalSchemeDefineHTTP.py[CKV_OPENAPI_18]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is checking to ensure that global schemes in the API are using 'https' protocol instead of 'http'. 'Http' protocol is insecure as it does not encrypt the data being transferred, making it susceptible to interception by malicious third parties. On the other hand, 'https' ensures that the communication between the client and the server is encrypted, hence providing a secure connection. If an API is using 'http', it poses a security threat as confidential data transferred can be easily intercepted and misused. Ensuring that global schemes use 'https' protocol hence provides an important safeguard for sensitive data.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix the issue, you need to change the schemes from 'http' to 'https'. You should update the `schemes` field in the OpenAPI document to only include 'https' and remove 'http'. 
+
+[source,yaml]
+----
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Simple API
+schemes:
+  - https
+----
+ 
+The above code is secure because it ensures that all data transmitted between the client and server is encrypted, preventing man-in-the-middle attacks, eavesdropping, and data tampering. This is essential for protecting sensitive information such as usernames, passwords, and API keys.
+

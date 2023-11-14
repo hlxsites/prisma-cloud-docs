@@ -1,0 +1,60 @@
+
+== ECS services do not have public IP addresses assigned to them automatically
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ECSServicePublicIP.py[CKV_AWS_333]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies that Elastic Container Service (ECS) services do not automatically assign public IP addresses. The main risk of non-compliance with this policy is increased vulnerability. If ECS services are automatically assigned public IP addresses, it opens the possibility for unauthorized entities to interact with and potentially exploit these services. This can lead to data breaches, service interruptions, and other security incidents. Therefore, it's critical to ensure IP addresses aren't automatically publicly exposed to limit potential attack vectors and maintain the security of the services.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ecs_service
+* *Arguments:* network_configuration.assign_public_ip
+
+In order to fix this issue, you need to ensure that the ECS services do not have public IP addresses assigned to them automatically. This can be done by setting the `assign_public_ip` attribute to `false` in the `aws_ecs_service` resource block.
+
+[source,go]
+----
+resource "aws_ecs_service" "example" {
+  name            = "example"
+  cluster         = aws_ecs_cluster.example.id
+  task_definition = aws_ecs_task_definition.example.arn
+
+  network_configuration {
+    subnets          = [aws_subnet.example.id]
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.example.arn
+    container_name   = "example"
+    container_port   = 8080
+  }
+}
+----
+
+By setting the `assign_public_ip` attribute to `false`, the ECS services will not have public IP addresses automatically assigned to them. This makes the ECS services more secure as they can't be reached directly from the internet. They can only be accessed via the load balancer, providing an additional layer of security.
+

@@ -1,0 +1,67 @@
+
+== Azure VM is configured with public IP and serial console access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureVMconfigPublicIP_SerialConsoleAccess.yaml[CKV2_AZURE_39]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Azure Virtual Machines are not configured with both public IP and serial console access. It is bad because having both settings enabled can expose the virtual machine to unnecessary risks. 
+
+A public IP exposes the VM to the internet, which increases its vulnerability to attacks. On the other hand, enabling serial console access gives individuals the ability to control and configure the VM via the command line or terminal. If both of these features are enabled, an attacker who gains access to the VM can easily control the entire system, leading to potential data breaches, system failures, and other severe consequences. 
+
+Therefore, this policy aims to minimize risk by checking these configurations and ensuring they are not both enabled. It is advisable to limit those VM's exposure to the public internet and restricting console access to a few necessary and trusted individuals.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_network_interface
+* *Arguments:* boot_diagnostics, ip_configuration.public_ip_address_id
+
+To fix this issue, you need to remove the allocation of the public IP to the Azure VM and disable serial console access.
+
+[source,go]
+----
+resource "azurerm_network_interface" "example" {
+  name                = "example-nic"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.example.id
+    private_ip_address_allocation = "Dynamic"
+-   public_ip_address_id          = ""
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "example" {
+  admin_ssh_key {
+    username                    = "adminuser"
+    public_key                  = file("~/.ssh/id_rsa.pub")
+  }
+
+  disable_password_authentication = true
+}
+----
+

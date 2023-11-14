@@ -1,0 +1,52 @@
+
+== Hostnames for GCP PostgreSQL databases are not logged
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleCloudPostgreSqlLogHostname.py[CKV_GCP_108]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy identified as 'CKV_GCP_108' is concerned with monitoring and logging activities within Google Cloud Platform's (GCP) PostgreSQL databases. It verifies that hostnames are being logged. The absence of this feature could hinder an organization's ability to track user activities, troubleshoot issues or conduct forensic investigations in the event of a data breach or an attack. Proper logging could help in detecting foul play quicker and in responding to regulatory compliance checks or audits. Thus, it's critical to ensure hostnames are logged for GCP PostgreSQL databases for robust security control.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+
+To correct this issue, you should set the flag, log_hostname, to ON. This will ensure that all hostnames of clients attempting to connect to the database are logged.
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "database_instance" {
+  database_version = "POSTGRES_13"
+  settings {
+    database_flags {
+      name  = "log_hostname"
+      value = "on"
+    }
+  }
+}
+----
+
+In this code, setting the log_hostname flag to ON means that PostgreSQL will include the hostname of connecting clients in the logs. This is helpful for security purposes, because if there are unauthorized attempts to access the database, the log information can help identify where the attempts are coming from.
+

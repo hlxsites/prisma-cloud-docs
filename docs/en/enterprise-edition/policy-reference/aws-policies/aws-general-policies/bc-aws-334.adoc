@@ -1,0 +1,57 @@
+
+== ECS containers set to run as privileged
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ECSContainerPrivilege.py[CKV_AWS_334]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy looks for Amazon Elastic Container Service (ECS) configurations where containers are set to run in privileged mode. Running containers in privileged mode is a security risk because it grants the container access to all the host system's devices. A compromised container could, therefore, inflict serious harm to the host system, including accessing sensitive data or disrupting system operations. For enhanced security, it's recommended that containers not be run as "privileged". This policy helps enforce this best practice, flagging any containers that are set to run with potentially excessive permissions.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ecs_task_definition
+* *Arguments:* container_definitions.privilege
+
+To fix this issue, you'll need to specify the `privilege` flag in the AWS ECS task definition in the code to be `false`. The `privilege` flag controls whether all devices on the host can be accessed by the user inside the container which can be a severe security risk if exploited by a malicious actor.
+
+[source,hcl]
+----
+resource "aws_ecs_task_definition" "task" {
+  family                = "service"
+  container_definitions = <<DEFINITION
+  [
+    {
+      "name": "container",
+      "image": "service:latest",
+      "cpu": 10,
+      "memory": 500,
+      "essential": true,
++     "privilege": false
+    }
+  ]
+DEFINITION
+}
+----
+

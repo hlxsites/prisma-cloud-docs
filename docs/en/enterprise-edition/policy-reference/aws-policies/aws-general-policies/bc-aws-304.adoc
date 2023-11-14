@@ -1,0 +1,52 @@
+
+== Secrets Manager secrets are not rotated within 90 days
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SecretManagerSecret90days.py[CKV_AWS_304]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that the Secrets Manager secrets in AWS (Amazon Web Services) are set to be rotated within a 90-day timeframe. The Secrets Manager is a tool that helps securely store and manage sensitive information like API keys, passwords, and database credentials.
+
+Not rotating these secrets regularly can lead to a heightened risk of unauthorized access or breaches. If a secret is leaked or compromised, and it's not changed or updated for an extended period, malicious actors can have ongoing access to sensitive information or resources.
+
+By consistently rotating secrets every 90 days, the window of opportunity for misuse of a compromised secret is significantly diminished, thus escalating the organization's overall security posture.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_secretsmanager_secret_rotation
+* *Arguments:* automatically_after_days
+
+To fix the issue, you should specify the rotation configuration in the AWS Secrets Manager policy code. Set the rotation period to less than or equal to 90 days. 
+
+[source,go]
+----
+resource "aws_secretsmanager_secret_rotation" "example" {
+  secret_id           = aws_secretsmanager_secret.example.id
+  rotation_lambda_arn = aws_lambda_function.example.arn
+  rotation_rules {
+    automatically_after_days = 90
+  }
+}
+----

@@ -1,0 +1,51 @@
+
+== DynamoDB table replica does not use CMK KMS encryption
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/DynamoDBTableReplicaKMSUsesCMK.py[CKV_AWS_271]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that the replica of a DynamoDB table is encrypted using a Customer Managed Key (CMK) under Key Management Service (KMS). It's crucial since it affirms that a user has direct control over the cryptographic keys used for encryption, which gives them granular control over who can use the keys and for what. If the unique keys are not managed by the user, it can lead to unauthorized access or breaches, posing significant security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_dynamodb_table_replica
+* *Arguments:* kms_key_arn
+
+To fix this issue, you should ensure that DynamoDB global tables use a Customer Managed Key (CMK) for encryption rather than the default Amazon Managed Key. This can be done by specifying the `aws_kms_key_id` property.
+
+[source,hcl]
+----
+resource "aws_dynamodb_table_replica" "pass" {
+  provider         = "aws.alt"
+  global_table_arn = aws_dynamodb_table.pass.arn
+  kms_key_arn = aws_kms_key.test.arn
+
+  tags = {
+    Name = "taggy"
+  }
+}
+----
+

@@ -1,0 +1,54 @@
+
+== EKS clusters are not running on a supported Kubernetes version
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/EKSPlatformVersion.py[CKV_AWS_339]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying whether your EKS (Elastic Kubernetes Service) clusters are running on a supported version of Kubernetes. Running your clusters on an unsupported version can lead to potential security risks and compatibility issues. Unsupported versions might not have crucial security patches and updates, making them vulnerable to attacks. Furthermore, the latest features and improvements won't be available, potentially affecting performance and functionality. Thus, this policy helps maintain your systems' security and efficiency.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_eks_cluster
+* *Arguments:* version
+
+To fix this issue, you need to set the Kubernetes version for the EKS cluster in your Terraform configuration to a version that is currently supported by AWS. For example:
+
+[source,go]
+----
+resource "aws_eks_cluster" "my_cluster" {
+  name     = "my-cluster"
+  role_arn = aws_iam_role.example.arn
+
+  vpc_config {
+    subnet_ids = ["${aws_subnet.example.id}"]
+  }
+
+  version = "1.27"
+}
+----
+
+The above code specifies the Kubernetes version for the EKS cluster as 1.27, which is currently supported. Setting this explicitly ensures that the cluster will not accidentally be created with a version that is not supported by AWS. The "vpc_config" block specifies the networking configuration for the EKS cluster and is required for its creation. The "role_arn" attribute specifies the IAM role that EKS uses to perform actions on AWS.
+

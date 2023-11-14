@@ -1,0 +1,55 @@
+== API spec includes a 'password' flow in OAuth2 authentication
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/Oauth2SecurityPasswordFlow.py[CKV_OPENAPI_8]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy evaluates if 'password' flow is being used in OAuth2 authentication specifically for version 2.0 files. The 'password' flow, also known as the Resource Owner Password Credentials flow, is generally not secure. It involves providing the user's credentials (username and password) directly to the client, which then exchanges these for an access token. This method can expose user credentials to a potentially malicious client, creating a significant security risk. Therefore, it is not recommended to use the 'password' flow in OAuth2 authentication unless it's assumed that the client is highly trustworthy.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you need to modify the specification of your OAuth2 authentication to not use 'password' flow. This is because 'password' flow of OAuth2 authentication is less secure compared to other flows like 'authorization_code', 'implicit', etc.
+
+[source,yaml]
+----
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://api.example.com/auth
+          scopes:
+            read: Grants read access
+            write: Grants write access
+        authorizationCode:
+          authorizationUrl: http://api.example.com/auth
+          tokenUrl: http://api.example.com/token
+          scopes:
+            admin: Grants access to admin operations
+----
+
+The above code is secure because it uses 'implicit' and 'authorizationCode' flows of OAuth2 authentication instead of the 'password' flow. Both 'implicit' and 'authorizationCode' flows are OAuth2's response types that are more secure than the 'password' flow. 'implicit' flow is recommended for applications whose server side components are not capable of maintaining the confidentiality of the client secret while 'authorizationCode' flow is used when the client is confidential (can keep a secret) and maintains a server-side component.
+

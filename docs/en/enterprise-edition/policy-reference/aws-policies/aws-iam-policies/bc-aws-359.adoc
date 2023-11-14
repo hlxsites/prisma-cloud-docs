@@ -1,0 +1,53 @@
+
+== IAM database authentication is not enabled for Neptune DB clusters
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NeptuneDBClustersIAMDatabaseAuthenticationEnabled.py[CKV_AWS_359]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking if Neptune DB clusters in an AWS environment have IAM database authentication enabled. IAM stands for Identity and Access Management, which is a web service that helps control access to AWS resources. IAM authentication facilitates secure access management to the database because it eliminates the need to share and store database credentials. If it's not enabled, it may expose the database to unauthorized access, potentially leading to data breaches or manipulations. Hence, it's bad practice if IAM database authentication is not enabled.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_neptune_cluster
+* *Arguments:* iam_database_authentication_enabled
+
+To fix this issue, you need to enable IAM database authentication for your Neptune DB clusters.
+
+[source,hcl]
+----
+resource "aws_neptune_cluster" "default" {
+  cluster_identifier = "neptune-cluster-demo"
+  iam_database_authentication_enabled = true
+  ...
+  tags = {
+    Name = "default"
+    Environment = "production"
+  }
+}
+----
+
+In the above fix, the parameter `iam_database_authentication_enabled` is set to `true` for the Neptune DB cluster. This means that IAM Database Authentication is enabled, making usage of database user credentials unnecessary. IAM roles can control who can connect and access the database, boosting security by reducing exposure of database credentials and providing inbuilt features like credential rotation.
+

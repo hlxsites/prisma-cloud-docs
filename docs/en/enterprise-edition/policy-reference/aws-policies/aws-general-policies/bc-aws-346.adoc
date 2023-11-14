@@ -1,0 +1,49 @@
+
+== Network Firewall Policy does not define an encryption configuration that uses a "\"
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NetworkFirewallPolicyDefinesCMK.py[CKV_AWS_346]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is aimed at ensuring that a Network Firewall Policy includes an encryption configuration that employs a Customer Master Key (CMK). The absence or improper configuration of a CMK in a network firewall policy could lead to sub-optimal encryption of data, making it more vulnerable to unauthorized access, breaches, or leakage. This could compromise the security and integrity of the data, violating best practices for data protection and potentially non-compliance with regulations. Therefore, to maintain high security and data protection standards, it's essential to have an encryption configuration that utilizes a Customer Master Key.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_networkfirewall_firewall_policy
+* *Arguments:* encryption_configuration.key_id
+
+To fix this issue, you need to specify an encryption configuration that uses a Customer Managed Key (CMK) while defining your AWS Network Firewall Policy. Here's how you can do it:
+
+[source,go]
+----
+resource "aws_networkfirewall_firewall_policy" "example" {
+  name                  = "example_policy"
+  ...
+  encryption_configuration {
+      key_id = aws_kms_key.example.arn
+  }
+}
+----
+

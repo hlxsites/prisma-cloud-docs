@@ -1,0 +1,42 @@
+
+== IAM policy document allows "*" as a resource for any action that can be restricted
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMStarResourcePolicyDocument.py[CKV_AWS_355]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that no IAM (Identity and Access Management) policies on AWS (Amazon Web Services) allow the use of "*" as a statement's resource for restrictable actions. Allowing "*" can be dangerous as it means "all", including all possible services and resources, which can lead to a much wider range of access than intended. This can potentially expose sensitive information and actions, allowing for unauthorized manipulation of resources. By restricting the use of "*", we reduce the chance of giving an actor more permissions than they need, a concept known as the Principle of Least Privilege (PoLP), and thus minimize potential damage.
+
+For more info, visit https://cloudsplaining.readthedocs.io/en/latest/glossary/resource-exposure/[cloudsplaning documentation].
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy
+* *Arguments:* policy
+
+Firstly, check your AWS IAM policy and identify if there are any resources where action is allowed to "*". This kind of policy allows full access to all resources which can potentially lead to security risks like unauthorized access to data, service disruption etc. 
+
+The fix here is to provide specified resources in the policy instead of `"*"` for the field `Resource` within the respective `Statement` block.
+

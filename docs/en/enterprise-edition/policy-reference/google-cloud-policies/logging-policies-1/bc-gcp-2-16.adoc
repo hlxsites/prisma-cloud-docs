@@ -1,0 +1,59 @@
+
+== PostgreSQL database flag 'log_planner_stats' is not set to 'off'
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF.yaml[CKV2_GCP_16]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the 'log_planner_stats' flag for PostgreSQL databases is set to 'off'. The 'log_planner_stats' flag is used to enable or disable logging of planner statistics in PostgreSQL. While logging these statistics might be useful for debugging or optimizing purposes, they could potentially contain sensitive information. Furthermore, having this flag set to 'on' could impact the performance of your database due to the overhead of logging. Therefore, it is generally recommended to have this flag set 'off' in a production environment to maintain security and optimal performance.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+* *Arguments:* settings.database_flags
+
+To fix this issue, you need to add the 'log_planner_stats' setting within settings block in the database instance and set it to 'off'. This statement is an example of how you can define a database_instance:
+```hcl
+resource "google_sql_database_instance" "default" {
+  name             = "test"
+  region           = "us-central1"
+  
+  # ...
+
+  database_version = "POSTGRES_9_6"
+
+  settings {
+    database_flags {
+      name  = "log_planner_stats"
+      value = "off"
+    }
+    
+    # ...
+  }
+}
+```
+
+This code is secure because setting the 'log_planner_stats' to 'off' ensures that the planner's statistical data is not logged. This helps maintain the security of our database as it may prevent the accidental logging and exposure of sensitive data.
+

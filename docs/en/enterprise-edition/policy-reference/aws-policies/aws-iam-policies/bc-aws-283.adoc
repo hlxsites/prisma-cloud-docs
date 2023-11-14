@@ -1,0 +1,69 @@
+
+== IAM Policy Document Allows All or Any AWS Principal Permissions to Resources
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/data/aws/IAMPublicActionsPolicy.py[CKV_AWS_283]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that no Identity and Access Management (IAM) policy documents are allowing "ALL" or any AWS principal permissions to the resource. This is potentially harmful because it signifies that there are overly permissive policies in place. If all AWS principals have permission, it means any entity in AWS can potentially access or modify the resource, which can lead to unintended access, data leaks, or security breaches. Any security best practices recommend least privilege approach - the permission should only be given to the required and authorized entities.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy_document
+* *Arguments:* statement
+
+To fix this issue, you need to specify the principals in your IAM policy, instead of using wildcard "*". Additionally, regulate the actions that can be performed by each principal, instead of allowing all actions.
+
+[source,go]
+----
+resource "aws_iam_policy" "example" {
+  name        = "example_policy"
+  path        = "/"
+  description = "An example policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::example_bucket",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::ACCOUNT_ID:root"
+        ]
+      }
+    }
+  ]
+}
+EOF
+}
+----
+
+The above code is secure because it illustrates best practices for IAM policy creation. Rather than using a wildcard "*", which would allow all principals to access the policy, specific principals are listed. Furthermore, the permitted actions are listed, rather than allowing all actions.
+

@@ -1,0 +1,49 @@
+
+== CodeBuild project has privileged mode enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CodeBuildPrivilegedMode.py[CKV_AWS_316]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that the environments within AWS CodeBuild project do not have privileged mode enabled. Having privileged mode enabled can be a significant risk as it provides enhanced permissions that could potentially be misused or exploited. This could lead to unauthorized access or changes within the environment, which might cause damage or loss of data. Therefore, it is critical to maintain only the necessary permissions and avoid enabling privileged mode, as this can potentially breach secure practices.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_codebuild_project
+* *Arguments:* environment.privileged_mode
+
+To fix this issue, you need to ensure that the privileged mode is not enabled in the CodeBuild project environment configuration. 
+
+[source,hcl]
+----
+resource "aws_codebuild_project" "example" {
+  environment {
+    privileged_mode = false
+  }
+}
+----
+
+The above code sets the `privileged_mode` attribute of the `aws_codebuild_project`'s `environment` block to `false.` This means the CodeBuild project will not run in privileged mode, mitigating the potential security risks associated with elevated privileges such as unauthorized system alterations or data breaches.
+

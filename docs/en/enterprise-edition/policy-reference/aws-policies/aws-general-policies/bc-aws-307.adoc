@@ -1,0 +1,51 @@
+
+== SageMaker Users are permitted to have root access to SageMaker notebook instances
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerNotebookRoot.py[CKV_AWS_307]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy identified as 'CKV_AWS_307' falls under the category of 'General Security'. Its primary function is to make sure that SageMaker users do not have root access to SageMaker notebook instances.
+
+It's essential to restrict this level of access because providing root or admin rights can lead to misuse, intentional or accidental damage, or severe security breaches. These privileges allow users to perform actions on the platform that could modify or extract sensitive data, change configuration settings, or install unauthorized apps, among other things. Root access should only be given to trusted administrators who need such privileges to manage and secure systems.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_notebook_instance
+* *Arguments:* root_access
+
+To fix the issue, you need to make sure the `root_access` attribute should set to Disabled.
+
+[source,hcl]
+----
+resource "aws_sagemaker_notebook_instance" "secure_instance" {
+  name          = "secure_instance"
+  role_arn      = aws_iam_role.role.arn
+  instance_type = "ml.t3.xlarge"
+
+  root_access = Disabled
+}
+----
+
