@@ -1,63 +1,59 @@
-```
-                == An S3 bucket must have a lifecycle configuration
-                
-                === Policy Details 
+== An S3 bucket must have a lifecycle configuration
 
-                [width=45%]
-                [cols="1,1"]
-                |=== 
-                |Prisma Cloud Policy ID 
-                | TBD
+=== Policy Details 
 
-                |Checkov ID 
-                | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/S3BucketLifecycle.yaml[CKV2_AWS_61]
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
 
-                |Severity
-                |MEDIUM
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/S3BucketLifecycle.yaml[CKV2_AWS_61]
 
-                |Subtype
-                |Build
+|Severity
+|MEDIUM
 
-                |Frameworks
-                |Terraform,TerraformPlan
+|Subtype
+|Build
 
-                |=== 
-                
-                === Description
+|Frameworks
+|Terraform,TerraformPlan
 
-                This policy detects whether an S3 bucket in AWS has a lifecycle configuration or not. A lifecycle configuration on an S3 bucket helps to manage objects so they can be automatically transitioned to other storage classes or expire after a certain period. This is crucial for cost effective data management and storage optimization.
+|=== 
 
-                === Fix - Buildtime
-                
-                *Terraform*
-                
-                * *Resource:* aws_s3_bucket
-                * *Arguments:* lifecycle_rule
+=== Description
 
-                To fix the issue, it is needed to configure a lifecycle_rule under the respective S3 bucket in your terraform file specifying the id, status, prefix, transition, and expiration.
+This policy detects whether an S3 bucket in AWS has a lifecycle configuration or not. A lifecycle configuration on an S3 bucket helps to manage objects so they can be automatically transitioned to other storage classes or expire after a certain period. This is crucial for cost effective data management and storage optimization.
 
-                Secure code example:
+=== Fix - Buildtime
 
-                [source,go]
-                ----
-                resource "aws_s3_bucket" "bucket" {
-                  bucket = "bucket"
-                  acl    = "private”
+*Terraform*
 
-                  lifecycle_rule {
-                    id      = "expire"
-                    status  = "Enabled"
-                    prefix  = "logs/"
-                    transition {
-                      days          = 30
-                      storage_class = "STANDARD_IA"
-                    }
-                    expiration {
-                      days = 90
-                    }
-                  }
-                }
-                ----
+* *Resource:* aws_s3_bucket
+* *Arguments:* lifecycle_rule
 
-                The above code defines a lifecycle configuration rule for the S3 bucket "bucket". The rule "expire" applies to objects with keys beginning with "logs/", transitions those objects to the STANDARD_IA storage class after 30 days, and then expires the objects 90 days after creation. This helps to reduce costs and ensure correct object lifecycle management.
-                ```
+To fix the issue, it is needed to configure a lifecycle_rule under the respective S3 bucket in your terraform file specifying the id, status, prefix, transition, and expiration.
+
+[source,go]
+----
+resource "aws_s3_bucket" "bucket" {
+  bucket = "bucket"
+  acl    = "private”
+
+  lifecycle_rule {
+    id      = "expire"
+    status  = "Enabled"
+    prefix  = "logs/"
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+    expiration {
+      days = 90
+    }
+  }
+}
+----
+
+The above code defines a lifecycle configuration rule for the S3 bucket "bucket". The rule "expire" applies to objects with keys beginning with "logs/", transitions those objects to the STANDARD_IA storage class after 30 days, and then expires the objects 90 days after creation. This helps to reduce costs and ensure correct object lifecycle management.
