@@ -609,16 +609,17 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-ge
 
 ==== Cross-Account Joins
 
-Prisma Cloud *Investigate* works differently from *Policy* when executing an RQL query specific to cloud accounts. You can facilitate cross-account comparisons from the Investigate page, but not from the Policy page. In case of cross-account JOIN RQLs, you must be careful when trying to correlate *Alert* counts with the Investigate page results.
+Prisma Cloud *Investigate* works differently from *Policy* when executing an RQL query specific to cloud accounts. You can facilitate cross-account comparisons from the Investigate page, but not from the Policy page. In case of cross-account JOINs, you must be careful when trying to correlate *Alert* counts with the Investigate page results.
 
-If you do not specify the _cloud.account_ parameter while running a query from Investigate, all cloud accounts will be open for JOIN. And since resources from one API in a query can potentially match with another, irrespective of the account, you can get inaccurate results. To achieve consistency with Policy (which generates alerts) and get precise results, Prisma Cloud recommends that you add the _cloud.account_ parameter in your query. 
+If you do not specify the _cloud.account_ parameter while running a query from Investigate, all cloud accounts will be open for JOIN. And since resources from one API in a query can potentially match with another, irrespective of the account, you can get inaccurate results. To achieve consistency with Policy (which generates alerts) and get precise results, Prisma Cloud recommends that you add the _cloud.account_ parameter in your query. However, you do not need to apply the _cloud account_ condition every time for JOIN RQLs. Usually, the results count on Investigate matches with that on Alerts.
 
-However, you do not need to apply the _cloud account_ condition every time for JOIN. Usually, the count on Investigate matches with the alerts count, for example:
+For example:
 
-* If the first part of an RQL has corresponding resources, however the second part does not, the Investigate RQL will display all results from the first part. These are typically false positives. However, Prisma Cloud will not generate alerts for these instances. Specifying the cloud account helps validate such discrepancies.
+* If only the first part of an RQL has corresponding resources, and the second part does not, Investigate search displays results only from the first part. These are typically false positives. Prisma Cloud will not generate alerts for these instances.
 
-* When resources with the same name that are associated with a particular API exist across multiple cloud accounts, can also generate false positives. If any discrepancies arise, Prisma Cloud recommends that you add the cloud account for verification.
+* When resources with the same name that are associated with a particular API exist across multiple cloud accounts, can also generate false positives.
 
+Prisma Cloud recommends that you specify the cloud account for verification and help validate such discrepancies.
 
 [#idf1090750-00ce-4a0e-adb1-609033551ce5]
 === Functions
