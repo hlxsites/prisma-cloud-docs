@@ -78,17 +78,58 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 
-//No Policy Updates planned for 23.11.2.
+The following policies will be updated in Prisma Cloud:
 
-//[cols="50%a,50%a"]
-//|===
-//|POLICY UPDATES
-//|DESCRIPTION
-//|===
+[cols="50%a,50%a"]
+|===
+|POLICY UPDATES
+|DESCRIPTION
 
+
+|*AWS S3 bucket publicly readable*
+//RLP-104677
+
+|*Changes to Policy RQL*— Policy RQL will be updated to check for Authenticated Users access. Policy remediation steps have been updated.
+
+*Policy Severity*— High
+
+*Policy Type*— Config
+
+*Impact*— New alerts may get opened if Authenticated users have read permissions.
+
+*Alert Impact*— Low
+
+|*Azure Storage account is not configured with private endpoint connection*
+//RLP-120048
+
+|*Updated RQL*:
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
+----
+
+*Policy Severity*— Medium
+
+*Policy Type*— Config
+
+*Impact*— Low. Alerts that are not reported due to retained IPrule and VirtualNetworkRule will be opened. 
+
+|*GCP VM instance using a default service account with full access to all Cloud APIs*
+//RLP-120380
+
+|*Updated Policy Name*— GCP VM instance using a default service account with Cloud Platform access scope
+
+*Updated Policy Description*— This policy identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To be compliant with the principle of least privileges and prevent potential privilege escalation, we recommend that instances not be assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
+
+*Policy Severity*— Medium
+
+*Policy Type*— Config
+
+*Impact*— No Impact
+
+|===
 
 [#iam-policy-update]
 === IAM Policy Updates
