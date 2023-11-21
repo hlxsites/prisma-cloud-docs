@@ -13,8 +13,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<announcement>>
 //* <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
-* <<iam-policy-update>>
+* <<policy-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -81,202 +80,14 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-The following policies will be updated in Prisma Cloud:
+No Policy Updates planned for 24.1.1.
 
-[cols="50%a,50%a"]
-|===
-|POLICY UPDATES
-|DESCRIPTION
+//[cols="50%a,50%a"]
+//|===
+//|POLICY UPDATES
+//|DESCRIPTION
+//|===
 
-
-|*AWS S3 bucket publicly readable*
-//RLP-104677
-
-|*Changes to Policy RQL*— Policy RQL will be updated to check for Authenticated Users access. Policy remediation steps have been updated.
-
-*Policy Severity*— High
-
-*Policy Type*— Config
-
-*Impact*— New alerts may get opened if Authenticated users have read permissions.
-
-*Alert Impact*— Low
-
-|*Azure Storage account is not configured with private endpoint connection*
-//RLP-120048
-
-|*Updated RQL*:
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
-----
-
-*Policy Severity*— Medium
-
-*Policy Type*— Config
-
-*Impact*— Low. Alerts that are not reported due to retained IPrule and VirtualNetworkRule will be opened. 
-
-|*GCP VM instance using a default service account with full access to all Cloud APIs*
-//RLP-120380
-
-|*Updated Policy Name*— GCP VM instance using a default service account with Cloud Platform access scope
-
-*Updated Policy Description*— This policy identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To be compliant with the principle of least privileges and prevent potential privilege escalation, we recommend that instances not be assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
-
-*Policy Severity*— Medium
-
-*Policy Type*— Config
-
-*Impact*— No Impact
-
-|===
-
-[#iam-policy-update]
-=== IAM Policy Updates
-//RLP-120492
-
-The following IAM out-of-the-box (OOTB) policies will be updated in Prisma Cloud:
-
-[cols="30%a,35%a,35%a"]
-|===
-
-|POLICY NAME
-|Current RQL
-|Updated RQL
-
-|*Azure VM instance associated managed identity with Azure built-in roles of Contributor/Owner permissions*
-
-|*Changes—* The policy name will be updated.
-
-*Current Name—* Azure VM instance associated managed identity with Azure built-in roles of Contributor/Owner permissions
-
-*Updated Name—* Azure VM instance associated managed identity with Azure built-in roles of Owner permissions
-
-|NA
-
-
-
-|*AWS IAM policy allows Privilege escalation via PassRole & CodeBuild permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codebuild:CreateProject', 'codebuild:StartBuild', 'codebuild:StartBuildBatch') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codebuild:CreateProject', 'codebuild:StartBuild', 'codebuild:StartBuildBatch') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & CodeStar project permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codestar:CreateProject' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codestar:CreateProject' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Data Pipeline permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'datapipeline:ActivatePipeline', 'datapipeline:CreatePipeline', 'datapipeline:PutPipelineDefinition') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'datapipeline:ActivatePipeline', 'datapipeline:CreatePipeline', 'datapipeline:PutPipelineDefinition') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & EC2 permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'ec2:RunInstances' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'ec2:RunInstances' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Glue create job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Glue development endpoint permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateDevEndpoint', 'glue:GetDevEndpoint') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateDevEndpoint', 'glue:GetDevEndpoint') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Glue update job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:UpdateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:UpdateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create & invoke Function permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:InvokeFunction', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:InvokeFunction', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & Event source mapping permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:CreateEventSourceMapping', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:CreateEventSourceMapping', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & add permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:AddPermission', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:AddPermission', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & SageMaker create processing job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateProcessingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateProcessingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & SageMaker create training job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateTrainingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateTrainingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|===
 
 [#api-ingestions]
 === API Ingestions
@@ -286,110 +97,121 @@ config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:Crea
 |SERVICE
 |API DETAILS
 
-|*Amazon EMR*
-//RLP-118746
-|*aws-emr-instance*
+|*Amazon Batch*
+//RLP-122581
+|*aws-batch-job-definition*
 
 Additional permissions required:
 
-* `elasticmapreduce:ListClusters`
-* `elasticmapreduce:ListInstances`
+* `batch:DescribeJobDefinitions`
 
 The Security Audit role includes the permissions.
 
-|*AWS Code Build*
-//RLP-118748
-|*aws-code-build-source-credential*
+|*AWS Config*
+//RLP-122574
+|*aws-batch-job-definition*
 
 Additional permissions required:
 
-* `codebuild:ListSourceCredentials`
+* `aws-configservice-aggregator`
 
-You must manually add the above permission to the CFT template to enable it.
-
+The Security Audit role includes the permissions.
 
 |*AWS Elastic Disaster Recovery*
-//RLP-118756
-|*aws-drs-replication-configuration*
+//RLP-122573
+|*aws-drs-job*
 
 Additional permissions required:
 
-* `drs:DescribeSourceServers`
-* `drs:GetReplicationConfiguration`
+* `drs:DescribeJobs`
 
-You must manually add the above permissions to the CFT template to enable them.
+The Security Audit role includes the permissions.
 
-
-|*AWS Elastic Disaster Recovery*
-//RLP-118753
-|*aws-drs-source-server*
-
-Additional permission required:
-
-* `drs:DescribeSourceServers`
-
-You must manually add the above permission to the CFT template to enable it.
-
-|*Azure Cache*
-//RLP-119062
-|*azure-cache-redis-diagnostic-settings*
+|*AWS DataSync*
+//RLP-122549
+|*aws-datasync-agent*
 
 Additional permissions required:
 
-* `Microsoft.Cache/redis/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
+* `datasync:ListAgents"
+* `datasync:DescribeAgent`
 
-The Reader Role that includes these permissions.
+The Security Audit role includes the permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-119360
-|*gcloud-vmware-engine-subnet*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.subnets.list`
-
-The Viewer Role that includes these permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119359
-|*gcloud-vmware-engine-hcx-activation-key*
+|*Azure Log Analytics*
+//RLP-120365
+|*azure-log-analytics-clusters*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.hcxActivationKeys.list`
-* `vmwareengine.hcxActivationKeys.getIamPolicy`
+* `Microsoft.OperationalInsights/clusters/read`
 
-The Viewer Role that includes these permissions.
+The Reader role includes the permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-119358
-|*gcloud-vmware-engine-cluster*
+
+|*Google Vertex AI AIPlatform*
+//RLP-121321
+|*gcloud-vertex-ai-aiplatform-data-labeling-job*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.clusters.list`
-* `vmwareengine.clusters.getIamPolicy`
+* `aiplatform.dataLabelingJobs.list`
 
-The Viewer Role that includes these permissions.
+The Viewer role includes the permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-119350
-|*gcloud-vmware-engine-private-cloud*
+
+*Google Vertex AI AIPlatform*
+//RLP-121320
+|*gcloud-vertex-ai-aiplatform-dataset*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.privateClouds.getIamPolicy`
+* `aiplatform.datasets.list`
 
-The Viewer Role that includes these permissions.
+The Viewer role includes the permissions.
+
+
+*Google Vertex AI AIPlatform*
+//RLP-121319
+|*gcloud-vertex-ai-aiplatform-hyperparameter-tuning-job*
+
+Additional permissions required:
+
+* `aiplatform.hyperparameterTuningJobs.list`
+
+The Viewer role includes the permissions.
+
+
+*Google Vertex AI AIPlatform*
+//RLP-121318
+|*gcloud-vertex-ai-aiplatform-nas-job*
+
+Additional permissions required:
+
+* `aiplatform.nasJobs.list`
+
+The Viewer role includes the permissions.
+
+*OCI Block Storage*
+//RLP-121320
+|*oci-block-storage-volume-attachment*
+
+Additional permissions required:
+
+* `VOLUME_ATTACHMENT_INSPECT,VOLUME_ATTACHMENT_READ`
+
+No existing role includes the permissions.
+
+
+*OCI Data Safe*
+//RLP-120439
+|*oci-data-safe-configuration*
+
+Additional permissions required:
+
+* `DATA_SAFE_READ`
+
+No existing role includes the permissions.
 
 |===
 
