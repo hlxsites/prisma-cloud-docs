@@ -178,7 +178,7 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-stor
 
 |*AWS S3 bucket publicly readable*
 //RLP-104677
-|*Changes—* The policy remediation steps and RQL will be updated to check for Authenticated Users access. 
+|*Changes—* The policy remediation steps and RQL will be updated to check for Authenticated User with read access. 
 
 *Current RQL—*
 
@@ -218,10 +218,7 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-ge
 
 *Severity—* Medium 
 
-
-
 |===
-
 
 [#api-ingestions]
 === API Ingestions
@@ -232,7 +229,6 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-ge
 |API DETAILS
 
 |*Amazon EC2*
-
 //RLP-120745
 |*aws-ec2-vpc-endpoint-service*
 
@@ -276,7 +272,7 @@ Additional permissions required:
 * `elasticmapreduce:ListClusters`
 * `elasticmapreduce:ListInstances`
 
-The Security Audit role includes the permission.
+The Security Audit role includes the permissions.
 
 |*AWS CodeBuild*
 //RLP-118748
@@ -287,7 +283,30 @@ Additional permission required:
 
 * `codebuild:ListSourceCredentials`
 
-You must manually add the `codebuild:ListSourceCredentials` permission to the CFT template to enable the permission.
+You must manually add the above permission to the CFT template to enable it.
+
+|*AWS DataSync*
+//RLP-122550
+|*aws-datasync-agent*
+
+Additional permissions required:
+
+* `datasync:ListAgents`
+* `datasync:DescribeAgent`
+
+The Security Audit role includes the permissions.
+
+
+|*AWS Elastic Disaster Recovery*
+//RLP-122569
+|*aws-drs-job*
+
+Additional permission required:
+
+* `drs:DescribeJobs`
+
+You must manually add the above permission to the CFT template to enable it.
+
 
 |*AWS Elastic Disaster Recovery*
 //RLP-118753
@@ -321,48 +340,29 @@ Additional permission required:
 
 * `codepipeline:ListWebhooks`
 
-You must manually add the `codepipeline:ListWebhooks` permission to the CFT template to enable t.
-
-|*Amazon Batch*
-//RLP-122581
-|*aws-batch-job-definition*
-
-Additional permissions required:
-
-* `batch:DescribeJobDefinitions`
-
-The Security Audit role includes the permission.
+You must manually add the `codepipeline:ListWebhooks` permission to the CFT template to enable it.
 
 |*AWS Config*
-//RLP-122574
+//RLP-122576
 |*aws-configservice-aggregator*
 
-Additional permissions required:
+Additional permission required:
 
 * `config:DescribeConfigurationAggregators`
 
 The Security Audit role includes the permission.
 
-|*AWS Elastic Disaster Recovery*
-//RLP-122573
-|*aws-drs-job*
 
-Additional permissions required:
+|*Amazon Batch*
+//RLP-122581
+|*aws-batch-job-definition*
 
-* `drs:DescribeJobs`
+Additional permission required:
 
-No existing role includes the permission.
+* `batch:DescribeJobDefinitions`
 
-|*AWS DataSync*
-//RLP-122549
-|*aws-datasync-agent*
+The Security Audit role includes the permission.
 
-Additional permissions required:
-
-* `datasync:ListAgents"
-* `datasync:DescribeAgent`
-
-The Security Audit role includes the permissions.
 
 |*Azure Log Analytics*
 //RLP-120365
@@ -374,6 +374,55 @@ Additional permissions required:
 
 The Reader role includes the permission.
 
+|*Google Cloud VMware Engine*
+//RLP-119350
+|*gcloud-vmware-engine-private-cloud*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list` 
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.privateClouds.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Cloud VMware Engine*
+//RLP-119358
+|*gcloud-vmware-engine-cluster*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list` 
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.clusters.list`
+* `vmwareengine.clusters.getIamPolicy` 
+ 
+The Viewer role includes the permissions.
+
+|*Google Cloud VMware Engine*
+//RLP-119359
+|*gcloud-vmware-engine-hcx-activation-key*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list` 
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.hcxActivationKeys.list`
+* `vmwareengine.hcxActivationKeys.getIamPolicy` 
+ 
+The Viewer role includes the permissions.
+
+|*Google Cloud VMware Engine*
+//RLP-119360
+|*gcloud-vmware-engine-subnet*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list` 
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.subnets.list` 
+ 
+The Viewer role includes the permissions.
 
 |*Google Vertex AI AIPlatform*
 //RLP-121321
@@ -385,7 +434,6 @@ Additional permissions required:
 
 The Viewer role includes the permission.
 
-
 |*Google Vertex AI AIPlatform*
 //RLP-121320
 |*gcloud-vertex-ai-aiplatform-dataset*
@@ -395,7 +443,6 @@ Additional permissions required:
 * `aiplatform.datasets.list`
 
 The Viewer role includes the permission.
-
 
 |*Google Vertex AI AIPlatform*
 //RLP-121319
@@ -407,7 +454,6 @@ Additional permissions required:
 
 The Viewer role includes the permission.
 
-
 |*Google Vertex AI AIPlatform*
 //RLP-121318
 |*gcloud-vertex-ai-aiplatform-nas-job*
@@ -418,16 +464,58 @@ Additional permissions required:
 
 The Viewer role includes the permission.
 
+|*Google Vertex AI AIPlatform*
+//RLP-121267
+|*gcloud-vertex-ai-aiplatform-custom-job*
+
+Additional permission required:
+
+* `aiplatform.customJobs.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Vertex AI AIPlatform*
+//RLP-121265
+|*gcloud-vertex-ai-aiplatform-training-pipeline*
+
+Additional permission required:
+
+* `aiplatform.trainingPipelines.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-121266
+|*gcloud-vertex-ai-aiplatform-endpoint*
+
+Additional permission required:
+
+* `aiplatform.endpoints.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-121262
+|*gcloud-vertex-ai-aiplatform-pipeline-job*
+
+Additional permission required:
+
+* `aiplatform.pipelineJobs.list`
+
+The Viewer role includes the permission.
+
+
 |*OCI Block Storage*
-//RLP-121320
+//RLP-122320
 |*oci-block-storage-volume-attachment*
 
 Additional permissions required:
 
-* `VOLUME_ATTACHMENT_INSPECT
+* `VOLUME_ATTACHMENT_INSPECT`
 * `VOLUME_ATTACHMENT_READ`
 
-No existing role includes the permissions.
+You must update the Terraform template to enable the permissions.
 
 |*OCI Data Safe*
 //RLP-120439
@@ -437,7 +525,7 @@ Additional permissions required:
 
 * `DATA_SAFE_READ`
 
-No existing role includes the permissions.
+You must update the Terraform template to enable the permission.
 
 |===
 
