@@ -147,13 +147,80 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-No Policy Updates planned for 24.1.1.
+[cols="50%a,50%a"]
+|===
+|POLICY UPDATES
+|DESCRIPTION
 
-//[cols="50%a,50%a"]
-//|===
-//|POLICY UPDATES
-//|DESCRIPTION
-//|===
+2+|*Policy Updates—RQL*
+
+|*Azure Storage account is not configured with private endpoint connection*
+//RLP-120048
+|*Changes—* The policy RQL will be updated to report Azure storage accounts that allow all networks with the `IPrule` and `VirtualNetworkRule` not being empty. 
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and networkRuleSet.virtualNetworkRules is empty and networkRuleSet.ipRules[*] is empty and properties.privateEndpointConnections[*] is empty
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
+----
+
+*Impact—* Low. Alerts generated due to retained `IPrule` and `VirtualNetworkRule` will be triggered.
+
+*Policy Type—* Config
+
+*Severity—* Medium 
+
+|*AWS S3 bucket publicly readable*
+//RLP-104677
+|*Changes—* The policy remediation steps and RQL will be updated to check for Authenticated Users access. 
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = ((((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false)) and acl.grantsAsList[?any(grantee equals AllUsers and permission is member of (ReadAcp,Read,FullControl))] exists) or ((policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))) and (policy.Statement[?any(Effect equals Allow and (Principal equals * or Principal.AWS equals *) and (Action contains s3:* or Action contains s3:Get or Action contains s3:List) and (Condition does not exist))] exists))) and websiteConfiguration does not exist
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = ((((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false)) and (acl.grantsAsList[?any(grantee equals AllUsers and permission is member of (ReadAcp,Read,FullControl))] exists or acl.grantsAsList[?any(grantee equals AuthenticatedUsers and permission is member of (ReadAcp,Read,FullControl))] exists)) or ((policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))) and (policy.Statement[?any(Effect equals Allow and (Principal equals * or Principal.AWS equals *) and (Action contains s3:* or Action contains s3:Get or Action contains s3:List) and (Condition does not exist))] exists))) and websiteConfiguration does not exist
+----
+
+*Impact—* Low. New alerts will be generated when Authenticated users have read permissions.
+
+*Policy Type—* Config
+
+*Severity—* High 
+
+
+
+2+|*Policy Updates—Metadata*
+
+|*GCP VM instance using a default service account with full access to all Cloud APIs*
+//RLP-120380
+|*Changes—* The policy name, description, and recommendation steps will be updated. 
+
+*Current Policy Name—* GCP VM instance using a default service account with full access to all Cloud APIs
+
+*Updated Policy Name—* GCP VM instance using a default service account with Cloud Platform access scope
+
+*Updated Description—* identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To compliant with the principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
+
+*Impact—* No impact, as this is a metadata change.
+
+*Policy Type—* Config
+
+*Severity—* Medium 
+
+
+
+|===
 
 
 [#api-ingestions]
