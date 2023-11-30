@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 23.11.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+Read this section to learn about what is planned in the 23.12.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
 
 [NOTE]
 ====
@@ -13,7 +13,8 @@ The details and functionality listed below are a preview and the actual release 
 * <<announcement>>
 //* <<changes-in-existing-behavior>>
 * <<new-policies>>
-* <<policy-updates>>
+//* <<policy-updates>>
+* <<iam-policy-update>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -37,16 +38,15 @@ The rollout for existing customers will start on October 18, 2023 through early 
 
 Here is the roll out schedule for all Prisma Cloud environments except app.gov. Please connect with your Customer Success team for more details.
 
-* 23.11.1 (Nov 1-9) - app.ind, app.ca, app.uk, app.fr
+//* 23.11.1 (Nov 1-9) - app.ind, app.ca, app.uk, app.fr
 
 * 23.12.1 (Nov 29-Dec 7) - app, app3, app.eu, app2.eu
 
-* 23.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
+* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
 
-* 23.1.2 (Jan 29-Feb 6) - app.cn
+* 24.1.2 (Jan 29-Feb 6) - app.cn
 
 When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
-
 
 |===
 
@@ -69,7 +69,7 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 +
 The *Master* branch represents rrent Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-23.11.1
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-23.12.1
 
 . Review the updates.
 +
@@ -81,38 +81,202 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
+The following policies will be updated in Prisma Cloud:
+
 [cols="50%a,50%a"]
 |===
 |POLICY UPDATES
 |DESCRIPTION
 
-2+|*Policy Updates—RQL*
 
-|*Azure Application Gateway is configured with SSL policy having TLS version 1.1 or lower*
-//RLP-115351
-|*Changes—* The RQL willl be updated to not report Application gateways with default policy created using API versions 2023-02-01 or higher as the minimum protocol version is set to 1.2.
+|*AWS S3 bucket publicly readable*
+//RLP-104677
 
-*Current RQL—*
+|*Changes to Policy RQL*— Policy RQL will be updated to check for Authenticated Users access. Policy remediation steps have been updated.
 
+*Policy Severity*— High
+
+*Policy Type*— Config
+
+*Impact*— New alerts may get opened if Authenticated users have read permissions.
+
+*Alert Impact*— Low
+
+|*Azure Storage account is not configured with private endpoint connection*
+//RLP-120048
+
+|*Updated RQL*:
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway' AND json.rule = ['properties.sslPolicy'] does not exist or (['properties.sslPolicy'].['policyType'] equal ignore case Predefined and (['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20150501 or ['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20170401)) or (['properties.sslPolicy'].['policyType'] equal ignore case Custom and (['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_0 or ['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_1))
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
 ----
 
-*Updated RQL—*
+*Policy Severity*— Medium
 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway' AND json.rule = (['properties.sslPolicy'] does not exist and ['properties.defaultPredefinedSslPolicy'] does not equal ignore case AppGwSslPolicy20220101) or (['properties.sslPolicy'].['policyType'] equal ignore case Predefined and (['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20150501 or ['properties.sslPolicy'].['policyName'] equal ignore case AppGwSslPolicy20170401)) or (['properties.sslPolicy'].['policyType'] equal ignore case Custom and (['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_0 or ['properties.sslPolicy'].['minProtocolVersion'] equal ignore case TLSv1_1))
-----
+*Policy Type*— Config
 
-*Severity—* Low
+*Impact*— Low. Alerts that are not reported due to retained IPrule and VirtualNetworkRule will be opened. 
 
-*Policy Type—* Config
+|*GCP VM instance using a default service account with full access to all Cloud APIs*
+//RLP-120380
 
-*Impact—* Low. Existing alerts where the application gateways were created with default policy using API versions 2023-02-01 or higher will be resolved as *Policy_Updated*.
+|*Updated Policy Name*— GCP VM instance using a default service account with Cloud Platform access scope
 
+*Updated Policy Description*— This policy identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To be compliant with the principle of least privileges and prevent potential privilege escalation, we recommend that instances not be assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
+
+*Policy Severity*— Medium
+
+*Policy Type*— Config
+
+*Impact*— No Impact
 
 |===
 
+[#iam-policy-update]
+=== IAM Policy Updates
+//RLP-120492
+
+The following IAM out-of-the-box (OOTB) policies will be updated in Prisma Cloud:
+
+[cols="30%a,35%a,35%a"]
+|===
+
+|POLICY NAME
+|Current RQL
+|Updated RQL
+
+|*Azure VM instance associated managed identity with Azure built-in roles of Contributor/Owner permissions*
+
+|*Changes—* The policy name will be updated.
+
+*Current Name—* Azure VM instance associated managed identity with Azure built-in roles of Contributor/Owner permissions
+
+*Updated Name—* Azure VM instance associated managed identity with Azure built-in roles of Owner permissions
+
+|NA
+
+
+
+|*AWS IAM policy allows Privilege escalation via PassRole & CodeBuild permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codebuild:CreateProject', 'codebuild:StartBuild', 'codebuild:StartBuildBatch') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codebuild:CreateProject', 'codebuild:StartBuild', 'codebuild:StartBuildBatch') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & CodeStar project permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codestar:CreateProject' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codestar:CreateProject' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Data Pipeline permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'datapipeline:ActivatePipeline', 'datapipeline:CreatePipeline', 'datapipeline:PutPipelineDefinition') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'datapipeline:ActivatePipeline', 'datapipeline:CreatePipeline', 'datapipeline:PutPipelineDefinition') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & EC2 permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'ec2:RunInstances' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'ec2:RunInstances' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Glue create job permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Glue development endpoint permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateDevEndpoint', 'glue:GetDevEndpoint') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateDevEndpoint', 'glue:GetDevEndpoint') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Glue update job permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:UpdateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:UpdateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create & invoke Function permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:InvokeFunction', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:InvokeFunction', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & Event source mapping permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:CreateEventSourceMapping', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:CreateEventSourceMapping', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & add permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:AddPermission', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:AddPermission', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & SageMaker create processing job permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateProcessingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateProcessingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|*AWS IAM policy allows Privilege escalation via PassRole & SageMaker create training job permissions*
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateTrainingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
+---- 
+
+|----
+config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateTrainingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+
+|===
 
 [#api-ingestions]
 === API Ingestions
@@ -122,130 +286,110 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-appl
 |SERVICE
 |API DETAILS
 
-|*Amazon EC2*
-//RLP-117703
-|*aws-ec2-launch-template-data*
+|*Amazon EMR*
+//RLP-118746
+|*aws-emr-instance*
 
 Additional permissions required:
 
-* `ec2:GetLaunchTemplateData`
-* `ec2:DescribeInstances`
+* `elasticmapreduce:ListClusters`
+* `elasticmapreduce:ListInstances`
 
-The Security Audit role only includes the `ec2:GetLaunchTemplateData` permission. You must manually add the `ec2:DescribeInstances` permission to the CFT template to enable the permission.
+The Security Audit role includes the permissions.
 
-
-|*AWS Audit Manager*
-//RLP-117743
-|*aws-audit-manager-assessment*
-
-Additional permissions required:
-
-* `auditmanager:ListAssessments`
-* `auditmanager:GetAssessment`
-
-The Security Audit role only includes the `auditmanager:ListAssessments` permission. You must manually add the `auditmanager:GetAssessment` permission to the CFT template to enable the permission.
-
-|*AWS Audit Manager*
-//RLP-117712
-|*aws-audit-manager-control*
+|*AWS Code Build*
+//RLP-118748
+|*aws-code-build-source-credential*
 
 Additional permissions required:
 
-* `auditmanager:ListControls`
-* `auditmanager:GetControl`
+* `codebuild:ListSourceCredentials`
 
-The Security Audit role only includes the `auditmanager:ListControls` permission. You must manually add the `auditmanager:GetControl` permission to the CFT template to enable the permission.
+You must manually add the above permission to the CFT template to enable it.
 
-|*AWS Application Migration Service*
-//RLP-117706
-|*aws-mgn-launch-configuration-template*
+
+|*AWS Elastic Disaster Recovery*
+//RLP-118756
+|*aws-drs-replication-configuration*
+
+Additional permissions required:
+
+* `drs:DescribeSourceServers`
+* `drs:GetReplicationConfiguration`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+
+|*AWS Elastic Disaster Recovery*
+//RLP-118753
+|*aws-drs-source-server*
 
 Additional permission required:
 
-* `mgn:DescribeLaunchConfigurationTemplates`
+* `drs:DescribeSourceServers`
 
-The Security Audit role includes the permission.
+You must manually add the above permission to the CFT template to enable it.
 
-|*Azure Synapse Analytics*
-//RLP-117493
-|*azure-synapse-workspace-managed-sql-server-blob-auditing-policies*
-
-Additional permissions required:
-
-* `Microsoft.Synapse/workspaces/read`
-* `Microsoft.Synapse/workspaces/auditingSettings/read`
-
-The Reader role includes the permissions.
-
-|*Azure Synapse Analytics*
-//RLP-115881
-|*azure-synapse-workspace-ip-firewall-rules*
+|*Azure Cache*
+//RLP-119062
+|*azure-cache-redis-diagnostic-settings*
 
 Additional permissions required:
 
-* `Microsoft.Synapse/workspaces/read`
-* `Microsoft.Synapse/workspaces/firewallRules/read`
+* `Microsoft.Cache/redis/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
 
-The Reader role includes the permissions.
+The Reader Role that includes these permissions.
 
-
-|*Google AlloyDB for PostgreSQL*
-//RLP-117228
-|*gcloud-alloydb-cluster*
-
-Additional permissions required:
-
-* `alloydb.locations.list`
-* `alloydb.clusters.list`
-
-The Viewer role includes the permissions.
-
-|*Google AlloyDB for PostgreSQL*
-//RLP-117227
-|*gcloud-alloydb-cluster-user*
+|*Google Cloud VMware Engine*
+//RLP-119360
+|*gcloud-vmware-engine-subnet*
 
 Additional permissions required:
 
-* `alloydb.locations.list`
-* `alloydb.clusters.list`
-* `alloydb.users.list`
+* `vmwareengine.locations.list`
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.subnets.list`
 
-The Viewer role includes the permissions.
+The Viewer Role that includes these permissions.
 
-|*Google AlloyDB for PostgreSQL*
-//RLP-117226
-|*gcloud-alloydb-cluster-instance*
-
-Additional permissions required:
-
-* `alloydb.locations.list`
-* `alloydb.clusters.list`
-* `alloydb.instances.list`
-
-The Viewer role includes the permissions.
-
-|*Google AlloyDB for PostgreSQL*
-//RLP-117225
-|*gcloud-alloydb-backup*
+|*Google Cloud VMware Engine*
+//RLP-119359
+|*gcloud-vmware-engine-hcx-activation-key*
 
 Additional permissions required:
 
-* `alloydb.locations.list`
-* `alloydb.backups.list`
+* `vmwareengine.locations.list`
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.hcxActivationKeys.list`
+* `vmwareengine.hcxActivationKeys.getIamPolicy`
 
-The Viewer role includes the permissions.
+The Viewer Role that includes these permissions.
 
-|*OCI Cloud Guard*
-//RLP-117502
-|*oci-cloudguard-configuration*
+|*Google Cloud VMware Engine*
+//RLP-119358
+|*gcloud-vmware-engine-cluster*
 
 Additional permissions required:
 
-* `CG_CONFIG_INSPECT`
-* `CG_CONFIG_READ`
+* `vmwareengine.locations.list`
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.clusters.list`
+* `vmwareengine.clusters.getIamPolicy`
 
-You must update the Terraform template to enable the permissions.
+The Viewer Role that includes these permissions.
 
+|*Google Cloud VMware Engine*
+//RLP-119350
+|*gcloud-vmware-engine-private-cloud*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.privateClouds.getIamPolicy`
+
+The Viewer Role that includes these permissions.
 
 |===
 
@@ -329,19 +473,19 @@ In preparation for the EoL, make sure to uninstall all instances of the Enforcer
 
 Some Alert API request parameters and response object properties are now deprecated.
 
-Query parameter `varname:[risk.grade]` is deprecated for the following requests:
+Query parameter `risk.grade` is deprecated for the following requests:
 
 *  `GET /alert`
 *  `GET /v2/alert`
 *  `GET /alert/policy` 
 
-Request body parameter `varname:[risk.grade]` is deprecated for the following requests:
+Request body parameter `risk.grade` is deprecated for the following requests:
 
 *  `POST /alert`
 *  `POST /v2/alert`
 *  `POST /alert/policy`
 
-Response object property `varname:[riskDetail]` is deprecated for the following requests:
+Response object property `riskDetail` is deprecated for the following requests:
 
 *  `GET /alert`
 *  `POST /alert`
@@ -351,7 +495,7 @@ Response object property `varname:[riskDetail]` is deprecated for the following 
 *  `GET /v2/alert`
 *  `POST /v2/alert`
 
-Response object property varname:[risk.grade.options] is deprecated for the following request:
+Response object property `risk.grade.options` is deprecated for the following request:
 
 * `GET /filter/alert/suggest`
 
