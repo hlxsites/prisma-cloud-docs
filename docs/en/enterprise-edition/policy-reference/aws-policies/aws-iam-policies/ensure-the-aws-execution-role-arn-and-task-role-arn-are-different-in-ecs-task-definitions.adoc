@@ -23,8 +23,32 @@
 |=== 
 
 
+=== Description 
 
-=== Description
+In Amazon ECS, the execution role and the task role serve different purposes and should be distinct:
+
+* The *execution role* is used by the ECS agent to make AWS API calls on your behalf.
+* The *task role* grants permissions to the tasks themselves.
+
+Using the same role for both can lead to unnecessary permissions being granted, increasing security risks. Separating these roles ensures a more granular and secure permission model.
+
+=== Fix - Buildtime
 
 
-=== Fix - Buidtime
+*Terraform* 
+
+
+* *Resource:* aws_ecs_task_definition
+* *Arguments:*  execution_role_arn, task_role_arn
+
+Ensure that the `execution_role_arn` does not match the `task_role_arn`
+
+[source,go]
+----
+resource "aws_ecs_task_definition" "example" {
+    ...
++  execution_role_arn = "arn:aws:iam::123456789012:role/execution_role"
++  task_role_arn      = "arn:aws:iam::123456789012:role/task_role"
+    ...
+}
+----
