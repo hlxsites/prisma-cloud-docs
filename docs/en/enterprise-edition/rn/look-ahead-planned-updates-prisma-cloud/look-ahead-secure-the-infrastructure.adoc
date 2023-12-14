@@ -154,6 +154,28 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
+|*AWS Elasticsearch domain publicly accessible*
+//RLP-122897
+|*Changes—* The policy RQL will be updated to reduce to false positives.
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and (endpoints does not exist or endpoints.vpc does not exist or endpoints.vpc is empty)
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and vpcoptions.vpcid does not exist
+----
+
+*Impact—* No Impact
+
+*Policy Type—* Config
+
+*Severity—* Medium 
+
 |*Azure Storage account is not configured with private endpoint connection*
 //RLP-120048
 |*Changes—* The policy RQL will be updated to report Azure storage accounts that allow all networks with the `IPrule` and `VirtualNetworkRule` not being empty. 
@@ -531,6 +553,52 @@ Additional permission required:
 
 The Viewer role includes the permission.
 
+|*Google Cloud VMware Engine*
+//RLP-121318
+
+|*gcloud-vmware-engine-network*
+
+Additional permission required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.vmwareEngineNetworks.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-index*
+
+Additional permission required:
+
+* `aiplatform.indexes.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124014
+
+|*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
+
+Additional permission required:
+
+* `aiplatform.featurestores.list` 
+* `aiplatform.entityTypes.list` 
+* `aiplatform.entityTypes.getIamPolicy`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124013
+
+|*gcloud-vertex-ai-aiplatform-model*
+
+Additional permission required:
+
+* `aiplatform.models.list` 
+
+The Viewer role includes the permission.
 
 |*OCI Block Storage*
 //RLP-122320
@@ -731,5 +799,46 @@ Response object property `risk.grade.options` is deprecated for the following re
 
 |===
 
+[#api-updates]
+=== API Updates
 
+[cols="320%a,20%a,60%a"]
+|===
+
+|*Topic*
+|*Before Fix*
+|*After Fix*
+
+|Resource / Asset ID Field
+|manifest-1701835039773
+|https://www.googleapis.com/deploymentmanager/v2/projects/pcs-policy-vac/global/deployments/example-deployment-nc1/manifests/manifest-1701835039773
+
+|Resource / Asset Name Field
+|manifest-1701835039773
+|example-deployment-nc1-manifest-1701835039773
+
+|Ingestion Behaviour
+|All Manifest resources that are part of a Deployment are ingested
+|* Only the latest Manifest resource of a Deployment is ingested
+
+* Older Manifest resources of a Deployment are deleted
+
+[NOTE]
+====
+Only latest manifest is ingested as the manifest has both the initial configuration and the fully-evaluated configuration of the deployment.
+====
+
+|Alert Behaviour
+|No OOB or Custom Policies are associated with this API
+|If alerts are open for a custom policy associated with this API, then after this fix,
+
+* Open Alerts are resolved as the previously ingested resources are deleted
+* Post ingestion of the latest resources, alerts are open again for the recently ingested resources
+
+|Resource Configuration
+|CSP Response is ingested as is - No changes
+|CSP Response is ingested as is  - No changes
+
+
+|===
 
