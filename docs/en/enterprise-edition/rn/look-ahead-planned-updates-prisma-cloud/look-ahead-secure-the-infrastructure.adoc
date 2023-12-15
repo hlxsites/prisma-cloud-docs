@@ -17,7 +17,6 @@ The details and functionality listed below are a preview and the actual release 
 * <<policy-updates-iam>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
-* <<api-updates>>
 
 
 [#announcement]
@@ -57,11 +56,11 @@ When you are upgraded to the Darwin release, refer to the https://docs.prismaclo
 *Add New IP Addresses for Runtime Security*
 //RLP-122832 - Do not remove this blurb till Feb 2024. Add these details to the AG in 24.2.1
 
-To ensure continued connectivity to the Prisma Cloud console, review the following IP list and add the new addresses to your allow lists before February 2024. Failure to do so will result in tenant connectivity issues.
+To ensure continued connectivity to the Prisma Cloud console, as a system administrator, review the following IP list and add the new addresses to your allow lists before February 2024. Failure to do so will result in tenant connectivity issues.
 
 [NOTE]
 ====
-Current (old) IPs will be deprecated once the migration is complete.
+Current (old) IPs will be deprecated after February 2024.
 ====
 
 [cols="40%a,30%a,30%a"]
@@ -671,12 +670,12 @@ The Viewer role includes the permission.
 
 |*gcloud-vmware-engine-network*
 
-Additional permission required:
+Additional permissions required:
 
 * `vmwareengine.locations.list`
 * `vmwareengine.vmwareEngineNetworks.list`
 
-The Viewer role includes the permission.
+The Viewer role includes the permissions.
 
 |*Google Vertex AI AIPlatform*
 //RLP-124015
@@ -694,13 +693,13 @@ The Viewer role includes the permission.
 
 |*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
 
-Additional permission required:
+Additional permissions required:
 
 * `aiplatform.featurestores.list` 
 * `aiplatform.entityTypes.list` 
 * `aiplatform.entityTypes.getIamPolicy`
 
-The Viewer role includes the permission.
+The Viewer role includes the permissions.
 
 |*Google Vertex AI AIPlatform*
 //RLP-124013
@@ -712,6 +711,18 @@ Additional permission required:
 * `aiplatform.models.list` 
 
 The Viewer role includes the permission.
+
+|tt:[Update] *Google Deployment Manager*
+//RLP-123409
+
+|*gcloud-deployment-manager-deployment-manifest*
+
+Prisma Cloud will update the `Resource Name` and `Asset ID` fields in the backend for `gcloud-deployment-manager-deployment-manifest` API. 
+Due to this change, when you perform an RQL search query, you will be able to see a change in the `Resource Name` and `Asset ID` fields making it easier for you to identify the resources. Also, all the existing resources will be deleted, and then regenerated on the management console.
+
+Existing alerts corresponding to this resource are resolved as `Resource_Deleted`, and new alerts will be generated against any policy violations.
+
+*Impact—* None. Once the resources for `gcloud-deployment-manager-deployment-manifest` resume ingesting data, you will notice the correct the alert count in the console.
 
 |*OCI Block Storage*
 //RLP-122320
@@ -912,46 +923,4 @@ Response object property `risk.grade.options` is deprecated for the following re
 
 |===
 
-[#api-updates]
-=== API Updates
-
-[cols="20%a,20%a,60%a"]
-|===
-
-|*Topic*
-|*Before Fix*
-|*After Fix*
-
-|Resource / Asset ID Field
-|manifest-1701835039773
-|https://www.googleapis.com/deploymentmanager/v2/projects/pcs-policy-vac/global/deployments/example-deployment-nc1/manifests/manifest-1701835039773
-
-|Resource / Asset Name Field
-|manifest-1701835039773
-|example-deployment-nc1-manifest-1701835039773
-
-|Ingestion Behaviour
-|All Manifest resources that are part of a Deployment are ingested
-|* Only the latest Manifest resource of a Deployment is ingested
-
-* Older Manifest resources of a Deployment are deleted
-
-[NOTE]
-====
-Only latest manifest is ingested as the manifest has both the initial configuration and the fully-evaluated configuration of the deployment.
-====
-
-|Alert Behaviour
-|No OOB or Custom Policies are associated with this API
-|If alerts are open for a custom policy associated with this API, then after this fix,
-
-* Open Alerts are resolved as the previously ingested resources are deleted
-* Post ingestion of the latest resources, alerts are open again for the recently ingested resources
-
-|Resource Configuration
-|CSP Response is ingested as is - No changes
-|CSP Response is ingested as is  - No changes
-
-
-|===
 
