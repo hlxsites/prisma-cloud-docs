@@ -1,5 +1,5 @@
 
-== Administrator users are associated with API keys
+== OCI tenancy administrator users are associated with API keys
 
 === Policy Details
 
@@ -7,16 +7,16 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| TBD
+| 6db9b686-4d34-4bb4-8821-6f9dd7837f0b
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/oci/AdministratorUserNotAssociatedWithAPIKey.yaml[CKV2_OCI_1]
 
 |Severity
-|HIGH
+|MEDIUM
 
 |Subtype
-|Build
+|Run,Build
 
 |Frameworks
 |Terraform,TerraformPlan
@@ -34,5 +34,32 @@ This policy is checking to ensure that administrator users are not associated wi
 * *Resource:* oci_identity_group, oci_identity_user
 
 To fix this issue, do not associate API keys with administrator users. Instead, use instance principals or dynamic groups. Also, keep a regular rotation of API keys and deprecate old ones to maintain better security.
+
+[source,go]
+----
+resource "oci_identity_user" "user1" {
+    #Required
+    compartment_id = "var.tenancy_ocid"
+    description = "var.user_description"
+    name = "user1"
+
+    #Optional
+    defined_tags = {"Operations.CostCenter"= "42"}
+    email = "var.user_email"
+    freeform_tags = {"Department"= "Finance"}
+}
+
+- resource "oci_identity_api_key" "user1_api_key" {
+-     #Required
+-     key_value = "var.api_key_key_value"
+-     user_id = oci_identity_user.user1.id
+- }
+
+resource "oci_identity_user_group_membership" "user1_in_admin_group" {
+    #Required
+    group_id = oci_identity_group.admin_group.id
+    user_id = oci_identity_user.user1.id
+}
+----
 
 

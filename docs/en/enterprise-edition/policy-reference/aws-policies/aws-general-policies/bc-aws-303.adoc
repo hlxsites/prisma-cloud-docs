@@ -1,5 +1,4 @@
-
-== SSM documents are public
+== AWS SSM documents are public
 
 === Policy Details
 
@@ -7,16 +6,16 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| TBD
+| b7673d43-cf84-4cb9-9e00-60d99365f35f
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SSMDocumentsArePrivate.py[CKV_AWS_303]
 
 |Severity
-|HIGH
+|MEDIUM
 
 |Subtype
-|Build
+|Run,Build
 
 |Frameworks
 |Terraform,TerraformPlan
@@ -36,38 +35,20 @@ This policy is checking to ensure that SSM (Simple Systems Manager) documents ar
 
 To fix the issue, you should ensure that AWS SSM documents have permissions that restrict public access. You can modify the "permissions" argument of the aws_ssm_document resource to exclude "all", which represents public access. Here is an example:
 
-[source,hcl]
-----
-data "aws_iam_policy_document" "example" {
-  statement {
-    actions   = ["ssm:Get*"]
-    resources = ["*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::AccountID:role/example-role"]
-    }
-  }
-}
-  
+[source,go]
+----  
 resource "aws_ssm_document" "example" {
   name          = "example"
   document_type = "Command"
 
   permissions = {
     type = "Share"
-    account_ids = [data.aws_caller_identity.current.account_id]
+-   account_ids = All
++   account_ids = [data.aws_caller_identity.current.account_id]
   }
-
-  content = <<DOC
-{
-  "schemaVersion": "2.2",
-  "description": "Example",
-  "mainSteps": []
-}
-DOC
+  ...
 }
 ----
 
-This code is securing the SSM Document by restricting its access only to the specified AWS account. Instead of allowing public access with "all", it's specifying an AWS Role as the transfer. This means only those with that specific role in the specified AWS account can get this document. This helps limit who has access to this SSM Document, enhancing the security of your AWS resources.
+This code is securing the SSM Document by restricting its access only to the specified AWS account. Instead of allowing public access with "All", it's specifying an AWS Role as the transfer. This means only those with that specific role in the specified AWS account can get this document. This helps limit who has access to this SSM Document, enhancing the security of your AWS resources.
 
