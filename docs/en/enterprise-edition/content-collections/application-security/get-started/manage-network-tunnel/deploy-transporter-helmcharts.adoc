@@ -1,6 +1,6 @@
 == Set Up Transporter Network Tunnels using Helm Charts
 
-Setting up the Transporter network tunnel using Helm charts provides automated and efficient configuration management. Transporter can be deployed  in a new or existing cluster environment.
+Deploying the Transporter network tunnel using using Helm charts provides automated and efficient configuration management. Transporter can be deployed in a new or existing cluster environment.
 
 === System Architecture
 
@@ -8,7 +8,7 @@ The following diagram displays Kubernetes deployment options.
 +
 image::application-security/transporter-k8s-usecases.png[]
 +
-As displayed, you can encrypt traffic at either the pod or ingress level. You can omit encryption when dealing with both ingress and pod. You can also decide to interact directly with the service and pod without involving ingress.
+As displayed, deployment options include encrypting traffic at either the pod or ingress level. You can omit encryption when interacting with both ingress and pod. You can also choose to interact directly with the service and pod without involving ingress.
 
 === Resiliency and Redundancy Considerations
 
@@ -37,7 +37,7 @@ Before installing Transporter through either of the two methods outlined above, 
 
 * Create a Kubernetes resource for TLS secrets containing the certificate and private key when enabling TLS on the Transporter client pod or ingress controller
 +
-Example: To create a TLS secret named: *transporter-tls* from local private.key & public.crt files run: `kubectl create secret tls transporter-tls --key private.key --cert public.crt`.
+EXAMPLE: To create a TLS secret named: *transporter-tls* from local private.key & public.crt files run: `kubectl create secret tls transporter-tls --key private.key --cert public.crt`.
 
 * Download the Transporter Client Helm chart: The available image tags are located in the following https://hub.docker.com/r/bridgecrew/transporter/tags[Docker Hub repository]
 +
@@ -47,15 +47,17 @@ NOTE: To use a specific transporter image tag other than the latest version, unc
 
 [#install-helm-cli]
 
-=== Install Transporter through Helm install command on CLI
+=== Install Transporter using the Helm install command in the CLI
 
 [.procedure]
 
 . Generate the Transporter client ENVIRONMENT variables required for the Helm chart setup.
 
-.. Setup Transporter through the Prisma Cloud console  - see xref:deploy-transporter-docker.adoc[Set Up Transporter Network Tunnels using Docker Containers]. 
+.. Setup Transporter through the Prisma Cloud console. 
++
+NOTE: Refer to xref:deploy-transporter-docker.adoc[Set Up Transporter Network Tunnels using Docker Containers] for more information. 
 
-.. During the setup, select the *Docker commands* option from the *Run Image* field.
+.. During the setup, in the *Deply Client* step of the installation wizard, select the *Docker commands* option from the *Run Image* field.
 +
 image::application-security/docker-cmnds.png[]
 
@@ -78,21 +80,21 @@ helm install transporter \
     --set transporter.tls.enabled=true \
     --set "ingress.hosts[0].host=transporter.bridgecrew.cloud" \
     --set "ingress.hosts[0].paths[0].path='\'" \
-    --set tls.enabled=false \
-        --set tls.secretName="" \
-        --set tls.certificate="tls.crt" \
-        --set tls.key="tls.key" \
-        --set certificateAuthority.enabled=false \
-        --set certificateAuthority.socketCa="" \
-        --set certificateAuthority.httpsCa="" \
-        --set certificateAuthority.secretName="" \
+    --set tls.enabled=true \
+    --set tls.secretName="" \
+    --set tls.certificate="tls.crt" \
+    --set tls.key="tls.key" \
+    --set certificateAuthority.enabled=false \
+    --set certificateAuthority.socketCa="" \
+    --set certificateAuthority.httpsCa="" \
+    --set certificateAuthority.secretName="" \
 
 // --set transporter.tls.secretName=transporter-tls - this was previously before line 79
 ---
 +
 * *Deploy with Ingress Enabled and TLS Configured on Ingress (Pod TLS Disabled)*
 +
-Before running the `helm install` commands below you must uncomment the `ingress.tls` section of the `values.yaml` file.
+Requirement: Before running the `helm install` commands below, you must uncomment the `ingress.tls` section of the `values.yaml` file.
 +
 Run the following commands with the Transporter environment variables that were generated in *step 1* above in the folder where you extracted the Helm chart ZIP file:
 +
@@ -112,7 +114,7 @@ helm install transporter \
 
 . Modify Kubernetes *Service* settings as required.
 +
-Example: Configure service type & port settings. 
+EXAMPLE: Configure service type and port settings. 
 +
 [source,yml]
 ---
@@ -125,7 +127,7 @@ helm install transporter \
 
 . Modify the *Resources* section as required.
 +
-Make sure to uncomment the `resources.limits` section of the `values.yaml` before running helm install.
+Requirement: Make sure to uncomment the `resources.limits` section of the `values.yaml` before running `helm install`.
 +
 [source,yml]
 ---
@@ -140,7 +142,7 @@ helm install transporter \
 
 . Verify successful deployment by inspecting the Transporter logs.
 +
-Example: 
+EXAMPLE: 
 +
 image::application-security/transporter-logs1.png[]
 
@@ -169,7 +171,7 @@ NOTE: The Transporter URL is used by the VCS to access the transporter client. E
 +
 Prerequisite: To enable TLS on the Transporter client pod or ingress controller you need to create a TLS secret Kubernetes resource with the certificate and private key.
 +
-Example: To create a TLS secret named: _transporter-tls_ from *local private.key* and *public.crt* files run: `kubectl create secret tls transporter-tls --key private.key --cert public.crt`.
+EXAMPLE: To create a TLS secret named: _transporter-tls_ from *local private.key* and *public.crt* files run: `kubectl create secret tls transporter-tls --key private.key --cert public.crt`.
 +
 To set up TLS on the pod configure the following settings:
 +
@@ -192,9 +194,9 @@ To set up an ingress rule, configure the *ingress* section in the `values.yaml` 
 
 . Modify Kubernetes Service settings under the *service* section of the `values.yaml` file. 
 +
-For instance, if you want to switch from using the ClusterIP service type to the LoadBalancer service type, make the necessary changes in the `values.yaml` file.
+For example, if you want to switch from using the ClusterIP service type to the LoadBalancer service type, make the necessary changes in the `values.yaml` file.
 +
-Example: Set the service to a different type (e.g. LoadBalancer) and port (e.g. 8000), and change the service section’s type and port values:
+EXAMPLE: Set the service to a different type (LoadBalancer) and port (8000):
 +
 [source,yml ]
 ---
@@ -209,7 +211,7 @@ NOTE: See prerequisites above for hardware limitations.
 
 . Install the Helm chart: run: `helm install transporter` in the folder where you extracted the Helm chart ZIP file.
 
-. Verify successful deployment by inspecting the Transporter logs see _step 5_ of <<install-yml,Install Transporter through values.yaml>>above.
+. Verify successful deployment by inspecting the Transporter logs. Refer to _step 5_ of <<install-yml,Install Transporter through values.yaml>>above.
 
 
 
