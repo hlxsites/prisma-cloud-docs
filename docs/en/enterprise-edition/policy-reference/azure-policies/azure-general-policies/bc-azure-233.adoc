@@ -1,0 +1,53 @@
+
+== Azure Container Registry (ACR) is not zone redundant
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/ACREnableZoneRedundancy.py[CKV_AZURE_233]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the Azure Container Registry (ACR) is zone redundant. Zone redundancy refers to the practice of spreading your resources across multiple zones within the same region to ensure high availability and resilience against zone-wide failures. If the ACR is not zone redundant, it could become unavailable if there is a problem in the zone where it is situated. This would disrupt any services that rely on it, potentially causing significant business disruptions. Therefore, a non-zone redundant ACR represents a risk to business continuity and resilience.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_container_registry
+* *Arguments:* zone_redundancy_enabled
+
+To fix this issue, you need to set the `zone_redundancy_enabled` attribute to `true` in your Azure Container Registry (ACR) resource. 
+
+[source,hcl]
+----
+resource "azurerm_container_registry" "acr" {
+  ...
+  sku                 = "Premium"
+  ...
+  georeplications {
+    ...
+    zone_redundancy_enabled = true
+  }
+}
+----
+
+Enabling `zone_redundancy_enabled` will ensure that the Azure Container Registry (ACR) is zone redundant. This means that the ACR data will be replicated across different zones within the region, thereby providing higher availability and durability. In case of a single zone failure, the data remains safe in the other zones, thus increasing resilience to zonal failures.
+

@@ -1,0 +1,57 @@
+
+== Azure PostgreSQL servers not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| d670580e-266a-44bb-9f31-6d3dd548eb68
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzurePostgreSQLserverConfigPrivEndpt.yaml[CKV2_AZURE_42]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy identifies Azure PostgreSQL database servers that are not configured with private endpoint. Private endpoint connections enforce secure communication by enabling private connectivity to Azure Database for PostgreSQL. Configuring a private endpoint enables access to traffic coming from only known networks and prevents access from malicious or unknown IP addresses which includes IP addresses within Azure. It is recommended to create private endpoint for secure communication for your Azure PostgreSQL database.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_postgresql_server, azurerm_private_endpoint
+* *Arguments:* private_connection_resource_id
+
+To fix the issue, you need to configure Azure PostgreSQL Server with a private endpoint. 
+
+[source,hcl]
+----
+resource "azurerm_private_endpoint" "example" {
+  name                 = "postgresqlprivateendpoint"
+  location             = azurerm_resource_group.example.location
+  resource_group_name  = azurerm_resource_group.example.name
+  subnet_id            = azure_subnet.example.id
+
+  private_service_connection {
+    name                           = "postgresqlprivateserviceconnection"
+    private_connection_resource_id = azurerm_postgresql_server.example.id
+    subresource_name               = "postgresqlServer"
+    is_manual_connection           = false
+  }
+}
+----
+
+This code is secure because it configures the PostgreSQL server to use a private endpoint, thus restricting the access to specific networks thereby minimizing the risk of exposure to potential attacks. A private endpoint uses a private IP address from your VNet, effectively bringing the service into your VNet. All traffic to the service can be routed through the private endpoint, so no gateways, NAT devices, or encrypted Express Route or VPN connections are necessary. This can improve security by eliminating exposure to the public internet.
+

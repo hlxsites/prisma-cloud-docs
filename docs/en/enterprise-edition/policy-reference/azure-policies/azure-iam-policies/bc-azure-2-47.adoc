@@ -1,0 +1,50 @@
+
+== Storage account is configured with blob anonymous access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureStorageAccConfigWithoutBlobAnonymousAccess.yaml[CKV2_AZURE_47]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is identifying whether a storage account has been configured to allow anonymous access to blob data. Anonymous access to blob data means anyone on the internet can retrieve or view data without requiring any form of authentication. This is potentially dangerous because it exposes sensitive data to the public, and it could lead to data leaks and breaches of privacy. Hence, it is critical to ensure storage accounts are not configured with blob anonymous access to safeguard information and maintain data privacy.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account
+* *Arguments:* allow_nested_items_to_be_public
+
+The problem here is that the Azure storage account is configured with blob anonymous access. Enabling anonymous access to blob content in a storage account allows anyone to read the blob content. This is insecure as sensitive data may be exposed.
+
+To fix the issue, ensure that anonymous access to the blob content of your storage account is disabled. You can configure this by setting `allow_nested_items_to_be_public` attribute to `false`.
+
+[source,hcl]
+----
+resource "azurerm_storage_account" "storage_account" {
+    ...
+    allow_nested_items_to_be_public = false
+}
+----
+
+The code above creates a Azure storage account with `allow_nested_items_to_be_public` set to `false`. Therefore, anonymous access to the blob content is disabled, which will make the storage account secure from unauthorized access. This ensures that no one can read blob content without proper authentication and authorization.
+

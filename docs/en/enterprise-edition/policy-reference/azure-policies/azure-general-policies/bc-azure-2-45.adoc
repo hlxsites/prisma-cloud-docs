@@ -1,0 +1,63 @@
+
+== Azure SQL Database server not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 857ef0a9-b6e1-4a2a-9ac5-6de2ef0052ec
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMSSQLserverConfigPrivEndpt.yaml[CKV2_AZURE_45]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy identifies Azure SQL database servers that are not configured with private endpoint. Private endpoint connections enforce secure communication by enabling private connectivity to Azure Database for SQL. Configuring a private endpoint enables access to traffic coming from only known networks and prevents access from malicious or unknown IP addresses which includes IP addresses within Azure. It is recommended to create private endpoint for secure communication for your Azure SQL database.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mssql_server, azurerm_private_endpoint
+* *Arguments:* private_connection_resource_id
+
+To fix this issue, you need to configure your Microsoft SQL server with a private endpoint. This ensures your server is not publicly accessible and can only be accessed from your virtual network.
+
+The following is a script to create a Microsoft SQL server with a private endpoint. 
+
+[source,hcl]
+----
+resource "azurerm_private_endpoint" "example" {
+  name                = "example-endpoint"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  subnet_id           = azurerm_subnet.example.id
+
+  private_service_connection {
+    name                           = "example-connection"
+    is_manual_connection           = false
+    private_connection_resource_id = azurerm_sql_server.example.id
+    subresource_name               = "sqlServer"
+  }
+}
+
+resource "azurerm_sql_server" "example" {
+  ...
+}
+----
+
+The above code is secure because the SQL server is configured with a private endpoint. Data transferred between this SQL server and other resources in the same virtual network will travel exclusively over the Microsoft network. It highly secures your network from the public internet.
+

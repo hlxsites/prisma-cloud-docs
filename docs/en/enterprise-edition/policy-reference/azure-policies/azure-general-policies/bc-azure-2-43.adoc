@@ -1,0 +1,57 @@
+
+== Azure Database for MariaDB not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4c9e653c-2110-4719-b333-be3d8d078b71
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMariaDBserverConfigPrivEndpt.yaml[CKV2_AZURE_43]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy identifies Azure MariaDB database servers that are not configured with private endpoint. Private endpoint connections enforce secure communication by enabling private connectivity to Azure Database for MariaDB. Configuring a private endpoint enables access to traffic coming from only known networks and prevents access from malicious or unknown IP addresses which includes IP addresses within Azure. It is recommended to create private endpoint for secure communication for your Azure MariaDB database.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mariadb_server, azurerm_private_endpoint
+* *Arguments:* private_connection_resource_id
+
+To address this policy, you need to make sure that the Azure MariaDB server is configured with a private endpoint. This can be accomplished by adding a `private_connection_resource_id` connection to the azurerm_mariadb_server service.
+
+[source,hcl]
+----
+resource "azurerm_mariadb_server" "example" {
+  ...
+}
+
+resource "azurerm_private_endpoint" "example" {
+  ...
+
+  private_service_connection {
+    ...
+    private_connection_resource_id = azurerm_mariadb_server.pass.id
+    ...
+  }
+}
+----
+
+The above code makes sure that the Azure MariaDB server is secured because it enables the private endpoint connection. A private endpoint allows secure connections from clients on the same Azure virtual network or peered virtual networks, ensuring that access to the MariaDB server is strictly controlled and not exposed to the public internet. This will help protect against data leakage and external threats.
+
