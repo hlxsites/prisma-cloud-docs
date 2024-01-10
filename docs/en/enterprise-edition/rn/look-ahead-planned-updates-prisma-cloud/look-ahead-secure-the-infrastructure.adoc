@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.1.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+Read this section to learn about what is planned in the 24.1.2 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
 
 [NOTE]
 ====
@@ -11,6 +11,7 @@ The details and functionality listed below are a preview and the actual release 
 ====
 
 * <<announcement>>
+* <<changes-in-existing-behavior>>
 * <<new-ips-for-runtime>>
 * <<new-policies>>
 * <<policy-updates>>
@@ -34,7 +35,7 @@ The details and functionality listed below are a preview and the actual release 
 
 image::darwin-release.gif[]
 
-The rollout for existing customers will start on October 18, 2023 through early February 2024, and your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities] during this period. 
+The rollout for existing customers started on October 18, 2023 and will run through February 2024. Your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities] during this period. 
 
 Here is the roll out schedule for all Prisma Cloud environments except app.gov. Please connect with your Customer Success team for more details.
 
@@ -42,13 +43,35 @@ Here is the roll out schedule for all Prisma Cloud environments except app.gov. 
 
 //* 23.12.1 (Nov 29-Dec 7) - app, app3, app.eu, app2.eu
 
-* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
+//* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
 
 * 24.1.2 (Jan 29-Feb 6) - app.cn
 
 When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
 
 |===
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+
+[cols="50%a,50%a"]
+|===
+|FEATURE
+|DESCRIPTION
+
+|*S3 Flow Logs with Hourly Partition*
+
+tt:[This change was first announced in the look ahead that was published with the 23.1.1 release.]
+//RLP-76433
+
+|If you currently ingest AWS flow logs using S3 with the 24-hour partition, you need to change it to the hourly partition.
+
+To make this change, https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-aws/configure-flow-logs[Configure Flow Logs] to use the hourly partition and enable the required additional fields.
+
+*Impact*— VPC Flow logs with partitions set to *Every 24 hours (default)* will be disabled on January 30th, 2024. As a result, you will no longer be able to monitor or receive alerts for these logs. If you have any questions, contact your Prisma Cloud Customer Success Representative immediately.
+
+|===
+
 
 [#new-ips-for-runtime]
 === New IPs for Runtime Security
@@ -141,7 +164,7 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 +
 The *Master* branch represents rrent Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.1.1
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.1.2
 
 . Review the updates.
 +
@@ -158,200 +181,52 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |POLICY UPDATES
 |DESCRIPTION
 
-2+|*Policy Updates—RQL*
+|*Azure Function App authentication is off*
+//RLP-126199
 
-|*AWS Elasticsearch domain publicly accessible*
-//RLP-122897
-|*Changes—* The policy RQL will be updated to reduce to false positives.
+|*Changes—* The policy RQL will be updated to only report Function Apps for which authentication is disabled. Azure Function App Authentication prevents anonymous HTTP requests from reaching the API app or authenticates token-enabled requests before they reach the API app, but not the Logic app or Web App resources created in Azure.
+
+*Severity—* Low
+
+*Policy Type—* Config
 
 *Current RQL—*
 
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and (endpoints does not exist or endpoints.vpc does not exist or endpoints.vpc is empty)
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and config.siteAuthEnabled is false
 ----
 
 *Updated RQL—*
 
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and vpcoptions.vpcid does not exist
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and kind does not contain workflowapp and kind does not equal app and config.siteAuthEnabled is false
 ----
 
-*Impact—* No Impact
+*Impact—* Low. Existing alerts generated for Logic App and Web App will be resolved and new alerts will be generated.
 
-*Policy Type—* Config
-
-*Severity—* Medium 
-
-|*Azure Storage account is not configured with private endpoint connection*
-//RLP-120048
-|*Changes—* The policy RQL will be updated to report Azure storage accounts that allow all networks with the `IPrule` and `VirtualNetworkRule` not being empty. 
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and networkRuleSet.virtualNetworkRules is empty and networkRuleSet.ipRules[*] is empty and properties.privateEndpointConnections[*] is empty
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
-----
-
-*Impact—* Low. Alerts generated due to retained `IPrule` and `VirtualNetworkRule` will be triggered.
-
-*Policy Type—* Config
-
-*Severity—* Medium 
-
-|*AWS S3 bucket publicly readable*
-//RLP-104677
-|*Changes—* The policy remediation steps and RQL will be updated to check for Authenticated User with read access. 
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = ((((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false)) and acl.grantsAsList[?any(grantee equals AllUsers and permission is member of (ReadAcp,Read,FullControl))] exists) or ((policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))) and (policy.Statement[?any(Effect equals Allow and (Principal equals * or Principal.AWS equals *) and (Action contains s3:* or Action contains s3:Get or Action contains s3:List) and (Condition does not exist))] exists))) and websiteConfiguration does not exist
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = ((((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false)) and (acl.grantsAsList[?any(grantee equals AllUsers and permission is member of (ReadAcp,Read,FullControl))] exists or acl.grantsAsList[?any(grantee equals AuthenticatedUsers and permission is member of (ReadAcp,Read,FullControl))] exists)) or ((policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))) and (policy.Statement[?any(Effect equals Allow and (Principal equals * or Principal.AWS equals *) and (Action contains s3:* or Action contains s3:Get or Action contains s3:List) and (Condition does not exist))] exists))) and websiteConfiguration does not exist
-----
-
-*Impact—* Low. New alerts will be generated when Authenticated users have read permissions.
-
-*Policy Type—* Config
-
-*Severity—* High 
-
-
-
-2+|*Policy Updates—Metadata*
-
-|*GCP VM instance using a default service account with full access to all Cloud APIs*
-//RLP-120380
-|*Changes—* The policy name, description, and recommendation steps will be updated. 
-
-*Current Policy Name—* GCP VM instance using a default service account with full access to all Cloud APIs
-
-*Updated Policy Name—* GCP VM instance using a default service account with Cloud Platform access scope
-
-*Updated Description—* identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To compliant with the principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
-
-*Impact—* No impact, as this is a metadata change.
-
-*Policy Type—* Config
-
-*Severity—* Medium 
 
 |===
 
 [#policy-updates-iam]
 === Policy Updates - IAM
 
-The following IAM polices will have updated names and description.
+//RLP-126448
 
-[cols="20%a,30%a,20%a,30%a"]
+[cols="30%a, 35%a, 35%a"]
 |===
-|*Old Policy Name*
-|*Old Policy Description*
-|*New Policy Name*
-|*New Policy Description*
+|*Policy Name*
+|*Old RQL*
+|*New RQL*
 
-|AWS EC2 instance with IAM permissions management access level
-|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.AWS IAM permissions management access level that are risky for AWS EC2 instances. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of permissions management access to minimize security risks.
-|AWS EC2 Instance with IAM policy management permissions
-|This policy identifies IAM permissions that allow EC2 instances to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|AWS EC2 instance with IAM write access level
-|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS EC2 Instance with IAM write permissions
-|This policy identifies IAM permissions that allow EC2 instances to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|AWS EC2 instance with org write access level
-|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS EC2 Instance with AWS Organization management permissions
-|This policy identifies IAM permissions that allow EC2 instances to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|AWS Lambda Function with IAM permissions management access level
-|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Lambda Function with IAM policy management permissions
-|This policy identifies IAM permissions that allow Lambda functions to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|AWS Lambda Function with IAM write access level
-|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Lambda Function with IAM write permissions
-|This policy identifies IAM permissions that allow Lambda functions to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|AWS Lambda Function with org write access level
-|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Lambda Function with AWS Organization management permissions
-|This policy identifies IAM permissions that allow Lambda functions to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|Okta User with IAM permissions management access level
-|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Okta User with IAM policy management permissions
-|This policy identifies IAM permissions that allow Okta users to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|Okta User with IAM write access level
-|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Okta User with IAM write permissions
-|This policy identifies IAM permissions that allow Okta users to perform write operations for IAM, such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|Okta User with org write access level
-|This policy identifies org write access that is defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Okta User with AWS Organization management permissions
-|This policy identifies IAM permissions that allow Okta users to manage AWS Organizations, such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|ECS Task Definition with IAM permissions management access level
-|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS ECS Task Definition with IAM policy management permissions
-|This policy identifies IAM permissions that allow ECS task definitions to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|ECS Task Definition with IAM write access level
-|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks
-|AWS ECS Task Definition with IAM write permissions
-|This policy identifies IAM permissions that allow ECS task definitions to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|ECS Task Definition with org write access level
-|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS ECS Task Definition with AWS Organization management permissions
-|This policy identifies IAM permissions that allow ECS task definitions to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|IAM User with IAM permissions management access level
-|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS IAM User with IAM policy management permissions
-|This policy identifies IAM permissions that allow IAM users to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|IAM User with IAM write access level
-|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS IAM User with IAM write permissions
-|This policy identifies IAM permissions that allow IAM users to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|IAM User with org write access level
-|This policy identifies org write access that is defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS IAM User with AWS Organization management permissions
-|This policy identifies IAM permissions that allow IAM users to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|Elasticbeanstalk Platform with IAM permissions management access level
-|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Elastic Beanstalk Platform with IAM policy management permissions
-|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|Elasticbeanstalk Platform with IAM write access level
-|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Elastic Beanstalk Platform with IAM write permissions
-|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
-
-|Elasticbeanstalk Platform with org write access level
-|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
-|AWS Elastic Beanstalk Platform with AWS Organization management permissions
-|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+|*AWS cross-account resource access through IAM policies*
+|----
+config from iam where dest.cloud.type = 'AWS' and source.cloud.account != dest.cloud.account
+----
+|----
+config from iam where dest.cloud.type = 'AWS' and source.cloud.account != dest.cloud.account and dest.cloud.account != '*'
+----
 
 |===
-
 
 
 [#api-ingestions]
@@ -361,227 +236,6 @@ The following IAM polices will have updated names and description.
 |===
 |SERVICE
 |API DETAILS
-
-|*Amazon EC2*
-//RLP-120745
-|*aws-ec2-vpc-endpoint-service*
-
-Additional permission required:
-
-* `ec2:DescribeVpcEndpointServices`
-
-The Security Audit Policy role includes the permission. 
-
-|*AWS Backup*
-//RLP-125127
-
-|*aws-backup-protected-resources*
-
-Additional permission required:
-
-* `backup:ListProtectedResources`
-
-You must manually add the above permissions to the CFT template to enable it.
-
-|*AWS Glue*
-//RLP-125128
-
-|*aws-glue-job*
-
-Additional permissions required:
-
-* `glue:ListJobs`
-* `glue:GetJob`
-
-The Security Audit role only includes the `glue:GetJob` permission. You must manually add the `glue:ListJobs` permission to the CFT template to enable the permission.
-
-
-|*AWS Glue*
-//RLP-125110
-
-|*aws-glue-schema*
-
-Additional permissions required:
-
-* `glue:ListSchemas`
-* `glue:GetSchema`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-|*AWS CodeCommit*
-//RLP-120750
-
-|*aws-code-commit-repository*
-
-Additional permissions required:
-
-* `codecommit:ListRepositories`
-* `codecommit:GetRepository`
-
-The Security Audit Policy role includes the permissions.
-
-|*AWS CodeCommit*
-//RLP-120755
-
-|*aws-code-commit-approval-rule-template*
-
-Additional permissions required:
-
-* `codecommit:ListApprovalRuleTemplates`
-* `codecommit:GetApprovalRuleTemplate`
-
-The Security Audit role only includes the `codecommit:ListApprovalRuleTemplates` permission. You must manually add the `codecommit:GetApprovalRuleTemplate` permission to the CFT template to enable the permission.
-
-|*Amazon EC2 Image Builder*
-//RLP-123966
-
-|*aws-imagebuilder-component*
-
-Additional permissions required:
-
-* `imagebuilder:ListComponents`
-* `imagebuilder:GetComponent`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-|*Amazon EC2 Image Builder*
-//RLP-123953
-
-|*aws-imagebuilder-image-recipe*
-
-Additional permissions required:
-
-* `imagebuilder:ListImageRecipes`
-* `imagebuilder:GetImageRecipe`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-|*Amazon EC2 Image Builder*
-//RLP-123951
-
-|*aws-imagebuilder-image-pipeline*
-
-Additional permissions required:
-
-* `imagebuilder:ListImagePipelines`
-* `imagebuilder:GetImagePipeline`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-|*Amazon EC2 Image Builder*
-//RLP-123946
-
-|*aws-imagebuilder-infrastructure-configuration*
-
-Additional permissions required:
-
-* `imagebuilder:ListInfrastructureConfigurations`
-* `imagebuilder:GetInfrastructureConfiguration`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-
-|*Amazon EMR*
-//RLP-118746
-
-|*aws-emr-instance*
-
-Additional permissions required:
-
-* `elasticmapreduce:ListClusters`
-* `elasticmapreduce:ListInstances`
-
-The Security Audit role includes the permissions.
-
-|*AWS CodeBuild*
-//RLP-118748
-
-|*aws-code-build-source-credential*
-
-Additional permission required:
-
-* `codebuild:ListSourceCredentials`
-
-You must manually add the above permission to the CFT template to enable it.
-
-|*AWS DataSync*
-//RLP-122550
-
-|*aws-datasync-agent*
-
-Additional permissions required:
-
-* `datasync:ListAgents`
-* `datasync:DescribeAgent`
-
-The Security Audit role includes the permissions.
-
-
-|*AWS Elastic Disaster Recovery*
-//RLP-122569
-
-|*aws-drs-job*
-
-Additional permission required:
-
-* `drs:DescribeJobs`
-
-You must manually add the above permission to the CFT template to enable it.
-
-
-|*AWS Elastic Disaster Recovery*
-//RLP-118753
-
-|*aws-drs-source-server*
-
-Additional permission required:
-
-* `drs:DescribeSourceServers`
-
-You must manually add the `drs:DescribeSourceServers` permission to the CFT template to enable the permission.
-
-|*AWS Elastic Disaster Recovery*
-//RLP-118756
-
-|*aws-drs-replication-configuration*
-
-Additional permissions required:
-
-* `drs:DescribeSourceServers`
-* `drs:GetReplicationConfiguration`
-
-You must manually add the permissions above to the CFT template to enable it.
-
-|*Amazon CodePipeline*
-//RLP-120757
-
-|*aws-code-pipeline-webhook*
-
-Additional permission required:
-
-* `codepipeline:ListWebhooks`
-
-You must manually add the `codepipeline:ListWebhooks` permission to the CFT template to enable it.
-
-|*AWS Config*
-//RLP-122576
-|*aws-configservice-aggregator*
-
-Additional permission required:
-
-* `config:DescribeConfigurationAggregators`
-
-The Security Audit role includes the permission.
-
-|*AWS Batch*
-//RLP-122581
-|*aws-batch-job-definition*
-
-Additional permission required:
-
-* `batch:DescribeJobDefinitions`
-
-The Security Audit role includes the permission.
 
 |*Azure Cache*
 //RLP-119062
@@ -594,278 +248,6 @@ Additional permissions required:
 * `Microsoft.Insights/DiagnosticSettings/Read`
 
 The Reader role includes the permissions.
-
-|*Azure Log Analytics*
-//RLP-120365
-
-|*azure-log-analytics-clusters*
-
-Additional permission required:
-
-* `Microsoft.OperationalInsights/clusters/read`
-
-The Reader role includes the permission.
-
-|*Google Cloud VMware Engine*
-//RLP-119350
-
-|*gcloud-vmware-engine-private-cloud*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.privateClouds.getIamPolicy`
-
-The Viewer role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119358
-
-|*gcloud-vmware-engine-cluster*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.clusters.list`
-* `vmwareengine.clusters.getIamPolicy` 
- 
-The Viewer role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119359
-
-|*gcloud-vmware-engine-hcx-activation-key*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.hcxActivationKeys.list`
-* `vmwareengine.hcxActivationKeys.getIamPolicy` 
- 
-The Viewer role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119360
-
-|*gcloud-vmware-engine-subnet*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.subnets.list` 
- 
-The Viewer role includes the permissions.
-
-|*Google Vertex AI AIPlatform*
-//RLP-121321
-
-|*gcloud-vertex-ai-aiplatform-specialist-pool*
-
-Additional permissions required:
-
-* `aiplatform.specialistPools.list`
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-121320
-
-|*gcloud-vertex-ai-aiplatform-dataset*
-
-Additional permissions required:
-
-* `aiplatform.datasets.list`
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-121319
-
-|*gcloud-vertex-ai-aiplatform-hyperparameter-tuning-job*
-
-Additional permissions required:
-
-* `aiplatform.hyperparameterTuningJobs.list`
-
-The Viewer role includes the permission.
-
-|*Google Cloud VMware Engine*
-//RLP-121318
-
-|*gcloud-vmware-engine-network-policy*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list`
-* `vmwareengine.networkPolicies.list`
-
-The Viewer role includes the permissions.
-
-|*Google Vertex AI AIPlatform*
-//RLP-121267
-
-|*gcloud-vertex-ai-aiplatform-custom-job*
-
-Additional permission required:
-
-* `aiplatform.customJobs.list`
-
-The Viewer role includes the permission.
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-121265
-
-|*gcloud-vertex-ai-aiplatform-training-pipeline*
-
-Additional permission required:
-
-* `aiplatform.trainingPipelines.list`
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-121266
-
-|*gcloud-vertex-ai-aiplatform-endpoint*
-
-Additional permission required:
-
-* `aiplatform.endpoints.list`
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-121262
-
-|*gcloud-vertex-ai-aiplatform-pipeline-job*
-
-Additional permission required:
-
-* `aiplatform.pipelineJobs.list`
-
-The Viewer role includes the permission.
-
-|*Google Cloud VMware Engine*
-//RLP-121318
-
-|*gcloud-vmware-engine-network*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list`
-* `vmwareengine.vmwareEngineNetworks.list`
-
-The Viewer role includes the permissions.
-
-|*Google Vertex AI AIPlatform*
-//RLP-124015
-
-|*gcloud-vertex-ai-aiplatform-index*
-
-Additional permission required:
-
-* `aiplatform.indexes.list`
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-124014
-
-|*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
-
-Additional permissions required:
-
-* `aiplatform.featurestores.list` 
-* `aiplatform.entityTypes.list` 
-* `aiplatform.entityTypes.getIamPolicy`
-
-The Viewer role includes the permissions.
-
-|*Google Vertex AI AIPlatform*
-//RLP-124013
-
-|*gcloud-vertex-ai-aiplatform-model*
-
-Additional permission required:
-
-* `aiplatform.models.list` 
-
-The Viewer role includes the permission.
-
-|tt:[Update] *Google Deployment Manager*
-//RLP-123409
-
-|*gcloud-deployment-manager-deployment-manifest*
-
-Prisma Cloud will update the `Resource Name` and `Asset ID` fields in the backend for `gcloud-deployment-manager-deployment-manifest` API. 
-Due to this change, when you perform an RQL search query, you will be able to see a change in the `Resource Name` and `Asset ID` fields making it easier for you to identify the resources. Also, all the existing resources will be deleted, and then regenerated on the management console.
-
-Existing alerts corresponding to this resource will be resolved as `Resource_Deleted`, and new alerts will be generated against any policy violations.
-
-*Impact—* None. Once the resources for `gcloud-deployment-manager-deployment-manifest` resume ingesting data, you will notice the correct alert count in the console.
-
-|*OCI Block Storage*
-//RLP-122320
-
-|*oci-block-storage-volume-attachment*
-
-Additional permissions required:
-
-* `VOLUME_ATTACHMENT_INSPECT`
-* `VOLUME_ATTACHMENT_READ`
-
-You must update the Terraform template to enable the permissions.
-
-|*OCI Data Safe*
-//RLP-120439
-
-|*oci-data-safe-configuration*
-
-Additional permissions required:
-
-* `DATA_SAFE_READ`
-
-You must update the Terraform template to enable the permission.
-
-|tt:[Update] *OCI Data Safe*
-//RLP-121486
-
-|*oci-data-safe-target-database*
-
-The resource JSON for this API no longer includes the `timeUpdated` field.
-
-
-|tt:[Update] *OCI Database*
-//RLP-121486
-
-|*oci-database-autonomous-database*
-
-The resource JSON for this API no longer includes the `actualUsedDataStorageSizeInTBs` field.
-
-|tt:[Update] *OCI MySQL*
-//RLP-121486
-
-|*oci-mysql-dbsystems*
-
-The resource JSON for this API no longer includes the `timeUpdated` field.
-
-|*OCI Service Catalog*
-//RLP-102261
-
-|*oci-servicecatalog-catalog*
-
-Additional permissions required:
-
-* `CATALOG_INSPECT`
-* `CATALOG_READ`
-
-You must update the Terraform template to enable the permissions.
-
 
 |===
 
@@ -947,7 +329,7 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 * https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-3/[post /v3/inventory/trend]
 
 |tt:[*Prisma Cloud CSPM REST API for Resources*]
-//RLP-114802
+//RLP-114802, RLP-115752
 
 * https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
 * https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
@@ -955,7 +337,7 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 
 |23.9.2
 
-|24.1.1
+|24.2.1
 
 | https://pan.dev/prisma-cloud/api/cspm/asset-2/#get-asset[POST /uai/v1/asset]
 
