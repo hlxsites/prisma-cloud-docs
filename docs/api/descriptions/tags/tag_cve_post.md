@@ -159,6 +159,8 @@ Consider the following scenarios when you want to tag a vulnerability to all pac
 2. `{"id":"CVE-1","packageName":"pkg","resourceType":"image","resources":["library/python:latest"],"tag":"New Tag"}`
 3. `{"id":"CVE-1","packageName":"pkg","resourceType":"host","resources":["devbox"],"tag":"New Tag"}`
 4. `{"id":"CVE-1","packageName":"pkg","resourceType":"image","resources":["node:latest"],"tag":"New Tag"}`
+
+
 Will result in the following tag assignments:
 1. The first invocation creates the entry: "In progress", "CVE-1", "pkg", "image", "library/python:latest"
 2. The second invocation creates a second (new) entry: "New Tag", "CVE-1", "pkg","image", "library/python:latest"
