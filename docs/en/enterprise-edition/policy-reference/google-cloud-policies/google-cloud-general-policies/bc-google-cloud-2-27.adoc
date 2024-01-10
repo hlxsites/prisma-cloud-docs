@@ -1,0 +1,55 @@
+== Vertex AI workbench instance disks not encrypted with a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexWorkbenchInstanceEncryptedWithCMK.yaml[CKV2_GCP_27]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is evaluating whether Vertex AI workbench instance disks in Google Cloud Platform (GCP) are encrypted with a Customer Managed Key (CMK). The use of a CMK provides an additional level of control over cryptographic keys to maintain high security. If this policy is not followed, the default Google-managed option would be used, meaning Google would control the keys. In cases where strict compliance and data ownership is required, allowing Google to manage the encryption key may not be preferential. Hence, not employing a CMK can potentially lessen control over data security and may lead to data being less secure.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_workbench_instance
+* *Arguments:* gce_setup.boot_disk.kms_key, gce_setup.data_disks.kms_key
+
+To fix the issue, you need to use a Customer Managed Key (CMK) for disk encryption in the Vertex AI workbench instance.
+
+[source,hcl]
+----
+resource "google_workbench_instance" "example" {
+  ...
+  
+  gce_setup {
+    ...
+    boot_disk {
+      ...
+      kms_key = google_kms_crypto_key.example.id
+    }
+  }
+  ...
+}
+----
+
+The modified code ensures the disk used by the Vertex AI workbench instance is encrypted with a CMK. Google Cloud Platform (GCP) gives you control over managing cryptographic keys, which are used to protect your data. The disk is not only encrypted, but the key used for encryption is also under your control, enhancing the security of your data.
+

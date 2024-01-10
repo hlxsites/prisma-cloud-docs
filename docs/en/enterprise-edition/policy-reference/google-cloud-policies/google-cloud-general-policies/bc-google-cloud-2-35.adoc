@@ -1,0 +1,57 @@
+
+== Vertex AI runtime is not encrypted with a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexRuntimeEncryptedWithCMK.yaml[CKV2_GCP_35]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy's function is to assure that the runtime for Vertex AI, a Google Cloud service focused on machine learning, is encrypted using a Customer Managed Key, or CMK, rather than a default or auto-generated key.
+
+The lack of such encryption could expose data to security threats. A CMK offers an additional protection layer, since the customer fully manages the key's rotation, revocation, and audit logging. If one doesn't use a CMK, control over these elements is lost, increasing the risk of unauthorized access or data breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_notebooks_runtime
+* *Arguments:* virtual_machine.virtual_machine_config.encryption_config.kms_key
+
+To fix this issue, you need to ensure that the Vertex AI runtime is set to be encrypted with a customer-managed key (CMK).
+
+[source,hcl]
+----
+resource "google_notebooks_runtime" "example" {
+  ...
+  virtual_machine {
+    virtual_machine_config {
+      encryption_config {
+        kms_key = "an-actual-key"
+      }
+      ...
+    }
+  }
+}
+----
+
+In general, managing keys on your own adds an extra layer of security to your applications. It also gives you more control over how and when those keys are used and retired.
+

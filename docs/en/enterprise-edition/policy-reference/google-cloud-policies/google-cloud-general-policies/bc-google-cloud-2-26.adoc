@@ -1,0 +1,50 @@
+
+== Vertex AI tensorboard does not use a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexAITensorboardEncryptedWithCMK.yaml[CKV2_GCP_26]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that Vertex AI tensorboard in the Google Cloud Platform (GCP) is using a Customer Managed Key (CMK) for encryption. Not using a CMK exposes the system to potential data breaches because the default automated key management might not meet the specific security needs of the business. With CMKs, users have granular control including determining when and where the keys are used, and who can access them.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_vertex_ai_tensorboard
+* *Arguments:* encryption_spec
+
+You must ensure that you use a Customer Managed Key (CMK) for your Vertex AI tensorboard in your Terraform script. 
+
+[source,hcl]
+----
+resource "google_vertex_ai_tensorboard" "example" {
+  ...
+  encryption_spec {
+    kms_key_name = "some_name"
+  }
+}
+----
+
+The above script ensures the security of your Vertex AI tensorboard by specifying the use of Customer Managed Key (CMK), which is referenced in the `encryption_spec` block of `google_vertex_ai_tensorboard`. Customer Managed Key (CMK) provides advanced security features such as the ability to control who can manage and access your data.
+

@@ -1,0 +1,49 @@
+
+== Document AI Processors not encrypted with a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPDocumentAIProcessorEncryptedWithCMK.yaml[CKV2_GCP_22]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Document AI Processors are encrypted with a Customer Managed Key (CMK). The purpose of this is to protect sensitive information that may be contained in the documents being processed. If Document AI Processors are not properly encrypted, an unauthorized individual could potentially gain access to this data. This could lead to a serious confidentiality breach. Therefore, encryption using a Customer Managed Key (CMK) is recommended as it offers more control and security, reducing the risk of data exposure.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_document_ai_processor
+* *Arguments:* kms_key_name
+
+To fix this issue, you should modify the Document AI Processors in your Terraform code to specify a "kms_key_name" attribute. This attribute represents the Cloud KMS key used for encryption/decryption. This will ensure encryption with a Customer Managed Key (CMK).
+
+[source,hcl]
+----
+resource "google_document_ai_processor" "example" {
+  ...
+  kms_key_name = "key_name"
+  ...
+}
+----
+
+The above code is secure because it applies the Google Cloud customer-managed encryption keys (CMEKs) to this Document AI Processor. By doing this, you ensure that even Google will only be able to access the data in an encrypted format. The keys are centrally managed by you and will give you full control over who can decrypt and access the data. This is a recommended best practice for sensitive or regulated data.
+

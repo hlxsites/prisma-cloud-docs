@@ -1,0 +1,49 @@
+== Vertex AI runtime is public
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexRuntimePrivate.yaml[CKV2_GCP_36]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to see if the Vertex AI runtime is set to private within a Google Cloud Platform (GCP) environment. The reasoning for this is to enhance security by reducing the exposure of the AI runtime to potential external threats. When set to private, the Vertex AI runtime isn't accessible from the public internet, which minimizes the risk of unauthorized access or attacks. Public runtimes are more susceptible to vulnerabilities, making this a key policy to implement when maintaining robust security practices.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_notebooks_runtime
+* *Arguments:* virtual_machine.virtual_machine_config.internal_ip_only
+
+To fix this issue, you'll need to set your Vertex AI runtime to private mode. This can be achieved by setting the `internal_ip_only` property to `true` in your Vertex AI resource block, as shown below:
+
+[source,hcl]
+----
+resource "google_notebooks_runtime" "runtime_good" {
+  ...
+  virtual_machine {
+    virtual_machine_config {
+      internal_ip_only = true
+      ...
+    }
+  }
+}
+----

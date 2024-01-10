@@ -1,0 +1,50 @@
+== Vertex AI featurestore is not configured to use a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexAIFeaturestoreEncryptedWithCMK.yaml[CKV2_GCP_25]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is examining whether a Vertex AI feature store is using a Customer Managed Key (CMK) for encryption. It is highly important to follow this policy because using a CMK provides greater control over the keys used for encryption. If a default key is used, it could potentially be more vulnerable to certain types of risks such as unauthorized access. With a Customer Managed Key, the user has complete control over the key's rotation, disablement, and deletion, which significantly improves data security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_vertex_ai_featurestore
+* *Arguments:* encryption_spec
+
+To fix this issue, you need to designate a Customer-Managed Encryption Key (CMEK) for your GCP Vertex AI feature store. You can do this by specifying the "encryption_spec" block and pointing to your Customer-Managed Key in your terraform resource for the feature store.
+
+[source,hcl]
+----
+data "google_vertex_ai_featurestore" "example" {
+  ...
+  encryption_spec {
+    kms_key_name = "some_name"
+  }
+  ...
+}
+----
+
+The updated Terraform code now includes the "encryption_spec" configuration, which is set to utilize a Customer-Managed Encryption Key. Now, the feature store data is encrypted using the customer-managed key which enhances the security of sensitive data, as the customer has direct control over key management activities.
+

@@ -1,0 +1,49 @@
+
+== Document AI Warehouse Location is not configured to use a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPDocumentAIWarehouseLocationEncryptedWithCMK.yaml[CKV2_GCP_23]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that Document AI Warehouse Location is configured to use a Customer Managed Key (CMK). This step is important because it ensures that data stored in Document AI Warehouse in Google Cloud Platform is protected by encryption. Using a Customer Managed Key gives the user more control over their encryption settings, as they can set key rotation periods and disable the key when necessary. This reduces the risk of unauthorized access to data. Without a CMK, data might become vulnerable to security threats.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_document_ai_warehouse_location
+* *Arguments:* kms_key
+
+In order to fix this issue, you need to specify the customer-managed encryption key while creating a document warehouse. This can be done by using the `kms_key` attribute in your `google_document_ai_warehouse_location` resource.
+
+[source,hcl]
+----
+resource "google_document_ai_warehouse_location" "example" {
+  ...
+  kms_key = "some_value"
+  ...
+}
+----
+
+The updated code now properly employs a Customer Managed Key (CMK) for handling the encryption of the document AI warehouse. This enhances the overall security as it provides tighter control over the cryptographic keys by the cloud customer compared to default encryption that uses Google-managed keys. Key Access Justifications helps to ensure that only the expected keys are being accessed. This also provides audit logging for all key usage, aiding in regulatory and compliance efforts.
+
