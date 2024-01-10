@@ -14,6 +14,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<new-ips-for-runtime>>
 * <<new-policies>>
 * <<policy-updates>>
+* <<policy-updates-iam>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -55,7 +56,12 @@ When you are upgraded to the Darwin release, refer to the https://docs.prismaclo
 *Add New IP Addresses for Runtime Security*
 //RLP-122832 - Do not remove this blurb till Feb 2024. Add these details to the AG in 24.2.1
 
-Access to Runtime Security (CWP) capabilities on the Prisma Cloud console will be migrated from GCP to AWS. Make sure you review the following list and add the new IP addresses to your allow lists before February 2024.
+To ensure continued connectivity to the Prisma Cloud console, as a system administrator, review the following IP list and add the new addresses to your allow lists before February 2024. Failure to do so will result in tenant connectivity issues.
+
+[NOTE]
+====
+Current (old) IPs will be deprecated after February 2024.
+====
 
 [cols="40%a,30%a,30%a"]
 |===
@@ -154,6 +160,28 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
+|*AWS Elasticsearch domain publicly accessible*
+//RLP-122897
+|*Changes—* The policy RQL will be updated to reduce to false positives.
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and (endpoints does not exist or endpoints.vpc does not exist or endpoints.vpc is empty)
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and vpcoptions.vpcid does not exist
+----
+
+*Impact—* No Impact
+
+*Policy Type—* Config
+
+*Severity—* Medium 
+
 |*Azure Storage account is not configured with private endpoint connection*
 //RLP-120048
 |*Changes—* The policy RQL will be updated to report Azure storage accounts that allow all networks with the `IPrule` and `VirtualNetworkRule` not being empty. 
@@ -220,6 +248,112 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-ge
 
 |===
 
+[#policy-updates-iam]
+=== Policy Updates - IAM
+
+The following IAM polices will have updated names and description.
+
+[cols="20%a,30%a,20%a,30%a"]
+|===
+|*Old Policy Name*
+|*Old Policy Description*
+|*New Policy Name*
+|*New Policy Description*
+
+|AWS EC2 instance with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.AWS IAM permissions management access level that are risky for AWS EC2 instances. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of permissions management access to minimize security risks.
+|AWS EC2 Instance with IAM policy management permissions
+|This policy identifies IAM permissions that allow EC2 instances to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS EC2 instance with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS EC2 Instance with IAM write permissions
+|This policy identifies IAM permissions that allow EC2 instances to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS EC2 instance with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS EC2 Instance with AWS Organization management permissions
+|This policy identifies IAM permissions that allow EC2 instances to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS Lambda Function with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Lambda Function with IAM policy management permissions
+|This policy identifies IAM permissions that allow Lambda functions to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS Lambda Function with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Lambda Function with IAM write permissions
+|This policy identifies IAM permissions that allow Lambda functions to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS Lambda Function with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Lambda Function with AWS Organization management permissions
+|This policy identifies IAM permissions that allow Lambda functions to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Okta User with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Okta User with IAM policy management permissions
+|This policy identifies IAM permissions that allow Okta users to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Okta User with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Okta User with IAM write permissions
+|This policy identifies IAM permissions that allow Okta users to perform write operations for IAM, such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Okta User with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Okta User with AWS Organization management permissions
+|This policy identifies IAM permissions that allow Okta users to manage AWS Organizations, such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|ECS Task Definition with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS ECS Task Definition with IAM policy management permissions
+|This policy identifies IAM permissions that allow ECS task definitions to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|ECS Task Definition with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks
+|AWS ECS Task Definition with IAM write permissions
+|This policy identifies IAM permissions that allow ECS task definitions to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|ECS Task Definition with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS ECS Task Definition with AWS Organization management permissions
+|This policy identifies IAM permissions that allow ECS task definitions to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|IAM User with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS IAM User with IAM policy management permissions
+|This policy identifies IAM permissions that allow IAM users to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|IAM User with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS IAM User with IAM write permissions
+|This policy identifies IAM permissions that allow IAM users to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|IAM User with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS IAM User with AWS Organization management permissions
+|This policy identifies IAM permissions that allow IAM users to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Elasticbeanstalk Platform with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Elastic Beanstalk Platform with IAM policy management permissions
+|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Elasticbeanstalk Platform with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Elastic Beanstalk Platform with IAM write permissions
+|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Elasticbeanstalk Platform with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Elastic Beanstalk Platform with AWS Organization management permissions
+|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|===
+
+
+
 [#api-ingestions]
 === API Ingestions
 
@@ -237,6 +371,42 @@ Additional permission required:
 * `ec2:DescribeVpcEndpointServices`
 
 The Security Audit Policy role includes the permission. 
+
+|*AWS Backup*
+//RLP-125127
+
+|*aws-backup-protected-resources*
+
+Additional permission required:
+
+* `backup:ListProtectedResources`
+
+You must manually add the above permissions to the CFT template to enable it.
+
+|*AWS Glue*
+//RLP-125128
+
+|*aws-glue-job*
+
+Additional permissions required:
+
+* `glue:ListJobs`
+* `glue:GetJob`
+
+The Security Audit role only includes the `glue:GetJob` permission. You must manually add the `glue:ListJobs` permission to the CFT template to enable the permission.
+
+
+|*AWS Glue*
+//RLP-125110
+
+|*aws-glue-schema*
+
+Additional permissions required:
+
+* `glue:ListSchemas`
+* `glue:GetSchema`
+
+You must manually add the above permissions to the CFT template to enable them.
 
 |*AWS CodeCommit*
 //RLP-120750
@@ -261,6 +431,55 @@ Additional permissions required:
 * `codecommit:GetApprovalRuleTemplate`
 
 The Security Audit role only includes the `codecommit:ListApprovalRuleTemplates` permission. You must manually add the `codecommit:GetApprovalRuleTemplate` permission to the CFT template to enable the permission.
+
+|*Amazon EC2 Image Builder*
+//RLP-123966
+
+|*aws-imagebuilder-component*
+
+Additional permissions required:
+
+* `imagebuilder:ListComponents`
+* `imagebuilder:GetComponent`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*Amazon EC2 Image Builder*
+//RLP-123953
+
+|*aws-imagebuilder-image-recipe*
+
+Additional permissions required:
+
+* `imagebuilder:ListImageRecipes`
+* `imagebuilder:GetImageRecipe`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*Amazon EC2 Image Builder*
+//RLP-123951
+
+|*aws-imagebuilder-image-pipeline*
+
+Additional permissions required:
+
+* `imagebuilder:ListImagePipelines`
+* `imagebuilder:GetImagePipeline`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*Amazon EC2 Image Builder*
+//RLP-123946
+
+|*aws-imagebuilder-infrastructure-configuration*
+
+Additional permissions required:
+
+* `imagebuilder:ListInfrastructureConfigurations`
+* `imagebuilder:GetInfrastructureConfiguration`
+
+You must manually add the above permissions to the CFT template to enable them.
+
 
 |*Amazon EMR*
 //RLP-118746
@@ -381,7 +600,7 @@ The Reader role includes the permissions.
 
 |*azure-log-analytics-clusters*
 
-Additional permissions required:
+Additional permission required:
 
 * `Microsoft.OperationalInsights/clusters/read`
 
@@ -531,6 +750,64 @@ Additional permission required:
 
 The Viewer role includes the permission.
 
+|*Google Cloud VMware Engine*
+//RLP-121318
+
+|*gcloud-vmware-engine-network*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.vmwareEngineNetworks.list`
+
+The Viewer role includes the permissions.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-index*
+
+Additional permission required:
+
+* `aiplatform.indexes.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124014
+
+|*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
+
+Additional permissions required:
+
+* `aiplatform.featurestores.list` 
+* `aiplatform.entityTypes.list` 
+* `aiplatform.entityTypes.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124013
+
+|*gcloud-vertex-ai-aiplatform-model*
+
+Additional permission required:
+
+* `aiplatform.models.list` 
+
+The Viewer role includes the permission.
+
+|tt:[Update] *Google Deployment Manager*
+//RLP-123409
+
+|*gcloud-deployment-manager-deployment-manifest*
+
+Prisma Cloud will update the `Resource Name` and `Asset ID` fields in the backend for `gcloud-deployment-manager-deployment-manifest` API. 
+Due to this change, when you perform an RQL search query, you will be able to see a change in the `Resource Name` and `Asset ID` fields making it easier for you to identify the resources. Also, all the existing resources will be deleted, and then regenerated on the management console.
+
+Existing alerts corresponding to this resource will be resolved as `Resource_Deleted`, and new alerts will be generated against any policy violations.
+
+*Impact—* None. Once the resources for `gcloud-deployment-manager-deployment-manifest` resume ingesting data, you will notice the correct alert count in the console.
 
 |*OCI Block Storage*
 //RLP-122320
@@ -730,6 +1007,5 @@ Response object property `risk.grade.options` is deprecated for the following re
 
 
 |===
-
 
 
