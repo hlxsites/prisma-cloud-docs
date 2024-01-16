@@ -1,0 +1,736 @@
+== Features Introduced in January 2024
+
+Learn what's new on Prisma® Cloud in January 2024.
+
+[#new-features-jan-1]
+=== New Features Introduced in January 2024
+
+* <<announcement>>
+* <<new-features1>>
+* <<api-ingestions1>>
+* <<new-policies1>>
+* <<policy-updates1>>
+* <<policy-updates-iam>>
+//* <<new-compliance-benchmarks-and-updates1>>
+//* <<changes-in-existing-behavior1>>
+* <<rest-api-updates1>>
+* <<deprecation-notices>>
+
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|FEATURE
+|DESCRIPTION
+
+|*Prisma Cloud Darwin Release*
+//received the blurb on Slack from Matangi. No Jira ticket for this.
+ 
+|The *Prisma Cloud Darwin Release* is here for Prisma Cloud environments on app2, app4, app.anz, app.jp, and app.sg except app.gov. With the Code to Cloud™ intelligence capabilities in this release, your security and development teams can work together to reduce application risks and prevent breaches.
+
+With this change, your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities]. 
+
+Connect with your Customer Success team for more details.
+
+When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation].
+
+|===
+
+
+
+[#new-features1]
+=== New Features
+
+[cols="50%a,50%a"]
+|===
+|FEATURE
+|DESCRIPTION
+
+|*Dashboard Widgets*
+
+tt:[*_Secure the Infrastructure_*]
+
+tt:[*24.1.1*]
+
+//RLP-123898, RLP-96521
+|*Prisma Cloud > Dashboards > Widget Selector* now includes eight additional https://docs.prismacloud.io/en/enterprise-edition/content-collections/get-started/adoption-advisor#id0356c4cc-e4f1-43e2-8848-3f6cd7e4cd60[widgets] to help you create https://docs.prismacloud.io/en/enterprise-edition/content-collections/dashboards/create-and-manage-dashboards[customized dashboards] to track your organization’s key metrics. Widgets include:
+
+* Adoption Progress
+* Assets with Urgent Alerts
+* Anomalous Threats Detected
+* Top Custom Alerts Generated
+* Discovered vs. Secured Resources
+* Vulnerabilities Trend by Resource Type
+* Risks Burndown
+* Incidents Burndown
+
+|*Terraform Module Scanning*
+
+tt:[*_Secure the Source_*]
+
+tt:[*24.1.1*]
+//CAS Update - Received blurb from Jonathan.
+
+|Prisma Cloud now supports rendering and scanning public, private, and locally cached Terraform modules. This capability enables you to analyze misconfigurations that may result from the module definition and the variables defined in the resource block.
+For more information, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/terraform-module-scan[Terraform Module Scanning].
+
+|*Agentless Scanning*
+
+tt:[*Secure the Runtime*]
+
+tt:[*24.1.1*]
+
+//CWP-46475
+|Added agentless scanning support of encrypted volumes in Azure for the  hub account mode.
+
+|*Agentless Scanning*
+
+tt:[*Secure the Runtime*]
+
+tt:[*24.1.1*]
+
+//CWP-41206
+|Added agentless scanning hub account mode for Azure.
+
+|*Vulnerability Management*
+
+tt:[*Secure the Runtime*]
+
+tt:[*24.1.1*]
+
+//CWP-52656
+|Added support for Debian Bullseye and Bookworm Security fixes.
+
+|*Operating System Support*
+
+tt:[*Secure the Runtime*]
+
+tt:[*24.1.1*]
+
+//CWP-53787
+|Added support for OpenShift 4.14.
+
+|*Vulnerability Management*
+
+tt:[*Secure the Runtime*]
+
+tt:[*24.1.1*]
+
+//CWP-34450
+|Added support to detect IBM Java version 1.8 and earlier.
+IBM Java version 1.9 and later are partially supported.
+The detection depends on the `jdk/release` file being found.
+
+|===
+
+
+[#api-ingestions1]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+|SERVICE
+|API DETAILS
+
+|*OCI Service Catalog*
+
+tt:[*24.1.1*]
+
+//RLP-102261
+
+|*oci-servicecatalog-catalog*
+
+Additional permissions required:
+
+* `CATALOG_INSPECT`
+* `CATALOG_READ`
+
+You must update the Terraform template to enable the permissions.
+
+
+|tt:[Update] *OCI Data Safe*
+
+tt:[*24.1.1*]
+
+//RLP-121486
+
+|*oci-data-safe-target-database*
+
+The resource JSON for this API no longer includes the `timeUpdated` field.
+
+
+|tt:[Update] *OCI Database*
+
+tt:[*24.1.1*]
+
+//RLP-121486
+
+|*oci-database-autonomous-database*
+
+The resource JSON for this API no longer includes the `actualUsedDataStorageSizeInTBs` field.
+
+|tt:[Update] *OCI MySQL*
+
+tt:[*24.1.1*]
+
+//RLP-121486
+
+|*oci-mysql-dbsystems*
+
+The resource JSON for this API no longer includes the `timeUpdated` field.
+
+|===
+
+
+[#new-policies1]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|NEW POLICIES
+|DESCRIPTION
+
+|*Attack Path Policies*
+|New Attack Path policies are available. Log in to the Prisma Cloud console and filter for the list of available policies.
+
+|*AWS S3 bucket encrypted using Customer Managed Key (CMK) with overly permissive policy*
+
+tt:[*24.1.1*]
+
+//RLP-124241
+
+|Identifies Amazon S3 buckets that use Customer Managed Keys (CMKs) for encryption that have a key policy overly permissive. Amazon S3 bucket encryption key overly permissive can result in the exposure of sensitive data and potential compliance violations. As a security best practice, It is recommended to follow the principle of least privilege ensuring that the KMS key policy does not have all the permissions to be able to complete a malicious action.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name= 'aws-s3api-get-bucket-acl' AND json.rule = (sseAlgorithm contains "aws:kms" or sseAlgorithm contains "aws:kms:dsse") and kmsMasterKeyID exists as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and keyMetadata.keyManager equals CUSTOMER and policies.default.Statement[?any((Principal.AWS equals * or Principal equals *)and Condition does not exist)] exists as Y; filter '$.X.kmsMasterKeyID contains $.Y.key.keyArn' ; show X;
+----
+
+
+|*AWS S3 bucket encrypted with Customer Managed Key (CMK) is not enabled for regular rotation*
+
+tt:[*24.1.1*]
+
+//RLP-124147
+
+|Identifies Amazon S3 buckets that use Customer Managed Keys (CMKs) for encryption but are not enabled with key rotation. Amazon S3 bucket encryption key rotation failure can result in prolonged exposure of sensitive data and potential compliance violations. As a security best practice, it is important to rotate these keys periodically. This ensures that if the keys are compromised, the data in the underlying service remains secure with the new keys.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name= 'aws-s3api-get-bucket-acl' AND json.rule = (sseAlgorithm contains "aws:kms" or sseAlgorithm contains "aws:kms:dsse") and kmsMasterKeyID exists as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and keyMetadata.keyManager equal ignore case CUSTOMER and keyMetadata.origin equals AWS_KMS and (rotation_status.keyRotationEnabled is false or rotation_status.keyRotationEnabled equals "null")as Y; filter '$.X.kmsMasterKeyID contains $.Y.key.keyArn'; show X;
+----
+
+|*AWS RDS database instance encrypted with Customer Managed Key (CMK) is not enabled for regular rotation*
+
+tt:[*24.1.1*]
+
+//RLP-121502
+
+|Identifies Amazon RDS instances that use Customer Managed Keys (CMKs) for encryption but are not enabled with key rotation. Amazon RDS instance encryption key rotation failure can result in prolonged exposure of sensitive data and potential compliance violations. As a security best practice, it is important to periodically rotate these keys. This ensures that if the keys are compromised, the data in the underlying service remains secure with the new keys.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-rds-describe-db-instances' and json.rule = storageEncrypted is true as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and keyMetadata.keyManager equals CUSTOMER and keyMetadata.origin equals AWS_KMS and (rotation_status.keyRotationEnabled is false or rotation_status.keyRotationEnabled equals "null") as Y; filter '($.X.kmsKeyId equals $.Y.key.keyArn)'; show X;
+----
+
+|*Azure Storage account encrypted by an encryption key configured access policy with privileged operations*
+
+tt:[*24.1.1*]
+
+//RLP-124037
+
+|Identifies Azure Storage accounts which are encrypted by an encryption key configured access policy with privileged operations. Encryption keys should be kept confidential and only accessible to authorized entity with limited operation access. Allowing privileged access to an encryption key also allows to alter/delete the data that is encrypted by it, making the data more easily accessible. It is recommended to have restricted access policies to an encryption key so that only authorized entities can access it with limited operation access. 
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X;
+----
+
+|*Azure Storage account encrypted by an encryption key that is not rotated regularly*
+
+tt:[*24.1.1*]
+
+//RLP-124036
+
+|Identifies Azure Storage accounts which are encrypted by an encryption key that is not rotated regularly. As a security best practice, it is important to rotate the keys periodically so that if the keys are compromised, the data in the underlying service is still secure with the new keys. 
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X;
+----
+
+|*Azure AKS cluster configured with overly permissive API server access*
+
+tt:[*24.1.1*]
+
+//RLP-75135
+
+|Identifies AKS clusters configured with overly permissive API server access. In Kubernetes, the API server receives requests to perform actions in the cluster such as to create resources or scale the number of nodes. To enhance cluster security and minimize attacks, the API server should only be accessible from a limited set of IP address ranges. These IP ranges allow defined IP address ranges to communicate with the API server. A request made to the API server from an IP address that is not part of these authorized IP ranges is blocked. It is recommended to configure AKS cluster with defined IP address ranges to communicate with the API server.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-kubernetes-cluster' AND json.rule = properties.powerState.code equal ignore case Running and properties.apiServerAccessProfile.enablePrivateCluster is false and (properties.apiServerAccessProfile.authorizedIPRanges does not exist or properties.apiServerAccessProfile.authorizedIPRanges is empty)
+----
+
+|*Azure Machine learning workspace configured with overly permissive network access*
+
+tt:[*24.1.1*]
+
+//RLP-58075
+
+|Identifies Machine learning workspaces configured with overly permissive network access. Overly permissive public network access allows access to resource through the internet using a public IP address. It is recommended to restrict IP ranges to allow access to your workspace and endpoint from specific public internet IP address ranges and is accessible only to restricted entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.publicNetworkAccess equal ignore case Enabled and (properties.ipAllowlist does not exist or properties.ipAllowlist is empty)
+----
+
+|*New CI/CD Configuration Build Policies*
+
+tt:[*24.1.1*]
+
+//CAS Policies. Shared by J.Baksht.
+
+//RLP-125897
+
+|Added the following default CI/CD policies within the *Build* subtype of *Configuration* policies under *Governance* for enhanced continuous integration and deployment pipeline security.
+
+*Azure Repo Policies*
+
+* Potential dependency confusion in an Azure Repos repository due to package name or scope available in registry
+* Deprecated package used in NPM project of an Azure Repos repository
+* Missing ‘.npmrc’ file in Azure Repos repository 
+* Possible Python typosquatting detected in an Azure Repos repository
+* Secret exposed in registry URL within ‘.npmrc’ file of an Azure Repos repository
+* Unencrypted channel used by ‘.npmrc’ file of an Azure Repos repository to download dependencies from proxy
+* Azure Pipelines uses an unpinned container image
+* Secret exposed in proxy URL within ‘.npmrc’ file of an Azure Repos repository
+* Deprecated package used in NPM project of a Bitbucket repository
+
+*Bitbucket Policies*
+
+* Missing ‘.npmrc’ file in Bitbucket repository
+* Possible Python typosquatting detected in a Bitbucket repository
+* Potential dependency confusion in a Bitbucket repository due to package name or scope available in registry
+* Private Bitbucket repository made public
+* Secret exposed in proxy URL within ‘.npmrc’ file of a Bitbucket repository
+* Secret exposed in registry URL within ‘.npmrc’ file of a Bitbucket repository
+* Unencrypted channel used by ‘.npmrc’ file of a Bitbucket repository to download dependencies from proxy
+* Unencrypted channel used by ‘.npmrc’ file of a Bitbucket repository to download dependencies from registry
+
+*CircleCI Policies*
+
+* CircleCI pipeline uses an unpinned container image
+
+*GitHub Policies*
+
+* Deprecated package used in NPM project of a GitHub repository
+* Missing ‘.npmrc’ file in GitHub repository
+* Possible Python typosquatting detected in a GitHub repository
+* Potential dependency confusion in a GitHub repository due to package name or scope available in registry
+* Secret exposed in proxy URL within ‘.npmrc’ file of a GitHub repository
+* Secret exposed in registry URL within ‘.npmrc’ file of a GitHub repository
+* Unencrypted channel used by ‘.npmrc’ file of a GitHub repository to download dependencies from proxy
+* Unencrypted channel used by ‘.npmrc’ file of a GitHub repository to download dependencies from registry
+* Unrotated organization secrets in GitHub Actions
+* Unrotated repository secrets in GitHub Actions
+
+*GitLab Policies*
+
+* Deprecated package used in NPM project of a GitLab repository
+* Missing ‘.npmrc’ file in GitLab repository
+* Possible Python typosquatting detected in a GitLab repository
+* Potential dependency confusion in a GitLab repository due to package name or scope available in registry
+* Secrets found in logs of a GitLab CI pipeline
+* Secret exposed in proxy URL within ‘.npmrc’ file of a GitLab repository
+* Secret exposed in registry URL within ‘.npmrc’ file of a GitLab repository
+* Unencrypted channel used by ‘.npmrc’ file of a GitLab repository to download dependencies from proxy
+* Unencrypted channel used by ‘.npmrc’ file of a GitLab repository to download dependencies from registry
+
+
+|===
+
+[#policy-updates1]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|POLICY UPDATES
+|DESCRIPTION
+
+2+|*Policy Updates—RQL*
+
+|*AWS Elasticsearch domain publicly accessible*
+
+tt:[*24.1.1*]
+
+//RLP-122897
+
+|*Changes—* The policy RQL is updated to check for `vpc-options` instead of `vpc.endpoints`.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and (endpoints does not exist or endpoints.vpc does not exist or endpoints.vpc is empty)
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-es-describe-elasticsearch-domain' AND json.rule = processing is false and vpcoptions.vpcid does not exist
+----
+
+*Impact—* No impact on alerts.
+
+|*Azure Key Vault Firewall is not enabled*
+
+tt:[*24.1.1*]
+
+//RLP-123051
+
+|*Changes—* The policy RQL is updated to not trigger alerts when the public access is disabled.
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.networkAcls.ipRules[*].value does not exist
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.networkAcls.ipRules[*].value does not exist and properties.publicNetworkAccess does not equal ignore case disabled
+----
+
+*Impact—* Low. Existing alerts which were triggered when the public access was disabled will be resolved.
+
+|*Azure Storage account is not configured with private endpoint connection*
+
+tt:[*24.1.1*]
+
+//RLP-120048
+
+|*Changes—* The policy RQL has been updated to report azure storage account which allow all networks with `IPrule` and `VirtualNetworkRule` not being empty.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and networkRuleSet.virtualNetworkRules is empty and networkRuleSet.ipRules[] is empty and properties.privateEndpointConnections[] is empty
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
+----
+
+*Impact—* Low. New alerts will be generated when the `IPrule` and `VirtualNetworkRule` are retained.
+
+|*AWS S3 bucket publicly readable*
+
+tt:[*24.1.1*]
+
+//RLP-104677
+|*Changes—* The policy remediation steps and RQL will be updated to check for Authenticated User with read access. 
+
+*Policy Type—* Config
+
+*Severity—* High 
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = ((((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false)) and acl.grantsAsList[?any(grantee equals AllUsers and permission is member of (ReadAcp,Read,FullControl))] exists) or ((policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))) and (policy.Statement[?any(Effect equals Allow and (Principal equals * or Principal.AWS equals *) and (Action contains s3:* or Action contains s3:Get or Action contains s3:List) and (Condition does not exist))] exists))) and websiteConfiguration does not exist
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = ((((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false)) and (acl.grantsAsList[?any(grantee equals AllUsers and permission is member of (ReadAcp,Read,FullControl))] exists or acl.grantsAsList[?any(grantee equals AuthenticatedUsers and permission is member of (ReadAcp,Read,FullControl))] exists)) or ((policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))) and (policy.Statement[?any(Effect equals Allow and (Principal equals * or Principal.AWS equals *) and (Action contains s3:* or Action contains s3:Get or Action contains s3:List) and (Condition does not exist))] exists))) and websiteConfiguration does not exist
+----
+
+*Impact—* Low. New alerts will be generated when Authenticated users have read permissions.
+
+
+2+|*Policy Updates—Metadata*
+
+|*GCP VM instance using a default service account with full access to all Cloud APIs*
+
+tt:[*24.1.1*]
+
+//RLP-120380
+|*Changes—* The policy name, description and remediation details are updated.
+
+*Current Policy Name—* GCP VM instance using a default service account with full access to all Cloud APIs
+
+*Updated Policy Name—* GCP VM instance using a default service account with Cloud Platform access scope
+
+*Current Policy Description—* This policy identifies the GCP VM instances which are using a default service account with full access to all Cloud APIs. To compliant with the principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account 'Compute Engine default service account' with scope 'Allow full access to all Cloud APIs'.
+
+*Updated Policy Description—* This policy identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To compliant with the principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* No impact on alerts.
+
+2+|*Policy Deletion*
+
+|*Azure Policies Deletion*
+
+tt:[*24.1.1*]
+
+//RLP-123535
+
+|*Changes—* Azure has deprecated Azure Storage classic metrics. Due to this change the following associated policies have been deleted:
+
+* Azure storage account logging (Classic Diagnostic Setting) for queues is disabled (fde9482f-3ac2-43f6-bda2-bf2013074acd)
+* Azure storage account logging (Classic Diagnostic Setting) for blobs is disabled (85a4a77f-0d46-4c3d-ae8c-37d945a0b44e)
+* Azure storage account logging (Classic Diagnostic Setting) for tables is disabled (f4784022-48f3-4f3b-bc16-2b7fef56aea3)
+
+*Impact—* Low. Existing alerts are resolved as `Policy_Deleted`.
+
+
+|===
+
+[#policy-updates-iam]
+=== Policy Updates - IAM
+
+tt:[*24.1.1*]
+
+The following IAM polices will have updated names and description.
+//RLP-123585
+
+[cols="20%a,30%a,20%a,30%a"]
+|===
+|*Old Policy Name*
+|*Old Policy Description*
+|*New Policy Name*
+|*New Policy Description*
+
+|AWS EC2 instance with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.AWS IAM permissions management access level that are risky for AWS EC2 instances. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of permissions management access to minimize security risks.
+|AWS EC2 Instance with IAM policy management permissions
+|This policy identifies IAM permissions that allow EC2 instances to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS EC2 instance with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS EC2 Instance with IAM write permissions
+|This policy identifies IAM permissions that allow EC2 instances to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS EC2 instance with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS EC2 instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS EC2 Instance with AWS Organization management permissions
+|This policy identifies IAM permissions that allow EC2 instances to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS Lambda Function with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Lambda Function with IAM policy management permissions
+|This policy identifies IAM permissions that allow Lambda functions to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS Lambda Function with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Lambda Function with IAM write permissions
+|This policy identifies IAM permissions that allow Lambda functions to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|AWS Lambda Function with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS Lambda Function instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Lambda Function with AWS Organization management permissions
+|This policy identifies IAM permissions that allow Lambda functions to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Okta User with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Okta User with IAM policy management permissions
+|This policy identifies IAM permissions that allow Okta users to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Okta User with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Okta User with IAM write permissions
+|This policy identifies IAM permissions that allow Okta users to perform write operations for IAM, such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Okta User with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the Okta Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Okta User with AWS Organization management permissions
+|This policy identifies IAM permissions that allow Okta users to manage AWS Organizations, such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|ECS Task Definition with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS ECS Task Definition with IAM policy management permissions
+|This policy identifies IAM permissions that allow ECS task definitions to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|ECS Task Definition with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks
+|AWS ECS Task Definition with IAM write permissions
+|This policy identifies IAM permissions that allow ECS task definitions to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|ECS Task Definition with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS ECS Task Definition instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS ECS Task Definition with AWS Organization management permissions
+|This policy identifies IAM permissions that allow ECS task definitions to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|IAM User with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS IAM User with IAM policy management permissions
+|This policy identifies IAM permissions that allow IAM users to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|IAM User with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS IAM User with IAM write permissions
+|This policy identifies IAM permissions that allow IAM users to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|IAM User with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the IAM Users in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS IAM User with AWS Organization management permissions
+|This policy identifies IAM permissions that allow IAM users to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Elasticbeanstalk Platform with IAM permissions management access level
+|This policy identifies IAM permissions management access that is defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Elastic Beanstalk Platform with IAM policy management permissions
+|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to manage IAM policies, such as creating, deleting, or attaching IAM policies to identities, roles, or groups. IAM policy management permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Elasticbeanstalk Platform with IAM write access level
+|This policy identifies IAM write permissions that are defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Elastic Beanstalk Platform with IAM write permissions
+|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to perform write operations for IAM. such as creating, deleting, updating access keys, users, groups, and roles. IAM write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|Elasticbeanstalk Platform with org write access level
+|This policy identifies org write access that is defined as risky permissions. Ensure that the AWS Elasticbeanstalk Platform instances provisioned in your AWS account don't have a risky set of write permissions to minimize security risks.
+|AWS Elastic Beanstalk Platform with AWS Organization management permissions
+|This policy identifies IAM permissions that allows an Elastic Beanstalk Platform to manage AWS Organizations such as creating, deleting, updating AWS Organizations, accounts and Org level policies, features, and services. AWS Organization write permissions are very risky and should only be used under very strict controls. Unnecessary usage of these permissions can significantly increase your attack surface and make it easier for attackers to compromise your AWS environment.
+
+|===
+
+[#rest-api-updates1]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|CHANGE
+|DESCRIPTION
+
+|*IAM APIs*
+
+tt:[*24.1.1*]
+
+//RLP-125757
+|New versions of https://pan.dev/prisma-cloud/api/cspm//iam/[IAM] endpoints are now available to get permissions, access details, and query suggestions. A few other new endpoints are also added to the https://pan.dev/prisma-cloud/api/cspm//iam/[IAM] category to get the least privilege access details and remediation command.
+
+|*Widget APIs*
+
+tt:[*24.1.1*]
+
+//RLP-125223
+
+|The following new APIs are added to get the data from some of the widgets used to create custom dashboards:
+
+* Get Discovered and Secured Resources - https://pan.dev/prisma-cloud/api/cspm/value-widgets-get-discovered-vs-secured/[POST /adoptionadvisor/api/v2/compute/discovered-secured/trend]
+* Get Vulnerabilities Trend - https://pan.dev/prisma-cloud/api/cspm/value-widgets-get-vulnerabilities-trend/[POST /adoptionadvisor/api/v2/compute/vulnerabilities/trend]
+* Get Assets with Alerts - https://pan.dev/prisma-cloud/api/cspm/value-widgets-get-assets-with-alerts/[POST /adoptionadvisor/api/v2/cspm/riskyasset/trend]
+
+
+|*Unified Vulnerability Explorer APIs*
+
+tt:[*24.1.1*]
+
+//RLP-123758
+|New APIs are available in the https://pan.dev/prisma-cloud/api/cspm/unified-vulnerability-explorer/[Unified Vulnerability Explorer] category to get the list of vulnerabilities based on CVE, priority, stage, RQL, and so on. In addition, you have endpoints to get the remediation status and create a remediation request. 
+
+|*Background Job APIs*
+
+tt:[*24.1.1*]
+//RLP-113024
+
+|The following new endpoints are available to get background job reports:
+
+* Get Reports Metadata - https://pan.dev/prisma-cloud/api/cspm/list-reports/[GET /report-service/api/v1/report]
+* Get Report Metadata by ID - https://pan.dev/prisma-cloud/api/cspm/get-report-metadata-by-id/[GET /report-service/api/v1/report/:reportId]
+* Get Report Status - https://pan.dev/prisma-cloud/api/cspm/get-report-status-by-id/[GET /report-service/api/v1/report/:reportId/status]
+* Download a Report - https://pan.dev/prisma-cloud/api/cspm/download-report-by-id/[GET /report-service/api/v1/report/:reportId/download]
+
+|*Add a New Collection*
+
+tt:[*24.1.1*]
+
+//CWP-51321
+|Collections that were added using the https://pan.dev/prisma-cloud/api/cwpp/post-collections/[Add a New Collection] did not display as expected in the Console. This issue has been resolved by making all request body fields, except `name`, optional. Any field that is not provided will default to the wildcard value '*'.
+
+|===
+
+[#deprecation-notices]
+=== Deprecation Notice
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*App.sg Stack Decommissioned for Prisma Cloud Data Security*
+
+tt:[*_Secure the Infrastructure_*]
+
+tt:[*24.1.1*]
+
+//PCDTUS-78
+|You will no longer be able to use the *app.sg* stack for Data Security since it's being decommissioned. If you want to use Data Security, contact your Prisma Cloud customer support representative.
+
+|*Support for BridgecrewCLI*
+
+tt:[*_Secure the Source_*]
+
+tt:[*24.1.1*]
+
+//RLP-112353
+
+|BridgecrewCLI including GitHub Action, CircleCI Orb, and container have been deprecated. You can continue using Checkov and its compatible plugins without any disruptions.
+
+|*Alerts*
+
+tt:[*_Secure the Runtime_*]
+
+tt:[*24.1.1*]
+
+//CWP-40710 CWP-41766
+|Deprecated the `AccountID` and `Cluster` macros used in alerts.
+This removes the `AccountID` and `Cluster` fields in the following alerts using the macros.
+
+* Webhook
+* AWS SQS
+* Prisma Cortex Alert
+* Splunk
+
+|===
