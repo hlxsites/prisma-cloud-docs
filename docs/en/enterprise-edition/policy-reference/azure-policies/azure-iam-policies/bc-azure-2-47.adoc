@@ -1,5 +1,4 @@
-
-== Storage account is configured with blob anonymous access
+== Anonymous blob access configured in Azure storage account
 
 === Policy Details
 
@@ -25,7 +24,7 @@
 
 === Description
 
-This policy is identifying whether a storage account has been configured to allow anonymous access to blob data. Anonymous access to blob data means anyone on the internet can retrieve or view data without requiring any form of authentication. This is potentially dangerous because it exposes sensitive data to the public, and it could lead to data leaks and breaches of privacy. Hence, it is critical to ensure storage accounts are not configured with blob anonymous access to safeguard information and maintain data privacy.
+This policy checks whether a storage account is configured to allow anonymous access to blob data. Anonymous access to blob data permits anyone on the internet to access or view the stored data without the need for any authentication. This poses a potential risk, as it exposes sensitive data to the public, increasing the likelihood of data leaks and privacy breaches.
 
 === Fix - Buildtime
 
@@ -34,9 +33,8 @@ This policy is identifying whether a storage account has been configured to allo
 * *Resource:* azurerm_storage_account
 * *Arguments:* allow_nested_items_to_be_public
 
-The problem here is that the Azure storage account is configured with blob anonymous access. Enabling anonymous access to blob content in a storage account allows anyone to read the blob content. This is insecure as sensitive data may be exposed.
+To fix the issue, disable anonymous access to the blob content of your storage account: Set the `allow_nested_items_to_be_public` attribute to `false`. This ensures that no one can read blob content without proper authentication and authorization.
 
-To fix the issue, ensure that anonymous access to the blob content of your storage account is disabled. You can configure this by setting `allow_nested_items_to_be_public` attribute to `false`.
 
 [source,go]
 ----
@@ -46,5 +44,4 @@ resource "azurerm_storage_account" "storage_account" {
 }
 ----
 
-The code above creates a Azure storage account with `allow_nested_items_to_be_public` set to `false`. Therefore, anonymous access to the blob content is disabled, which will make the storage account secure from unauthorized access. This ensures that no one can read blob content without proper authentication and authorization.
-
+This code sets the `allow_nested_items_to_be_public` attribute to `false`, disabling anonymous access to the blob content.
