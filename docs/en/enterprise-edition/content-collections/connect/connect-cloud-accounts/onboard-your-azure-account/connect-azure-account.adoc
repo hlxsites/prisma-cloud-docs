@@ -107,7 +107,7 @@ NSG flow logs, a feature of Network Watcher, allow you to view ingress and egres
 ... The subscriptions belong to the same Azure AD or Root Management Group (for example, Azure Org).
 
 ... The Service Principal that you use to onboard the subscription on Prisma Cloud has access to read the contents of the storage account.
-.. Add the xref:../get-started/access-prisma-cloud.adoc[NAT GatewayIP addresses] for your Prisma Cloud instance to the Storage Account created in the step above. For example, if your instance is on userinput:[app.prismacloud.io] use the IP addresses associated with that.
+.. Add the xref:../get-started/access-prisma-cloud.adoc[NAT GatewayIP addresses] for your Prisma Cloud instance to the Storage Account created in the step above. For example, if your instance is on `app.prismacloud.io` use the IP addresses associated with that.
 
 .. Create Azure https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create[Network Watcher instances] for the virtual networks in every region where you collect NSG flow logs. Network Watcher enables you to monitor, diagnose, and view metrics to enable and disable logs for resources in an Azure virtual network.
 
@@ -119,8 +119,18 @@ NSG flow logs, a feature of Network Watcher, allow you to view ingress and egres
 +
 ... Go to storage account previously created and opt to store the logs.
 ... Select *Data Storage > Containers*.
-... Select the userinput:[insights-logs-networksecuritygroupflowevent] container.
-... In the container, navigate the folder hierarchy until you get to the userinput:[PT1H.json] flow logs file.
+... Select the `insights-logs-networksecuritygroupflowevent` container.
+... In the container, navigate the folder hierarchy until you get to the `PT1H.json` flow logs file.
+
+[NOTE]
+====
+If *Public Network Access* is set to *Disabled* Prisma Cloud will not be able to ingest the `publicContainersList` field and calculate the `totalPublicContainers` for the Azure Storage account. 
+
+To optionally configure your Azure Storage account settings to identify internet exposed public containers, do the following:
+
+- Option 1 (Recommended): On the Azure portal, set Public Network Access to *Enabled from selected virtual networks and IP addresses*. Add the IP addresses and NAT Gateway source and directory IPs listed https://docs.prismacloud.io/en/classic/cspm-admin-guide/get-started-with-prisma-cloud/enable-access-prisma-cloud-console#idcb6d3cd4-d1bf-450a-b0ec-41c23a4d4280[here] to the firewall configuration. 
+- Option 2: On the Azure portal, set Public Network Access to *Enabled from all networks*. 
+====
 //+ [commenting out per Madhu Jain - Novartis POC - 6/14 email thread]
 //On the Azure Portal, include the source and the DR Prisma Cloud IP addresses for your Prisma Cloud instance. Select *Azure > services[Storage accounts > (your storage account) > Networking > Selected networks*.
 //+
