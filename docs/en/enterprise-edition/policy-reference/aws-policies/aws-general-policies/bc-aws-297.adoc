@@ -1,0 +1,58 @@
+
+== EventBridge Scheduler Schedule is not using a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 0a9ecb7e-7cb0-42d5-afa6-8917ad6bdc86
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SchedulerScheduleUsesCMK.py[CKV_AWS_297]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that EventBridge Scheduler Schedule in AWS utilizes a Customer Managed Key (CMK) for encryption. This is crucial for maintaining secure data practices because CMKs offer increased control over key rotation, allowing a system administrator to manually rotate, disable, or re-enable a CMK. Without the use of a CMK, encryption keys will be solely managed by AWS, leading to less flexibility and potential security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_scheduler_schedule
+* *Arguments:* kms_key_arn
+
+To fix this issue, you should use a Customer Managed Key (CMK) for the EventBridge Scheduler Schedule.
+
+[source,go]
+----
+resource "aws_scheduler_schedule" "pass" {
+  name       = "my-schedule"
+  group_name = "default"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "rate(1 hour)"
++ kms_key_arn         = "arn:aws:kms:eu-west-2:680235478471:key/a61e2553-18fe-40b8-a959-bf775459ed46"
+
+  target {
+    arn      = aws_sqs_queue.example.arn
+    role_arn = aws_iam_role.example.arn
+  }
+}
+----
+

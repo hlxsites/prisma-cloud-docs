@@ -1,0 +1,51 @@
+== AWS RDS DB cluster is encrypted using default KMS key instead of CMK
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 668068f4-3950-4acd-a565-b550095d6e22
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSClusterEncryptedWithCMK.py[CKV_AWS_327]
+
+|Severity
+|INFO
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying if an Amazon Relational Database Service (RDS) cluster is encrypted using a Key Management Service (KMS) Customer Master Key (CMK). Without this type of encryption, the stored data is not protected against unwanted access or potential security risks. This could lead to data breaches or unauthorized disclosures which can result in regulatory sanctions and loss of customer trust. Therefore, it's important to ensure that the data stored within RDS clusters is encrypted for paramount security measures.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_rds_cluster
+* *Arguments:* kms_key_id
+
+To fix this issue, you need to ensure that your RDS clusters are encrypted using KMS CMKs. You can do it by adding the "kms_key_id" parameter to the "aws_rds_cluster" resource in your Terraform code. Here is an example of how to do it:
+
+[source,hcl]
+----
+resource "aws_rds_cluster" "default" {
+  cluster_identifier = "aurora-cluster-demo"
+  availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  database_name      = "mydb"
+  master_username    = "foo"
+  master_password    = "bar"
+  backup_retention_period = 5
+  preferred_backup_window = "07:00-09:00"
+  kms_key_id = "arn:aws:kms:us-west-2:111122223333:key/abcd1234-a123-456a-a12b-a123b4cd56ef" // ensure to replace with your own KMS key ARN
+}
+----
+

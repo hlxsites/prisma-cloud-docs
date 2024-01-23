@@ -1,0 +1,54 @@
+== AWS Secret Manager Automatic Key Rotation is not enabled
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| fd6a6fc7-8c83-4b3c-b239-7fbdd42abc42
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/SecretsAreRotated.yaml[CKV2_AWS_57]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy detects whether rotation is enabled for Secrets in AWS Secrets Manager. Enabling rotation for secrets helps reduce the risk of unauthorized access to the secrets.
+
+=== Fix - Buildtime
+                
+*Terraform*
+
+* *Resource:* aws_secretsmanager_secret
+* *Arguments:* aws_secretsmanager_secret_rotation
+
+
+[source,go]
+----
+resource "aws_secretsmanager_secret" "example" {
+  name       = "example-secret"
+  # Other necessary configurations
+}
+
++resource "aws_secretsmanager_secret_rotation" "example" {
++  secret_id           = aws_secretsmanager_secret.example.id
++  rotation_lambda_arn = aws_lambda_function.example.arn
++  rotation_rules {
++    automatically_after_days = 30
++  }
++  # Other necessary configurations
++}
+----
+
+In this Terraform example, an aws_secretsmanager_secret resource is declared to create a new secret in AWS Secrets Manager, and an aws_secretsmanager_secret_rotation resource is configured to enable automatic rotation for that secret. The aws_secretsmanager_secret_rotation resource references the secret by its ID and specifies a Lambda function ARN that will handle the rotation logic, with rotation rules stating how frequently the secret should be rotated (e.g., every 30 days). To satisfy the policy, the example assumes that the Lambda function and necessary IAM roles and policies are correctly set up to perform the rotation, which are essential components for enabling and executing automatic rotation.

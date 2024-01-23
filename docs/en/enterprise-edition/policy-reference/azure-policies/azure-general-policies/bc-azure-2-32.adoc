@@ -1,0 +1,83 @@
+
+== Azure Key vault Private endpoint connection is not configured
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| a03ae1cb-c130-46cb-97ae-02cceab10b07
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureKeyVaultConfigPrivateEndpoint.yaml[CKV2_AZURE_32]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a private endpoint is configured to a key vault in an Azure environment. Without a private endpoint configured, data stored in the key vault could be accessed, intercepted or altered by unauthorized individuals or systems, posing a significant security risk. A private endpoint provides a secure network path over Azure’s private network, enhancing security by minimizing exposure to potential threats.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_key_vault, azurerm_private_endpoint
+
+Requires an Azure Key Vault to be connected to a private endpoint, you need to create both an azurerm_key_vault resource and an azurerm_private_endpoint resource and establish a connection between them in your Terraform configuration. Here is how to do it:
+
+[source,hcl]
+----
+resource "azurerm_virtual_network" "example" {
+  name                = "example-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet" "example" {
+  name                 = "example-subnet"
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+  address_prefixes     = ["10.0.0.0/24"]
+  private_endpoint_network_policies_enabled = false
+}
+
+resource "azurerm_key_vault" "example" {
+  name                        = "example-keyvault"
+  location                    = azurerm_resource_group.example.location
+  resource_group_name         = azurerm_resource_group.example.name
+  sku_name                    = "standard"
+  tenant_id                   = "00000000-0000-0000-0000-000000000000"
+  soft_delete_enabled         = true
+  purge_protection_enabled    = true
+  network_acls {
+    default_action             = "Deny"
+    bypass                     = "AzureServices"
+  }
+}
+
+resource "azurerm_private_endpoint" "example" {
+  name                = "example-private-endpoint"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  subnet_id           = azurerm_subnet.example.id
+
+  private_service_connection {
+    name                           = "example-private-connection"
+    is_manual_connection           = false
+    private_connection_resource_id = azurerm_key_vault.example.id
+    subresource_names              = ["vault"]
+  }
+}
+----
+

@@ -1,0 +1,79 @@
+
+== CodeBuild project environments do not have a logging configuration
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 8381a9e1-638a-442a-b6ad-423262c608c1
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CodebuildHasLogs.py[CKV_AWS_314]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking that AWS CodeBuild project environments have a logging configuration set. AWS CodeBuild is a fully managed build service that compiles source code, runs tests, and produces software packages. The policy is ensuring that these CodeBuild projects have appropriate logging configurations to capture details about what happens during a build process.
+
+The absence of a logging configuration is not advised because it can make it difficult to debug and identify issues in CodeBuild processes. This missing configuration could also lead to non-compliance with standards that mandate comprehensive monitoring and logging of activities in the application lifecycle. Not having proper logs can complicate troubleshooting, impede visibility into application processes, and could potentially mask malicious activities if security incidents occur.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_codebuild_project
+* *Arguments:* logs_config.cloudwatch_logs, logs_config.s3_logs
+
+To fix this issue, you need to enable logging configuration for your AWS CodeBuild Project. This can be done by adding a logging block in your resource. 
+
+[source,hcl]
+----
+resource "aws_codebuild_project" "example" {
+  name          = "test-project"
+  description   = "test_codebuild_project"
+  build_timeout = "5"
+  service_role  = aws_iam_role.example.arn
+
+  artifacts {
+    type = "NO_ARTIFACTS"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = "aws/codebuild/standard:4.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+  }
+
+  source {
+    type            = "GITHUB"
+    location        = "https://github.com/user/repo.git"
+    git_clone_depth = 1
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "log-group"
+      stream_name = "log-stream"
+    }
+    s3_logs {
+      status   = "ENABLED"
+      location = aws_s3_bucket.example.bucket
+    }
+  }
+}
+----
+The above Terraform script ensures that the `aws_codebuild_project` resource has log configuration enabled. The logs are sent to both CloudWatch Logs and Amazon S3. This configuration helps to maintain a secure environment by ensuring that all events are logged and traceable, which is a best practice for regulatory and operational troubleshooting. The logs would provide detailed information, including source IP addresses, the request made, request timestamp, and additional data. This can help during investigations, audits, or debugging sessions to understand exactly what occurred.
+

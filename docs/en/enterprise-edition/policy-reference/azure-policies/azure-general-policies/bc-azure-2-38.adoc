@@ -1,0 +1,59 @@
+
+== Azure Storage account soft delete is disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| f5a29936-659e-48a8-8110-783411bf6a9c
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureStorageAccountEnableSoftDelete.yaml[CKV2_AZURE_38]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to see if the soft-delete feature is enabled on Azure storage accounts. It's important to have soft-delete enabled because it provides a safeguard against accidental deletion of data. It keeps deleted data available for recovery for a certain period, preventing any loss due to human error, programmatic errors, or malicious activities. Without this feature, deleted data is irretrievable, potentially causing data loss which can have severe consequences for businesses.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account
+* *Arguments:* blob_properties.delete_retention_policy.days, blob_properties.delete_retention_policy, account_kind
+
+To fix this issue, you need to enable the soft-delete option in the configuration of your Azure storage account. 
+
+[source,hcl]
+----
+resource "azurerm_storage_account" "example" {
+  name                     = "examplestoracc"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+
+  blob_properties {
+    delete_retention_policy {
+      days = 7
+    }
+  }
+}
+----
+
+In the resource block "azurerm_storage_account", the sub-block "blob_properties" contains a "delete_retention_policy" block. This block contains an attribute called days. When you set a number for this attribute, it specifies the number of days the deleted blobs should be retained in the Storage account. In the example above, it is set to 7 days. If the value of "days" is set to 0, soft delete is disabled for the Azure Storage account. 
+
+By enabling soft-delete, this gives you the opportunity to restore the blob data when it is accidentally deleted. It is a layer of protection that can serve as a backup. This increases the security of your data stored on Azure.
+

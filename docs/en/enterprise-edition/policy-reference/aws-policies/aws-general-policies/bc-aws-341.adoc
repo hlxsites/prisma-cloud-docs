@@ -1,0 +1,57 @@
+== AWS Auto Scaling group launch configuration configured with Instance Metadata Service hop count greater than 1
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 897624ae-ff31-4270-bc71-1c8a36d84427
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LaunchTemplateMetadataHop.py[CKV_AWS_341]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks if the Launch template in AWS (Amazon Web Services) has a metadata response hop limit greater than 1. The metadata response hop limit is a security setting that determines how many networking hops (steps) an EC2 instance metadata request can traverse. If this limit is set to a value greater than 1, it could allow an attacker to potentially intercept the request and gain access to sensitive information. So it's always safer to limit it to 1 to minimize vulnerabilities.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_launch_configuration, aws_launch_template
+* *Arguments:* metadata_options.http_put_response_hop_limit
+
+To fix the issue, you should enable the HttpPutResponseHopLimit on the AWS launch template and set it to 1. This limits the number of hops a metadata packet can take to 1, ensuring that the IMDSv1 is not reachable.
+
+[source,hcl]
+----
+resource "aws_launch_template" "default" {
+  name = "example"
+
+  block_device_mappings {
+    device_name = "/dev/sda1"
+  }
+
+  instance_market_options {
+    market_type = "spot"
+  }
+
+  metadata_options {
+    http_tokens = "required"
+    http_put_response_hop_limit = 1
+    }
+}
+----
+

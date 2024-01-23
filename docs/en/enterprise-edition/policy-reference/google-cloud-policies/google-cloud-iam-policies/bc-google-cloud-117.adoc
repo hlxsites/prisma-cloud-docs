@@ -1,0 +1,50 @@
+
+== Project level utilization of basic roles
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 67bcea2a-fbf7-4f74-b30a-d351c595121e
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleProjectBasicRole.py[CKV_GCP_117]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy, identified as CKV_GCP_117, belongs to the IAM (Identity and Access Management) category and is named "Ensure basic roles are not used at project level." This policy is checking to ensure that basic roles, which are broad, pre-defined roles in Google Cloud Platform, are not being used at a project level.
+
+This policy tries to enforce more granular, least privilege principles for policy making. Basic roles could allow for overly broad permissions, potentially enabling unauthorized access or actions within the project. Over granting permissions through the use of basic roles could lead to potential breaches in security and unnecessary vulnerabilities may be exploited by malicious users. Thus, it is bad practice to use these basic roles at the project level. It’s always a better security strategy to custom define roles with the least privileges necessary, and applying them to the appropriate users or groups.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'google_project_iam_member', 'google_project_iam_binding'
+
+To fix this issue, you need to replace any use of basic roles at the project level with predefined or custom roles. Predefined roles cover all the possible services and actions that might be needed, while custom roles can be defined with the exact set of permissions necessary.
+
+[source,go]
+----
+resource "google_project_iam_member" "project" {
+  project = "your-project-id"
+  role    = "roles/logging.viewer" # replace basic roles (e.g., roles/editor) with predefined or custom roles
+  member  = "user:jdoe@example.com"
+}
+----
+
+The above code is secure because it follows the principle of least privilege, a key security concept which means giving a user the minimum levels of access necessary to complete his/her job functions. As a result, potential damage is limited even in the case of a breach.
+

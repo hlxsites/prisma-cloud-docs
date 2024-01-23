@@ -1,0 +1,55 @@
+
+== Azure Virtual Network subnet is not configured with a Network Security Group
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| d3ed9388-fa76-44b7-ac6f-72503b6340e0
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureSubnetConfigWithNSG.yaml[CKV2_AZURE_31]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether a Virtual Network (VNET) subnet in the Azure environment is configured with a Network Security Group (NSG). The NSG includes rules to allow or deny traffic to a subnet, providing security for the VNET. If a subnet is not associated with an NSG, it may be exposed to potential cybersecurity threats. Therefore, not having a NSG for a VNET subnet is considered a security risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_subnet, azurerm_network_security_group, azurerm_subnet_network_security_group_association
+* *Arguments:* name, subnet_id
+
+To fix this issue, you need to associate your Azure Virtual Network (VNet) subnet with a Network Security Group (NSG).
+
+[source,hcl]
+----
+resource "azurerm_network_security_group" "example" {
+  name                = "example-nsg"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet_network_security_group_association" "example" {
+  subnet_id                 = azurerm_subnet.example.id
+  network_security_group_id = azurerm_network_security_group.example.id
+}
+----
+The above configuration shows how to create an NSG and attach it to a subnet. Applying policies via Network Security Groups helps to restrict inbound, outbound traffic that is operating to and from resources connected to Azure VNets.
+
+By associating an NSG to a subnet, you define rules for inbound and outbound traffic. This improves security by ensuring that only allowed traffic is permitted into and out of the subnet.
+

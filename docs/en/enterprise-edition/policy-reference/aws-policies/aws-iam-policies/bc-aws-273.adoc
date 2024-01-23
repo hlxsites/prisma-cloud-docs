@@ -1,0 +1,48 @@
+
+== Access is not controlled through Single Sign-On (SSO)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| a9550a9c-9a97-44e4-8358-0c90759621b4
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMUserNotUsedForAccess.py[CKV_AWS_273]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to ensure that access to AWS resources is managed through Single Sign-On (SSO) instead of directly created AWS IAM users. Relying on IAM for user management can lead to various risks such as weak password policies or inadequate re-certification policies, which can potentially expose your AWS environment to security breaches. On the contrary, managing access through SSO allows for more consistent application of security policies across all users and reduces the chance of unauthorized access.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_user
+
+
+[source, go]
+----
+resource "aws_iam_user" "bad" {
+  name = "example"
+  path = "/system/"
+
+  tags = {
+    tag-key = "tag-value"
+  }
+}
+----
+

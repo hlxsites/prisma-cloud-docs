@@ -1,0 +1,52 @@
+
+== Operating system disks are not ephemeral disks
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4c01c94c-8a64-4741-8a6f-a79e3ab75bd2
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AKSEphemeralOSDisks.py[CKV_AZURE_226]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks if ephemeral disks are being used for Operating System (OS) disks in Azure. The use of ephemeral disks for OS disks has several benefits including improved read/write speeds and reduced costs, as they are directly attached to the virtual machine and are not billed separately. Not using ephemeral disks could lead to slower application performance and increased costs.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* default_node_pool.os_disk_type
+
+To fix the issue, you should use ephemeral disks for OS disks in your Kubernetes configuration. This would mean using the azure provider in your Terraform plan to ensure that you are specifying the OS disk to be ephemeral.
+
+[source,hcl]
+----
+resource "azurerm_kubernetes_cluster" "example" {
+  ...
+  default_node_pool {
+    ...
+    os_disk_type = "Ephemeral"
+    ...
+  }
+  ...
+}
+----
+
+
