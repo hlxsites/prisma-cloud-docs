@@ -1,0 +1,55 @@
+
+== Neptune snapshot is not securely encrypted
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| d7e4115f-f986-4775-be32-2646b4c72575
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NeptuneClusterSnapshotEncrypted.py[CKV_AWS_279]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that snapshots of Neptune, Amazon's managed graph database service, are securely encrypted. Having encryption activated, particularly for sensitive data, is critical for security reasons and confidentiality. Without encryption, your database snapshots could be vulnerable to unauthorized access or potential attacks, which might lead to data leaks or breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_neptune_cluster_snapshot
+* *Arguments:* storage_encrypted
+
+To fix this issue, you need to ensure that your Neptune snapshot is encrypted. The `aws_db_cluster_snapshot` resource in your Terraform configuration needs to have the `storage_encrypted` argument set to `true`. 
+
+[source,hcl]
+----
+resource "aws_neptune_cluster" "default" {
+  cluster_identifier  = "neptune-cluster-demo"
+  engine              = "neptune"
+  ...
+  storage_encrypted = true
+}
+
+resource "aws_neptune_cluster_snapshot" "snapshot" {
+  cluster_identifier          = aws_neptune_cluster.default.id
+  db_cluster_snapshot_identifier = "neptune-cluster-snapshot"
+}
+----
+
+By setting the `storage_encrypted` argument to `true`, you're ensuring that your Neptune snapshot is encrypted at rest using Amazon's Key Management Service (KMS). This means that the snapshot and any data associated with it cannot be accessed unless the appropriate key is provided, protecting it from unauthorized use or exposure.
+

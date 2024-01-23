@@ -1,0 +1,63 @@
+
+== Security configuration of the EMR Cluster does not ensure the encryption of EBS disks
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 8f86afb7-27c2-48b4-9549-a1d0fac4deaa
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/EMRClusterConfEncryptsEBS.py[CKV_AWS_350]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the security configuration for Amazon EMR (Elastic Map Reduce) Clusters is set to encrypt EBS (Elastic Block Store) disks. This is important because failing to encrypt EBS disks can expose sensitive data stored on them, thereby posing a potential security risk. Encryption converts the data into a code that is not easily decipherable by unauthorized users, thereby preventing unauthorized access to the data. Hence, it is crucial to ensure that EMR Cluster security configuration is set to encrypt EBS disks to safeguard the data and maintain data privacy and security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_emr_security_configuration
+* *Arguments:* configuration.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration.EnableEbsEncryption
+
+
+[source,go]
+----
+resource "aws_emr_security_configuration" "pass" {
+  name = "emrsc_other"
+
+  configuration = <<EOF
+{
+  "EncryptionConfiguration": {
+    "AtRestEncryptionConfiguration": {
+      "S3EncryptionConfiguration": {
+        "EncryptionMode": "SSE-S3"
+      },
+      "LocalDiskEncryptionConfiguration": {
+        "EnableEbsEncryption": true,
+        "EncryptionKeyProviderType": "AwsKms",
+        "AwsKmsKey": "arn:aws:kms:eu-west-2:680235478471:key/27b6fd31-ca6d-4c71-8dca-06ebd0f94174"
+      }
+    },
+    "EnableInTransitEncryption": false,
+    "EnableAtRestEncryption": true
+  }
+}
+EOF
+}
+----
+

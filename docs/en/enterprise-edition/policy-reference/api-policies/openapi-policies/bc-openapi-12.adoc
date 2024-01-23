@@ -1,0 +1,59 @@
+
+== Security definition uses the deprecated implicit flow on OAuth2
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| a19546f2-d7e5-410a-b72c-cc5ad410cee2
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/Oauth2SecurityDefinitionImplicitFlow.py[CKV_OPENAPI_12]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is evaluating if a security definition is utilizing the implicit flow on OAuth2 in version 2.0 files. Implicit flow is a part of OAuth 2.0, which allows a client application to obtain an access token directly from an authorization server, without needing an authorization code first. It's primarily used for applications that run inside the browser where having a client secret is not secure. 
+
+However, the use of implicit flow in OAuth2 is considered outdated and insecure, thus it's been deprecated. It exposes a higher risk of access tokens being compromised because they can be potentially intercepted by malicious actors during transmission from the authorization server to the client.
+
+So, use of implicit flow can lead to security breaches and unauthorized access to sensitive data or functionalities. That's why it's considered bad and a best practice to avoid its use in security definitions.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you need to ensure that the OpenAPI definition isn't using Implicit OAuth2 flow for security.
+
+[source,yaml]
+----
+openapi: 3.0.0
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        default:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          refreshUrl: https://example.com/oauth/refresh
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
+----
+
+The above code isn't using Implicit flow. Instead, it's using Authorization Code Grant, which requires the client to interact with the authorization server. This interaction allows the client to obtain an authorization code and then exchange it for an access token. This makes the OAuth2 flow more secure as the access token is never exposed directly to the client.
+

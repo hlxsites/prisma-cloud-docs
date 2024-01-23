@@ -1,0 +1,48 @@
+
+== OCI Kubernetes Engine Cluster boot volume is not configured with in-transit data encryption
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| f5c3b3c2-0993-4915-9d8e-9117423bd271
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/oci/OCI_K8EngineClusterBootVolConfigInTransitEncryption.yaml[CKV2_OCI_5]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is assessing whether the Kubernetes Engine Cluster boot volume is set up with in-transit data encryption. The reason why failing to implement this can be harmful is because unencrypted data can be easily intercepted during transit, potentially leading to a confidentiality breach. Enabling in-transit data encryption ensures that the data being transferred cannot be understood if intercepted, and hence, prevents unauthorized access to sensitive information.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* oci_containerengine_node_pool
+* *Arguments:* node_config_details.is_pv_encryption_in_transit_enabled
+
+To fix the issue, you should enable in-transit data encryption for the boot volume of the Kubernetes Engine Cluster. You can do this by setting the "is_pv_encryption_in_transit_enabled" attribute to "TRUE" in your resource block. 
+
+[source,hcl]
+----
+resource "oci_containerengine_node_pool" "example" {
+  ...
+  node_config_details {
+-    is_pv_encryption_in_transit_enabled = false
+  }
+}
+----
+

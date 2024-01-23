@@ -1,0 +1,51 @@
+== AWS SageMaker notebook instance is not placed in VPC
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4af86954-7e52-46d6-bf4a-efa0c4ccee41
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerNotebookInCustomVPC.py[CKV_AWS_306]
+
+|Severity
+|INFO
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+If a SageMaker notebook instance is not launched into a custom VPC, it might be exposed to security vulnerabilities. This exposure could arise from traffic not being restricted to a confined, secure environment. An instance launched outside of a custom VPC might also be at risk of unwanted access from unknown entities, which could lead to potential data breaches or unauthorized changes. 
+
+Therefore, launching instances into a custom VPC helps in the prevention of unauthorized access, minimizes attack surface, and provides a more secure and controlled environment. It helps safeguard valuable data and promotes safe business practices.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_notebook_instance
+* *Arguments:* subnet_id
+
+To fix this issue, you need to specify a `subnet_id` to create your SageMaker Notebook instance within a pre-defined VPC. Here is an example:
+
+[source,hcl]
+----
+resource "aws_sagemaker_notebook_instance" "notebook" {
+  name          = "notebook"
+  role_arn      = aws_iam_role.role.arn
++ subnet_id     = aws_subnet.example.id  # This launches it within a custom VPC
+  instance_type = "ml.t2.medium"
+
+  lifecycle_config_name = aws_sagemaker_notebook_instance_lifecycle_configuration.lifecycle_configuration.name
+}
+----
+

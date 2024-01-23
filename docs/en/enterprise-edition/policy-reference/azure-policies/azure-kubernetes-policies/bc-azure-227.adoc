@@ -1,0 +1,48 @@
+
+== AKS cluster not encrypting temp disks, caches, and data flows
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 3947af44-d2bf-4ae3-9d14-3543388a26ec
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AKSEncryptionAtHostEnabled.py[CKV_AZURE_227]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks to verify if the Azure Kubernetes Service (AKS) cluster encrypts temporary disks, caches, and data flows. It's bad not to have encryption because it can lead to unauthorized data access or data loss. Encrypting these disk resources ensures that all data is unreadable by anyone without the correct encryption key, thereby mitigating risks related to data confidentiality and integrity. Without such a policy in place, sensitive data might be exposed to potential threats, making the system vulnerable to harmful security breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* default_node_pool.enable_host_encryption
+
+
+[source,go]
+----
+resource "azurerm_kubernetes_cluster" "example" {
+  ...
+  default_node_pool {
++   enable_host_encryption = true
+    ...
+  }
+}
+----
+

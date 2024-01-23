@@ -1,0 +1,60 @@
+
+== Comprehend Entity Recognizer's model is not encrypted by KMS using a customer managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 0fbde6f9-78ad-41c7-8be7-9bc589c66320
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ComprehendEntityRecognizerModelUsesCMK.py[CKV_AWS_267]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is assessing whether the Amazon Comprehend Entity Recognizer's model is encrypted using a Key Management Service (KMS) with a Customer Managed Key (CMK). An unencrypted model may be exposed to certain threats such as unauthorized access or potential data breaches. By using a KMS with a CMK, users have more control and oversight over who can use or manage their keys, enabling a higher level of data protection. Therefore, failing to use CMKs in this context could lead to vulnerabilities in data security and compliance risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_comprehend_entity_recognizer
+* *Arguments:* model_kms_key_id
+
+To fix this issue, you need to configure the AWS Comprehend Entity Recognizer model with a KMS key. The KMS key must be a customer managed key, not the default AWS key. Specify the key ARN in the `model_kms_key_id` field in the resource block for the Comprehend Entity Recognizer.
+
+[source,go]
+----
+resource "aws_kms_key" "key" {
+  description             = "Customer Managed Key for Comprehend Entity Recognizer"
+  deletion_window_in_days = 10
+}
+
+resource "aws_comprehend_entity_recognizer" "entity_recognizer" {
+    name = "test-entity-recognizer"
+    data_access_role_arn = aws_iam_role.role.arn
+    input_data_config {
+        data_format = "ONE_DOC_PER_LINE"
+        entity_types {
+            type = "TEST_ENTITY_TYPE"
+        }
+        s3_uri = aws_s3_bucket_object.test.bucket
+    }
+    model_kms_key_id = aws_kms_key.key.arn
+}
+----
+The code above creates a new Customer Managed Key (CMK) and uses it to secure the Comprehend data. The `model_kms_key_id` field specifies the ARN of the KMS key that is used to encrypt the Comprehend Entity Recognizer model. This ensures that your data is encrypted with a key that you manage, providing an additional level of control over data encryption and decryption. This provides better security compared to using the default AWS-managed key.
+

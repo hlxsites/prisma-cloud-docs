@@ -1,0 +1,49 @@
+
+== Comprehend Entity Recognizer's volume is not encrypted by KMS using a customer managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 6b4b54a6-fdf4-45fe-900b-eef13fee6304
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ComprehendEntityRecognizerVolumeUsesCMK.py[CKV_AWS_268]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks for encryption settings in AWS (Amazon Web Services) cloud infrastructure. In particular, it focuses on verifying if Elastic File System (EFS) data at rest is protected through encryption. 
+
+Encryption is vital for data security because it converts data into a format that can't be read without a decryption key. Failures to encrypt data at rest can lead to data breaches and unauthorized access, which may violate data privacy laws and regulations, and potentially harm the business' reputation and customer trust. Thus, it is crucial to maintain appropriate encryption measures.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_comprehend_entity_recognizer
+* *Arguments:* volume_kms_key_id
+
+Ensure you configure the `volume_kms_key_id` attribute within the `aws_comprehend_entity_recognizer` resource block. This ID should point to the Amazon Resource Name (ARN) of the KMS Key that will be used to encrypt your log group.
+
+[source,go]
+----
+resource "aws_comprehend_entity_recognizer" "example" {
+  name = "example"
+  ...
+  volume_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef"
+}
+----
+
