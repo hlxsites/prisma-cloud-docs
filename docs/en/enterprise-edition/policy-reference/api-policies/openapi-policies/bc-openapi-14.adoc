@@ -1,0 +1,70 @@
+
+== Operation Objects Uses 'Implicit' Flow
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2c090e1b-e819-4a68-b461-55ef26d7cdb9
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/OperationObjectImplicitFlow.py[CKV_OPENAPI_14]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is checking for the usage of 'implicit' flow in operation objects within OpenAPI 2.0 files. The 'implicit' flow is an authorization method used in OpenAPI operations which has since been deprecated due to inherent security vulnerabilities. It relies on redirection-based flows that make an application more susceptible to access and refresh token interception. When these tokens are stolen, a malicious actor can impersonate a user and conduct activities without consent. Therefore, using a more secure method like 'authorization code' flow is recommended, which adds an additional layer of security and prevents direct exposure of tokens. The policy thus helps in maintaining good API security practices in the OpenAPI specifications.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix the issue pointed out by this Checkov policy, you should update your API authorization procedure from the deprecated 'implicit' flow to another supported authorization flow such as 'authorizationCode' flow.
+
+[source,yaml]
+----
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+servers:
+  - url: http://petstore.swagger.io/v1
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      responses:
+        '200':
+          description: An paged array of pets
+      security:
+        - petstore_auth:
+            - 'read:pets'
+components:
+  securitySchemes:
+    petstore_auth:     # arbitrary name for the security scheme
+      type: oauth2
+      flows:
+        authorizationCode:  # OAuth flow
+          authorizationUrl: https://example.com/api/oauth/dialog
+          tokenUrl: https://example.com/api/oauth/token
+          scopes:
+            'read:pets': read your pets
+            'write:pets': modify pets in your account
+----
+
+The secure code provided does not use 'implicit' flow. It uses the 'authorizationCode' OAuth 2.0 flow which is not deprecated and considered secure. The OAuth 'authorizationCode' flow is intended to be used for applications that can keep the client secret (the password) a secret. 'AuthorizationCode' is safer because it hands off clients to the provider's system to conduct a secure authentication transaction. As a result, applications do not have to handle delicate information like user passwords.
+
+

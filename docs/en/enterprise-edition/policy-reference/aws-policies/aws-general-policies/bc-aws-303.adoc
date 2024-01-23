@@ -1,0 +1,54 @@
+== AWS SSM documents are public
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| b7673d43-cf84-4cb9-9e00-60d99365f35f
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SSMDocumentsArePrivate.py[CKV_AWS_303]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that SSM (Simple Systems Manager) documents are not public. SSM documents are a set of instructions that an instance follows, such as software configurations. Making them publicly accessible can pose a security risk as it exposes potentially sensitive information. Unauthorized users could gain insight into the system’s configuration, dependencies, or other valuable data, which can be exploited leading to data breaches or system compromises.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ssm_document
+* *Arguments:* permissions.account_ids
+
+To fix the issue, you should ensure that AWS SSM documents have permissions that restrict public access. You can modify the "permissions" argument of the aws_ssm_document resource to exclude "all", which represents public access. Here is an example:
+
+[source,go]
+----  
+resource "aws_ssm_document" "example" {
+  name          = "example"
+  document_type = "Command"
+
+  permissions = {
+    type = "Share"
+-   account_ids = All
++   account_ids = [data.aws_caller_identity.current.account_id]
+  }
+  ...
+}
+----
+
+This code is securing the SSM Document by restricting its access only to the specified AWS account. Instead of allowing public access with "All", it's specifying an AWS Role as the transfer. This means only those with that specific role in the specified AWS account can get this document. This helps limit who has access to this SSM Document, enhancing the security of your AWS resources.
+

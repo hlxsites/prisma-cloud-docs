@@ -1,0 +1,58 @@
+== AWS API Gateway endpoints without client certificate authentication
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 82493c0b-f4d0-4a82-a5b5-a85df8e78e19
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/APIGatewayEndpointsUsesCertificateForAuthentication.yaml[CKV2_AWS_51]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy detects AWS API Gateway endpoints that do not use client certificate authentication. Client certificate authentication provides an additional layer of security by requiring clients to present a valid certificate issued by a trusted Certificate Authority (CA) in order to authenticate and establish a secure connection with the API Gateway endpoint.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_api_gateway_stage
+* *Arguments:* client_certificate_id
+
+To fix the issue, the `client_certificate_id` argument should be provided in the `aws_api_gateway_stage` resource. This argument allows you to specify the identifier of the ClientCertificate resource that represents the client certificate to use for authentication.
+
+Secure code example:
+
+[source,terraform]
+----
+resource "aws_api_gateway_stage" "example" {
+  stage_name        = "prod"
+  rest_api_id       = aws_api_gateway_rest_api.example.id
+  deployment_id     = aws_api_gateway_deployment.example.id
++ client_certificate_id = aws_api_gateway_client_certificate.example.id
+}
+
+resource "aws_api_gateway_client_certificate" "example" {
+  certificate_body = filebase64("client_certificate.pem")
+  certificate_chain = filebase64("certificate_chain.pem")
+  private_key = filebase64("private_key.pem")
+}
+----
+
+In the above code example, the `aws_api_gateway_stage` resource includes the `client_certificate_id` argument which references the `aws_api_gateway_client_certificate` resource. This ensures that client certificate authentication is enabled for the API Gateway endpoint.
+
+By providing a valid client certificate, clients must present this certificate and undergo a mutual authentication process to establish a secure connection with the API Gateway endpoint, enhancing the overall security of the system.

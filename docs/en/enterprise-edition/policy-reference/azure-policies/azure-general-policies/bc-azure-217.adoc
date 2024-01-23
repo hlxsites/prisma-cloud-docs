@@ -1,0 +1,56 @@
+== Azure Application gateways listener that allow connection requests over HTTP
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| f552fc4a-b210-4ec1-adfe-c29350a04f92
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AppGWUsesHttps.py[CKV_AZURE_217]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Azure Application Gateways do not allow connection requests over HTTP. HTTP is inherently insecure as it does not encrypt the data being transmitted between clients and servers. This means that data like user credentials, payment details, and other sensitive information can be intercepted and exploited by attackers. Therefore, it's important to only allow connections over HTTPS, which is a secure version of HTTP. HTTPS encrypts all data in transit, protecting it from being viewed by third parties.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_application_gateway
+* *Arguments:* http_listener.protocol
+
+To fix this issue, you need to enforce HTTPS-only listener on your Azure Application Gateway. This can be achieved by changing the `protocol` field from `Http` to `Https` in your `azurerm_application_gateway` terraform configuration. 
+
+[source,hcl]
+----
+resource "azurerm_application_gateway" "example" {
+  ...
+  frontend_port {
+    name = "example"
+    port = 443
+  }
+
+  http_listener {
+    name                           = "example"
+    frontend_ip_configuration_name = azurerm_public_ip.example.name
+    frontend_port_name             = azurerm_application_gateway.example.frontend_port.name
++   protocol                       = "Https"
+  }
+  ...
+}
+----
+

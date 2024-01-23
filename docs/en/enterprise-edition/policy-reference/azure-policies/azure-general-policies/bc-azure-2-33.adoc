@@ -1,0 +1,68 @@
+
+== Azure Storage account is not configured with private endpoint connection
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| f32919fb-62a7-498a-83dd-e31e60ceda29
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureStorageAccConfigWithPrivateEndpoint.yaml[CKV2_AZURE_33]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to ensure that a storage account is properly configured with a private endpoint. The private endpoint facilitates a secure connection over a private network, rather than the public internet. 
+
+If a storage account is not configured with a private endpoint, it poses a security risk as it might be accessible over the public internet. Unauthorized third parties could potentially gain access to the stored data, which may contain sensitive or proprietary information. Hence, it's crucial for the storage account to be properly configured with a private endpoint to maintain network security and data privacy.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account, azurerm_private_endpoint
+
+To fix this issue, configure your Azure storage account with a private endpoint.
+
+[source,hcl]
+----
+resource "azurerm_storage_account" "example" {
+  name                     = "examplestoracc"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  
+  enable_https_traffic_only = true
+}
+
+resource "azurerm_private_endpoint" "example" {
+  name                 = "example_private_endpoint"
+  location             = azurerm_resource_group.example.location
+  resource_group_name  = azurerm_resource_group.example.name
+  subnet_id            = azurerm_subnet.example.id
+  
+  private_service_connection {
+    name                           = "example_psc"
+    is_manual_connection           = false
+    private_connection_resource_id = azurerm_storage_account.example.id
+    subresource_names              = ["blob"]
+  }  
+}
+----
+
+In the above code, a private endpoint `example_private_endpoint` is configured for the storage account `examplestoracc`. The `private_service_connection` block connects the storage account to the private endpoint securely. The `subresource_names` item is set to `blob` to specify that the endpoint is for blob storage. Configuring a storage account with a private endpoint ensures that network traffic between the storage account and the endpoint remains within the Azure network, which significantly reduces the risk of data exfiltration.
+

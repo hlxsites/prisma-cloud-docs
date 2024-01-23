@@ -1,0 +1,72 @@
+
+== API keys transmitted over cleartext
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 868cc0cb-868c-4caa-bb29-d5aaa1d1b5ff
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/generic/ClearTextAPIKey.py[CKV_OPENAPI_20]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is essentially checking for instances where API keys may be sent over unencrypted, plain text. The danger or risk associated with violation of this policy is that it could lead to potential security breaches. If API keys are sent over clear text, it could potentially be intercepted and inappropriately used by malicious third parties, leading to unauthorized access, data theft or other harmful malicious activities.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To address the issue, we need to create an OpenAPI specification that follows secure communication protocols and proper API key handling. Here's an example OpenAPI spec in YAML format that would comply with this policy:
+
+[source,yaml]
+----
+openapi: 3.0.0
+info:
+  title: Secure API
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com
+    description: Secure server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+paths:
+  /secureEndpoint:
+    get:
+      summary: Secure endpoint requiring API key
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Success
+----
+
+
+1. **Use of HTTPS**: The `servers` section specifies a URL that begins with `https://`, ensuring that all data, including API keys, is encrypted in transit. This is crucial to prevent interception of sensitive data, including API keys, by unauthorized parties.
+
+2. **Security Schemes**: In the `components.securitySchemes`, an API key security scheme is defined (`ApiKeyAuth`). This specifies that the API key should be included in the request header. The key is named `X-API-KEY`, indicating where and how the API key should be sent.
+
+3. **Secure Endpoints**: Under `paths`, the `/secureEndpoint` path is defined to use the `ApiKeyAuth` security scheme, meaning that accessing this endpoint requires a valid API key. The security requirement at the operation level ensures that each request to this endpoint must include the API key in the header, as defined in the `securitySchemes`.
+
+By adhering to these practices, the OpenAPI spec ensures secure communication (via HTTPS) and proper handling of API keys, thus complying with the `ClearTestAPIKey` Checkov policy. This policy checks for the use of insecure protocols (like HTTP or WS) and the improper handling of API keys, both of which are addressed in the provided spec.
