@@ -37,39 +37,27 @@ The following steps shows how you can manually remediate alerts in AWS. You can 
 +
 To view all of the policies that triggered an alert select *Alerts > Overview*.
 
-. Click *Add Filter* and select *Policy Type > IAM*.
+. Click *Add Filter* and select *Policy Type > IAM*. Filter the alerts to show only *Alert State- Open* alerts that are *Remediable-Yes*.
 +
 image::administration/iam-security-policy-type.png[]
 
-. Select the violating policy that you want to remediate. Policies with a green check mark can be remediated.
+. Select the violating policy that you want to remediate. 
 
-. Investigate the policy violations.
+. Investigate the policy violations. 
 +
-In this example we see all the violating resources for this Okta user. Prisma Cloud provides us hints on why the alert was generated, which in this case was a result of an Okta user being able to create another IAM user—this could lead to a potential back door because even if the original Okta user is deleted, they can still log in through the second user. Prisma Cloud also provides recommended steps on how to resolve the policy violation.
-+
-image::administration/iam-security-alert-violating-policy.png[]
-+
-After a policy violation is triggered, it is sent to the SQS queue.
+Select the alert and click *Investigate* from the Actions menu. Here you can take a closer look at the asset that trigerred the policy violation. After a policy violation is triggered, it is sent to the SQS queue. In the example below the SQS queue indicates that the alert that was triggered.
 +
 image::administration/send-and-receive-messages-1-alert.png[]
-+
-In this example the SQS queue shows 1 message which is the alert that was triggered.
 
-. Get the remediation steps.
+. Manually remediate the alert.
 +
-Under the *OPTIONS* column, click *Remediate*.
+image::iam-security-alert-violating-policy.png[]
 
-.. Copy the CLI commands.
-+
-After you click *Remediate* the CLI commands appears in a popup window.
-+
-image::administration/iam-security-cli-commands.png[]
+.. After you select the alert and click *Remediate* the CLI commands appears in a popup window.
 
-.. Run the CLI commands on your AWS account. In case of your GCP account, before you run the CLI command, set up remediation for GCP IAM alerts.
+.. Run the CLI commands on your AWS account. For GCP accounts, before you run the CLI command, set up remediation for GCP IAM alerts.
 +
-After you executed the CLI commands you will have completed the remediation process and the excess privileges will be revoked. The SQS queue will now show 0 messages.
-+
-image::administration/send-and-receive-messages-2-remediation.png[]
+Once you execute the CLI commands the remediation process is complete. The SQS queue will now show 0 messages.
 
 
 === Set up Automatic Remediation for AWS IAM Alerts
