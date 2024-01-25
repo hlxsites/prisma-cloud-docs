@@ -33,6 +33,7 @@ def main():
   else:
     value = "python3 src/update_spec_file.py" +" " + outFileName + " "
     subprocess.call(value, shell=True)
+    
   print(f"Spec file transfer complete.")
 
 if __name__ == '__main__':

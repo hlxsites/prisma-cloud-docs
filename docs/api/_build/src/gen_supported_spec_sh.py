@@ -215,7 +215,7 @@ def main():
   """
   Read an OpenAPI spec, identify all supported endpoints, and output a
   new spec that only contains supported endpoints to a file named
-  `openapi_supported_selfhosted.json`.
+  `openapi_release_no_supported_sh.json`.
   """
   parser = argparse.ArgumentParser(description='Generates an OpenAPI spec with supported endpoints only')
   parser.add_argument('spec',

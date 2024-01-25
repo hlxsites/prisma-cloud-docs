@@ -205,7 +205,7 @@ def print_status(spec, details=False):
       for method in spec['paths'][path]:
         print(f"{path}, {method}")
         count += 1
-    p#rint(f"\nTotal endpoints: {count}")
+    #print(f"\nTotal endpoints: {count}")
     #print()
 
   # Print status to stdout.
@@ -218,9 +218,9 @@ def main():
   """
   Read an OpenAPI spec, identify all supported endpoints, and output a
   new spec that only contains supported endpoints to a file named
-  `openapi_supported_saas.json`.
+  `openapi_release_no_supported_saas.json`.
   """
-  count = 0
+
   parser = argparse.ArgumentParser(description='Generates an OpenAPI spec with supported endpoints only')
   parser.add_argument('spec',
     help='Path to OpenAPI spec file')

@@ -141,6 +141,7 @@ def add_endpoint_desc(config):
   """
   spec = config.spec
   topic_map = config.topic_map
+  warning_list = []
 
   for route in spec['paths']:
     for method in spec['paths'][route]:
@@ -151,7 +152,14 @@ def add_endpoint_desc(config):
         #print(f"FOUND desc for {method}{route}")
         #print(f"LINK = {desc.get_link(config)}")
         #print(f'WARNING: No endpoint desc for {method.upper()} {route}')
-
+      else:
+        warning = 'WARNING: No endpoint desc for {method.upper()}' +route
+        warning_list.append(warning)
+        with open("./warning_sh.txt", "a") as warning_file:
+          warning_file.write('\n'.join(warning_list))  
+  
+  if warning_list !=[]:
+    print("A warning file created--","./warning_sh.txt")  
 
 
 def add_endpoint_summary(config):
