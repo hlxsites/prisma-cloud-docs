@@ -7,10 +7,13 @@ from dataclasses import dataclass
 import json
 import pathlib
 import re
-
+import os.path
+import subprocess
+from pathlib import Path
 
 # Constants
 COMMA = ","
+outputFilename = "openapi_supported_sh.json"
 
 METHODS = [
   'get', 'head', 'post', 'put', 'delete',
@@ -180,20 +183,20 @@ def filter_spec(spec):
   spec['paths'] = copy.copy(supported_paths)
 
 
-def output_spec(spec):
+def output_spec(spec,outputFilename):
   """
   Write the spec dict to a file in JSON format.
   """
   # Write spec to file.
-  with open("openapi_supported_sh.json", "w") as outfile:
+  with open(outputFilename, "w") as outfile:
     json.dump(spec, outfile, indent=2)
 
 
 def print_status(spec, details=False):
 
   if details:
-    print("Supported endpoints")
-    print("-------------------")
+    #("Supported endpoints")
+    #print("-------------------")
     count = 0
     for path in spec['paths']:
       for method in spec['paths'][path]:
@@ -203,9 +206,9 @@ def print_status(spec, details=False):
     print()
 
   # Print status to stdout.
-  print("Success!")
-  print("  Wrote file: openapi_supported_sh.json")
-  print("  Run the script with --details to get a list of endpoints in the new spec file")
+  #print("Success!")
+  #print(" Wrote file: openapi_supported_sh.json")
+  #print("  Run the script with --details to get a list of endpoints in the new spec file")
 
 
 def main():
@@ -221,12 +224,28 @@ def main():
     help='(Optional) Path to supported.cfg, which overrides which endpoints to include and exclude')
   parser.add_argument('--details', action="store_true",
     help='Print details about the transformation')
+  parser.add_argument('--panloc', help = 'pan.dev folder location on local system' )
   args = parser.parse_args()
+
+
+  outputFilename = Path(args.spec).stem + "_supported_sh.json"
 
   s = gen_spec(args.spec, args.config)
 
-  output_spec(s)
+  output_spec(s, outputFilename)
   print_status(s, args.details)
+
+  #print(f"Supported spec for PCCE in progress...")
+  if(os.path.exists(outputFilename)):
+    if args.panloc:
+      value = "python3 src/enrich_spec_sh.py " +outputFilename+  " ../_topic_map.yml "+ "--panloc "+ args.panloc
+      subprocess.call(value, shell=True)
+      #print(f"PCCE supported spec is complete")
+    else:
+      value = "python3 src/enrich_spec_sh.py " +outputFilename+  " ../_topic_map.yml "
+      subprocess.call(value, shell=True)
+  else:
+    print("File not found")
 
 
 if __name__ == '__main__':
