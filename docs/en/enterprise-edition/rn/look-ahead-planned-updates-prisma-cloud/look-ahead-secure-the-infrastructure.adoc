@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.2.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+Read this section to learn about what is planned in the 24.2.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
 [NOTE]
 ====
@@ -14,7 +14,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<changes-in-existing-behavior>>
 * <<new-ips-for-runtime>>
 * <<new-policies>>
-* <<policy-updates>>
+//* <<policy-updates>>
 //* <<policy-updates-iam>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
@@ -24,8 +24,8 @@ The details and functionality listed below are a preview and the actual release 
 
 [cols="50%a,50%a"]
 |===
-|FEATURE
-|DESCRIPTION
+|*Feature*
+|*Description*
 
 |*Prisma Cloud Darwin Release*
 //received the blurb on Slack from Matangi. No Jira ticket for this.
@@ -38,12 +38,11 @@ The rollout for existing customers started on October 18, 2023 and will run thro
 
 All Prisma Cloud environments except app.gov are updated to the Darwin release. Contact your Prisma Cloud Customer Success team for more details.
 
+* 24.2.1 (Feb 6-15) - app.gov
+
 //* 23.11.1 (Nov 1-9) - app.ind, app.ca, app.uk, app.fr
-
 //* 23.12.1 (Nov 29-Dec 7) - app, app3, app.eu, app2.eu
-
 //* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
-
 //* 24.1.2 (Jan 29-Feb 6) - app.cn
 
 When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
@@ -55,13 +54,8 @@ When you are upgraded to the Darwin release, refer to the https://docs.prismaclo
 
 [cols="50%a,50%a"]
 |===
-|FEATURE
-|DESCRIPTION
-
-|*Change to OOTB Policy*
-//RLP-112586 - verify with PM before moving blurb from LA to 24.2.1 RN
-
-|The Finding Type for the *AWS Inspector Next* service will be updated from `AWS Inspector Best Practices` to source-specific finding type `Package Vulnerability` or `Network Reachability`. Due to this change, the `Security Services tampering risk due to a publicly exposed and vulnerable AWS EC2 instance with risky Defense Evasion permissions` OOTB policy and any custom policies that you have created will no longer work for *AWS Inspector Next* service and will not generate any alerts for policy violations from the 24.2.1 release. If you use this policy, contact Prisma Cloud Customer Success Representative for assistance.
+|*Feature*
+|*Description*
 
 |*S3 Flow Logs with Hourly Partition*
 
@@ -177,62 +171,189 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-[#policy-updates]
-=== Policy Updates
-
-[cols="50%a,50%a"]
-|===
-|POLICY UPDATES
-|DESCRIPTION
-
-|*placeholder*
-//RLP-
-
-|*Changes—* .
-
-*Severity—* 
-
-*Policy Type—* 
-
-*Current RQL—*
-
-----
-
-----
-
-*Updated RQL—*
-
-----
-
-----
-
-*Impact—* Low. .
-
-
-|===
-
-
-
 [#api-ingestions]
 === API Ingestions
 
 [cols="50%a,50%a"]
 |===
-|SERVICE
-|API DETAILS
+|*Service*
+|*API Details*
 
-|*placeholder*
-//RLP-
+|*Amazon EC2 Image Builder*
+//RLP-123966
 
-|**
+|*aws-imagebuilder-component*
 
 Additional permissions required:
 
-* ``
-* ``
+* `imagebuilder:ListComponents`
+* `imagebuilder:GetComponent`
 
-The Reader role includes the permissions.
+The Security Audit role includes the permissions.
 
+|*Amazon EC2 Image Builder*
+//RLP-123953
+
+|*aws-imagebuilder-image-recipe*
+
+Additional permissions required:
+
+* `imagebuilder:ListImageRecipes`
+* `imagebuilder:GetImageRecipe`
+
+The Security Audit role includes the permissions.
+
+|*Amazon EC2 Image Builder*
+//RLP-123951
+
+|*aws-imagebuilder-image-pipeline*
+
+Additional permissions required:
+
+* `imagebuilder:ListImagePipelines`
+* `imagebuilder:GetImagePipeline`
+
+The Security Audit role includes the permissions.
+
+|*Amazon EC2 Image Builder*
+//RLP-123946
+
+|*aws-imagebuilder-infrastructure-configuration*
+
+Additional permissions required:
+
+* `imagebuilder:ListInfrastructureConfigurations`
+* `imagebuilder:GetInfrastructureConfiguration`
+
+The Security Audit role includes the permissions.
+
+|*AWS Elastic Disaster Recovery*
+//RLP-122569
+
+|*aws-drs-job*
+
+Additional permission required:
+
+* `drs:DescribeJobs`
+
+The Security Audit role includes the permission.
+
+|*AWS Elastic Disaster Recovery*
+//RLP-118756
+
+|*aws-drs-replication-configuration*
+
+Additional permissions required:
+
+* `drs:DescribeSourceServers`
+* `drs:GetReplicationConfiguration`
+
+The Security Audit role includes the permissions.
+
+|*AWS Elastic Disaster Recovery*
+//RLP-118753
+
+|*aws-drs-source-server*
+
+Additional permission required:
+
+* `drs:DescribeSourceServers`
+
+The Security Audit role includes the permission.
+
+|tt:[Update] *Amazon Elastic Container Registry (ECR)*
+//RLP-127456
+
+|*aws-ecr-image*
+
+Prisma Cloud will update the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
+
+
+|*Google Vertex AI AIPlatform*
+//RLP-121320
+
+|*gcloud-vertex-ai-aiplatform-dataset*
+
+Additional permission required:
+
+* `aiplatform.datasets.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-121319
+
+|*gcloud-vertex-ai-aiplatform-hyperparameter-tuning-job*
+
+Additional permission required:
+
+* `aiplatform.hyperparameterTuningJobs.list`
+
+The Viewer role includes the permission.
+
+|*Google Cloud VMware Engine*
+//RLP-121318
+
+|*gcloud-vmware-engine-network*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.vmwareEngineNetworks.list`
+
+The Viewer role includes the permissions.
+
+
+|*Google Cloud VMware Engine*
+//RLP-123964
+
+|*gcloud-vmware-engine-network-policy*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.networkPolicies.list`
+
+The Viewer role includes the permissions.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-index*
+
+Additional permission required:
+
+* `aiplatform.indexes.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
+
+Additional permissions required:
+
+* `aiplatform.featurestores.list`
+* `aiplatform.entityTypes.list`
+* `aiplatform.entityTypes.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|tt:[Update] *Google Cloud Firestore*
+//RLP-127556
+
+|*gcloud-cloud-firestore-native-database*
+
+Prisma Cloud will update the `gcloud-cloud-firestore-native-database` API to exclude the `earliestVersionTime` field from the resource configuration.
+
+|tt:[Update] *Google Compute Engine (GCE)*
+//RLP-126590
+
+|*gcloud-compute-autoscaler*
+
+Prisma Cloud will update the `gcloud-compute-autoscaler` API to exclude the `recommendedSize` field from the resource configuration.
 
 |===
 
