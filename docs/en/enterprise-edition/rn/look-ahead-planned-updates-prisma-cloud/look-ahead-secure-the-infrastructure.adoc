@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.1.2 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+Read this section to learn about what is planned in the 24.2.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
 [NOTE]
 ====
@@ -14,38 +14,36 @@ The details and functionality listed below are a preview and the actual release 
 * <<changes-in-existing-behavior>>
 * <<new-ips-for-runtime>>
 * <<new-policies>>
-* <<policy-updates>>
-* <<policy-updates-iam>>
+//* <<policy-updates>>
+//* <<policy-updates-iam>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
-
 
 [#announcement]
 === Announcement
 
 [cols="50%a,50%a"]
 |===
-|FEATURE
-|DESCRIPTION
+|*Feature*
+|*Description*
 
 |*Prisma Cloud Darwin Release*
 //received the blurb on Slack from Matangi. No Jira ticket for this.
  
-|The *Prisma Cloud Darwin Release* is here. With the  Code to Cloud™ intelligence capabilities in this release, your security and development teams can work together to reduce application risks and prevent breaches.
+|The *Prisma Cloud Darwin Release* is live. With the Code to Cloud™ intelligence capabilities, your security and development teams can work together to reduce application risks and prevent breaches.
 
 image::darwin-release.gif[]
 
 The rollout for existing customers started on October 18, 2023 and will run through February 2024. Your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities] during this period. 
 
-Here is the roll out schedule for all Prisma Cloud environments except app.gov. Please connect with your Customer Success team for more details.
+All Prisma Cloud environments except app.gov are updated to the Darwin release. Contact your Prisma Cloud Customer Success team for more details.
+
+* 24.2.1 (Feb 6-15) - app.gov
 
 //* 23.11.1 (Nov 1-9) - app.ind, app.ca, app.uk, app.fr
-
 //* 23.12.1 (Nov 29-Dec 7) - app, app3, app.eu, app2.eu
-
 //* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
-
-* 24.1.2 (Jan 29-Feb 6) - app.cn
+//* 24.1.2 (Jan 29-Feb 6) - app.cn
 
 When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
 
@@ -56,16 +54,13 @@ When you are upgraded to the Darwin release, refer to the https://docs.prismaclo
 
 [cols="50%a,50%a"]
 |===
-|FEATURE
-|DESCRIPTION
-|*Change to OOTB Policy*
-//RLP-112586
-|The Finding Type for the *AWS Inspector Next* service will be updated from `AWS Inspector Best Practices` to source-specific finding type `Package Vulnerability` or `Network Reachability`. Due to this change, the `Security Services tampering risk due to a publicly exposed and vulnerable AWS EC2 instance with risky Defense Evasion permissions` OOTB policy and any custom policies that you have created will no longer work for *AWS Inspector Next* service and will not generate any alerts for policy violations from the 24.2.1 release. If you use this policy, contact Prisma Cloud customer support for assistance.
+|*Feature*
+|*Description*
 
 |*S3 Flow Logs with Hourly Partition*
 
 tt:[This change was first announced in the look ahead that was published with the 23.1.1 release.]
-//RLP-76433
+//RLP-76433 - verify with PM moving blurb from LA to 24.2.1 RN
 
 |If you currently ingest AWS flow logs using S3 with the 24-hour partition, you need to change it to the hourly partition.
 
@@ -167,7 +162,7 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 +
 The *Master* branch represents rrent Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.1.2
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.2.1.
 
 . Review the updates.
 +
@@ -176,195 +171,189 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-[#policy-updates]
-=== Policy Updates
-
-[cols="50%a,50%a"]
-|===
-|POLICY UPDATES
-|DESCRIPTION
-
-|*Azure Function App authentication is off*
-//RLP-126199
-
-|*Changes—* The policy RQL will be updated to only report Function Apps for which authentication is disabled. Azure Function App Authentication prevents anonymous HTTP requests from reaching the API app or authenticates token-enabled requests before they reach the API app, but not the Logic app or Web App resources created in Azure.
-
-*Severity—* Low
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and config.siteAuthEnabled is false
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and kind does not contain workflowapp and kind does not equal app and config.siteAuthEnabled is false
-----
-
-*Impact—* Low. Existing alerts generated for Logic App and Web App will be resolved and new alerts will be generated.
-
-
-|===
-
-[#policy-updates-iam]
-=== Policy Updates - IAM
-
-//RLP-126448
-
-[cols="30%a, 35%a, 35%a"]
-|===
-|*Policy Name*
-|*Old RQL*
-|*New RQL*
-
-|*AWS cross-account resource access through IAM policies*
-|----
-config from iam where dest.cloud.type = 'AWS' and source.cloud.account != dest.cloud.account
-----
-|----
-config from iam where dest.cloud.type = 'AWS' and source.cloud.account != dest.cloud.account AND dest.cloud.accountgroup != 'Default Account Group' AND dest.cloud.account != '*'
-----
-
-|===
-
-
 [#api-ingestions]
 === API Ingestions
 
 [cols="50%a,50%a"]
 |===
-|SERVICE
-|API DETAILS
+|*Service*
+|*API Details*
 
-|*Azure Cache*
-//RLP-119062
+|*Amazon EC2 Image Builder*
+//RLP-123966
 
-|*azure-cache-redis-diagnostic-settings*
-
-Additional permissions required:
-
-* `Microsoft.Cache/redis/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119350
-
-|*gcloud-vmware-engine-private-cloud*
+|*aws-imagebuilder-component*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.privateClouds.getIamPolicy`
+* `imagebuilder:ListComponents`
+* `imagebuilder:GetComponent`
 
-The Viewer role includes the permissions.
+The Security Audit role includes the permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-119358
+|*Amazon EC2 Image Builder*
+//RLP-123953
 
-|*gcloud-vmware-engine-cluster*
-
-Additional permissions required:
-
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.clusters.list`
-* `vmwareengine.clusters.getIamPolicy` 
- 
-The Viewer role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119359
-
-|*gcloud-vmware-engine-hcx-activation-key*
+|*aws-imagebuilder-image-recipe*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.hcxActivationKeys.list`
-* `vmwareengine.hcxActivationKeys.getIamPolicy` 
- 
-The Viewer role includes the permissions.
+* `imagebuilder:ListImageRecipes`
+* `imagebuilder:GetImageRecipe`
 
-|*Google Cloud VMware Engine*
-//RLP-119360
+The Security Audit role includes the permissions.
 
-|*gcloud-vmware-engine-subnet*
+|*Amazon EC2 Image Builder*
+//RLP-123951
+
+|*aws-imagebuilder-image-pipeline*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list` 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.subnets.list` 
- 
-The Viewer role includes the permissions.
+* `imagebuilder:ListImagePipelines`
+* `imagebuilder:GetImagePipeline`
 
+The Security Audit role includes the permissions.
 
-|*Google Vertex AI AIPlatform*
-//RLP-121267
+|*Amazon EC2 Image Builder*
+//RLP-123946
 
-|*gcloud-vertex-ai-aiplatform-custom-job*
+|*aws-imagebuilder-infrastructure-configuration*
+
+Additional permissions required:
+
+* `imagebuilder:ListInfrastructureConfigurations`
+* `imagebuilder:GetInfrastructureConfiguration`
+
+The Security Audit role includes the permissions.
+
+|*AWS Elastic Disaster Recovery*
+//RLP-122569
+
+|*aws-drs-job*
 
 Additional permission required:
 
-* `aiplatform.customJobs.list`
+* `drs:DescribeJobs`
 
-The Viewer role includes the permission.
+The Security Audit role includes the permission.
 
+|*AWS Elastic Disaster Recovery*
+//RLP-118756
 
-|*Google Vertex AI AIPlatform*
-//RLP-121266
+|*aws-drs-replication-configuration*
 
-|*gcloud-vertex-ai-aiplatform-endpoint*
+Additional permissions required:
 
-Additional permission required:
+* `drs:DescribeSourceServers`
+* `drs:GetReplicationConfiguration`
 
-* `aiplatform.endpoints.list`
+The Security Audit role includes the permissions.
 
-The Viewer role includes the permission.
+|*AWS Elastic Disaster Recovery*
+//RLP-118753
 
-|*Google Vertex AI AIPlatform*
-//RLP-121265
-
-|*gcloud-vertex-ai-aiplatform-training-pipeline*
-
-Additional permission required:
-
-* `aiplatform.trainingPipelines.list`
-
-The Viewer role includes the permission.
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-121262
-
-|*gcloud-vertex-ai-aiplatform-pipeline-job*
+|*aws-drs-source-server*
 
 Additional permission required:
 
-* `aiplatform.pipelineJobs.list`
+* `drs:DescribeSourceServers`
+
+The Security Audit role includes the permission.
+
+|tt:[Update] *Amazon Elastic Container Registry (ECR)*
+//RLP-127456
+
+|*aws-ecr-image*
+
+Prisma Cloud will update the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
+
+
+|*Google Vertex AI AIPlatform*
+//RLP-121320
+
+|*gcloud-vertex-ai-aiplatform-dataset*
+
+Additional permission required:
+
+* `aiplatform.datasets.list`
 
 The Viewer role includes the permission.
 
-|tt:[Update] *Google Deployment Manager*
-//RLP-123409
+|*Google Vertex AI AIPlatform*
+//RLP-121319
 
-|*gcloud-deployment-manager-deployment-manifest*
+|*gcloud-vertex-ai-aiplatform-hyperparameter-tuning-job*
 
-Prisma Cloud will update the `Resource Name` and `Asset ID` fields in the backend for `gcloud-deployment-manager-deployment-manifest` API. 
-Due to this change, when you perform an RQL search query, you will be able to see a change in the `Resource Name` and `Asset ID` fields making it easier for you to identify the resources. Also, all the existing resources will be deleted, and then regenerated on the management console.
+Additional permission required:
 
-Existing alerts corresponding to this resource will be resolved as `Resource_Deleted`, and new alerts will be generated against any policy violations.
+* `aiplatform.hyperparameterTuningJobs.list`
 
-*Impact—* None. Once the resources for `gcloud-deployment-manager-deployment-manifest` resume ingesting data, you will notice the correct alert count in the console.
+The Viewer role includes the permission.
 
+|*Google Cloud VMware Engine*
+//RLP-121318
+
+|*gcloud-vmware-engine-network*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.vmwareEngineNetworks.list`
+
+The Viewer role includes the permissions.
+
+
+|*Google Cloud VMware Engine*
+//RLP-123964
+
+|*gcloud-vmware-engine-network-policy*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.networkPolicies.list`
+
+The Viewer role includes the permissions.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-index*
+
+Additional permission required:
+
+* `aiplatform.indexes.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
+
+Additional permissions required:
+
+* `aiplatform.featurestores.list`
+* `aiplatform.entityTypes.list`
+* `aiplatform.entityTypes.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|tt:[Update] *Google Cloud Firestore*
+//RLP-127556
+
+|*gcloud-cloud-firestore-native-database*
+
+Prisma Cloud will update the `gcloud-cloud-firestore-native-database` API to exclude the `earliestVersionTime` field from the resource configuration.
+
+|tt:[Update] *Google Compute Engine (GCE)*
+//RLP-126590
+
+|*gcloud-compute-autoscaler*
+
+Prisma Cloud will update the `gcloud-compute-autoscaler` API to exclude the `recommendedSize` field from the resource configuration.
 
 |===
 
@@ -459,15 +448,6 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 | https://pan.dev/prisma-cloud/api/cspm/asset-2/#get-asset[POST /uai/v1/asset]
 
 
-|tt:[*End of Life (EOL) for Prisma Cloud Microsegmentation in 24.1.2*]
-//RLP-115151
-| - 
-| 24.1.2
-
-|The Prisma Cloud Microsegmentation module was announced as End-of-Sale effective 31 August 2022. As of the 24.1.2 release planned in end January 2024, the subscription is going End of Life and will be no longer available for use. 
-
-In preparation for the EoL, make sure to uninstall all instances of the Enforcer, the Microsegmentation agent deployed in your environment, as these agents will no longer enforce any security policies on traffic on or across your hosts.
-
 |tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
 //RLP-126719, need to check if this notice can be moved to current features in 24.1.2
 | - 
@@ -512,5 +492,3 @@ Response object property `risk.grade.options` is deprecated for the following re
 
 
 |===
-
-
