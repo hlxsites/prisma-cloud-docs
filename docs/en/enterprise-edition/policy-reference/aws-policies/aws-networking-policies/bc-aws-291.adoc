@@ -1,0 +1,95 @@
+
+== MSK nodes are not private
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 7fda58d8-b466-43ac-937f-207db1d5c3d2
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/MSKClusterNodesArePrivate.py[CKV_AWS_291]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking if Managed Stream for Kafka (MSK) nodes are set to private in AWS. The policy falls under the networking category. MSK nodes should be private for enhanced security and data protection. If these nodes are set to public, it increases the risk of unauthorized access and potential data breaches, as it allows anyone on the internet to interact with these nodes. Therefore, this policy is designed to ensure that your MSK nodes are not publicly accessible, prioritizing your data security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_msk_cluster
+* *Arguments:* broker_node_group_info.connectivity_info.public_access.type
+
+To fix this issue, you need to modify the `broker_node_group_info` in the `aws_msk_cluster` resource in your Terraform code to ensure the MSK nodes are private.
+
+[source,go]
+----
+resource "aws_msk_cluster" "pass" {
+  cluster_name           = "pike"
+  kafka_version          = "3.2.0"
+  number_of_broker_nodes = 2
+  broker_node_group_info {
+    storage_info {
+      ebs_storage_info {
+        volume_size = 1100
+      }
+    }
+    client_subnets = [
+      "subnet-0562ef1d304b968f4",
+    "subnet-08895dbf9e060579b"]
+    instance_type   = "kafka.t3.small"
+    security_groups = ["sg-002ed1a53dc5fe0ad"]
+    connectivity_info {
+      public_access {
++       type = "DISABLED"
+      }
+    }
+  }
+  client_authentication {
+    sasl {
+      scram = true
+    }
+  }
+  configuration_info {
+    arn      = ""
+    revision = 0
+  }
+  encryption_info {
+    encryption_at_rest_kms_key_arn = "arn:aws:kms:eu-west-2:680235478471:key/fd160011-126e-4bec-b370-c8765b5c6a37"
+    encryption_in_transit {
+      client_broker = "TLS"
+      in_cluster    = true
+    }
+  }
+  open_monitoring {
+    prometheus {
+      jmx_exporter {
+        enabled_in_broker = false
+      }
+
+      node_exporter {
+        enabled_in_broker = false
+      }
+    }
+
+  }
+  tags = {
+    pike = "permissions"
+  }
+}
+----
+

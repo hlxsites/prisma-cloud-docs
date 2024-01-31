@@ -1,0 +1,48 @@
+== The AWS Managed IAMFullAccess IAM policy should not be used
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| be77aed1-710b-4659-824f-ae52ef592669
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/IAMManagedIAMFullAccessPolicy.yaml[CKV2_AWS_56]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy detects situations where the AWS Managed IAMFullAccess IAM policy is being used. The IAMFullAccess policy grants full permissions to manage all aspects of IAM, which can be a security threat if not managed correctly. 
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_role_policy_attachment
+* *Arguments:* policy_arn
+
+To fix, it's recommended to replace IAMFullAccess with more granular, least privilege policies that limit scope of permissions. Remove policy_arn = "arn:aws:iam::aws:policy/IAMFullAccess" and replace it with the ARN of the least privilege policy.
+
+Secure code example:
+
+[source,go]
+----
+resource "aws_iam_role_policy_attachment" "example" {
+  role       = "example"
+  policy_arn = "arn:aws:iam::aws:policy/AnotherIAMPolicyWithLeastPrivilege"
+}
+----
+
+In this fixed example, we attach a policy with least-privilege to the IAM role, effectively reducing the potential security risk associated with the FULLACCESS permissions.

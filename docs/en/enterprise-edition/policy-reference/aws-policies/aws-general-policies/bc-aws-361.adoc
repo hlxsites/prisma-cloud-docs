@@ -1,0 +1,50 @@
+
+== Neptune DB cluster does not have automated backups enabled with adequate retention
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 349233fb-7d41-42b4-8058-90538b2964fb
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NeptuneClusterBackupRetention.py[CKV_AWS_361]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether a Neptune DB cluster in AWS (Amazon Web Services) has automated backups enabled and if these backups have an appropriate retention period. A backup is a copy of data that can be used to restore and recover data in the event of a failure or loss. The retention period refers to the length of time that backups are retained or kept. 
+
+The reason why this policy is important is that if automated backups are not enabled or do not have an adequate retention period, there could be a significant risk to the organization. Backups provide a safeguard against data loss, corruption or accidental deletion. Insufficient retention could lead to a situation where essential data cannot be restored because the backup has been discarded. Therefore, neglecting the importance of proper backup strategies could lead to detrimental effects on the business, from downtime to legal or compliance issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_neptune_cluster
+* *Arguments:* backup_retention_period
+
+The Neptune DB cluster must be configured with automated backups enabled and retention period of at least 7 days.
+
+[source,go]
+----
+resource "aws_neptune_cluster" "default" {
+  cluster_identifier  = "neptune-cluster-demo"
+  engine              = "neptune"
+  backup_retention_period = 7
+  preferred_backup_window = "07:00-09:00"
+}
+----
+

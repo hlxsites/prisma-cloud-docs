@@ -1,0 +1,54 @@
+
+== IAM workload identity pool provider is not restricted
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| aa3b7953-cf32-4f2e-90b1-058348802f02
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleIAMWorkloadIdentityConditional.py[CKV_GCP_118]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to check that the Identity and Access Management (IAM) workload identity pool provider is restricted. IAM workload identity pool provider is a way to authenticate services in Google Cloud Platform (GCP) by providing short-lived credentials. If this provider is not restricted, it can potentially allow unauthorized users to impersonate authorized services. As a result, this could cause security risks such as data leakage, unauthorized access to confidential information, and potential tampering with service operations. Therefore, it's crucial to ensure that the IAM workload identity pool provider is restricted to enhance security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'google_iam_workload_identity_pool_provider'
+* *Arguments:* attribute_condition
+
+To fix the issue of not restricting the IAM workload identity pool provider, you need to set the attribute `attribute_condition` for the workload identity pool provider block.
+
+[source,go]
+----
+resource "google_workload_identity_pool_provider" "example_provider" {
+  provider_id     = "my_identity_provider"
+  workload_identity_pool_id = google_workload_identity_pool.example_pool_id
+  issuer_uri = "https://oidc.issuer.example.com"
+  attribute_mapping {
+    attribute_name  = "attribute_from_assertion"
+    attribute_value = "attribute_in_assertion"
+  }
+  attribute_condition = "attribute.from.subject == \"my-service-account@my-project.iam.gserviceaccount.com\""
+}
+----
+
+The `attribute_condition` parameter is a condition string. It is used to restrict the tokens accepted from the specified issuer or federation URL. When the condition is specified, only tokens that satisfy the condition are accepted.
+

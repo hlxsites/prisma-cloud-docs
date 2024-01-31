@@ -1,0 +1,60 @@
+
+== AWS Lambda function is not configured to validate code-signing
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| b4e32eaa-9cf9-4fa1-9d34-ecf08b711b19
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LambdaCodeSigningConfigured.py[CKV_AWS_272]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy ensures that an AWS Lambda function has been properly configured to validate code-signing. If not correctly set up, it could mean that your AWS Lambda function is running code that has not been authenticated. This lack of validation raises a significant security concern, as your service could be running code that has been tampered with or injected with malicious code. This could lead to unauthorized access, data leaks, or compromise of the service. Therefore, it is vital to check and ensure that Lambda functions are enforced to validate code-signing for security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_lambda_function
+* *Arguments:* code_signing_config_arn
+
+To address the issue, you need to enable the code-signing configuration for your AWS Lambda function. Code-signing adds an extra layer of security to your application by ensuring that the deployed code is not tampered with.
+
+[source,go]
+----
+resource "aws_lambda_function" "example" {
+  function_name    = "example"
+  filename         = "example.zip"
+  source_code_hash = filebase64sha256("example.zip")
+  handler    = "exports.test"
+  runtime    = "nodejs12.x"
+
++ code_signing_config_arn = aws_lambda_code_signing_config.example.arn
+}
+
+resource "aws_lambda_code_signing_config" "example" {
+  allowed_publishers {
+    signing_profile_version_arns = [aws_signer_signing_profile_version.example.arn]
+  }
+
+  policies = "Warn"
+}
+----
+
+In the above code, `aws_lambda_function` is configured with the `code_signing_config_arn` attribute.

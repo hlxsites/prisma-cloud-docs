@@ -1,0 +1,47 @@
+
+== Ledger feature is disabled on the database
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2f9894aa-fc83-44ce-94bd-e2815263e0af
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/SQLDatabaseLedgerEnabled.py[CKV_AZURE_224]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy refers to the enabling of the Ledger feature in Azure databases. The Ledger feature is a way of recording all changes to the data within a database, maintaining a history of all data modifications. This is important for auditing, security, and data recovery purposes. If the Ledger feature is not enabled, it might lead to difficulties in tracking changes, detecting malicious activity, or recovering lost data. Therefore, it's bad practice not to activate this feature due to the potential security risks and data management issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mssql_database
+* *Arguments:* ledger_enabled
+
+To fix this issue, you have to modify the `azurerm_mssql_database` resource in the Terraform code to include the `ledger_enabled` argument and set it to `true`. 
+
+[source,hcl]
+----
+resource "azurerm_mssql_database" "pass" {
+  name           = "example-database"
+  ...
++ ledger_enabled = true
+}
+----
+

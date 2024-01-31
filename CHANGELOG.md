@@ -1,3 +1,17 @@
+## [1.0.63](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.62...v1.0.63) (2023-12-11)
+
+
+### Bug Fixes
+
+* update Compute Edition 32 RN book ([54be815](https://github.com/hlxsites/prisma-cloud-docs/commit/54be815907ffea50536e60a3e6a43b6dbe3dfedd))
+
+## [1.0.62](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.61...v1.0.62) (2023-12-07)
+
+
+### Bug Fixes
+
+* add Compute Edition 32 books ([14eccee](https://github.com/hlxsites/prisma-cloud-docs/commit/14ecceec5a92d93f90c7ee068a6ffbd20d7f77c3))
+
 ## [1.0.61](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.60...v1.0.61) (2023-10-17)
 
 

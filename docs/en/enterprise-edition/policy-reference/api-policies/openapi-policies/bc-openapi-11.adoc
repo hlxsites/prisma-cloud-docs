@@ -1,0 +1,50 @@
+
+== Operation object uses 'password' flow in OAuth2 authentication
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 49fa9089-965c-4c2f-a5b9-cb796ba0836a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/Oauth2SecurityDefinitionPasswordFlow.py[CKV_OPENAPI_11]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is specifically geared towards ensuring the security of OpenAPI documents for APIs, specifically for those using OAuth2 authentication in version 2.0 files. The policy checks for the presence of 'password' flow. The usage of 'password' flow allows direct usage of usernames and passwords to obtain access tokens, circumventing stronger methods of authentication. This leaves user credentials, and by extension your API, more susceptible to cyber threats, hence it is not recommended. The policy aims to flag this as an issue in order to maintain the best security practices.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you need to change the OAuth2 authentication flow. Instead of using 'password' flow, try using 'authorizationCode' or 'implicit' flow. This is a more secure way to handle authentication.
+
+[source,yaml]
+----
+securitySchemes:
+    OauthSecurityScheme:
+      type: oauth2
+      flows:
+        authorizationCode:
+          tokenUrl: https://authorization-server.com/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+----
+
+The above code is secure because it doesn't expose the user's password in the OAuth2 authentication flow, which could potentially lead to credential leaks or unauthorized access. Instead, it uses the 'authorizationCode' flow that relies upon the interaction between the web browser and the server, which is a more secure approach.
+

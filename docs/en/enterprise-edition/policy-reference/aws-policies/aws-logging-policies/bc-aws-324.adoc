@@ -1,0 +1,55 @@
+
+== RDS Cluster log capture is disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 5db24d39-d55e-412b-9ed8-63cfcc95f543
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSClusterLogging.py[CKV_AWS_324]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is inspecting for the activation of log capture on RDS Clusters in AWS. Log capture is crucial for efficient diagnostics, security review and audit. It allows administrators to monitor activities and events that occur in the RDS clusters by capturing log data. If log capture is not enabled, it may compromise the ability to effectively troubleshoot issues or identify malicious activities, leaving the system vulnerable.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_rds_cluster
+* *Arguments:* enabled_cloudwatch_logs_exports
+
+To fix the issue, you should enable log exports for RDS cluster. 
+
+[source,hcl]
+----
+resource "aws_rds_cluster" "default" {
+  engine                    = "aurora-postgresql"
+  backup_retention_period   = 5
+  preferred_backup_window   = "07:00-09:00"
+  enable_http_endpoint      = true
+  master_username           = "foo"
+  master_password           = "bar"
+  skip_final_snapshot       = true
+
+  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery", "postgresql"]
+}
+----
+
+The above Terraform code captures all RDS Cluster logs using the "enabled_cloudwatch_logs_exports" argument. It makes the logs ("audit", "error", "general", "slowquery", "postgresql") available in CloudWatch Logs, making it secure and compliant with Checkov CKV_AWS_324 rule.
+

@@ -1,0 +1,56 @@
+== Azure Application Gateway is configured with SSL policy having TLS version 1.1 or lower
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 8bf20934-38d6-419e-9e0e-b0c7b0c1d238
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AppGWDefinesSecureProtocols.py[CKV_AZURE_218]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that the Application Gateway in Azure is set to use secure protocols for communication while data is in transit. In short, it is ensuring that encrypted channels are used when data is moved across the network. It's essential for the security of data as unsecured protocols can potentially expose the data to risks such as unauthorized access, data leaks, or privacy breaches. Unencrypted data could be intercepted in transit and viewed or stolen by malicious actors, creating a significant security vulnerability. Therefore, only secure protocols should be used for in-transit communication to protect the data and maintain its confidentiality and integrity.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_application_gateway
+* *Arguments:* ssl_policy.policy_type
+
+To fix this issue, you need to ensure that your Application Gateway resource is configured to use secure protocols for in transit communication, such as HTTPS. Your Terraform code will need to include a `ssl_policy` block within the `gateway` block, and specify a minimum version of `TLSv1_2`.
+
+[source,hcl]
+----
+resource "azurerm_application_gateway" "example" {
+  name                = "example-appgateway"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  ssl_policy {
+    policy_type          = "Predefined"
+    policy_name          = "AppGwSslPolicy20170401"
+    disabled_protocols = [
+      "TLSv1_0",
+      "TLSv1_1",
+    ]
+  }
+  ...
+}
+----
+

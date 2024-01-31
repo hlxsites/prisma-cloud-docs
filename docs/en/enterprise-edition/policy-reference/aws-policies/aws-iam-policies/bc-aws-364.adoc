@@ -1,0 +1,51 @@
+
+== Permissions delegated to AWS services for AWS Lambda functions are not limited by SourceArn or SourceAccount
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 75538f52-55ae-4326-8fda-bd36a80d9aa8
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LambdaServicePermission.py[CKV_AWS_364]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that permissions granted to AWS Lambda functions by other AWS services are adequately restricted by either the SourceArn or SourceAccount. The importance of this check lies in securing the function against unnecessary or excessive access by limiting permissions to the specific AWS service that requires it. If such restrictions are not in place, the function could be open to misuse or unauthorized access, compromising the integrity and security of your applications and data in AWS. By limiting permissions using SourceArn or SourceAccount, you narrow the scope of access, reducing potential security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_lambda_permission
+* *Arguments:* principal
+
+To fix this issue, you need to ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount. This adds an additional layer of security by explicitly stating where the permissions are coming from.
+
+[source,go]
+----
+resource "aws_lambda_permission" "with_sns" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.example.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.example.arn
+}
+----
+
+The above code is secure because it explicitly defines the source of the permissions using the source_arn attribute. This prevents malicious entities from granting themselves permissions to the Lambda function. The attribute source_arn limits the delegation of the permission to the supplied resource, preventing resources outside of the supplied ARN from invoking the Lambda Function.
+
