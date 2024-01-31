@@ -1,0 +1,61 @@
+
+== Ensure SSL certificate validation is not disabled in requests via "verify=False"
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+|CKV3_SAST_186
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|python
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/295.html[CWE-295: Improper Certificate Validation]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+
+=== Description
+
+This policy ensures that SSL certificate validation is not disabled in HTTP requests by checking if "verify=False" is used in the requests library in Python.
+
+Vulnerable code example:
+
+[source,python]
+----
+import requests
+
+response = requests.get('https://example.com', verify=False)
+----
+
+In the above code, SSL certificate validation is disabled by setting "verify=False". This allows any certificate to be accepted, thereby opening a potential security risk as it can be susceptible to man-in-the-middle (MITM) attacks.
+
+=== Fix - Buildtime
+
+Ensure that the "verify" parameter is either left as default (True) or explicitly set to True in all requests.
+
+Secure code example:
+
+[source,python]
+----
+import requests
+
+response = requests.get('https://example.com', verify=True)
+----
+
+In the above code, SSL certificate validation is enabled by setting "verify=True". This means that all SSL certificates must be valid and signed by a trusted Certificate Authority (CA), which helps to prevent MITM attacks.

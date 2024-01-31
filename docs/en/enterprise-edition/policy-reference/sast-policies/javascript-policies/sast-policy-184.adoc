@@ -1,0 +1,80 @@
+
+== Reflected XSS
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+|CKV3_SAST_184
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|javascript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/79.html[CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+
+=== Description
+
+This policy detects a Reflected Cross-Site Scripting (XSS) vulnerability in JavaScript applications using `express` and not properly neutralizing user-provided inputs. It scans Express.js DELETE requests where an attacker might exploit input fields (such as request parameters and user details) to run malicious scripts in users' browsers when they interact with the compromised component.
+
+Vulnerable code example:
+
+[source,javascript]
+----
+const app = express()
+
+app.delete('/deleteUser/:userId', (req, res, next) => {
+  const userId = req.params.userId
+  res.send(userId)
+})
+----
+
+Above code is vulnerable because it directly uses user-provided input `req.params.userId` without validating or sanitizing it, potentially leading to execution of harmful scripting code if this input is crafted to contain such code.
+
+=== Fix - Buildtime
+
+A key step to fixing this issue involves validating and sanitizing all user inputs. For instance, apply input validation libraries like `express-validator` and `DOMPurify` to sanitize the input.
+
+Secure code example:
+
+[source,javascript]
+----
+const app = express()
+const { body, validationResult } = require('express-validator')
+const createDOMPurify = require('dompurify')
+const { JSDOM } = require('jsdom')
+const window = (new JSDOM('')).window
+const DOMPurify = createDOMPurify(window)
+
+app.delete('/deleteUser/:userId', 
+  body('userId').isInt(),
+  (req, res, next) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()){
+      return res.status(400).json({ errors: errors.array() })
+    }
+    const sanitizedUserId = DOMPurify.sanitize(req.params.userId)
+    res.send(sanitizedUserId)
+})
+----
+
+The above code is no longer vulnerable to Reflected XSS as it validates that the user-provided input is an integer and also sanitizes it to neutralize potential harmful scripts.
+
+    

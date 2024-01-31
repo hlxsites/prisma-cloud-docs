@@ -1,0 +1,59 @@
+
+== JWT signature verification bypass
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+|CKV3_SAST_181
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|javascript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/347.html[CWE-347: Improper Verification of Cryptographic Signature]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021 - Cryptographic Failures]
+
+|=== 
+
+
+=== Description
+
+This policy detects instances where JSON Web Tokens (JWT) decoding or processing is performed without proper verification of the token's signature in JavaScript. Requires the use of "verify" function instead of "decode".
+
+Vulnerable code example:
+
+[source,javascript]
+----
+let jwt = require('jsonwebtoken');
+let decoded = jwt.decode(token);
+----
+
+The above code is vulnerable to cryptographic failures as it improperly verifies the cryptographic signature of the JSON Web Token, which may lead to JWT signature verification bypass.
+
+=== Fix - Buildtime
+
+To fix the issue, the "decode" function should be replaced with the "verify" function which correctly handles the verification of the token's signature.
+
+Secure code example:
+
+[source,javascript]
+----
+let jwt = require('jsonwebtoken');
+let verified = jwt.verify(token, secret);
+----
+
+The above code is no longer vulnerable as it properly verifies the cryptographic signature of the JSON Web Token, thus preventing JWT signature verification bypass.

@@ -1,0 +1,61 @@
+
+== Ensure authorization validation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+|CKV3_SAST_180
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|javascript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/295.html[CWE-295: Improper Certificate Validation]
+
+|OWASP Categories
+|https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/[A07:2021-Identification and Authentication Failures]
+
+|=== 
+
+
+=== Description
+
+This policy detects whether the application improperly validates or doesn't validate certificates at all. It specifically looks for configurations where the rejection of unauthorized TLS/SSL connections is disabled which can compromise the security and integrity of your application by allowing unauthenticated communications.
+
+Vulnerable code example:
+
+[source,javascript]
+----
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+// or
+new https.Agent("www.fake-example.com", {rejectUnauthorized: false} ,"post")
+----
+
+In the above examples, the application is configured to accept unauthorised TLS/SSL connections. Any certificate, valid or not, would be regarded as trusted. This can lead to man-in-the-middle attacks where attackers can spy, modify or inject malicious data into the communications.
+
+=== Fix - Buildtime
+
+Avoid disabling the validation of unauthorized TLS/SSL connections. Ensure that your Node.js application is configured to handle and validate certificates properly.
+
+Secure code example:
+
+[source,javascript]
+----
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "1"
+// or
+new https.Agent("www.example.com", {rejectUnauthorized: true} ,"post")
+----
+
+In these examples, the application is configured to reject unauthorized TLS/SSL connections, thus making it more secured by ensuring that all connections are authenticated and verified.
