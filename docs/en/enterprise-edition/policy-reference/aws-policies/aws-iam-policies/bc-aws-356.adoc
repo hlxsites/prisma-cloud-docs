@@ -1,4 +1,4 @@
-== AWS IAM policy allows full administrative privileges
+== Data source IAM policy document allows all resources with restricted actions
 
 === Policy Details
 
@@ -6,16 +6,16 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| d9b86448-11a2-f9d4-74a5-f6fc590caeef
+| TBD
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/data/aws/ResourcePolicyDocument.py[CKV_AWS_356]
 
 |Severity
-|MEDIUM
+|HIGH
 
 |Subtype
-|Run,Build
+|Build
 
 |Frameworks
 |Terraform,TerraformPlan
@@ -32,40 +32,28 @@ For more info, visit https://cloudsplaining.readthedocs.io/en/latest/glossary/re
 
 *Terraform*
 
-* *Resource:* aws_iam_policy
+* *Resource:* aws_iam_policy_document
 * *Arguments:* policy
 
 You should not use a wildcard (*) as a statement's resource as it grants excessively broad permissions.
 
-Here's an example of a secure piece of Terraform code:
+Example:
 
 [source,go]
 ----
-resource "aws_iam_policy" "policy" {
-  name   = "my_policy"
-  path   = "/"
-  description = "An inline IAM policy for my user"
-  policy = <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Action": [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject"
-        ],
-        "Effect": "Allow",
-        "Resource": [
-          "arn:aws:s3:::my_bucket/my_object",
-          "arn:aws:s3:::my_bucket/my_other_object"
-        ]
-      }
+data "aws_iam_policy_document" "fail" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:Describe*",
+    ]
+    resources = [
+-      "*",
++      "arn:aws:s3:::${var.s3_bucket_name}",
     ]
   }
-EOF
 }
 ----
-
-In the above Terraform script, the actions `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` are allowed, but they are limited to the resources specified - "arn:aws:s3:::my_bucket/my_object" and "arn:aws:s3:::my_bucket/my_other_object". This is much more secure as it clearly defines what resources the IAM policy's actions can access, rather than opening up all resources by using a wildcard (*).
 
