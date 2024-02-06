@@ -1,5 +1,5 @@
 
-== Ensure authorization validation
+== Improper certification validation
 
 === Policy Details
 
@@ -19,7 +19,7 @@
 |Build
 
 |Language
-|javascript
+|JavaScript
 
 |CWEs
 |https://cwe.mitre.org/data/definitions/295.html[CWE-295: Improper Certificate Validation]
@@ -32,7 +32,7 @@
 
 === Description
 
-This policy detects whether the application improperly validates or doesn't validate certificates at all. It specifically looks for configurations where the rejection of unauthorized TLS/SSL connections is disabled which can compromise the security and integrity of your application by allowing unauthenticated communications.
+This policy identifies instances where the application either improperly validates or completely omits certificate validation. It specifically targets configurations where the rejection of unauthorized TLS/SSL connections is disabled, potentially exposing the security and integrity of your application by permitting unauthenticated communications.
 
 Vulnerable code example:
 
@@ -43,11 +43,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 new https.Agent("www.fake-example.com", {rejectUnauthorized: false} ,"post")
 ----
 
-In the above examples, the application is configured to accept unauthorised TLS/SSL connections. Any certificate, valid or not, would be regarded as trusted. This can lead to man-in-the-middle attacks where attackers can spy, modify or inject malicious data into the communications.
+In the above examples, the application is configured to accept TLS/SSL certificates, without verifying their validity. This can lead to man-in-the-middle attacks, enabling attackers to gain unauthorized access to your communication channels. Attackers could exploit this vulnerability to spy, modify or inject malicious data, posing risks of potentially stealing sensitive information and disrupting operations.
+
+
 
 === Fix - Buildtime
 
-Avoid disabling the validation of unauthorized TLS/SSL connections. Ensure that your Node.js application is configured to handle and validate certificates properly.
+To fix this vulnerability, avoid disabling the validation of unauthorized TLS/SSL connections. Ensure that your Node.js application is properly configured to manage and validate certificates.
 
 Secure code example:
 
@@ -58,4 +60,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "1"
 new https.Agent("www.example.com", {rejectUnauthorized: true} ,"post")
 ----
 
-In these examples, the application is configured to reject unauthorized TLS/SSL connections, thus making it more secured by ensuring that all connections are authenticated and verified.
+In the above examples, the application is configured to reject unauthorized TLS/SSL connections. This enhances security by ensuring that all connections undergo authentication and verification.
+
+

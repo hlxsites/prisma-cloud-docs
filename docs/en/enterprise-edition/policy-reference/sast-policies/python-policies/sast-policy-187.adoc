@@ -1,5 +1,5 @@
 
-== Redis Without SSL
+== Redis configuration without SSL
 
 === Policy Details
 
@@ -19,7 +19,7 @@
 |Build
 
 |Language
-|python
+|Python
 
 |CWEs
 |https://cwe.mitre.org/data/definitions/295.html[CWE-295: Improper Certificate Validation]
@@ -32,7 +32,11 @@
 
 === Description
 
-This policy detects if a Redis client is configured to communicate without transport security in a Python application. Deploying such a client in production may leak sensitive information since data transferred are not encrypted. Specifically, two scenarios are covered: (1) when `redis.Redis` is used without setting `ssl` to `True`, and (2) when `redis.Redis.from_url` is used with a `redis://` url.
+This policy detects whether a Redis client in a Python application is configured to communicate without transport security (SSL/TLS). Deploying such a client in production may potentially leak sensitive information as transferred data is not encrypted. Specifically, the following two scenarios are covered:
+
+* redis.Redis is used without setting ssl to True
+* redis.Redis.from_url is used with a redis:// url.
+
 
 Vulnerable code example:
 
@@ -41,11 +45,16 @@ Vulnerable code example:
 import redis
 r = redis.Redis(host='localhost', port=6379, db=0)
 ----
-In the code above, the Redis client is instantiated without transport security, leaving the data transmitted vulnerable to interception.
+
+In this example, the Redis client is instantiated without transport security, leaving the data transmitted vulnerable to interception.
 
 === Fix - Buildtime
 
-To fix the issue, set `ssl` to `True` upon the initialization of the `redis.Redis` instance. It's also necessary to specify trusted CA certificates using `ssl_ca_path`, `ssl_ca_certs`, or `ssl_ca_data`. When using `redis.Redis.from_url`, avoid using `redis://`.
+To fix this issue:
+
+* Set ssl to True upon initialization of the 'redis.Redis instance'
+* Specify trusted CA certificates using 'ssl_ca_path,' 'ssl_ca_certs', or 'ssl_ca_data'
+* When using 'redis.Redis.from_url', avoid using 'redis://' in the URL
 
 Secure code example:
 
@@ -54,4 +63,5 @@ Secure code example:
 import redis
 r = redis.Redis(host='localhost', port=6379, db=0, ssl=True, ssl_ca_certs='/path/to/ca_certs')
 ----
-The above code is no longer vulnerable as it now configures the Redis client to use transport security, thus encrypting the data transmitted.
+
+In this example, the code is secure as it configures the Redis client to use transport security, encrypting the transmitted data.

@@ -1,5 +1,5 @@
 
-== Ensure no sensitive data is being logged
+== Sensitive data logging
 
 === Policy Details
 
@@ -19,7 +19,7 @@
 |Build
 
 |Language
-|javascript
+|JavaScript
 
 |CWEs
 |https://cwe.mitre.org/data/definitions/532.html[CWE-532: Insertion of Sensitive Information into Log File]
@@ -32,7 +32,8 @@
 
 === Description
 
-This policy is designed to detect instances where sensitive data, such as credit card numbers and personal details, are being logged. In AWS development using JavaScript, it focuses on situations where secret parameters are created with the AWS Secrets Manager or when environment variables containing potentially sensitive information (e.g., a password, key or secret) are being logged to the console.
+This policy detects whether sensitive information, such as credit card numbers and personal details, is being logged. In AWS development with JavaScript, it targets scenarios where secret parameters are generated using the AWS Secrets Manager or where environment variables containing potentially sensitive data (e.g., passwords, keys, or secrets) are logged to the console.
+
 
 Vulnerable code example:
 
@@ -44,11 +45,14 @@ secretsManager.getSecretValue({SecretId: 'my_secret_key'}, function(err, data) {
     console.log(data.SecretString);
 });
 ----
-This code is considered vulnerable as it's logging sensitive data to the console. This can lead to information exposure if the logs are not properly managed and secured.
+
+In this example, the code is considered vulnerable as it logs sensitive data to the console. This could potentially result in information exposure if the logs are not adequately managed and secured.
+
 
 === Fix - Buildtime
 
-To fix the issue, avoid logging sensitive data to the console. If the value needs to be checked, it should be done in a secure manner without exposing the sensitive data.
+To fix this issue, avoid logging sensitive data to the console. If the value requires verification, ensure it is handled securely without exposing the sensitive information.
+
 
 Secure code example:
 
@@ -63,4 +67,5 @@ secretsManager.getSecretValue({SecretId: 'my_secret_key'}, function(err, data) {
     // Do something secure with data.SecretString, but don't log it.
 });
 ----
-In this fixed version of the code, error is logged to console instead of the actual secret data. This way, the secret data never gets exposed in the logs.
+
+In this example, errors, and not the actual sensitive data, are logged to the console. This prevents the exposure of sensitive information in the logs.

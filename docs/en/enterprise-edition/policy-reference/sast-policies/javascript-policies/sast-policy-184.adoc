@@ -1,5 +1,5 @@
 
-== Reflected XSS
+== Reflected Cross-Site Scripting (XSS)
 
 === Policy Details
 
@@ -19,7 +19,7 @@
 |Build
 
 |Language
-|javascript
+|JavaScript
 
 |CWEs
 |https://cwe.mitre.org/data/definitions/79.html[CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')]
@@ -32,7 +32,7 @@
 
 === Description
 
-This policy detects a Reflected Cross-Site Scripting (XSS) vulnerability in JavaScript applications using `express` and not properly neutralizing user-provided inputs. It scans Express.js DELETE requests where an attacker might exploit input fields (such as request parameters and user details) to run malicious scripts in users' browsers when they interact with the compromised component.
+Ths policy detects Reflected Cross-Site Scripting (XSS) vulnerabilities in JavaScript applications using the express framework, where user-provided inputs are inadequately sanitized. It scans DELETE requests in Express.js, where attackers could potentially exploit input fields (such as request parameters and user details) to execute malicious scripts in users' browsers when they interact with the compromised component.
 
 Vulnerable code example:
 
@@ -46,11 +46,12 @@ app.delete('/deleteUser/:userId', (req, res, next) => {
 })
 ----
 
-Above code is vulnerable because it directly uses user-provided input `req.params.userId` without validating or sanitizing it, potentially leading to execution of harmful scripting code if this input is crafted to contain such code.
+In this example, the code is vulnerable because it directly uses user-provided input req.params.userId without validation or sanitization. This leaves the code open to potential execution of harmful scripting code (Reflected XSS attacks) if the input is manipulated to include such code.
+
 
 === Fix - Buildtime
 
-A key step to fixing this issue involves validating and sanitizing all user inputs. For instance, apply input validation libraries like `express-validator` and `DOMPurify` to sanitize the input.
+To fix this vulnerability, validate and sanitize all user inputs. For example, consider using express-validator for validating user input on the server-side and DOMPurify for sanitizing output on the client-side.
 
 Secure code example:
 
@@ -75,6 +76,8 @@ app.delete('/deleteUser/:userId',
 })
 ----
 
-The above code is no longer vulnerable to Reflected XSS as it validates that the user-provided input is an integer and also sanitizes it to neutralize potential harmful scripts.
+In this example, the code is protected against Reflected XSS attacks by validating the user-provided input as an integer and sanitizing it to neutralize any potential harmful scripts.
+
+
 
     

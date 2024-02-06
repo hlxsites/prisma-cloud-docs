@@ -1,5 +1,5 @@
 
-== JWT signature verification bypass
+== JSON Web Tokens (JWT) signature verification bypass
 
 === Policy Details
 
@@ -19,7 +19,7 @@
 |Build
 
 |Language
-|javascript
+|JavaScript
 
 |CWEs
 |https://cwe.mitre.org/data/definitions/347.html[CWE-347: Improper Verification of Cryptographic Signature]
@@ -32,7 +32,7 @@
 
 === Description
 
-This policy detects instances where JSON Web Tokens (JWT) decoding or processing is performed without proper verification of the token's signature in JavaScript. Requires the use of "verify" function instead of "decode".
+This policy identifies instances in JavaScript where JSON Web Tokens (JWT) are decoded or processed without proper verification of the token's signature.
 
 Vulnerable code example:
 
@@ -42,11 +42,13 @@ let jwt = require('jsonwebtoken');
 let decoded = jwt.decode(token);
 ----
 
-The above code is vulnerable to cryptographic failures as it improperly verifies the cryptographic signature of the JSON Web Token, which may lead to JWT signature verification bypass.
+The above code is vulnerable to cryptographic failures as it improperly verifies the cryptographic signature of the JSON Web Token. This could potentially result in JWT signature verification bypass.
 
 === Fix - Buildtime
 
-To fix the issue, the "decode" function should be replaced with the "verify" function which correctly handles the verification of the token's signature.
+To fix this issue, replace the "decode" function with the "verify" function, which accurately handles the verification of the token's signature.
+
+
 
 Secure code example:
 
@@ -56,4 +58,4 @@ let jwt = require('jsonwebtoken');
 let verified = jwt.verify(token, secret);
 ----
 
-The above code is no longer vulnerable as it properly verifies the cryptographic signature of the JSON Web Token, thus preventing JWT signature verification bypass.
+In the above example, the code is now secure, as it properly verifies the cryptographic signature of the JSON Web Token, effectively preventing JWT signature verification bypass.
