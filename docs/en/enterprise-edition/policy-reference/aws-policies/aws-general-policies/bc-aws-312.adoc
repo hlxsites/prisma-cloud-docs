@@ -32,7 +32,7 @@ This policy is checking to make sure that Elastic Beanstalk environments have en
 *Terraform*
 
 * *Resource:* aws_elastic_beanstalk_environment
-* *Arguments:* namespace, HealthStreamingEnabled
+* *Arguments:* namespace, SystemType, EnhancedHealthAuthEnabled
 
 In order to fix this issue, you need to enable enhanced health reporting in your Elastic Beanstalk environment configuration.
 
@@ -49,7 +49,12 @@ resource "aws_elastic_beanstalk_environment" "pass" {
   tags                   = local.tags
 + setting {
 +   namespace = "aws:elasticbeanstalk:healthreporting:system"
-+   name      = "HealthStreamingEnabled"
++   name      = "SystemType"
++   value     = "enhanced"
++ }
++ setting {
++   namespace = "aws:elasticbeanstalk:healthreporting:system"
++   name      = "EnhancedHealthAuthEnabled"
 +   value     = "true"
 + }
 }
