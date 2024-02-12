@@ -1,0 +1,55 @@
+
+== Operation object uses 'password' flow in OAuth2 authentication
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 83894412-ed76-4884-8e47-2e74285d8a60
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/Oauth2OperationObjectPasswordFlow.py[CKV_OPENAPI_10]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is looking for instances in API definitions where the 'password' flow is being used in OAuth2 authentication, specifically within version 2.0 files. The 'password' flow, also known as the resource owner password credentials grant, could potentially place the application at a higher risk as it involves sharing the user's password with the client application. If not managed securely, it could lead to unauthorized access or data breaches. Therefore, it's recommended to use more secure methods of authentication to protect sensitive information.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you should avoid using 'password' flow in OAuth2 authentication when defining your OpenAPI objects. The password flow is less secure because it involves sharing password credentials directly to the client-side application. Instead, consider using a more secure flow like 'authorization_code' flow or 'client_credentials' flow.
+
+[source,yaml]
+----
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.com/oauth2/default/v1/token
+          scopes:
+            'read:apps': read your applications
+        authorization_code:
+          authorizationUrl: https://example.com/oauth2/default/v1/authorize
+          tokenUrl: https://example.com/oauth2/default/v1/token
+          scopes:
+            'read:apps': read your applications
+----
+
+The above code is secure because it does not use the 'password' flow. Both the 'clientCredentials' and 'authorization_code' flows are shown as examples of more secure alternatives for OAuth2 authentication in your OpenAPI objects. The 'clientCredentials' flow is used when the client can be trusted to hold a secret, while the 'authorization_code' flow is used for apps that are hosted on a secure server. In both flows, a token is used to grant access, which is more secure than sharing password credentials.
+

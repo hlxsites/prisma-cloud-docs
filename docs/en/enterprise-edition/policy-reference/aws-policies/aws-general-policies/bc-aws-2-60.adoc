@@ -1,0 +1,52 @@
+== AWS RDS instance with copy tags to snapshots disabled
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 1f524c07-3254-45a0-8ad7-03e29242c499
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/RDSEnableCopyTagsToSnapshot.yaml[CKV2_AWS_60]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy ensures that tags are copied when creating snapshots of an Amazon RDS database instance. Tags are metadata that you can assign to AWS resources. They enable you to categorize resources in different ways, for example, by purpose, owner, or environment. When tags are copied to snapshots, it provides continuity and orderliness in managing resources, especially when using cost allocation reports.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_db_instance
+* *Arguments:* copy_tags_to_snapshot
+
+The issue can be fixed by setting the `copy_tags_to_snapshot` attribute to true in the database instance resource block of the Terraform file. 
+
+Secure code example:
+
+[source,go]
+----
+resource "aws_db_instance" "mysql" {
+  name                      = "mydb"
+  engine                    = "mysql"
+  instance_class            = "db.t3.micro"
+  allocated_storage         = "20"
+  tags                      = {Name = "mydb"}
++ copy_tags_to_snapshot     = true
+}
+----
+
+With `copy_tags_to_snapshot` set as true, all the tags assigned to the database instance will be copied onto any automated or manual snapshots of the database when the snapshots are created. This enables easy resource management and efficient cost allocation tracking.

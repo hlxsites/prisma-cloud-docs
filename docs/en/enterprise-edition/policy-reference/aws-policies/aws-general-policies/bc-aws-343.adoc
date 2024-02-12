@@ -1,0 +1,58 @@
+
+== Amazon Redshift clusters do not have automatic snapshots enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 66295923-266b-4da9-8eb0-cdfa3c4cd81d
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RedshiftClusterAutoSnap.py[CKV_AWS_343]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that Amazon Redshift clusters have automatic snapshots enabled. Snapshots are point-in-time copies of a database, and can be used to recover data if the database gets deleted or corrupted. Automatic snapshots specifically are snapshots that are automatically created by an automated system on a regular schedule.
+
+The policy is checking for a specific setting, which is whether "automatic snapshots" is enabled or not. If this setting is turned off, then snapshots are not being automatically created, and you would need to manually create snapshots whenever you want to back up the database. This can be risky and time-consuming.
+
+If this setting is not enabled, the risk would be losing substantial data in the event of a database failure or corruption. Without a recent snapshot to restore from, any changes made since the last manual snapshot would be lost.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_redshift_cluster
+* *Arguments:* automated_snapshot_retention_period
+
+To fix the issue, we need to make sure Amazon Redshift clusters have autopause enabled. We can do this by setting the `automated_snapshot_retention_period` attribute to a positive integer value, denoting the number of days to retain the automated snapshots.
+
+[source,hcl]
+----
+resource "aws_redshift_cluster" "default" {
+  cluster_identifier                  = "tf-redshift-cluster"
+  database_name                      = "mydb"
+  master_username                    = "foo"
+  master_password                    = "Mustbe8characters"
+  cluster_type                       = "multi-node"
+  node_type                          = "dc1.large"
+  number_of_nodes                    = 2
+  automated_snapshot_retention_period = 1 // set to a positive integer
+}
+----
+
+The above code ensures the Redshift cluster will have automated snapshots enabled, keeping a daily backup. The recovery process will be straightforward, minimizing the risk of lost data. The `automated_snapshot_retention_period` parameter is set to 1, indicating that each automatic snapshot should be kept for 1 day before it is deleted. It's good practice to have some form of automatic backup enabled for data recovery purposes.
+

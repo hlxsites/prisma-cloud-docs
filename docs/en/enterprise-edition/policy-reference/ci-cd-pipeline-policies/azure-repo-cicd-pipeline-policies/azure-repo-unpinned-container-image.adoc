@@ -1,0 +1,44 @@
+==  Azure Pipelines uses an unpinned container image
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+
+|Prisma Cloud Policy ID 
+|66f2e807-0ec1-4042-ba84-8f605ab9c81c 
+
+|Severity
+|Low
+// add severity level
+
+|Category
+|Artifact Integrity Validation
+// add category+link
+
+|Subtype
+|Build
+// add subtype-build/runtime
+
+|Frameworks
+|Azure Repos
+
+|=== 
+
+=== Description
+
+Docker containers used without digests are mutable, which may cause a security risk. Attackers with access to the container registry could potentially replace the image with a malicious version, introducing malicious code. 
+This code might be executed in the pipeline using this container image to access secrets available in the pipeline, and read or modify the associated repository's source code.
+
+=== Recommended Solution - Buildtime
+
+Docker allows referencing the container image using a digest in the following manner: `image@sha256:<digest>`.
+To get the digest you want to use, visit the Docker container registry or invoke the docker `pull [image]` command which will print the digest of the pulled image.
+
+For example, referring the official Ubuntu image using its digest: `ubuntu:20.04@sha256:1871b9d0f55b07c1f1962f0405920567f4c820401a049173921b4f031d39673b`.
+
+For more information refer to the Docker documentation: https://docs.docker.com/engine/reference/commandline/pull/#pull-an-image-by-digest-immutable-identifier.
+
+

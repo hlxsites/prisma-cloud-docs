@@ -1,0 +1,52 @@
+
+== NACL ingress allows all ports
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 1b05c45c-e978-49ce-a734-56512f1d5fff
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NetworkACLUnrestricted.py[CKV_AWS_352]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Network Access Control Lists (NACLs) in AWS do not allow ingress (incoming traffic) on all ports. This is a basic security measure aiming to reduce the potential exposure of your system. Allowing all ports for ingress can expose your system to unwanted or malicious traffic from any port, potentially opening the door for a cyber attack or system compromise. It's a good practise to limit the ports exposed to only those necessary for your system's operations to manage the security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_network_acl_rule
+* *Arguments:* from_port
+
+To fix this issue, specify the ports whenever you are creating a NACL ingress rule. Avoid using "-1" or "0" as the 'from_port' or 'to_port' as these denote all ports.
+
+[source,hcl]
+----
+resource "aws_network_acl_rule" "example" {
+    network_acl_id = aws_network_acl.example.id
+    rule_number = 200
+    egress = false
+    protocol = "tcp"
+    rule_action = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port = 80
+    to_port = 80
+}
+----
+

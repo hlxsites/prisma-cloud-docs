@@ -10,11 +10,26 @@ The Limited General Availability (LGA) features are not available on all stacks 
 |FEATURE
 |DESCRIPTION
 
+|*_AWSCloudAccount.orgHierarchyNames() RQL Function for AWS Assets*
+
+//RLP-127530, RLP-110106
+
+|A new `_AWSCloudAccount.orgHierarchyNames()` RQL function is available to enumerate the organization memberships for a given asset. You can use this function to refer to the list of complete Organization Units (OUs) in your account ownership hierarchy in order to compare whether any of the OUs or parent OUs match with the targeted list values. Here are a few examples:
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4”)`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-vpcs’ and json.rule = ‘_AWSCloudAccount.orgHierarchyNames() intersects (ou-u00k-th4guvk9, r-u00k)’`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-vpcs’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4") as X; config from cloud.resource where api.name = ‘aws-ec2-describe-subnets’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4”) as Y; filter ‘$.X.vpcId equals $.Y.vpcId’; show Y;`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() does not intersect (“OU1") and _AWSCloudAccount.orgHierarchyNames() exists`
+
 |*AppDNA for Application Context*
 
 tt:[*_CSPM - Visibility, Compliance and Governance_*]
 
 //RLP-104999
+
 |AppDNA helps you center your security strategy around your applications, the most vital construct in your cloud estate. https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/app-dna-lga.pdf[AppDNA] intelligently groups assets in a manner that exposes their relationships, in the context of application development. AppDNA helps you:
 
 * Discover applications based on Kubernetes Namespace and assign a Display Name, Owner, Environment, and Business Criticality.
@@ -36,7 +51,7 @@ tt:[*_CSPM - Visibility, Compliance and Governance_*]
 You can now manage vulnerabilities, ensure compliance, and provide runtime defense for your resources in the IBM cloud.
 
 
-|*Resource Tag Filter in Asset Inventory*
+|*Asset Tag Filter in Asset Inventory*
 
 tt:[*_CSPM - Visibility, Compliance and Governance_*]
 
@@ -44,7 +59,7 @@ tt:[*_CSPM - Visibility, Compliance and Governance_*]
 
 //https://docs.paloaltonetworks.com/content/dam/techdocs/en_US/pdf/prisma/prisma-cloud/prerelease/asset-inventory-resource-tag-filter-lga.pdf
 
-|A new https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/asset-inventory-resource-tag-filter-lga.pdf[Resource Tag] filter is now available in the Prisma Cloud Asset Inventory, which allows you to focus on assets based on the resource tags present. Once you filter based on the Resource Tag, the Asset Inventory will display only the assets that contain the Resource Tags you specified.
+|A new https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/asset-inventory-resource-tag-filter-lga.pdf[Asset Tag] filter is now available in the Prisma Cloud Asset Inventory, which allows you to focus on assets based on the resource tags present. Once you filter based on the Asset Tag, the Asset Inventory will display only the assets that contain the Asset Tags you specified.
 
 
 |*Resolved Alert Notification to External Integrations*
