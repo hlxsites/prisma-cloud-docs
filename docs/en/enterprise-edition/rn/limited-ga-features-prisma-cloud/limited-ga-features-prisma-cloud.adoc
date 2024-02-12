@@ -10,6 +10,20 @@ The Limited General Availability (LGA) features are not available on all stacks 
 |FEATURE
 |DESCRIPTION
 
+|*_AWSCloudAccount.orgHierarchyNames() RQL Function for AWS Assets*
+
+//RLP-127530, RLP-110106
+
+|A new `_AWSCloudAccount.orgHierarchyNames()` RQL function is available to enumerate the organization memberships for a given asset. You can use this function to refer to the list of complete Organization Units (OUs) in your account ownership hierarchy in order to compare whether any of the OUs or parent OUs match with the targeted list values. Here are a few examples:
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4”)`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-vpcs’ and json.rule = ‘_AWSCloudAccount.orgHierarchyNames() intersects (ou-u00k-th4guvk9, r-u00k)’`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-vpcs’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4") as X; config from cloud.resource where api.name = ‘aws-ec2-describe-subnets’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4”) as Y; filter ‘$.X.vpcId equals $.Y.vpcId’; show Y;`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() does not intersect (“OU1") and _AWSCloudAccount.orgHierarchyNames() exists`
+
 |*AppDNA for Application Context*
 
 tt:[*_CSPM - Visibility, Compliance and Governance_*]
