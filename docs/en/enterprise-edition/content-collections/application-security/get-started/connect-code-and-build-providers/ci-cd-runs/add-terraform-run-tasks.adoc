@@ -6,7 +6,8 @@
 Integrate Prisma Cloud with Terraform Cloud (Run Tasks) to allow dynamic, automated, and context-specific scans in your Terraform workspace.
 
 With the integration of Terraform Cloud, Prisma Cloud, scans your Terraform frameworks to identify misconfigurations based on Prisma Cloud's default policies, as well as custom policies created by your organization for specific needs. This scanning process occurs whenever changes are pushed or triggered in your workflow, ensuring security checks are integrated seamlessly. Prisma Cloud identifies issues such as misconfigurations in your infrastructure-as-code (IaC) files, software composition analysis (SCA) vulnerabilities^*^, exposed secrets, and license non-compliance as soon as they are introduced. 
-^*^Prisma Cloud performs Image Referencer scans for identifying vulnerabilities, as full SCA scans are not supported for Terraform Cloud (Run Tasks).
+
+^*^Prisma Cloud performs 'Image Referencer' scans to analyze the contents, dependencies, and configurations of container images in order to detect known vulnerabilities, as full SCA scans are not supported for Terraform Cloud (Run Tasks).
 
 Each identified issue can either be resolved or suppressed on the Prisma Cloud console. Additionally, Prisma Cloud offers automated shift-left actions such as notifying developers or creating tickets, based on scan results.
 
@@ -20,25 +21,20 @@ NOTE: The following integration includes workflows involving third party tools s
 +
 * Procure a license for Prisma Cloud with the Application Security module enabled* 
 * Procure a https://www.hashicorp.com/products/terraform/pricing[Terraform cloud license] that is either a trial license or a TF Cloud license at the TEAM & GOVERNANCE level  
-* Create a Terraform 'Organization' and 'Workspace'- see xref:add-terraform-cloud-sentinel.adoc[Terraform Cloud (Sentinel)] for more on creating organizations and workspaces
 * *Permissions*: Grant the user or team the following permissions: *Manage Workspaces* permissions at the organization level or *Administrator* permissions on the workspace(s) being integrated.
+* Create a Terraform 'Organization' and 'Workspace'. Refer to xref:add-terraform-cloud-sentinel.adoc[Terraform Cloud (Sentinel)] for more on creating organizations and workspaces
 
-
-=== On Terraform Cloud
-
-. Create a Terraform *api token* for your user.
-+
-* Select your user/profile icon > *User Settings*.
-* Select the *Tokens* section from the left side menu.
-* Click *Create an API token* and provide a description > Select *Create API token*. 
-* Copy and save the token > *Done*. 
+. On *Terraform Cloud*, create a Terraform *api token* for your user.
+.. Select your user/profile icon > *User Settings*.
+.. Select the *Tokens* section from the left side menu.
+.. Click *Create an API token* and provide a description > Select *Create API token*. 
+.. Copy and save the token > *Done*. 
 +
 NOTE: Skip this step if you plan on using an existing token. 
 
-=== On Prisma Cloud console
+. On Prisma Cloud console
 
-. On the Prisma Cloud Application Security console.
-.. In Application Security, select *Home* > *Settings* > *Connect Provider* > *Code & Build Providers*.
+.. In *Application Security*, select *Home* > *Settings* > *Connect Provider* > *Code & Build Providers*.
 +
 image::application-security/connect-provider-menu.png[]
 
@@ -50,76 +46,91 @@ The *Configure Account* step of the integration wizard is displayed.
 
 image::application-security/tf-runtasks-config-account-wizard.png[]
 
-. Provide your Terraform User or Team token > *Next*>.
+. Provide your Terraform User or Team token generated in step 1 above > *Next*.
 +
 The *Select Organization* step of the integration wizard is displayed.
 
-. In the *Select Organization* step of the wizard, select a Terraform organization to establish webhook integrations with Prisma Cloud for Terraform > *Next*.
-. In the *Select Workspace* step of the wizard: 
-.. Select a workspace from the Terraform field menu.
+. Select a Terraform organization from the menu to establish webhook integrations with Prisma Cloud for Terraform > *Next*.
++
+The *Select Workspace* step of the integration wizard is displayed.
+
+. Select a Terraform workspace from the menu.
 +
 NOTE: You can select multiple workspaces for Prisma Cloud to scan during the Terraform Cloud run lifecycle. Each integration can only be associated with a single Terraform Cloud organization at any given time. However, you can create multiple integrations with multiple Terraform Enterprise organizations from a single Prisma Cloud account.
 
-.. In *Run Stage*, select an option.
+. Select an option from the *Run Stage* list:
 +
 * *Post-plan*: The scan runs after Terraform generates the plan
 * *Pre-plan*: The scan runs before Terraform generates the plan
 +
-NOTE: Prisma Cloud performs a scan of Terraform templates on selected workspaces based on the RUN Stage.
+NOTE: Prisma Cloud performs a scan of Terraform templates on selected workspaces based on the Run Stage.
 
-.. Select *Next* > *Done*.
+. Select *Next*.
 +
-NOTE: An event hook is created in the Terraform organization to receive run task notification on Prisma Cloud. 
+The *Status* step of the integration wizard opens, displaying an integration status message. 
 
-. Verify integration: Select *Settings* > *CI/CD Runs* tab.
+. Select *Done*.
++
+NOTE: On completing the integration, an event hook is created in the Terraform organization to receive run task notifications on Prisma Cloud. 
+
+. Verify integration: In *Application Security*, select *Home* > *Settings* > *CI/CD Runs* tab.
 +
 Your integrated Terraform repositories will be displayed. 
 
 . Next step: Monitor and manage scan results.
 +
-The next Terraform scan will automatically include the selected repositories. 
+Following the integration, the subsequent Terraform scan will automatically incorporate the selected repositories.
 
 To view scan results and resolve issues, select *Application Security* > *Projects* > *CI/CD Runs* tab. See xref:../../../risk-management/monitor-and-manage-code-build/monitor-code-build-issues.adoc[here] for more information.  
 
-=== Update Integrations
+=== Manage Integrations
+ 
+You can view, modify, delete and add integrations. 
 
-Update existing integrations by selecting a different workspace.
+[#access-management]
+==== Access Integration Management
 
-. In Application Security, select *Settings > *Connect Provider* > *Code & Build Providers* > *Terraform Cloud (Run Tasks)* (under CI/CD Runs).
+To access integration management, in *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers* > *Terraform Cloud (Run Tasks)* (under CI/CD Runs).
 +
-The *Terraform Cloud Run Tasks* popup opens.
-. Select the menu under the *Actions* column of an organization.
+The *Terraform Cloud Run Tasks* popup opens, displaying a list of configured accounts.
+
+[.task]
+==== Modify Integrations
+
+Modify existing integrations by choosing an alternative workspace.
+
+[.procedure]
+
+. <<#access-management,Access Integration Management>>.
+. Select the menu under the *Actions* column of an account.
 . Click *Reselect workspaces*.
 +
-The integration wizard is displayed.
-. Execute the integration process above, selecting a different workspace.
+The *Select Workspace* step of the integration wizard is displayed.
+. Select a workspace and complete the remaining steps in the integration wizard.
 
-=== Add Integrations
+==== Add Integrations
 
-Add additional integrations.
+Add additional integrations as needed to expand your workflow.
 
-. In Application Security, select *Settings > *Connect Provider* > *Code & Build Providers* > *Terraform Cloud (Run Tasks)* (under CI/CD Runs).
+. <<#access-management,Access Integration Management>>.
+. Select the menu under the *Actions* column of an account.
+
+. Select *Add an account*.
 +
-The *Terraform Cloud Run Tasks* popup opens.
+The *Configure Account* step of the integration wizard is displayed. 
+. Repeat the integration process above.
 
-.. Select *Add an account*.
+==== View Integrations
+
+View a list of integrations on a single console. 
+
+. <<#access-management,Access Integration Management>>.
 +
-The *Configure Account* step of th integration wizard is displayed. 
-.. Repeat the integration process above.
+The *Terraform Cloud Run Tasks* popup displays a list of integrations,including their organization and workspace.
 
-=== View Integrations
+==== Delete Integrations
 
-View a list of integrations on a single console.
-
-. In Application Security, select *Settings > *Connect Provider* > *Code & Build Providers* > *Terraform Cloud (Run Tasks)* (under CI/CD Runs).
-+
-The *Terraform Cloud Run Tasks* popup opens, displaying a list of integrations.
-
-=== Delete Integrations
-
-. In Application Security, select *Settings > *Connect Provider* > *Code & Build Providers* > *Terraform Cloud (Run Tasks)* (under CI/CD Runs).
-+
-The *Terraform Cloud Run Tasks* popup opens, displaying a list of integrations.
+. <<#access-management,Access Integration Management>>.
 . Select the menu under the *Actions* column of an organization.
 . Click *Delete integration*.
 +
