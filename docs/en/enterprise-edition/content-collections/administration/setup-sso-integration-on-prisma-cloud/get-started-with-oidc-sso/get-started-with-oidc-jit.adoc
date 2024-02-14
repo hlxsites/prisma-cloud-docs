@@ -8,33 +8,39 @@ Complete the steps below on the Prisma Cloud console and your IdP to set up OIDC
 
 [.procedure]
 . Log in to Prisma Cloud using an account with System Administrator privileges to configure SSO.
-. Complete the following steps on your Prisma Cloud tenant:
-.. Select *Settings > Access Control > SSO* and click *OIDC*.
-.. Navigate to *Just in Time (JIT) Provisioning* and select *Enable*.
+. On you Prisma Cloud tenant select *Settings > Access Control > SSO* and click *OIDC*.
+. Navigate to *Just in Time (JIT) Provisioning* and select *Enable*.
 +
 image::administration/oidc-jit.png[50]
-.. Enter information for the users you would like to provision in the following fields:
-... *Scopes* - email, profile, and openid or are always enabled. Specify additional scopes if required.
-... *Role Name Claim* - Enter a previously created role. If no role is entered a `group claim` is entered by default. Follow the steps below to configure Group Claims on your IdP:
-.... *Microsoft Azure* 
-..... On the Azure portal, navigate to *Manage > Token Configuration > Add groups claim > Edit groups claim > Customize token properties by type* and set all token types to use `sAMAccountName`.
+. Enter information for the users you would like to provision in the following fields:
+.. *Scopes* - "email", "profile", and "openid" or are always enabled. Specify additional scopes if required to expose the Role Claim Name defined below.
+.. *Role Claim Name* - Specify a claim under which Prisma Cloud Role names will be exposed for the purposes of authorization. If no Role Claim Name is entered, a “groups” claim will be used by default. Follow the instructions below for IdP-specific configuration:
+
+... *Microsoft Azure* 
+.... On the Azure portal, navigate to *Manage > Token Configuration > Add groups claim > Edit groups claim > Customize token properties by type* and set all token types to use "sAMAccountName".
 +
 image::administration/oidc-jit-azure-token.png[50] 
-..... On the Azure portal, navigate to *API permissions > Add a permission* and capture all permissions available for Microsoft Graph.
+
+.... Navigate to *API permissions > Add a permission* and capture all permissions available for Microsoft Graph.
 +
 image::administration/oidc-jit-azure-api.png[50] 
-.... *Okta*
-..... On the Okta Admin Console, navigate to *Home > Applications*. Select the *Sign On > OpenID Connect ID Token* and click edit. Select *Add groups claim filter*.
++
+... *Okta*
+.... On the Okta Admin Console, navigate to *Home > Applications*. Select the *Sign On > OpenID Connect ID Token* and click edit. Select *Add groups claim filter*.
 +
 image::administration/oidc-jit-okta-token.png[50] 
-..... On the Okta Admin Console, navigate to *Security > API > Authorization Servers > Default* and ensure that groups scope is enabled.
 +
-image::administration/oidc-jit-azure-api.png[50]  
-... *Default Role* - Authenticated users which do not present a valid Prisma Cloud Role name under the *Role Name Claim* are granted access to this role if specified. 
+.... On the Okta Admin Console, navigate to *Security > API > Authorization Servers > Default* and ensure that groups scope is enabled.
++
+image::administration/oidc-okta-group-claim.png[50]
++
+.... Add “groups” to the Scopes defined in Step 4 above.  
 
+. *Default Role* - Authenticated users which do not present a valid Prisma Cloud Role name under the *Role Name Claim* are granted access to this role if specified. 
++
 [NOTE]
 ====
-All authenticated users may have access to the specified Default role. We recommend using a read-only Prisma Cloud Role for this purpose. 
+All authenticated users may have access to the specified Default role. If default access for all users is desired, we recommend using a read-only Prisma Cloud Role.
 ====
 
  
