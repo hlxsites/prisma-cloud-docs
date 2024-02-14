@@ -41,6 +41,20 @@ Contact your Prisma Cloud Customer Success team for more details.
 |*Feature*
 |*Description*
 
+|*View Saved Filters as Saved Views*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.2]
+//RLP-128172
+
+|Saved Filters on Prisma Cloud are now available as *Saved Views* on the Alerts, Compliance, and Governance pages. Navigate to *Home > Alerts/Compliance/Governance > Overview* to find your filter combinations available as a *Saved Views*. The following caveats apply:
+
+* Views are no longer limited to a maximum of 20.
+* Saved Views are enabled by default for the persona (Cloud/Runtime/Application Security) you created them in. If you switch to another persona, the view is disabled but you have the option to re-enable it.
+* All users, except those who were added after the migration to Saved Views will have access to previously saved filter configurations.
+You can also create new Saved Views to store select filter combinations and table configurations for a customizable look at your security posture.  
+
 |*Support for New Region on GCP*
 
 tt:[Secure the Infrastructure]
@@ -477,7 +491,37 @@ config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND jso
 [#policy-updates]
 === Policy Updates
 
-No Policy updates in 24.2.1 release.
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*GCP Cloud Armor policy not configured with cve-canary rule*
+//RLP-127965
+
+|*Changes—* The policy RQL will be updated to exclude checking edge security type of policy as pre-built rules (such as cve-canary) cannot be applied to edge security policy.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = type does not equal ignore case CLOUD_ARMOR_EDGE and (rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists)
+----
+
+*Impact—* Low. Existing alerts will be resolved as `CLOUD_ARMOR_EDGE` type policies are excluded from the policy RQL.
+
+|===
 
 [#rest-api-updates]
 === REST API Updates
