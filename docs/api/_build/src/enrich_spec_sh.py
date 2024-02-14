@@ -7,6 +7,7 @@ import re
 import yaml
 from yaml.representer import Representer
 import subprocess
+import time
 
 FIXUPS = (
   ("A P I", "API"),
@@ -108,11 +109,13 @@ def add_resource_desc(config):
     else:
       warning = "WARNING: No top-level desc for " +resource
       warning_list.append(warning)
-      with open("./warning_sh.txt", "a") as warning_file:
+      timestr = time.strftime("%Y%m%d-%H%M%S")
+      outputFile = "./warning_sh-"+timestr+".txt"
+      with open(outputFile, "a") as warning_file:
         warning_file.write('\n'.join(warning_list))  
   
   if warning_list !=[]:
-    print("A warning file created--","./warning_sh.txt")
+    print("A warning file created--",outputFile)
       
 
 def tag_to_resource(tag):
@@ -154,11 +157,13 @@ def add_endpoint_desc(config):
       else:
         warning = 'WARNING: No endpoint desc for {method.upper()}' +route
         warning_list.append(warning)
-        with open("./warning_sh.txt", "a") as warning_file:
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        outputFile_endpoint = "./warning_sh-"+timestr+".txt"
+        with open(outputFile_endpoint, "a") as warning_file:
           warning_file.write('\n'.join(warning_list))  
   
   if warning_list !=[]:
-    print("A warning file created--","./warning_sh.txt")
+    print("A warning file created--",outputFile_endpoint)
 
        
 

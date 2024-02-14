@@ -26,7 +26,7 @@ def main():
   with open(outFileName, 'w') as json_file:
     json.dump(json_data, json_file, indent=4)
 
-  print(f"Spec file transfer progress...")
+  #print(f"Spec file transfer progress...")
   if args.panloc:
     value = "python3 src/update_spec_file.py" +" " + outFileName + " " + "--panloc "+ args.panloc
     subprocess.call(value, shell=True)
@@ -34,7 +34,7 @@ def main():
     value = "python3 src/update_spec_file.py" +" " + outFileName + " "
     subprocess.call(value, shell=True)
     
-  print(f"Spec file transfer complete.")
+  #print(f"Spec file transfer complete.")
 
 if __name__ == '__main__':
   main()
