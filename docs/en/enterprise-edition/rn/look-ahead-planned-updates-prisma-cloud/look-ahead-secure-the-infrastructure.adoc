@@ -57,13 +57,6 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|*View Saved Filters as Saved Views*
-//RLP-128172
- 
-|Starting with the 24.2.2 release,  Saved Filters on Prisma Cloud will be made available as *Saved Views* on the Alerts, Compliance, and Governance pages.
-
-Navigate to *Home > Alerts/Compliance/Governance > Manage Views* to find your filter combinations available as a Saved View.
-
 
 |*S3 Flow Logs with Hourly Partition*
 
@@ -176,144 +169,12 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-[cols="50%a,50%a"]
-|===
-|*Policy Updates*
-|*Description*
-
-2+|*Policy Updates—RQL*
-
-|*GCP Cloud Armor policy not configured with cve-canary rule*
-//RLP-127965
-
-|*Changes—* The policy RQL will be updated to exclude checking edge security type of policy as pre-built rules (such as cve-canary) cannot be applied to edge security policy.
-
-*Severity—* Medium
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = type does not equal ignore case CLOUD_ARMOR_EDGE and (rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists)
-----
-
-*Impact—* Low. Existing alerts will be resolved as `CLOUD_ARMOR_EDGE` type policies are excluded from the policy RQL.
-
-|===
+There are no Policy Updates for the 24.2.2 release.
 
 [#api-ingestions]
 === API Ingestions
 
-[cols="50%a,50%a"]
-|===
-|*Service*
-|*API Details*
-
-|*AWS Batch*
-//RLP-122581
-|*aws-batch-job-definition*
-
-Additional permission required:
-
-* `batch:DescribeJobDefinitions`
-
-The Security Audit role includes the permission.
-
-|*AWS CodeBuild*
-//RLP-118748
-
-|*aws-code-build-source-credential*
-
-Additional permission required:
-
-* `codebuild:ListSourceCredentials`
-
-You must manually add the above permission to the CFT template to enable it.
-
-
-|*AWS CodeCommit*
-//RLP-120750
-
-|*aws-code-commit-repository*
-
-Additional permissions required:
-
-* `codecommit:ListRepositories`
-* `codecommit:GetRepository`
-
-The Security Audit Policy role includes the permissions.
-
-
-|*Amazon CodePipeline*
-//RLP-120757
-
-|*aws-code-pipeline-webhook*
-
-Additional permission required:
-
-* `codepipeline:ListWebhooks`
-
-You must manually add the `codepipeline:ListWebhooks` permission to the CFT template to enable it.
-
-
-|*AWS Config*
-
-//RLP-122576
-|*aws-configservice-aggregator*
-
-Additional permission required:
-
-* `config:DescribeConfigurationAggregators`
-
-The Security Audit role includes the permission.
-
-|*AWS DataSync*
-//RLP-122550
-
-|*aws-datasync-agent*
-
-Additional permissions required:
-
-* `datasync:ListAgents`
-* `datasync:DescribeAgent`
-
-The Security Audit role includes the permissions.
-
-|*Amazon EC2*
-//RLP-120745
-
-|*aws-ec2-vpc-endpoint-service*
-
-Additional permission required:
-
-* `ec2:DescribeVpcEndpointServices`
-
-The Security Audit Policy role includes the permission. 
-
-
-|tt:[Update] *Amazon Elastic Container Registry (ECR)*
-//RLP-127456, this blurb must be moved in 24.2.2
-
-|*aws-ecr-image*
-
-Prisma Cloud will update the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
-
-|tt:[Update] *OCI APIs*
-//RLP-121579, RLP-124361
-
-|Prisma Cloud will update `oci-compute-instance`, `oci-cloudguard-security-zone`, and `oci-apimanagement-apigateway-deployment` APIs to prevent the ingestion of deleted resources from Oracle Cloud Service Provider.
-
-`oci-cloudguard-security-zone` will be enhanced to ingest resources from multiple compartments, extending beyond the home region.
-
-
-|===
+There are no API ingestions for the 24.2.2 release.
 
 
 [#deprecation-notices]
