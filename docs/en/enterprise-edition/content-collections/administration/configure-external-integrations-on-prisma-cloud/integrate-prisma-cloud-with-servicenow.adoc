@@ -3,7 +3,11 @@
 
 Learn how to integrate Prisma® Cloud with ServiceNow to help you prioritize and respond to Security incidents on ServiceNow.
 
-Integrate Prisma® Cloud with ServiceNow and get automatically notified about Prisma Cloud alerts through ServiceNow tickets to prioritize incidents and vulnerabilities that impact your business. Prisma Cloud integrates with the ITSM module (incident table), the Security Incident Response module (sn_si_incident table), and the Event Management modules (em_event table) on ServiceNow to generate alerts in the form of ITSM Incident, Security Incident, and Event tickets. After you enable the integration, when Prisma Cloud scans your cloud resources and detects a policy violation, it generates an alert and pushes it to ServiceNow as a ticket. When you dismiss an alert on Prisma Cloud, Prisma Cloud sends a state change notification to update the ticket status on ServiceNow. This integration seamlessly fits in to the existing workflows for incident management (ITSM), security operations management (Security Incident Response) or event management for your organization.
+Integrate Prisma® Cloud with ServiceNow and get automatically notified about Prisma Cloud alerts through ServiceNow tickets to prioritize incidents and vulnerabilities that impact your business. Prisma Cloud integrates with the ITSM module (incident table), the Security Incident Response module (sn_si_incident table), and the Event Management modules (em_event table) on ServiceNow to generate alerts in the form of ITSM Incident, Security Incident, and Event tickets. 
+
+Prisma Cloud also supports OAuth 2.0 for ServiceNow integration, establishing a standardized and secure authentication framework for heightened security. This simplifies access token management, allowing Prisma Cloud to interact seamlessly with ServiceNow on your behalf, without exposing sensitive credentials. The result reduces the risk of unauthorized access while ensuring a more efficient and secure integration experience.
+
+After you enable the integration, when Prisma Cloud scans your cloud resources and detects a policy violation, it generates an alert and pushes it to ServiceNow as a ticket. When you dismiss an alert on Prisma Cloud, Prisma Cloud sends a state change notification to update the ticket status on ServiceNow. This integration seamlessly fits in to the existing workflows for incident management (ITSM), security operations management (Security Incident Response) or event management for your organization.
 
 The Prisma Cloud integration with ServiceNow is qualified with the most recent cloud-based GA versions of ServiceNow; the on-premise versions are not supported.
 
@@ -16,6 +20,7 @@ If you are using a ServiceNow developer instance, make sure that it is not hiber
 . xref:integrate-prisma-cloud-with-servicenow.adoc#idc4548ecb-5da3-4de2-8072-7f0c3df02de3[Enable the ServiceNow Integration on Prisma Cloud]
 //. xref:integrate-prisma-cloud-with-servicenow.adoc#id9e2276cf-c56c-4ea1-a70b-059707fe64b5[Set up Notification Templates]
 . xref:integrate-prisma-cloud-with-servicenow.adoc#id46a9b2b8-8b2a-4b68-b65e-d8c15dd574d2[View Alerts]
+. xref:integrate-prisma-cloud-with-servicenow.adoc#manage-snow-integration[Manage your ServiceNow integration]
 
 If you see errors, review how to xref:#iddd0aaa90-d099-4a99-a3ed-bde105354340[Interpret Error Messages].
 
@@ -92,19 +97,79 @@ The Event Management plugin is optional but is required if you want to generate 
 +
 Verify that the Event Management plugin is https://docs.servicenow.com/bundle/newyork-it-operations-management/page/product/event-management/task/t_EMActivatePlugin.html[activated]. To activate a plugin you must be ServiceNow administrator; if you do not see the plugin in the list, verify that you have purchased the subscription.
 
+. tt:[(Optional)] *Prerequisites to set up OAuth 2.0*
++
+If you want to connect ServiceNow using OAuth 2.0, you must complete the following prerequisite steps on your ServiceNow instance to set up OAuth 2.0 for Inbound REST APIs.
+
+.. Log in to your ServiceNow instance using Admin credentials and go to the *System OAuth > Application Registry*.
++
+image::administration/setup-snow-1.png[]
+
+.. Select *New*, you will be directed to the Interceptor page.
+
+.. Select *Create an OAuth API endpoint for external clients* and enter the following details.
++
+* *Name* - Enter a meaningful name to identify Prisma Cloud.
+* *Client ID* - The ServiceNow OAuth server will automatically generate this.
+* *Client Secret* - Leave the Client Secret blank for the ServiceNow OAuth server to generate a secret automatically.
+* *Refresh Token Lifespan* - The default value is 8,640,000 seconds (100 days) and can be increased or decreased. This means, that after 100 days, you must reauthorize the OAuth connection. As a best practice, increasing the lifespan to a larger value reduces manual reauthorization. The max value is 2,147,483,647 seconds (~68 years).
+* *Access Token Lifespan* - The default value is 1800 seconds (30 Minutes) and can be increased or decreased.
++
+image::administration/setup-snow-2.png[]
+
+.. Click *Submit*. You will be directed to the *Application Registries* page.
+
+.. Select the record that you added. For example, PrismaCloudOAuth2.0.
+
+.. Copy the *Client ID*, *Client Secret*, and *Refresh Token Lifespan* details. 
++
+You will need to enter the token while xref:integrate-prisma-cloud-with-servicenow.adoc#idc4548ecb-5da3-4de2-8072-7f0c3df02de3[enabling ServiceNow as an external integration] on Prisma Cloud.
++
+image::administration/setup-snow-3.png[]
+
+. *Generate Refresh Token*
++
+Perform the following steps to generate a refresh token to be added while enabling ServiceNow as an external integration on Prisma Cloud. 
++
+(tt:[NOTE]) As a best practice, use Postman to generate the refresh token.
+
+.. Log in to *Postman* and set the *HTTP Method as POST*.
+
+... Enter the Endpoint URL as follows: https://<your-servicenow-instanceName>.service-now.com/oauth_token.do 
++
+This is the default endpoint for getting access tokens.
++ 
+For example: https://dev123456.service-now.com/oauth_token.do
+
+... Request Parameters must be sent in the HTTP POST *Body*.
+
+... Requests should be formatted as `x-www-form-urlencoded`.
+
+.. Enter the following request parameters (JSON Key Values) and then click *Send*.
++
+* `grant_type` - password
+* `client_id` - `<client_id-generated-in-servicenow-instance>`
+* `client_secret` - `<client_secret-generated-in-service-now-instance>`
+* `username` - `<your-servicenow-instance-username>`
+* `password` - `<your-servicenow-password>`
++
+image::administration/generate-oauth-token-1.png[]
+
+.. Copy the `refresh_token` from the response. 
++
+You will need to enter the token while xref:integrate-prisma-cloud-with-servicenow.adoc#idc4548ecb-5da3-4de2-8072-7f0c3df02de3[enabling ServiceNow as an external integration] on Prisma Cloud.
+
 
 [.task]
 [#idc4548ecb-5da3-4de2-8072-7f0c3df02de3]
 === Enable the ServiceNow Integration on Prisma Cloud
 
-Set up ServiceNow as an external integration on Prisma Cloud.
+Perform the following steps to set up ServiceNow as an external integration on Prisma Cloud. If you have an existing ServiceNow Integration on Prisma Cloud, skip to xref:integrate-prisma-cloud-with-servicenow.adoc#manage-snow-integration[Manage your ServiceNow integration].
 
 [.procedure]
-. Login to Prisma Cloud.
+. Login to Prisma Cloud, and under *Settings*, select *Integrations & Notifications*.
 
-. Select *Settings > Integrations & Notifications > Integrations*.
-
-. Select *Add Integration > ServiceNow* from the list.
+. Select *Add Integration > ServiceNow*.
 
 . Enter a meaningful *Integration Name* and a *Description*.
 
@@ -130,15 +195,39 @@ https://www.<yourservicenowinstance>.com
 +
 (tt:[NOTE]) You cannot modify the FQDN after you save the integration. If you want to change the FQDN for your ServiceNow instance, add a new integration.
 
-. Enter the *Username* and *Password* for the ServiceNow administrative user account.
+. Choose either *Oauth 2.0* or *Basic* as the *Authentication*.
+
+.. For *Basic Authentication*, perform the following steps:
+
+... Enter the *Username* and *Password* for the ServiceNow administrative user account.
 +
 The ServiceNow web services use the SOAP API that supports basic authentication, whereby the administrative credentials are checked against the instance itself and not against any LDAP or SSO Identity provider. Therefore, you must create a local administrative user account and enter the credentials for that local user account here instead of the SSO credentials of the administrator. This method is standard for SOAP APIs that pass a basic authentication header with the SOAP request.
 
-. Select the Service Type for which you want to generate tickets—*Incident*, *Security*, and/or *Event*.
+... Select the Service Type for which you want to generate tickets—*Incident*, *Security*, and/or *Event*.
 +
 You must have the plugin installed to create *Security* incident tickets or *Event* tickets; make sure to work with your ServiceNow administrator to install and configure the Security Incident Response module or Event Management module. If you select *Security* only, Prisma Cloud generates all tickets as Security Incident Response (SIR) on ServiceNow.
++
+image::administration/snow-basic-auth-1.png[]
 
-. Click *Next* and then *Test*.
+.. tt:[(Optional)] For *Oauth 2.0 Authentication*, perform the following steps:
+
+... Enter the *Client ID* that you had copied earlier from the ServiceNow instance.
+
+... Enter the *Client Secret* that you had copied earlier from the ServiceNow instance.
+
+... Enter the *Refresh Token* that you had copied from the response in Postman.
++
+(tt:[NOTE]) Once the *Refresh Token* expires, you must perform the steps listed in Generate Refresh Token and include it in the Prisma Cloud UI. For example, if you set the token value as 8,640,000 seconds (100 days), then after 100 days, you must reauthorize the OAuth connection.
+
+... Enter the *Token Lifespan (In Seconds)* that you had copied earlier from the ServiceNow instance.
+
+... Select the *Service Type* for which you want to generate tickets—*Incident*, *Security*, and/or *Event*.
++
+You must have the plugin installed to create *Security* incident tickets or *Event* tickets; make sure to work with your ServiceNow administrator to install and configure the Security Incident Response module or Event Management module. If you select *Security* only, Prisma Cloud generates all tickets as Security Incident Response (SIR) on ServiceNow.
++
+image::administration/snow-oauth-1.png[]
+
+. Click *Next* and then review the *Summary*.
 +
 If you have omitted any of the permissions listed in xref:#idce37e68b-d094-4b6b-a5d4-ab21d092fd36[Set Up Permissions on ServiceNow], an HTTP 403 error displays.
 +
@@ -264,3 +353,29 @@ image::administration/servicenow-security-incidents-alerts.png[]
 .. To view event incidents (events table), select *Event Management > All Events*.
 +
 image::administration/servicenow-event-incidents-alerts.png[]
+
+
+[#manage-snow-integration]
+=== Manage your ServiceNow integration
+
+If you have an existing ServiceNow Integration on Prisma Cloud, you can view, edit, or delete an integration from the *Actions* panel on the *Integrations & Notifications* page. The *Actions* panel provides options to manage your integrations and notifications on Prisma Cloud.
+
+image::administration/manage-snow-integration.png[]
+
+* *View—* Select the *View* Integration icon on the *Actions* pane. The View ServiceNow Integration page will appear, displaying the current configuration details of the ServiceNow integration.
+
+* *Edit—* Select the *Edit* icon on the *Actions* pane. The Edit ServiceNow Integration page will appear, allowing you to modify relevant configuration details such as enabling Oauth 2.0 Authentication or updating Refresh Token details.
+
+** To enable *Oauth 2.0 Authentication*, perform the following steps:
+
+*** Enter the *Client ID* that you had copied earlier from the ServiceNow instance.
+
+*** Enter the *Client Secret* that you had copied earlier from the ServiceNow instance.
+
+*** Enter the *Refresh Token* that you had copied from the response in Postman.
++
+(tt:[NOTE]) Once the *Refresh Token* expires, you must perform the steps listed in Generate Refresh Token and include it in the Prisma Cloud UI. For example, if you set the token value as 8,640,000 seconds (100 days), then after 100 days, you must reauthorize the OAuth connection.
+
+*** Enter the *Token Lifespan (In Seconds)* that you had copied earlier from the ServiceNow instance.
+
+* *Delete—* Select the *Delete* icon on the *Actions* pane to remove the integration.
