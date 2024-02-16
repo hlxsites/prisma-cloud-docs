@@ -7,7 +7,7 @@ Learn what's new on Prisma® Cloud in February 2024.
 * <<api-ingestions>>
 * <<new-policies>>
 * <<policy-updates>>
-//* <<new-compliance-benchmarks-and-updates>>
+* <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
 //* <<changes-in-existing-behavior>>
 //* <<deprecation-notices>>
@@ -40,6 +40,21 @@ Contact your Prisma Cloud Customer Success team for more details.
 |===
 |*Feature*
 |*Description*
+
+
+|*View Saved Filters as Saved Views*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.2]
+//RLP-128172
+
+|Saved Filters on Prisma Cloud are now available as *Saved Views* on the Alerts, Compliance, and Governance pages. Navigate to *Home > Alerts/Compliance/Governance > Overview* to find your filter combinations available as a *Saved Views*. The following caveats apply:
+
+* Views are no longer limited to a maximum of 20.
+* Saved Views are enabled by default for the persona (Cloud/Runtime/Application Security) you created them in. If you use the Prisma Cloud switcher to try another persona, the view is disabled but you have the option to re-enable it.
+* All users, except those who were added after the migration to Saved Views will have access to previously saved filter configurations.
+You can also create new Saved Views to store select filter combinations and table configurations for a customizable look at your security posture.  
 
 
 |*Support for Just in Time (JIT) Auto-Provisioning*
@@ -85,6 +100,125 @@ For more information, under the Application Security documentation, select Get S
 |===
 |*Service*
 |*API Details*
+
+|*AWS Batch*
+
+tt:[*24.2.2*]
+
+//RLP-122581
+|*aws-batch-job-definition*
+
+Additional permission required:
+
+* `batch:DescribeJobDefinitions`
+
+The Security Audit role includes the permission.
+
+|*AWS CodeBuild*
+
+tt:[*24.2.2*]
+
+//RLP-118748
+
+|*aws-code-build-source-credential*
+
+Additional permission required:
+
+* `codebuild:ListSourceCredentials`
+
+You must manually add the above permission to the CFT template to enable it.
+
+
+|*AWS CodeCommit*
+
+tt:[*24.2.2*]
+
+//RLP-120750
+
+|*aws-code-commit-repository*
+
+Additional permissions required:
+
+* `codecommit:ListRepositories`
+* `codecommit:GetRepository`
+
+The Security Audit Policy role includes the permissions.
+
+
+|*Amazon CodePipeline*
+
+tt:[*24.2.2*]
+
+//RLP-120757
+
+|*aws-code-pipeline-webhook*
+
+Additional permission required:
+
+* `codepipeline:ListWebhooks`
+
+You must manually add the `codepipeline:ListWebhooks` permission to the CFT template to enable it.
+
+
+|*AWS Config*
+
+tt:[*24.2.2*]
+
+//RLP-122576
+|*aws-configservice-aggregator*
+
+Additional permission required:
+
+* `config:DescribeConfigurationAggregators`
+
+The Security Audit role includes the permission.
+
+|*AWS DataSync*
+
+tt:[*24.2.2*]
+
+//RLP-122550
+
+|*aws-datasync-agent*
+
+Additional permissions required:
+
+* `datasync:ListAgents`
+* `datasync:DescribeAgent`
+
+The Security Audit role includes the permissions.
+
+|*Amazon EC2*
+
+tt:[*24.2.2*]
+
+//RLP-120745
+
+|*aws-ec2-vpc-endpoint-service*
+
+Additional permission required:
+
+* `ec2:DescribeVpcEndpointServices`
+
+The Security Audit Policy role includes the permission. 
+
+
+|tt:[Update] *Amazon Elastic Container Registry (ECR)*
+//RLP-127456 
+
+|*aws-ecr-image*
+
+Prisma Cloud will update the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
+
+|tt:[Update] *OCI APIs*
+
+tt:[*24.2.2*]
+
+//RLP-121579, RLP-124361
+
+|Prisma Cloud updated `oci-compute-instance`, `oci-cloudguard-security-zone`, and `oci-apimanagement-apigateway-deployment` APIs to prevent the ingestion of deleted resources from Oracle Cloud Service Provider.
+
+`oci-cloudguard-security-zone` will be enhanced to ingest resources from multiple compartments, extending beyond the home region.
 
 |*Amazon EC2 Image Builder*
 
@@ -312,6 +446,154 @@ Prisma Cloud will update the `gcloud-compute-autoscaler` API to exclude the `rec
 |*Policies*
 |*Description*
 
+
+|*Azure Batch Account configured with overly permissive network access*
+
+tt:[*24.2.2*]
+
+//RLP-69482
+
+|This policy identifies Batch Accounts configured with overly permissive network access. By default, Batch accounts are accessible from the all networks. With an Account access IP firewall, you can restrict it further to only a set of IPv4 addresses or IPv4 address ranges. With Private access Virtual Networks, the network traffic path is secured on both ends. It is recommended to configure the Batch account with an IP firewall or by Virtual Network, so that the Batch account is accessible only to restricted entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+|*Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible*
+
+tt:[*24.2.2*]
+
+//RLP-124737
+
+|This policy identifies Azure Storage Accounts storing Machine Learning workspace high business impact data that are publicly accessible. Azure Storage account stores machine learning artifacts such as job logs. By default, this storage account is used when you upload data to the workspace. The attacker could exploit publicly accessible storage account to get machine learning workspace high business impact data logs and could breach in to the system by leveraging data exposed. It is recommended to restrict storage account access to only to the machine learning services as per business requirement.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+|*AWS account security contact information is not set*
+
+tt:[*24.2.2*]
+
+//RLP-126209
+
+|This policy identifies the AWS account which has not set security contact information. Providing dedicated contact information for security specific, AWS can directly communicate security advisories to the team responsible for handling security-related issues. Failure to specify security contact info in AWS risks missing critical advisories, leading to delayed incident response and increased vulnerability exposure. It is recommended to set security contact information to receive notifications.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+|*Azure Cognitive Services account configured with local authentication*
+
+tt:[*24.2.2*]
+
+//RLP-126234
+
+|This policy identifies Azure Cognitive Services accounts that are configured with local authentication methods instead of AD identity. Local authentication allows users to access the service using a local account and password, rather than an Azure Active Directory (Azure AD) account. Disabling local authentication methods improves security by ensuring that Cognitive Services accounts require Active Directory identities exclusively for authentication. It is recommended to disable local authentication methods on your Cognitive Services account, instead use Azure Active Directory identities.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+|*Azure Machine learning workspace is not configured with private endpoint*
+
+tt:[*24.2.2*]
+
+//RLP-126235
+
+|This policy identifies Azure Machine learning workspaces that are not configured with private endpoint. Private endpoints in workspace resources allow clients on a virtual network to securely access data over Azure Private Link. Configuring a private endpoint enables access to traffic coming from only known networks and prevents access from malicious or unknown IP addresses which includes IP addresses within Azure. It is recommended to create private endpoint for secure communication for your Machine learning workspaces.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+|*Azure Kubernetes Service (AKS) container service that is internet reachable with unrestricted access (0.0.0.0/0)*
+
+tt:[*24.2.2*]
+
+//RLP-126309
+
+|This policy identifies Azure Kubernetes Service (AKS) container services that are internet reachable with unrestricted access (0.0.0.0/0). Container services with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* NetworkConfig
+
+|*AWS EKS K8s service that is internet reachable with unrestricted access (0.0.0.0/0)*
+
+tt:[*24.2.2*]
+
+//RLP-126545
+
+|This policy identifies AWS EKS K8s service that are internet reachable with unrestricted access (0.0.0.0/0). Containers with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+|*IBM Cloud Block Storage volume for VPC is not encrypted with BYOK*
+
+tt:[*24.2.2*]
+
+//RLP-127891
+
+|This policy identifies IBM Cloud Block storage volumes that are not encrypted with Bring Your Own keys(BYOK). As a best practice, it is recommended to use BYOK so that no one outside the organization has access to the root key and only authorized identities have access to maintain the lifecycle of the keys.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+
+|*AWS Systems Manager EC2 instance having NON_COMPLIANT patch compliance status*
+
+tt:[*24.2.2*]
+
+//RLP-129452
+
+|This policy identifies if the AWS Systems Manager patch compliance status is "NON_COMPLIANT" with critical or high severity for managed instances. Instances labeled non-compliant might lack essential patches for security, stability, or meeting standards. Non-compliant instances pose security risks because attackers often target unpatched systems to exploit known weaknesses. As a security best practice, it's recommended to apply any missing patches to the affected instances.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+
+|*Azure Microsoft Defender for Cloud set to Off for Databases*
+
+tt:[*24.2.2*]
+
+//RLP-129459
+
+|This policy identifies Azure Microsoft Defender for Cloud which has defender setting for Databases set to Off. Enabling Azure Defender for Cloud provides advanced security capabilities like threat intelligence, anomaly detection, and behaviour analytics. Defender for Databases in Microsoft Defender for Cloud allows you to protect your entire database estate with attack detection and threat response for the most popular database types in Azure. It is highly recommended to enable Azure Defender for Databases.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+|*Azure Microsoft Defender for Cloud set to Off for Open-Source Relational Databases*
+
+tt:[*24.2.2*]
+
+//RLP-129460
+
+|This policy identifies Azure Microsoft Defender for Cloud which has defender setting for Open-Source Relational Databases set to Off. Enabling Azure Defender for cloud provides advanced security capabilities like threat intelligence, anomaly detection, and behaviour analytics. Microsoft Defender for Cloud detects anomalous activities indicating unusual and potentially harmful attempts to access or exploit databases. It is highly recommended to enable Azure Defender for Open-Source Relational Databases.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+|*Azure Microsoft Defender for Cloud set to Off for Cosmos DB*
+
+tt:[*24.2.2*]
+
+//RLP-129461
+
+|This policy identifies Azure Microsoft Defender for Cloud which has defender setting for Cosmos DB set to Off. Enabling Azure Defender for the cloud provides advanced security capabilities like threat intelligence, anomaly detection, and behaviour analytics. Microsoft Defender for Azure Cosmos DB detects potential SQL injections, known bad actors based on Microsoft Threat Intelligence, suspicious access patterns, and potential exploitation of your database through compromised identities, or malicious insiders. It is highly recommended to enable Azure Defender for Cosmos DB.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+
 |*AWS Log metric filter and alarm does not exist for AWS Organization changes*
 
 tt:[*24.2.1*]
@@ -369,7 +651,72 @@ config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND jso
 [#policy-updates]
 === Policy Updates
 
-No Policy updates in 24.2.1 release.
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*GCP Cloud Armor policy not configured with cve-canary rule*
+//RLP-127965
+
+|*Changes—* The policy RQL will be updated to exclude checking edge security type of policy as pre-built rules (such as cve-canary) cannot be applied to edge security policy.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = type does not equal ignore case CLOUD_ARMOR_EDGE and (rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists)
+----
+
+*Impact—* Low. Existing alerts will be resolved as `CLOUD_ARMOR_EDGE` type policies are excluded from the policy RQL.
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*New policy mappings for Azure CIS*
+
+tt:[*24.2.2*]
+
+//RLP-129952
+
+|The following compliance requirements in Azure CIS 1.5 Level 1, Azure CIS 1.5 Level 2 and Azure CIS v2.0.0 Level 2 are updated 
+with new mappings.
+
+* Azure CIS 1.5 Level 1 - Database Services, Microsoft Defender, Storage Accounts
+* Azure CIS 1.5 Level 2 - Database Services, Microsoft Defender
+* Azure CIS 2.0 Level 2 - Microsoft Defender, Storage Accounts
+
+*Impact-* As new mappings are introduced, compliance scoring might vary.
+
+|*Risk Management in Technology includes mappings to support GCP*
+
+tt:[*24.2.2*]
+
+//RLP-129793
+
+|Google Cloud Platform support is added for the Risk Management in Technology(RMiT) compliance standard.
+
+*Impact-* As new mappings are introduced, compliance scoring might vary.
+
+|===
 
 [#rest-api-updates]
 === REST API Updates
@@ -378,6 +725,10 @@ No Policy updates in 24.2.1 release.
 |===
 |*Change*
 |*Description*
+
+|tt:[*24.2.2*]
+
+|Placeholder for RLP-123157, RLP-125586, RLP-130813, RLP-129569, RLP-128901
 
 |*Just-In-Time (JIT) Support*
 
