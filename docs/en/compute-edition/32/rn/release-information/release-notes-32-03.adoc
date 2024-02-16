@@ -1,0 +1,234 @@
+:toc: macro
+== 32.03 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|32.02.127 TODO:
+|Code name
+|O'Neal - Update 2, 32.02 TODO:
+
+|Release date
+|January 28th, 2024 TODO:
+
+|Type
+|Maintenance Release
+
+|SHA-256 TODO:
+|a4790f3e94509fb1d80b0ff5a3567ac57295fd52b976b7f67d34ab268f9636ee
+
+|===
+
+Review the https://docs.paloaltonetworks.com/prisma/prisma-cloud/32/prisma-cloud-compute-edition-admin/install/system_requirements[system requirements] to learn about the supported operating systems, hypervisors, runtime, tools, and orchestrators.
+
+// You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+// LINK
+
+toc::[]
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defender Versions 22.06 and Earlier
+
+With the `v32.00` release, https://docs.paloaltonetworks.com/prisma/prisma-cloud/32/prisma-cloud-compute-edition-admin/welcome/support_lifecycle[Defender versions supported (n, n-1, and n-2)] are `v32.00`, `v31.00`, and `v30.00`.
+
+To prepare for this update, you must upgrade your Defenders from version `v22.06` (Kepler) or earlier to a later version.
+Failure to upgrade Defenders will result in disconnection of any Defender version below `v22.12` such as `v22.06`.
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+With the `v32.00` release, the https://docs.paloaltonetworks.com/prisma/prisma-cloud/32/prisma-cloud-compute-edition-admin/welcome/support_lifecycle[supported Console versions (n, n-1, and n-2)] are `v32.00`, `v31.00`, and `v30.00`.
+
+You can upgrade the Prisma Cloud console directly from any version for n-1 to n.
+With `v30.00` as n-1 and `v31.00` as n, you can for example go directly from `v30.01.153` to `v31.00.129`.
+
+You have to upgrade any version of `v22.00` to `v30.00` before upgrading to `v31.00`.
+For example, you can upgrade from `v22.12.693` to `v30.02.123` and then upgrade to `v32.00.159`.
+
+// [#cve-coverage-update]
+// === CVE Coverage Update
+
+// [#api-changes]
+// === API Changes and New APIs
+
+
+[#enhancements]
+=== Enhancements
+[cols="40%a,60%a"]
+|===
+
+|FEATURE
+|DESCRIPTION
+
+//CWP-52181
+|*Agentless Scanning*
+|Enabled the scan of non-running hosts by default.
+Agentless scanning now scans non-running hosts by default for all newly added accounts.
+This change does not affect existing accounts.
+
+//CWP-49984
+|*Registry Scanning*
+|The following new fields are now displayed for registry scans:
+
+* Scan status—if the scan completed successfully or failed.
+
+* Last scan time—the time at which defender started scanning the registry.
+
+A new unified scan progress indicator shows the status (percentage and number) of scanning and pending registries.
+
+//CWP-47706
+|*Vulnerability Management*
+|Improved the detection of vulnerabilities on supported Windows OS workloads to fix false negative and false positive alerts related to Windows feeds.
+
+// //CWP-55308
+// |*Cloud Account Management*
+// |Introduced the *Account Import Status* filter on the *Cloud Accounts* page in *Runtime Security*.
+// This feature includes three statuses:
+
+// * *Local accounts:* cloud accounts created in Runtime Security only (and not in the Prisma Cloud console)
+// * *Manually imported accounts:* cloud accounts that were manually imported from Prisma Cloud console to Runtime Security in the past prior to the Lagrange release (end of 2022)
+// * *Auto-imported accounts:* cloud accounts that originated from Prisma Cloud console and seamlessly imported into Runtime Security.
+
+|===
+
+// [#new-features-core]
+// === New Features in Core
+
+
+//[#new-features-host-security]
+//=== New Features in Host Security
+
+//[#new-features-serverless]
+//=== New Features in Serverless
+
+//[#new-features-waas]
+//=== New Features in WAAS
+
+[#api-changes]
+=== API Changes
+[cols="30%a,70%a"]
+|===
+
+//CWP-55309
+| *API to list cloud accounts that are imported from the Prisma Cloud platform*
+|You can onboard accounts and cloud credentials only through the Prisma Cloud platform Accounts page now. To support this change, the following new query parameters have been added to the https://pan.dev/prisma-cloud/api/cwpp/get-credentials/[Get All Credentials] endpoint. These parameters allow you to list cloud accounts that are imported from the Prisma Cloud platform:
+
+* `external`: Set to `true` to retrieve credentials imported from the Prisma Cloud platform Accounts page.
+* `autoImported`: Set to `true` to retrieve credentials that were automatically imported from the Prisma Cloud platform Accounts page.
+
+
+//CWP-52775
+|*New request body field in the Download Serverless Layer Bundle endpoint*
+|The https://pan.dev/prisma-cloud/api/cwpp/post-images-twistlock-defender-layer-zip/[Download Serverless Layer Bundle] endpoint includes a new request body field: `nodeJSModuleType`, which accepts one of these values:
+
+* `commonjs` 
+* `ecmascript` 
+
+The `nodeJSModuleType` field is optional and the default value is `commonjs`.
+
+|===
+
+
+// [#breaking-api-changes]
+// === Breaking Changes in API
+// [cols="30%a,70%a"]
+// |===
+
+
+[#end-support]
+=== End of Support Notifications
+[cols="30%a,70%a"]
+|===
+
+//CWP-36043 / CWP-50985
+|*Code Security Module for Scanning*
+|The Code Repository Scanning feature is sunset in Prisma Cloud Compute Edition.
+
+It is replaced by Prisma Cloud Application Security in the Enterprise Edition, which offers more comprehensive and advanced Software Composition Analysis (SCA). For information, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/application-security[Prisma Cloud Application Security].
+
+//CWP-36043 / CWP-53875
+|*Code Security Module for Scanning APIs are Sunset*
+|The Code Repository Scanning feature in Prisma Cloud Compute is no longer available as Prisma Cloud Enterprise Edition (Cloud Application Security) offers a more comprehensive and advanced Software Composition Analysis (SCA) feature.
+
+Also, the following Prisma Cloud Compute code scan endpoints have been sunset (removed):
+
+* `/api/<vVersion>/coderepos` - *GET* 
+* `/api/<vVersion>/coderepos/scan` - *POST*
+* `/api/<vVersion>/coderepos/stop` - *POST*
+* `/api/<vVersion>/coderepos/download`- *GET*
+* `/api/<vVersion>/coderepos/progress` - *GET*
+* `/api/<vVersion>/coderepos/discover` - *GET*
+* `/api/<vVersion>/coderepos-ci` - *POST*
+* `/api/<vVersion>/coderepos-ci` - *GET*
+* `/api/<vVersion>/coderepos-ci/download` - *GET*
+* `/api/<vVersion>/policies/vulnerability/coderepos` - *GET*
+* `/api/<vVersion>/policies/vulnerability/coderepos/impacted` - *GET*
+* `/api/<vVersion>/policies/vulnerability/ci/coderepos` - *GET*
+* `/api/<vVersion>/policies/compliance/coderepos` - *GET*
+* `/api/<vVersion>/policies/compliance/coderepos/impacted` - *GET*
+* `/api/<vVersion>/policies/compliance/ci/coderepos`- *GET*
+* `/api/<vVersion>/policies/vulnerability/coderepos` - *PUT*
+* `/api/<vVersion>/policies/vulnerability/ci/coderepos` - *PUT*
+* `/api/<vVersion>/policies/compliance/coderepos` - *PUT*
+* `/api/<vVersion>/policies/compliance/ci/coderepos`- *PUT*
+* `/api/<vVersion>/settings/coderepos` - *PUT*
+* `/api/<vVersion>/settings/coderepos` - *GET*
+* `/api/<vVersion>/coderepos/webhook/{" + id + "}"` - *POST*
+
+|===
+
+[#addressed-issues]
+=== Addressed Issues
+
+[cols="40%a,60%a"]
+|===
+
+|*FIXED VERSION*
+|*DESCRIPTION*
+//CWP-46155
+|tt:[Fixed in 32.02]
+|Agentless scanning now supports scanning of Podman container images deployed to hosts with the default storage driver.
+
+//CWP-46167
+|tt:[Fixed in 32.02]
+|Fixed an issue where scanning scripts that contain binary data caused memory consumption issues.
+
+//CWP-47706 - Waiting on inputs
+// |tt:[Fixed in 32.02]
+// |
+
+//CWP-47945
+|tt:[Fixed in 32.02]
+|Improved the detection of vulnerabilities on supported Windows OS workloads to fix false negative and false positive alerts related to Windows feeds.
+
+//CWP-48097
+|tt:[Fixed in 32.02]
+|Fixed an issue causing some TAS blobstore controllers not to be listed.
+
+//CWP-48530
+|tt:[Fixed in 32.02]
+|Fixed an issue found during configuration of the Tanzu blobstore scanner. The configuration didn't filter the scanners from the selected cloud controller correctly. Now, when you provide a cloud controller in the Tanzu blobstore scan configuration, only the  suitable scanners are available in the scanner dropdown.
+
+//CWP-54804
+|tt:[Fixed in 32.02]
+|Added support for installing serverless defender on AWS with NodeJS runtime, using layer based deployment type and ES modules type.
+
+//CWP-52027
+|tt:[Fixed in 32.02]
+|Fixed an issue where users could not see credentials stored in the Runtime Security credential store, when creating a new System Admin role while specifying cloud accounts only onboarded under Runtime Security.
+
+|===
+
+//[#backward-compatibility]
+//=== Backward Compatibility for New Features
+
+//[#change-in-behavior]
+//=== Change in Behavior
+
+//==== Breaking fixes compare with SaaS RN
