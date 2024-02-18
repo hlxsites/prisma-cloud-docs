@@ -4,40 +4,189 @@
 
 == Suppress Code Issues
 
-Suppression allows you to selectively ignore or suppress specific code issues or violations detected during a scan. This provides flexibility in managing and addressing code quality concerns by reducing noise and focusing on critical issues that require attention.
+Suppression allows you to selectively ignore or suppress specific issues or violations detected during a scan. This provides flexibility in managing and addressing various concerns, including code issues, IaC misconfigurations, SCA vulnerabilities and more, by reducing noise and focusing on critical issues that require attention. Suppressions can be applied across different platforms, including the Prisma Cloud console, IDE, or CLI, allowing you to address issues according to your preferred workflow.
+You can suppress issues globally, by disabling a policy, selectively, by targeting a specific source, or at the code level using inline suppressions. Global suppression disables a policy or rule for all cases within the scope it applies to, while specific suppression ignores issues associated with a particular source while leaving the overall policy active. This means you can target and ignore the specific code issue for that individual source, within the broader scope of the policy.
 
-=== Permissions Required to Suppress
+=== Permissions 
 
+The table below describes suppression permissions for predefined permission groups.
 
+[cols="1,1,1"]
+|===
 
+|Predefined Permission Group|Disable Policy|Suppress
+
+| System Admin
+| Yes
+| Yes
+
+| Account Group Admin
+| Yes 
+| Yes
+
+| Cloud Provisioning Admin
+| No
+| No
+
+| Account and Cloud Provisioning Admin
+| Yes
+| Yes
+
+| Build and Deploy Security
+| No
+| No
+
+| Account group read-only
+| No
+| Yes
+
+| Developer
+| No
+|No +
+NOTE: To enable Developer suppressions see <<#in-line-suppress,Developer Inline Suppressions>>  
+
+| AppSec
+| No
+| Yes
+
+|===
+
+==== GRBAC Permissions
+
+Granular Role-Based Access Control (GRBAC) permissions for suppression include:
+
+* *Delete*: *Policies* > *Update* OR *Policies* > *Policies* > *Delete*.
+* *Suppress*: None
+
+[#suppress-types]
 === Types of Suppressions
 
-Several methods are available to suppress code issues:
+The following table describes the different types of suppressions available for various types of scans.
 
-* 
-* *Disable policy*
-* *Developer inline suppressions*
+[cols="1,1,1"]
+|===
 
+|Scan Type|Suppress By|Description
 
-On *Code Security > Projects*, add a suppression rule to suppress issues across views to mitigate scan results.
+1.3+|IaC misconfiguration 
+|Resource
+|Suppress issues associated with specific resources. The selected finding for the selected resource will be excluded from future scans
 
+|Repositories
+|Suppress issues across repositories. The identified issue will be excluded from the scope of the selected repository scans
+
+|Tag
+|Any resource with this tag will be excluded from findings of this policy in future scans
+
+1.2+|SCA vulnerabilities 
+|CVE
+|The CVE vulnerability for the specific package and file will be excluded from the scope of future scans
+
+|CVE’s in Accounts
+|The detected CVE vulnerability will be excluded from the scope of future scans in the selected repository
+
+1.3+|SAST weaknesses
+|Finding
+|The detected code issue will be excluded from the scope of future scans in the selected finding
+
+|File
+|All detected code issues of this type will be excluded from the scope of future
+
+|Repositories
+|The detected code issue will be excluded from the scope of future scans in the selected repository
+
+|Secrets
+|Secret
+|The detected secret will be excluded from the scope of future scans 
+
+|Licenses
+|License Types Packages
+a|
+The detected license will be excluded from the scope of future scans globally
+All license compliance issues for this package and version globally will be excluded from future scans
+
+|VCS Pull Requests
+|
+|The detected issue will be excluded from the scope of future pull request scans 
+
+|CI/CD Runs
+|
+|The issue detected in the CI/CD Run will be excluded from the scope of future scans of the resource
+
+|===
+
+=== Manage Suppressions on Prisma Cloud Console
+
+You can view and take action on issues detected in scans, including the ability to suppress them, from the *Projects* page in the Prisma Cloud console. For more on code issues refer to xref:monitor-code-build-issues.adoc[Monitor Code Build Issues].
+
+[.task]
+==== Suppress Issues through the Console
+
+To suppress issues through the console:
 [.procedure]
 
-. Access a code category then select the issue in the resource block to view more information and suggested fixes in the side panel.
-
-. Select *Issues* and then *Suppress*.
+.In Application Security, select Projects.
 +
-image::application-security/proj-suppress.png[]
-
-. Add relevant information as *Justification*.
+By default, the *Overviews* tab is displayed, listing all the types of code issues detected in a scan.
 +
-You can optionally add an *Expiration Time* for the suppression.
-
-. Select *Suppress by* to apply suppression based on specific suppression types.
+image::application-security/suppression-type-tabs-project.png[]
+. Select a tab corresponding to the type of issue you want to suppress.
 +
-* *Resource*: This option allows you to selectively suppress issues associated with specific resources. In this option, the selected resources will be excluded from future scans. Additionally, you can view a count of the affected resources, empowering you to make an informed decision.
-* *Repositories*: With this option, you can strategically suppress issues across repositories. You are required to select the desired repositories from the list.
+Options: ‘IaC misconfigurations’, ‘Vulnerabilities’ (for SCA), ‘Secrets’, ‘Licenses’, ‘Weaknesses’, ‘VCSPullRequests’, ‘CI/CD Runs’. 
 
-. Select *Save*.
+. Select an issue from the table > Click on the *Issues* tab in the *Resource Explorer*.
 +
-You can also view the suppressed result using the *Issue Status* filter.
+image::application-security/suppress-issues1.0.png[]
+
+. Scroll down the issue content and select *Suppress*.
++
+image::application-security/suppress-tab.png[]
++ 
+The *Suppress* rule modal opens.
++
+image::application-security/suppress-create-rule.png[]
+
+. Fill in the provided fields:
++
+* Provide a justification for suppressing the issue.
+* * Optional: Provide an expiration date. After this date, the rule will no longer be valid, and will be ignored.
+Select the type of suppression. Refer to <<#suppress-types,Types of Suppressions>> above for more information.
+* Click *Save*.
+
+==== View Suppresses Issues
+
+You can view suppressed issues on the *Projects* page: Select *Suppressed* from the *Issue Status* filter. Use category filters (such as IaC) to quickly find suppressed issues relating to a specific category.
+
+=== Suppress Issues through an IDE
+
+You can suppress issues directly in your IDE while coding. Applying a suppression will add an inline suppression comment in your code.
+
+image::application-security/suppress-ide.png[]
+
+NOTE: The scope of suppression varies depending on the scan type. For Infrastructure as Code (IaC), it applies per resource, while for Software Composition Analysis (SCA) and Static Application Security Testing (SAST), it applies to the entire file. Before using file-scoped suppression, ensure that <<#in-line-suppress,Developer suppressions>> are enabled. 
+
+For more information on Prisma Cloud Code Security’s capabilities to address security issues directly in the IDE refer to the Prisma Cloud IDE documentation.
+
+=== Suppress Issues through a CLI
+
+The CLI supports Checkov scan capabilities, offering the flexibility to suppress individual checks for each resource or to explicitly choose to run or skip specific checks entirely. You can use inline code comments or annotations to skip individual checks for a particular resource. You can also fine-tune which checks run or do not run for the overall scan. 
+
+Example usage: To skip a check on a given Terraform definition block or CloudFormation resource, apply the following comment pattern inside its scope: `checkov:skip=<check_id>:<suppression_comment>`.
+
+For more information on suppressing code issues through your CLI, refer to the https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html[Checkov CLI Suppression].
+
+[.#in-line-suppress]
+
+=== Developer Inline Suppressions
+
+Developers can use in-line code comments or annotations to skip specific scans for a particular resource. When these suppressions are applied, any subsequent scans will disregard the issues identified in the code. You can override or ignore all developer suppressions, ensuring that the related resource undergoes scanning even when developer suppressions are in place: 
+
+. In *Application Security*, select *Settings* > *Application Security* under ‘Configure’ in the left menu.
+. Scroll down to *Developer Suppressions* > *Disable*.
++
+image::application-security/suppressions-dev.png[]
+
+=== Disable Policies
+
+Disable policies to exclude calculating issues detected during a scan in order to reduce overall scan time, to prevent unnecessary policies being scanned, and to help reduce false positives.
+For more information on disabling policies, refer xref:../../../governance/manage-prisma-cloud-policies.adoc[Manage Prisma Cloud Policies].
