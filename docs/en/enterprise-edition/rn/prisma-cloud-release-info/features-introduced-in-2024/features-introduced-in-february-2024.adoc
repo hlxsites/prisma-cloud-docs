@@ -54,7 +54,17 @@ tt:[24.2.2]
 * Views are no longer limited to a maximum of 20.
 * Saved Views are enabled by default for the persona (Cloud/Runtime/Application Security) you created them in. If you use the Prisma Cloud switcher to try another persona, the view is disabled but you have the option to re-enable it.
 * All users, except those who were added after the migration to Saved Views will have access to previously saved filter configurations.
-You can also create new Saved Views to store select filter combinations and table configurations for a customizable look at your security posture.  
+
+You can also create new Saved Views to store select filter combinations and table configurations for a customizable look at your security posture. 
+
+|*OAuth 2.0 support for ServiceNow Integration*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.2]
+//RLP-122296
+
+|Prisma Cloud has enhanced its https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow[ServiceNow integration] with OAuth 2.0 support, establishing a standardized and secure authentication framework for heightened security. This enhancement simplifies access token management, allowing Prisma Cloud to interact seamlessly with ServiceNow on your behalf, without exposing sensitive credentials. The result reduces the risk of unauthorized access while ensuring a more efficient and secure integration experience.
 
 
 |*Support for Just in Time (JIT) Auto-Provisioning*
@@ -145,6 +155,22 @@ Additional permissions required:
 The Security Audit Policy role includes the permissions.
 
 
+|*AWS CodeCommit*
+
+tt:[*24.2.2*]
+
+//RLP-120755
+
+|*aws-code-commit-approval-rule-template*
+
+Additional permissions required:
+
+* `codecommit:ListApprovalRuleTemplates`
+* `codecommit:GetApprovalRuleTemplate`
+
+The Security Audit Policy role includes the permission for `codecommit:ListApprovalRuleTemplates`.
+
+
 |*Amazon CodePipeline*
 
 tt:[*24.2.2*]
@@ -208,7 +234,7 @@ The Security Audit Policy role includes the permission.
 
 |*aws-ecr-image*
 
-Prisma Cloud will update the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
+Prisma Cloud updated the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
 
 |tt:[Update] *OCI APIs*
 
@@ -422,7 +448,7 @@ tt:[*24.2.1*]
 
 |*gcloud-cloud-firestore-native-database*
 
-Prisma Cloud will update the `gcloud-cloud-firestore-native-database` API to exclude the `earliestVersionTime` field from the resource configuration because it changes frequently causing too many resource snapshots.
+Prisma Cloud updated the `gcloud-cloud-firestore-native-database` API to exclude the `earliestVersionTime` field from the resource configuration because it changes frequently causing too many resource snapshots.
 
 |tt:[Update] *Google Compute Engine (GCE)*
 
@@ -432,7 +458,7 @@ tt:[*24.2.1*]
 
 |*gcloud-compute-autoscaler*
 
-Prisma Cloud will update the `gcloud-compute-autoscaler` API to exclude the `recommendedSize` field from the resource configuration because it changes frequently causing too many resource snapshots.
+Prisma Cloud updated the `gcloud-compute-autoscaler` API to exclude the `recommendedSize` field from the resource configuration because it changes frequently causing too many resource snapshots.
 
 
 |===
@@ -459,6 +485,11 @@ tt:[*24.2.2*]
 
 *Policy Type—* Config
 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-batch-account' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.networkProfile.accountAccess.defaultAction equal ignore case Allow and properties.publicNetworkAccess equal ignore case Enabled
+----
+
+
 |*Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible*
 
 tt:[*24.2.2*]
@@ -470,6 +501,11 @@ tt:[*24.2.2*]
 *Policy Severity—* High
 
 *Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y;
+----
+
 
 |*AWS account security contact information is not set*
 
@@ -483,6 +519,11 @@ tt:[*24.2.2*]
 
 *Policy Type—* Config
 
+----
+config from cloud.resource where api.name = 'aws-account-management-alternate-contact' group by account as X; filter ' AlternateContactType is not member of ("SECURITY") ' ;
+----
+
+
 |*Azure Cognitive Services account configured with local authentication*
 
 tt:[*24.2.2*]
@@ -494,6 +535,11 @@ tt:[*24.2.2*]
 *Policy Severity—* Low
 
 *Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cognitive-services-account' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.disableLocalAuth does not exist or properties.disableLocalAuth is false) 
+----
+
 
 |*Azure Machine learning workspace is not configured with private endpoint*
 
@@ -507,6 +553,11 @@ tt:[*24.2.2*]
 
 *Policy Type—* Config
 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.privateEndpointConnections[*] does not exist or properties.privateEndpointConnections[*] is empty or (properties.privateEndpointConnections[*] exists and properties.privateEndpointConnections[*].properties.privateLinkServiceConnectionState.status does not equal ignore case Approved))
+----
+
+
 |*Azure Kubernetes Service (AKS) container service that is internet reachable with unrestricted access (0.0.0.0/0)*
 
 tt:[*24.2.2*]
@@ -518,6 +569,11 @@ tt:[*24.2.2*]
 *Policy Severity—* High
 
 *Policy Type—* NetworkConfig
+
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'AZURE' and effective.action = 'Allow'
+----
+
 
 |*AWS EKS K8s service that is internet reachable with unrestricted access (0.0.0.0/0)*
 
@@ -531,6 +587,11 @@ tt:[*24.2.2*]
 
 *Policy Type—* Network
 
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'AWS' and effective.action = 'Allow'
+----
+
+
 |*IBM Cloud Block Storage volume for VPC is not encrypted with BYOK*
 
 tt:[*24.2.2*]
@@ -542,6 +603,10 @@ tt:[*24.2.2*]
 *Policy Severity—* Information
 
 *Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'ibm-vpc-block-storage-volume' as X; config from cloud.resource where api.name = 'ibm-key-protect-registration' as Y;filter 'not($.Y.resourceCrn equals $.X.crn)' ; show X;
+----
 
 
 |*AWS Systems Manager EC2 instance having NON_COMPLIANT patch compliance status*
@@ -556,6 +621,10 @@ tt:[*24.2.2*]
 
 *Policy Type—* Config
 
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ssm-resource-compliance-summary' AND json.rule = Status equals "NON_COMPLIANT" and ComplianceType contains "Patch" and ResourceType contains "ManagedInstance" and (NonCompliantSummary.SeveritySummary.CriticalCount greater than 0 or NonCompliantSummary.SeveritySummary.HighCount greater than 0)
+----
+
 
 |*Azure Microsoft Defender for Cloud set to Off for Databases*
 
@@ -569,6 +638,11 @@ tt:[*24.2.2*]
 
 *Policy Type—* Config
 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any((name equals SqlServers and properties.pricingTier does not equal Standard) or (name equals CosmosDbs and properties.pricingTier does not equal Standard) or (name equals OpenSourceRelationalDatabases and properties.pricingTier does not equal Standard) or (name equals SqlServerVirtualMachines and properties.pricingTier does not equal Standard))] exists
+----
+
+
 |*Azure Microsoft Defender for Cloud set to Off for Open-Source Relational Databases*
 
 tt:[*24.2.2*]
@@ -581,6 +655,11 @@ tt:[*24.2.2*]
 
 *Policy Type—* Config
 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals OpenSourceRelationalDatabases and properties.pricingTier does not equal Standard)] exists
+----
+
+
 |*Azure Microsoft Defender for Cloud set to Off for Cosmos DB*
 
 tt:[*24.2.2*]
@@ -592,6 +671,10 @@ tt:[*24.2.2*]
 *Policy Severity—* Information
 
 *Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals CosmosDbs and properties.pricingTier does not equal Standard)] exists
+----
 
 
 |*AWS Log metric filter and alarm does not exist for AWS Organization changes*
