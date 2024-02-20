@@ -3,16 +3,22 @@
 [.task]
 == Connect Azure Repos
 
-Integrate Prisma Cloud with your Azure Repos system to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up the Azure Repos platform.
+Integrate Prisma Cloud with your Azure Repos version control system (VCS) to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up the Azure Repos platform.
 This integration enables security scans to identify Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) vulnerabilities, exposed secrets, license mis-compliance and CI/CD pipeline risks in your Azure Repos, allowing you to understand and fix issues as soon as they are detected, resulting in an enhanced security posture for your organization.
 
 === Multi-Token Integration 
 
 Prisma Cloud supports multiple Azure Repos accounts for a single Prisma Cloud tenant using multiple OAuth user tokens, without having to change any permission settings in Azure Repos. You can connect multiple organizations from the same Azure Repos account (using a single VCS user token), or use multiple tokens to connect multiple organizations, regardless whether they belong to the same Azure Repos account. This capability increases your organization's readiness and scale.
 
+The Azure Repos integration creates a webhook that triggers periodic scans of your code. These scans run on all pull requests (PRs), and their results are displayed in both the PR comments and reports.
+
+NOTE: Refer to <<#subscribed-events,Subscribed Events>> below for a list of events to which the integration is subscribed.
+
 [.procedure]
 
 . Before you begin.
+.. Grant the Prisma Cloud user the necessary permissions for integrating Prisma Cloud with your Azure Repos VCS, as specified in <<#user-permissions, User Permissions>> below.
+
 .. Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console. 
 .. Grant *Administrator* permissions in the relevant Azure organization to the Prisma user integrating Prisma Cloud with Azure.
 
@@ -120,4 +126,74 @@ On *Code & Build Providers*, you can also manage the integration by reselection 
 * *Manage VCS user tokens*: Enables you to integrate one or more Azure Repos accounts.
 +
 NOTE: You cannot delete the integration from *Repositories* for an account integration that supports multiple user tokens.
+
+[#user-permissions]
+=== User Permissions
+
+Authorize the user integrating Prisma Cloud with your Azure Repos instance with the following permissions.
+
+* *Identity (read) [vso.identity]*: This permission grants read access to identity-related information or configurations within Azure DevOps. It allows the user to view details about users, groups, or other identity-related entities
+
+* *Build (read) [vso.build]*: This permission grants read access to information related to builds in Azure DevOps. It allows the user to view details about build pipelines, build definitions, and build execution status
+
+* *Packaging (read) [vso.packaging]*: This permission grants read access to information related to package management in Azure DevOps. It allows the user to view details about packages, feeds, and package versions stored in Azure Artifacts
+
+* *Extensions (read) [vso.extension]*: This permission grants read access to information related to extensions in Azure DevOps. It allows the user to view details about installed extensions, extension configurations, and extension marketplace
+
+* *Release (read) [vso.release]*: This permission grants read access to information related to release pipelines in Azure DevOps. It allows the user to view details about release definitions, release environments, and release execution status
+
+* *Project and team (read) [vso.project]*: This permission grants read access to information related to projects and teams in Azure DevOps. It allows the user to view details about projects, teams, team membership, and project settings
+
+* *Graph (read) [vso.graph]*: This permission grants read access to the Azure DevOps Graph API. It allows the user to query and retrieve information about users, groups, and other entities using the Graph API
+
+* *User profile (write) [vso.profile_write]*: This permission grants write access to the user's profile information in Azure DevOps. It allows the user to update their own profile details such as display name, email address, and profile picture
+
+* *Work items (read and write) [vso.work_write]*: This permission grants read and write access to work items in Azure DevOps. It allows the user to view, create, update, and delete work items such as user stories, bugs, tasks, and epics
+
+* *Code (read and write) [vso.code_write]*: This permission grants read and write access to source code repositories in Azure DevOps. It allows the user to view, create, modify, and delete source code files, branches, and pull requests
+
+* *Task Groups (read, create) [vso.taskgroups_write]*: This permission grants read and create access to task groups in Azure DevOps. It allows the user to view existing task groups and create new ones for use in pipelines
+
+* *Code (status) [vso.code_status]*: This permission grants access to the status of source code repositories in Azure DevOps. It allows the user to view the status of commits, branches, and pull requests, including build and test status
+
+NOTE: A repository can be assigned to multiple integrations. However, if all the integrations associated with a repository lack the necessary permissions, many of the actions performed on that repository may fail.
+
+==== CI/CD Module Permissions
+
+For CI/CD module support, a phase that is not mandatory for creating a PAT (Personal Access Token) has been added. This token contains the following permissions relevant to the CI/CD module:
+
+* *Agent Pools (Read)*: Grants access to view information about agent pools used for CI/CD pipelines
+
+* *Analytics (Read)*: Provides access to view analytics data related to CI/CD pipelines and their performance
+
+* *Auditing (Read Audit Log)*: Allows access to read the audit log, which records actions and events related to CI/CD processes for auditing purposes
+
+* *Member Entitlement Management (Read)*: Grants access to view and manage member entitlements related to CI/CD features and resources
+
+* *Pull Request Threads (Read & write)*: Provides permissions to view and interact with pull request threads, including adding comments and making modifications
+
+* *Service Connections (Read)*: Allows access to view service connections configured for CI/CD pipelines, which are used to connect to external services and resources
+
+* *Tokens (Read & manage)*: Grants permissions to view and manage tokens used for authentication and authorization in CI/CD processes
+
+* *Variable Groups (Read)*: Provides access to view variable groups, which contain sets of variables used in CI/CD pipelines for configuring and parameterizing builds and releases
+
+[#subscribed-events]
+=== Subscribed Events
+
+Below is a comprehensive list of events to which Prisma Cloud is subscribed. These events encompass various actions and changes occurring within your Azure Repos environment that trigger notifications and integrations with Prisma Cloud.
+
+*Repositories*
+
+* *git.pullrequest.created*: This event is triggered when a new pull request is created in a Git repository. It allows systems to be notified whenever a new pull request is initiated, enabling integration with other services or actions
+
+* *git.pullrequest.updated*: This event is triggered when an existing pull request is updated with new changes, comments, or other modifications. It allows systems to stay synchronized with the latest changes in pull requests
+
+* *git.push*: This event is triggered when new commits are pushed to a Git repository. It enables systems to track changes to the repository and perform actions such as triggering builds or running tests
+
+* *git.pullrequest.merged*: This event is triggered when a pull request is successfully merged into the target branch. It allows systems to take action after a pull request has been merged, such as deploying changes or updating related tasks
+
+*Organizations*:
+
+* *build.complete*: This event is triggered when a build process is completed within an Azure DevOps organization. It allows systems to react to the completion of build tasks, such as notifying stakeholders or triggering subsequent stages in a deployment pipeline
 

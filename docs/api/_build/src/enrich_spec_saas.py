@@ -6,6 +6,8 @@ import pathlib
 import re
 import yaml
 from yaml.representer import Representer
+import subprocess
+import time
 
 FIXUPS = (
   ("A P I", "API"),
@@ -94,6 +96,7 @@ def add_resource_desc(config):
   """
   spec = config.spec
   topic_map = config.topic_map
+  warning_list = []
 
   # "tags" are an array, not a dict.
   # https://realpython.com/python-enumerate/
@@ -104,7 +107,16 @@ def add_resource_desc(config):
       spec['tags'][i]['description'] = {}
       spec['tags'][i]['description']['$ref'] = link
     else:
-      print(f'WARNING: No top-level desc for {resource}')  
+      warning = "WARNING: No top-level desc for " +resource
+      warning_list.append(warning)
+      timestr = time.strftime("%Y%m%d-%H%M%S")
+      outputFile = "./warning_saas-"+timestr+".txt"
+      with open(outputFile, "a") as warning_file:
+        warning_file.write('\n'.join(warning_list))  
+  
+  if warning_list !=[]:
+    print("A warning file created--",outputFile)
+       
 
 def tag_to_resource(tag):
   """
@@ -132,6 +144,7 @@ def add_endpoint_desc(config):
   """
   spec = config.spec
   topic_map = config.topic_map
+  warning_list = []
 
   for route in spec['paths']:
     for method in spec['paths'][route]:
@@ -141,9 +154,17 @@ def add_endpoint_desc(config):
         spec['paths'][route][method]['description']['$ref'] = desc.get_link(config)
         #print(f"FOUND desc for {method}{route}")
         #print(f"LINK = {desc.get_link(config)}")
+        #print(f'WARNING: No endpoint desc for {method.upper()} {route}')
       else:
-        print(f'WARNING: No endpoint desc for {method.upper()} {route}')
-
+        warning = 'WARNING: No endpoint desc for {method.upper()}' +route
+        warning_list.append(warning)
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        outputFile_endpoint = "./warning_saas-"+timestr+".txt"
+        with open(outputFile_endpoint, "a") as warning_file:
+          warning_file.write('\n'.join(warning_list))  
+  
+  if warning_list !=[]:
+    print("A warning file created--",outputFile_endpoint)  
 
 
 def add_endpoint_summary(config):
@@ -198,7 +219,7 @@ def lookup_summary(topic_map, route, method):
       /subresource:
   """
   # Debug
-  print(f"Look up summary for {method} {route}")
+  #print(f"Look up summary for {method} {route}")
 
   route_key1 = None
   route_key2 = None
@@ -325,11 +346,12 @@ def add_endpoint_operation_id2(spec):
       count += 1
 
 
-def output_spec(spec):
+def output_spec(spec, outfile):
   """
   Write the enriched spec to a file.
   """
-  with open("openapi_enriched_saas.json", "w") as outfile:
+  
+  with open(outfile, "w") as outfile:
     json.dump(spec, outfile, indent=2)
 
 
@@ -347,7 +369,7 @@ def include_constructor(loader, node):
 # https://mail.python.org/pipermail/python-list/2009-December/562185.html
 class IncludeFile(object):
   def __init__(self, path):
-    print(path)
+   # print(path)
     self.path = path
     if not self.validate(path):
       raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), path)
@@ -394,7 +416,7 @@ class IncludeFile(object):
     # If not, create it.
     dirname = os.path.dirname(tmp_path)
     if os.path.exists(dirname) == False:
-      print('new dir name: %s' % dirname)
+      #print('new dir name: %s' % dirname)
       os.makedirs(dirname)
 
     # Copy the file to tmp/
@@ -414,6 +436,7 @@ def main():
   parser.add_argument('topic_map', type=str, help='Path to _topic_map.yml')
   parser.add_argument('--branch', help='Specify the branch from which to retrieve API endpoint descriptions (default: master)')
   parser.add_argument('--local', action='store_true', help='Build for testing locally with redoc-cli')
+  parser.add_argument('--panloc', help = 'pan.dev folder location on local system' )
   args = parser.parse_args()
 
   config = Config()
@@ -423,6 +446,7 @@ def main():
   # See: https://stackoverflow.com/questions/43058050/creating-custom-tag-in-pyyaml
   yaml.add_constructor(u'!include', include_constructor)
 
+  outFile = args.spec.replace("supported","enriched")
   # Read the OpenAPI spec file.
   config.spec = load_spec(args.spec)
 
@@ -443,8 +467,15 @@ def main():
 
   enrich_spec(config)
 
-  output_spec(config.spec)
-
+  output_spec(config.spec,outFile)
+  if args.panloc:
+    #print(f"PCEE json sorting in progress...")
+    value = "python3 src/sort_tags.py" +" " + outFile + " "+ "--panloc "+ args.panloc
+    subprocess.call(value, shell=True)
+    #print(f"PCEE json sorting is complete")
+  else:
+    value = "python3 src/sort_tags.py" +" " + outFile + " "
+    subprocess.call(value, shell=True)
 
 if __name__ == '__main__':
   main()
