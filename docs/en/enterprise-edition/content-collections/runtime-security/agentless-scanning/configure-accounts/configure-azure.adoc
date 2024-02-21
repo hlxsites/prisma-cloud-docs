@@ -21,33 +21,55 @@ Complete the steps below to configure agentless scanning based on the needs of y
 +
 image::runtime-security/agentless-azure-configuration.png
 
-. Expand the *Advanced settings*.
+. Expand the *Advanced settings* and provide the appropriate values based on your deployment for the following items.
 
-.. Enable *Permissions check* to verify that the custom role permissions are correct before running a scan.
+.. xref:#azure-agentless-modes[Scan settings]
+.. xref:#azure-agentless-permissions[Scanning permissions]
+.. xref:#azure-agentless-scope[Scanning scope]
+.. xref:#azure-agentless-network[Network resources]
 
-.. *Auto-scale scanning*: Automatically create the required amount of scanners to scan all of the hosts within a region, up to a limit of 50 scanners.
+. Click *Save* to return to *Compute > Manage > Cloud accounts*.
+
+[#azure-agentless-modes]
+==== Scan Settings
+
+* *Select where to scan*: For Azure accounts, you can decide between xref:../agentless-scanning.adoc#scanning-modes[two scanning modes].
+
+** *Same Account*: Perform the agentless scanning process using this account.
+
+** *Hub Account*: Perform the agentless scanning process using a centralized hub account.
+Select another account from the list to use as the centralized hub account to scan this account.
+on the target accounts.
+
+* *Auto-scale scanning*: Automatically create the required amount of scanners to scan all of the hosts within a region, up to a limit of 50 scanners.
 To use a different limit specify the *Max number of scanners*.
 
-.. *Max number of scanners*: Enter the upper limit of scanners that Prisma Cloud can automatically spin up within a region in your account for faster results.
+* *Max number of scanners*: Enter the upper limit of scanners that Prisma Cloud can automatically spin up within a region in your account for faster results.
 
-.. *Enforce permissions check*: In case of failure to validate the appropriate permissions, this account won't be scanned.
+[#azure-agentless-permissions]
+==== Scanning Permissions
+
+* *Enforce permissions check*: In case of failure to validate the appropriate permissions, this account won't be scanned.
 If this is a hub account, the associated target accounts won't be scanned as well.
 
-.. Enter a *Proxy* value if traffic leaving your Azure tenant uses a proxy.
+* Enter a *Proxy* value if traffic leaving your Azure tenant uses a proxy.
 
-.. *Custom tags*: Apply custom tags to any resources Prisma Cloud creates during agentless scanning.
+[#azure-agentless-scope]
+==== Scanning Scope
 
-.. Under *Scan scope* you can refine the scope of the scanning by *Regions* or using tags.
+* *Custom tags*: Apply custom tags to any resources Prisma Cloud creates during agentless scanning.
+
+* Under *Scan scope* you can refine the scope of the scanning by *Regions* or using tags.
 +
 image::runtime-security/tags-scope.png[]
 
-... *All regions*: Scan in all Azure regions.
+** *All regions*: Scan in all Azure regions.
 
-... *Custom regions*: Specify the Azure regions, which you want scanned.
+** *Custom regions*: Specify the Azure regions, which you want scanned.
 
-... *Scan non running hosts*: Choose whether or not to scan hosts that aren't running.
+** *Scan non running hosts*: Choose whether or not to scan hosts that aren't running.
 
-... *Exclude hosts by tags*: Select a subset of hosts which you want to exclude from the scan process
+** *Exclude hosts by tags*: Select a subset of hosts which you want to exclude from the scan process
 +
 You can use wildcards to specify a range of tags in both keys and values following these examples:
 +
@@ -60,7 +82,7 @@ You can use wildcards to specify a range of tags in both keys and values followi
 "*abcd*"
 ----
 
-... *Include hosts by tags*: Select a subset of hosts to scan
+** *Include hosts by tags*: Select a subset of hosts to scan
 +
 You can use wildcards to specify a range of tags in both keys and values following these examples:
 +
@@ -73,21 +95,17 @@ You can use wildcards to specify a range of tags in both keys and values followi
 "*abcd*"
 ----
 
-.. Choose whether or not to enable *Auto-scale scanning*. If you disable auto-scale, specify number of scanners Prisma Cloud should employ.
+** Choose whether or not to enable *Auto-scale scanning*. If you disable auto-scale, specify number of scanners Prisma Cloud should employ.
 
-.. *Network resources*: Configure custom network resources for agentless scanning. When using custom network resources, Prisma Cloud assumes those resources have a path to communicate outbound data to the Prisma Cloud backend, as explained in the xref:../agentless-scanning.adoc#networking-infrastructure[networking infrastructure section]. If left blank, Prisma Cloud creates the needed xref:../agentless-scanning.adoc#networking-infrastructure[networking resources with default settings].
+[#azure-agentless-network]
+==== Network Resources
 
-... *Subnet ID*: The ID of the subnet resource in your Azure account.
-... *Security group ID*: The ID of the security group resource in your Azure account.
-... In Azure, Prisma Cloud does not use the network resources configured directly due to current limit of specifying only one identifier for each subnet or security group across all regions. Azure's policy prohibits having duplicate subnet or security group IDs within the same resource group, making it unfeasible to ensure these resources exist in every region.
+* *Network resources*: Configure custom network resources for agentless scanning. When using custom network resources, Prisma Cloud assumes those resources have a path to communicate outbound data to the Prisma Cloud backend, as explained in the xref:../agentless-scanning.adoc#networking-infrastructure[networking infrastructure section]. If left blank, Prisma Cloud creates the needed xref:../agentless-scanning.adoc#networking-infrastructure[networking resources with default settings].
+
+** *Subnet ID*: The ID of the subnet resource in your Azure account.
+** *Security group ID*: The ID of the security group resource in your Azure account.
+** In Azure, Prisma Cloud does not use the network resources configured directly due to current limit of specifying only one identifier for each subnet or security group across all regions. Azure's policy prohibits having duplicate subnet or security group IDs within the same resource group, making it unfeasible to ensure these resources exist in every region.
 +
 As a result, Prisma Cloud creates these network resources within the `PCCAgentlessScanResourceGroup` resource group, mirroring the configuration of the provided resources for the subnet and security group.
 Prisma Cloud copies the route table data to the new resources since this data may contain various addresses that might not necessarily align with the new subnet, such as private IP addresses.
 
-. Click *Next*.
-
-. In the *Discovery features* page, leave the *Cloud discovery* settings unchanged.
-+
-image::runtime-security/agentless-azure-cloud-discovery.png[]
-
-. Click *Save*.
