@@ -101,7 +101,40 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-There are no Policy Updates for the 24.3.2 release.
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|tt:[Update] *GCP Storage buckets are publicly accessible to all users*
+
+tt:[*24.3.2*]
+
+//RLP-128109
+
+|*Changes—* Policy RQL will be updated to account for bucket level prevent public access feature. The recommendation is also updated as per the updated GCP UI.
+
+*Severity—* High
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-storage-buckets-list' AND json.rule = 'iam.bindings[*] size greater than 0 and iam.bindings[*].members[*] any equal allUsers'
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-storage-buckets-list' AND json.rule = iamConfiguration.publicAccessPrevention does not equal ignore case "enforced" and iam.bindings[*] size greater than 0 and iam.bindings[*].members[*] any equal allUsers'
+----
+
+*Impact—* Low. Existing alerts on buckets with the prevent public access feature enabled at the bucket level will be resolved. Alerts will be generated against the policy violations.
+
+|===
 
 [#api-ingestions]
 === API Ingestions
@@ -124,7 +157,7 @@ Additional permission required:
 * `aws-glue-schema`
 * `glue:ListSchemas`
 
-The Security Audit role does not include the permission.
+You must manually add the above permission to the CFT template to enable it, if not present in the Security Audit role.
 
 
 |*AWS Backup*
@@ -139,7 +172,7 @@ Additional permission required:
 
 * `backup:ListProtectedResources`
 
-The Security Audit role does not include the permission.
+You must manually add the above permission to the CFT template to enable it, if not present in the Security Audit role.
 
 
 |*AWS Glue*
