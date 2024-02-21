@@ -3,22 +3,159 @@
 [.task]
 == Add Prisma Cloud Application Security Plugin to VS Code
 
-Integrating VS Code (Visual Studio Code) with Prisma Cloud Application security makes it possible for you to identify misconfigurations before you commit your code, and avoid pull requests that can potentially fail builds due to undetected misconfigurations. Using Prisma Cloud Code Security, a code analysis tool that scans Infrastructure-as-code (IaC) files from frameworks such as Terraform_plan, CloudFormation, Azure Resource Manager (ARM), Secrets, Serverless, Dockerfile (only code), and Kubernetes on VS Code gives you immediate detection of misconfigurations and inline code fixes.
-Apart from the scanning the default Prisma Cloud policies, Prisma Cloud also scans for policy violations in custom policies that you can configure during custom build checks. 
-// Waiting for path to Policies See xref:../../code-repositories-policy-management/code-repositories-policy-management.adoc[custom build-time checks.]
+Integrate the Prisma Cloud Code Security plugin (Prisma Cloud) for VS Code IDE to seamlessly enhance security while coding, allowing you to identify issues before you commit your code, reducing the risk of pull requests failing due to undetected issues. Prisma Cloud scans for security policy violations based on both default, out-of-the-box and custom policies. 
+For more information on Policies, refer to xref:../../../../../policy-reference/get-started-code-sec-policies/get-started-code-sec-policies.adoc.
 
+The plugin utilizes Prisma Cloud's capabilities to scan these security categories:
+
+* IaC misconfigurations in IaC templates such as Kubernetes and Terraform. For a list of supported frameworks see xref:../../../supported-technologies.adoc
+* SCA vulnerabilities: Open source: security vulnerabilities in both direct and transitive open source dependencies
+* Secrets: Security vulnerabilities in your base images
+* Licenses: Software license noncompliance
+
+You can prioritize findings and address the most critical issues by filtering the scan results by severity.
+
+=== Integration
 
 [.procedure]
 
-. Before you begin.
-.. *Access Key*: Enables access to Prisma Cloud. If you do not have the access key, refer to xref:../../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key]
-.. *Roles and Permissions* Grant Developer (minimum) role with access to specific repositories. The Developer role provides view and access to  *Fix and Submit* changes to the relevant VCS repositories. If a user has more than one Prisma Cloud Role assigned to them, the access key associated with the default role is used when accessing Prisma Cloud
-.. *Secret Key*: The secret key generates with your access key. Save your secret key when you generate it, as you cannot view it again on Prima Cloud
-.. *Install Python*: Prisma Cloud Code Security requires Python to run. Install https://www.python.org/downloads/[Python version 3.8] or above. If you have a versatile working environment of both pip and virtual environment install https://docs.pipenv.org/[Pipenv] or https://www.docker.com/products/docker-desktop[Docker]
-.. *Prisma Cloud API URL*: When you configure the Prisma Cloud Code Security plugin to VScode (Visual Studio Code) you need Prisma Cloud API URL. The URL for Prisma Cloud varies depending on the region and cluster on which your tenant is deployed. The tenant provisioned for you is, for example, https://app2.prismacloud.io or https://app.eu.prismacloud.io. For Prisma Cloud API URL, replace *app* in the URL with *api*
-* Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console 
 
-. On Prisma Cloud Application security.
+. Before you begin.
+.. Install https://www.python.org/downloads/[Python] v3.7 or above, https://docs.pipenv.org/[Pipenv] or a running https://www.docker.com/products/docker-desktop[Docker] daemon.
++
+NOTE: The Prisma Cloud plugin automatically invokes the latest version of Prisma Cloud Code Security.
+
+.. On Prisma Cloud.
++
+* Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud console 
+* xref:../../../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a key ID and secret
+* Retrieve your Prisma Cloud API URL, which varies depending on the region and cluster on which your tenant is deployed
++
+NOTE: For Prisma Cloud API URL, replace *app* in the URL with *api*.
+
+. Download options.
++
+* In VS Code, open the *Extensions* panel > search for *Prisma Cloud*.
+* Open the https://marketplace.visualstudio.com/items?itemName=PrismaCloud.prisma-cloud[Visual Studio Marketplace] > search for *Prisma Cloud* > select the Prisma Cloud plugin
+* On the Prisma Cloud console: Select *Settings* >  *Connect Provider* > *Code & Build Providers* > *VScode*(under IDEs)
++
+You are redirected to the Prisma Cloud plugin in the https://marketplace.visualstudio.com/items?itemName=PrismaCloud.prisma-cloud[Visual Studio Marketplace].
+
+. If you are in the Marketplace, select *Install*.
++
+ You are redirected to the Prisma Cloud extension on VS Code.
+
+. On VS Code: Select *Install*.
+
+. Configure Prisma Cloud Settings.
+.. Navigate to the bottom menu bar of VS Code and select *Prisma Cloud*.
++
+image::application-security/vscode-settings1.1.png[]
+
+.. Fill in the provided fields:
++
+* *Access Key* (required): The Prisma Cloud access key ID generated in step 1 above
+* *Secret Key* (required): The Prisma Cloud secret key generated in step 1 above
+* *Prisma URL* (required): Your Prisma URL - see prerequisites  in step 1 above
+* *CA-Certificate* (optional): Add the certificate in a `.pem` file format
+* *Use Enforcement Rules* (Optional): select whether soft-fail thresholds set by Enforcement apply to VS Code scans
++
+NOTE: For more information on Enforcement, refer to the xref:../../../risk-management/monitor-and-manage-code-build/enforcement.adoc[Enforcement documentation].
+
+=== UI Layout
+
+The UI of the Prisma Cloud extension includes the following sections:
+
+image::application-security/vscode-ui-overview1.1.png[]
+
+* Left pane: The left navigation bar displaying a tree structure displaying folders categorized by issue type (including IaC misconfigurations, Secrets, Vulnerabilities (SCA), and Licenses) containing errors detected during a scan
+* Middle pane: Contains the code editor for reviewing the codebase. Includes a list of findings for a resource, and remediation options
+* Right pane: The Problems Tool pane, offering a detailed view of a selected issue including the code difference when available, and remediation options 
+
+=== Usage
+
+The Prisma Cloud Security extension allows you to conduct comprehensive scans, manage findings efficiently, and remediate issues seamlessly, all within your coding environment.
+
+==== Scans
+
+Prisma Cloud Security scans your code for issues and provides remediation suggestions in both the *Code editor* and the *Problems Tool* panel. 
+
+* Full scan: Click the scan button in any of the security categories (IaC, Secrets and so on) to initiate a full scan of the entire project
++
+NOTE: The scan covers all security categories although the Play button is selected in a single category. 
+
+* File scan: Open or save a specific file to trigger a scan exclusively for that file 
+
+=== Findings
+
+Issues detected during a scan are displayed in the navigation bar, the code editor and Problems Tool pane. Scan results include details of the violating policies, and provide a link to fixes, suppression, or guidelines based on the Prisma Cloud Code Security fix dictionaries. 
+
+image::application-security/vscode-findings.png[]
+
+* In the *Navigation bar*: findings are displayed according to category. Selecting a finding opens it in both the Code editor and the Problems Tool pane 
+* In the *Code editor*: when issues are detected in a resource (for IaC)^*^, a red mark or indicator is displayed in the code line next to the resource. Hover over the line starting with the resource to display a list of findings related to the particular resource, including the issue's context and impact, as well as available fixes. Selecting Console displays a detailed view of the issue in the Problems Tool pane. In addition, the navigation bar opens to the corresponding resource
+^*^A resource block declares a resource of a given type with a given local name. The name is used to refer to this resource from elsewhere in the same Terraform module, but has no significance outside of the scope of a module.
+* In the *Problems Tool* pane: select a finding in the navigation bar to display the issue in detail in the Problem Tools panel, including the type of available fixes. 
++
+NOTE: Selecting *Console* when an issue is displayed in the Code editor, opens the issue in the Problems Tool pane.  
+
+=== Manage Results
+
+You can remediate issues using either the *Code editor* or the *Problems Tool* pane. Options include applying a fix when available, suppressing an issue or referring to the documentation for mitigation.
+
+====  Manage Results in the Code editor
+
+. Select a finding in the Navigation bar.
+. Hover over a resource in the code editor > Select an issue from the list that is displayed.
++
+image::application-security/vscode-editor.png[]
+
+. Apply a fix, suppress the issue or refer to the Prisma Cloud documentation. See Remediation below for remediation options.
+
+==== Manage Results in the Problems Tool Pane
+
+. Select a finding in the Navigation bar.
++
+A description of the issue is displayed. You can remediate the issue directly from the Problem Tools pane. See Remediation below for remediation options.
+
+=== Remediation
+
+You can fix or suppress issues directly in both the *Code editor* or the *Problems Tool* pane. Not all types of remediation are available for all issues. In addition, you can refer to the linked documentation for mitigating detected issues.
+
+==== Fixes
+
+When selecting an issue in both the Code editor and Problems Tool panel, a suggested fix is displayed when available. Fixes are applied directly to the code. The following list displays the categories of issues that can be fixed, and the type of remediation that can be applied to each issue.
+
+* *IaC* misconfigurations: The fix modifies the configuration
+* *SCA* vulnerabilities: The fix bumps the package version. You can directly fix the specific CVE vulnerability that has been detected during the scan by upgrading the package to the version that includes a fix.  
+* *Secrets* issues: Follow the policy guidelines
+* *License* mis-compliance: Follow the policy guidelines
+
+==== Suppression
+
+Suppress an issue to temporarily hide or ignore an issue without fixing it, allowing you to concentrate on more important issues.  
+
+NOTE: The suppression is scoped to the file.
+
+. Enable the *Developer Suppressions* parameter: Select *Settings* > *Code Security Configuration* settings > toggle the *Developer Suppressions* parameter *ON*.
+. Select an issue > *Suppress* from either the Code editor or Problems Tool.
+. Provide a justification for the suppression.
++
+NOTE: The justification will be added as a commented annotation to your source code.
+
+After suppressing an issue, the file is not scanned for two minutes. This is to prevent the issue from being re-triggered. Saving the file during the hold period will not trigger a scan. 
+
+For more information on Suppression, refer to ../../risk-management/monitor-and-manage-code-build/suppress-code-issues.adoc[]. 
+
+==== Documentation
+
+If automated fixes are not available, policy documentation can provide guidance on how to address the issue: 
+Select an issue > Documentation.
+ You are redirected to the relevant policy documentation which includes suggested guidelines on how to solve the issue.
+
+
+////
+. On the Prisma Cloud console.
 .. In Application Security, select *Home* > *Settings* > *Connect Provider* > *Code & Build Providers*.
 +
 image::application-security/connect-provider-menu.png[]
@@ -62,7 +199,7 @@ You can optionally select *View Problem* to know more about the misconfiguration
 image::application-security/vscode-10.png[]
 +
 Each misconfiguration has details on the policy violation and guidelines to fix the policy. See xref:../../../../governance.adoc[here] for more about each of misconfigurations in all supported environments. 
-
+////
 ////
 === Troubleshoot Logs
 
