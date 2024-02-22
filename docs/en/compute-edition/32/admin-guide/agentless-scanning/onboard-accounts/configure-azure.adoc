@@ -37,71 +37,95 @@ image::agentless-azure-scan-config-basic.png[width=400]
 
 .. Set the *Console URL* and *Port* to the address of your Prisma Cloud console that can be reached from the internet. To create an address or FQDN reachable from the internet, complete the xref:../../configure/subject-alternative-names.adoc[Subject Alternative Names procedure].
 
-.. Expand* Advanced settings*.
+.. Expand *Advanced settings* and provide the appropriate values based on your deployment for the following items.
 +
 image::agentless-configuration-azure.png[width=400]
 
-... If you use a proxy for traffic leaving your Azure tenant, enter the *Proxy* address and add it's Certificate Authority certificate.
+.. xref:#azure-agentless-modes[Scan settings]
+.. xref:#azure-agentless-permissions[Scanning permissions]
+.. xref:#azure-agentless-scope[Scanning scope]
+.. xref:#azure-agentless-network[Network resources]
 
-... Under *Scan scope* you can choose *All regions* to scan for VMs in all Azure regions. If you choose *Custom regions*, enter the Azure region in which you want Prisma Cloud to scan for VMs.
+. Click *Save* to return to *Compute > Manage > Cloud accounts*.
 
-... Enter tags under *Exclude VMs by tags* to further limit the scope of the scan.
+[#azure-agentless-modes]
+=== Scan Settings
 
-... Choose whether or not to *Scan non running hosts*
+* *Select where to scan*: For Azure accounts, you can decide between xref:../agentless-scanning.adoc#scanning-modes[two scanning modes].
 
-... Choose whether or not to enable *Auto-scale scanning*. If you disable auto-scale, specify number of scanners Prisma Cloud should employ.
+** *Same Account*: Perform the agentless scanning process using this account.
+
+** *Hub Account*: Perform the agentless scanning process using a centralized hub account.
+Select another account from the list to use as the centralized hub account to scan this account.
+on the target accounts.
+
+* *Auto-scale scanning*: Automatically create the required amount of scanners to scan all of the hosts within a region, up to a limit of 50 scanners.
+To use a different limit specify the *Max number of scanners*.
+
+* *Max number of scanners*: Enter the upper limit of scanners that Prisma Cloud can automatically spin up within a region in your account for faster results.
+
+[#azure-agentless-permissions]
+=== Scanning Permissions
+
+* *Enforce permissions check*: In case of failure to validate the appropriate permissions, this account won't be scanned.
+If this is a hub account, the associated target accounts won't be scanned as well.
+Review the xref:../../configure/permissions.adoc#azure-agentless[needed permissions to enable agentless scanning in AWS].
+
+* Enter a *Proxy* value if traffic leaving your Azure tenant uses a proxy.
+
+[#azure-agentless-scope]
+=== Scanning Scope
+
+* *Custom tags*: Apply custom tags to any resources Prisma Cloud creates during agentless scanning.
+
+* Under *Scan scope* you can refine the scope of the scanning by *Regions* or using tags.
 +
-[#azure-agentless-networking]
-=== Networking Configuration
+image::runtime-security/tags-scope.png[]
 
-... Enter the *Security group ID* and *Subnet ID*  that are created to allow the Prisma Cloud console to communicate back with Azure. If left blank, the default name of the created resource group is `PCCAgentlessScanResourceGroup` and the default name of the created security group is `PCCAgentlessScanSecurityGroup`.
+** *All regions*: Scan in all Azure regions.
 
-. Click *Next*.
+** *Custom regions*: Specify the Azure regions, which you want scanned.
 
-. In the *Discovery features* page, leave the *Cloud discovery* settings unchanged.
+** *Scan non running hosts*: Choose whether or not to scan hosts that aren't running.
+
+** *Exclude hosts by tags*: Select a subset of hosts which you want to exclude from the scan process
 +
-image::agentless-azure-cloud-discovery.png[width=400]
+You can use wildcards to specify a range of tags in both keys and values following these examples:
++
+[source]
+----
+"abcd*"
+"*abcd"
+"abcd"
+"*"
+"*abcd*"
+----
 
-. Click *Add account*.
+** *Include hosts by tags*: Select a subset of hosts to scan
++
+You can use wildcards to specify a range of tags in both keys and values following these examples:
++
+[source]
+----
+"abcd*"
+"*abcd"
+"abcd"
+"*"
+"*abcd*"
+----
 
+** Choose whether or not to enable *Auto-scale scanning*. If you disable auto-scale, specify number of scanners Prisma Cloud should employ.
+
+[#azure-agentless-network]
+=== Network Resources
+
+* *Network resources*: Configure custom network resources for agentless scanning. When using custom network resources, Prisma Cloud assumes those resources have a path to communicate outbound data to the Prisma Cloud backend, as explained in the xref:../agentless-scanning.adoc#networking-infrastructure[networking infrastructure section]. If left blank, Prisma Cloud creates the needed xref:../agentless-scanning.adoc#networking-infrastructure[networking resources with default settings].
+
+** *Subnet ID*: The ID of the subnet resource in your Azure account.
+** *Security group ID*: The ID of the security group resource in your Azure account.
+** In Azure, Prisma Cloud does not use the network resources configured directly due to current limit of specifying only one identifier for each subnet or security group across all regions. Azure's policy prohibits having duplicate subnet or security group IDs within the same resource group, making it unfeasible to ensure these resources exist in every region.
++
+As a result, Prisma Cloud creates these network resources within the `PCCAgentlessScanResourceGroup` resource group, mirroring the configuration of the provided resources for the subnet and security group.
+Prisma Cloud copies the route table data to the new resources since this data may contain various addresses that might not necessarily align with the new subnet, such as private IP addresses.
 endif::compute_edition[]
 
-ifdef::prisma_cloud[]
-[#azure-configure-agentless-pcee]
-== Configure Agentless Scanning for Azure
-
-[.procedure]
-
-. Log in to the Prisma Cloud administrative console.
-
-. Select *Compute > Manage > Cloud Accounts*.
-
-. Click the edit button of your cloud account.
-
-. Go to the *Agentless Scanning* section.
-
-. Expand the *Advanced settings* and provide the following information.
-
-.. Enable *Permissions check* to verify that the custom role permissions are correct before running a scan.
-
-.. Enter a *Proxy* value if traffic leaving your Azure tenant uses a proxy.
-
-.. Under *Scan scope* you can choose *All regions* to scan for VMs in all Azure regions. If you choose *Custom regions*, enter the Azure region in which you want Prisma Cloud to scan for VMs.
-
-.. Enter tags under *Exclude VMs by tags* to further limit the scope of the scan.
-
-.. Choose whether or not to *Scan non running hosts*
-
-.. Choose whether or not to enable *Auto-scale scanning*. If you disable auto-scale, specify number of scanners Prisma Cloud should employ.
-
-.. Enter the *Security group ID* and *Subnet ID*  that are created to allow the Prisma Cloud console to communicate back with Azure. If left blank, the default name of the created resource group is `PCCAgentlessScanResourceGroup` and the default name of the created security group is `PCCAgentlessScanSecurityGroup`.
-
-. Click *Next*.
-
-. In the *Discovery features* page, leave the *Cloud discovery* settings unchanged.
-+
-image::agentless-azure-cloud-discovery.png[width=400]
-
-. Click *Save*.
-
-endif::prisma_cloud[]
