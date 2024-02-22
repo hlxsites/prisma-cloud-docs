@@ -115,6 +115,61 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
+
+|tt:[Update] *Azure Microsoft Defender for Cloud set to Off for DNS*
+
+tt:[*24.3.2*]
+
+//RLP-130970
+
+|*Changes—* The Policy RQL has been updated to check either of the config i.e, Azure Microsoft Defender for servers plan 2 (which includes DNS) has not been enabled or Azure Microsoft Classic Defender for Cloud which has defender setting for DNS set to Off 
+
+*Severity—* Informational
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+----
+
+*Impact—* Low. New Alerts might be generated in case the Azure Microsoft Defender for servers plan 2 is not enabled or Azure Microsoft Defender for Cloud which has defender setting for DNS set to Off. Existing alerts might get resolved in case Azure Microsoft Classic Defender for servers plan 2 is enabled.
+
+
+|tt:[Update] *AWS SQS queue access policy is overly permissive*
+
+tt:[*24.3.2*]
+
+//RLP-130581
+
+|*Changes—* Policy RQL has been updated to consider Action: SQS* as the IAM action and prefix are case-insensitive.
+
+*Severity—* Informational
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-sqs-get-queue-attributes' AND json.rule = attributes.Policy.Statement[?any(Effect equals Allow and Action anyStartWith sqs: and (Principal.AWS contains * or Principal equals *) and Condition does not exist)] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-sqs-get-queue-attributes' AND json.rule = attributes.Policy.Statement[?any(Effect equals Allow and (Action anyStartWith sqs: or Action anyStartWith SQS:) and (Principal.AWS contains * or Principal equals *) and Condition does not exist)] exists
+----
+
+*Impact—* Low. New Alerts might be generated in case the IAM action starts with SQS*
+
+
 |tt:[Update] *GCP Storage buckets are publicly accessible to all users*
 
 tt:[*24.3.2*]
@@ -153,23 +208,19 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-stora
 
 |*AWS Glue*
 
-tt:[*24.3.2*]
-
 //RLP-125110
 
 |*aws-batch-job-definition*
 
-Additional permission required:
+Additional permissions required:
 
 * `aws-glue-schema`
 * `glue:ListSchemas`
 
-You must manually add the above permission to the CFT template to enable it, if not present in the Security Audit role.
+You must manually add the above permissions to the CFT template to enable them.
 
 
 |*AWS Backup*
-
-tt:[*24.3.2*]
 
 //RLP-125127
 
@@ -179,12 +230,10 @@ Additional permission required:
 
 * `backup:ListProtectedResources`
 
-You must manually add the above permission to the CFT template to enable it, if not present in the Security Audit role.
+You must manually add the above permissions to the CFT template to enable them.
 
 
 |*AWS Glue*
-
-tt:[*24.3.2*]
 
 //RLP-125128
 
@@ -199,8 +248,6 @@ The Security Audit role includes the permission.
 
 |*Amazon EC2*
 
-tt:[*24.3.2*]
-
 //RLP-126443
 
 |*aws-ec2-vpc-endpoint-connection-notification*
@@ -213,8 +260,6 @@ The Security Audit role includes the permission.
 
 
 |*AWS Security Hub*
-
-tt:[*24.3.2*]
 
 //RLP-126444
 
@@ -229,8 +274,6 @@ The Security Audit role includes the permission.
 
 |*AWS Account Management*
 
-tt:[*24.3.2*]
-
 //RLP-126445
 
 |*aws-account-contact-information*
@@ -243,8 +286,6 @@ The Security Audit role includes the permission.
 
 
 |*AWS CodeCommit*
-
-tt:[*24.3.2*]
 
 //RLP-120745
 
