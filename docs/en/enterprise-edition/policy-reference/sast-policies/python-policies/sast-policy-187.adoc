@@ -1,0 +1,67 @@
+
+== Redis configuration without SSL
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| da1029bb-71f7-47d5-895e-0323bd4f9bd9
+
+|Checkov ID 
+|CKV3_SAST_187
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Python
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/295.html[CWE-295: Improper Certificate Validation]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+
+=== Description
+
+This policy detects whether a Redis client in a Python application is configured to communicate without transport security (SSL/TLS). Deploying such a client in production may potentially leak sensitive information as transferred data is not encrypted. Specifically, the following two scenarios are covered:
+
+* redis.Redis is used without setting ssl to True
+* redis.Redis.from_url is used with a redis:// url.
+
+
+Vulnerable code example:
+
+[source,Python]
+----
+import redis
+r = redis.Redis(host='localhost', port=6379, db=0)
+----
+
+In this example, the Redis client is instantiated without transport security, leaving the data transmitted vulnerable to interception.
+
+=== Fix - Buildtime
+
+To fix this issue:
+
+* Set ssl to True upon initialization of the 'redis.Redis instance'
+* Specify trusted CA certificates using 'ssl_ca_path,' 'ssl_ca_certs', or 'ssl_ca_data'
+* When using 'redis.Redis.from_url', avoid using 'redis://' in the URL
+
+Secure code example:
+
+[source,Python]
+----
+import redis
+r = redis.Redis(host='localhost', port=6379, db=0, ssl=True, ssl_ca_certs='/path/to/ca_certs')
+----
+
+In this example, the code is secure as it configures the Redis client to use transport security, encrypting the transmitted data.
