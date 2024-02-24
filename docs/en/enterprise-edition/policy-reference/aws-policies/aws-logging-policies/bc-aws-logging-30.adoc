@@ -1,0 +1,63 @@
+== AWS API Gateway V2 has Access Logging is disabled
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| To be assigned
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/cloudformation/checks/resource/aws/APIGatewayV2AccessLogging.py[CKV_AWS_95]
+
+|Severity
+| LOW
+
+|Subtype
+| Logging
+
+|Frameworks
+| CloudFormation
+
+|=== 
+
+
+
+=== Description 
+
+
+Enabling access logging for API Gateway V2 (including both HTTP APIs and WebSocket APIs) is critical for monitoring and auditing API usage. 
+Access logging provides detailed records of requests sent to your API, including requester IP, requested paths, response status, and latency. 
+This information is invaluable for troubleshooting, understanding API usage patterns, and identifying potential security threats. 
+This policy ensures that access logging is configured for API Gateway V2 stages, thereby enhancing the observability and security of your API infrastructure.
+
+
+=== Fix - Buildtime
+
+*CloudFormation*
+
+*Resources:* AWS::ApiGatewayV2::Stage, AWS::Serverless::HttpApi
+*Logging Configuration:* Ensure the AccessLogSettings property specifies a DestinationArn for storing access logs.
+
+
+[source,yaml]
+----
+Resources:
+  MyHttpApi:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref MyApi
+      StageName: 'prod'
+      AccessLogSettings:
++       DestinationArn: !GetAtt MyLogGroup.Arn
+        Format: '{"requestId":"$context.requestId", "ip":"$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod", "routeKey":"$context.routeKey", "status":"$context.status", "protocol":"$context.protocol", "responseLength":"$context.responseLength"}'
+  MyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/apigateway/myhttpapi/logs
+      RetentionInDays: 365
+----
+
+This configuration snippet demonstrates how to enable access logging for an API Gateway V2 stage by specifying a destination ARN for the logs, following best practices for API management and security.
