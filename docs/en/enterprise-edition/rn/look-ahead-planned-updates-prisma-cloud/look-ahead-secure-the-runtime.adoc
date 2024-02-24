@@ -2,50 +2,130 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your runtime.
 
-//Read this section to learn about what is planned in the upcoming `32.01` release on the Runtime Security tab of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security. 
+Read this section to learn about what is planned in the upcoming `32.03` release on the Runtime Security tab of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
 
 The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
 
-Currently, there are no previews or announcements for updates.
+// Currently, there are no previews or announcements for updates.
 
-// [NOTE]
-// ====
-// The details and functionality listed below are a preview of what is planned for the `v32.01` release; the changes listed herein and the actual release date, are subject to change.
-// ====
+[NOTE]
+====
+The details and functionality listed below are a preview of what is planned for the `v32.03` release; the changes listed herein and the actual release date, are subject to change.
+====
 
 
-// <<defender-upgrade>>
-// * <<enhancements>>
-// * <<deprecation-notices>>
-//* <<eos-notices>>
-// * <<addressed-issues>>
+// * <<defender-upgrade>>
+* <<enhancements>>
+* <<api-changes>>
+* <<deprecation-notices>>
+// * <<eos-notices>>
+* <<addressed-issues>>
 
-// [#enhancements]
-// === Enhancements
 
-// The following enhancements are planned; the details will be available at release:
+[#enhancements]
+=== Enhancements
 
-// [cols="30%a,70%a"]
+The following enhancements are planned; the details will be available at release:
+
+[cols="30%a,70%a"]
+|===
+
+//CWP-53557 and CWP-55790 (Doc ticket)
+|*Support Amazon Linux 2023*
+|Prisma Cloud now supports Amazon Linux 2023 OS scans and security feed integration for Amazon Linux 2023.
+
+// CWP-55094
+|*Enhanced CSV Organization*
+|Segregating vulnerability and compliance findings based on Download Context.
+
+//CWP-54524
+|*Enhanced Compliance Report*
+|Added a new *Result* column to the compliance report CSV file. To get the report, go to *Monitor > Compliance > Compliance Explorer* and select *Containers*, *Images*, or *Hosts*. The new column shows either  *pass* or *fail* for each resource and the corresponding compliance check ID.
+
+//CWP-50513
+|*New incident policies based on traffic observation*
+|This update adds two new policies that alert you to traffic that includes:
+
+* Sensitive data sent through an API endpoint that is exposed to the internet without authentication
+* Sensitive data sent through an API endpoint that is exposed to the internet without encryption
+
+|===
+
+
+[#deprecation-notices]
+=== Deprecation Notices
+[cols="30%a,70%a"]
+|===
+
+|===
+
+[#api-changes]
+=== API Changes
+
+[cols="30%a,70%a"]
+|===
+
+// CWP-55094
+|*Split Vulnerability and Compliance CSV*
+
+|The following APIs include a new parameter, `issueType`:
+
+* https://pan.dev/compute/api/get-hosts-download/[Download Host Scan Results]
+* https://pan.dev/compute/api/get-images-download/[Download Image Scan Results]
+* https://pan.dev/compute/api/get-registry-download/[Download Registry Scan Results]
+* https://pan.dev/compute/api/get-scans-download/[Download CI Image Scan Results]
+* https://pan.dev/compute/api/get-vms-download/[Download VM Image Scan Results]
+* https://pan.dev/compute/api/get-serverless-download/[Download Serverless Function Scan Results]
+
+The `issueType` parameter can be set to `vulnerabilities` or `compliance` for downloading vulnerability or compliance issues respectively. If either value is not provided, both vulnerability and compliance issues are downloaded.
+|===
+
+// [#eos-notices]
+// === End of Support Notices
 // |===
 
 // |===
 
 
-// [#deprecation-notices]
-// === Deprecation Notices
-// [cols="30%a,70%a"]
-// |===
+[#addressed-issues]
+=== Addressed Issues
+[cols="30%a,70%a"]
+|===
 
-// |===
+// CWP-54770
+|*WAAS*
+|Improved accuracy of information leakage detection that resolves some false positives.
 
-//[#eos-notices]
-//=== End of Support Notices 
+// // CWP-52344 (Feb 7: Moved to Update 4. Confirmed from Tal)
+// |*Enhanced Registry Image Sorting for periodic scanning*
+// |Added an option to sort registry images by tag last pushed time instead of image creation time. The most recent images with tag updates will be selected for scanning on a per-repo basis. Supported registry types include Docker registry v2, Docker Trusted registry, IBM Cloud Container Registry, Gitlab, and Harbor.
 
+//CWP-54842
+|*Tools*
+|Fixed twistcli tarball scan failing on hardlinks to symlinks without target files.
 
-// [#addressed-issues]
-// === Addressed Issues
-// [cols="30%a,70%a"]
-// |===
+// CWP-47873
+|*CVE Type Mapping Mismatch*
+|Fixed an issue with inconsistent CVE type and set the type to be “OS” and “Application”.
 
-// |===
+// CWP-47595
+|*Vulnerability Management*
+|Fixed a filtering issue that excluded Ruby's app and OS vulnerabilities during evaluation.
 
+//CWP-47364
+|*Vulnerability Management*
+|Fixed an issue that resulted in duplicate CVE records because of inconsistencies in the CPE list that is included in the RHEL feeds.
+
+//CWP-44666
+|*Registry Scanning*
+|Fixed an issue that caused previous scan results of a failed registry scan to be removed.
+
+//CWP-41449
+// |*Vulnerability Management*
+// |Prisma Cloud now parses Photon OS and Amazon Linux OS feeds with CVE ID as the vulnerability ID instead of the advisory ID.
+
+//CWP-55339
+|*Agentless Scanning*
+|The agentless scanner boot volume now enforces encryption by default.
+
+|===
