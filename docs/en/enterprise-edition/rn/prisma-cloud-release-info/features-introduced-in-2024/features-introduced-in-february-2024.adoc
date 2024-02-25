@@ -42,7 +42,6 @@ Contact your Prisma Cloud Customer Success team for more details.
 |*Feature*
 |*Description*
 
-|*Support Amazon Linux 2023*
 
 |*View Saved Filters as Saved Views*
 
@@ -97,31 +96,33 @@ The following enhancement is specific to Azure:
 
 |*Support for Just in Time (JIT) Auto-Provisioning*
 
-tt:[24.2.2]
+tt:[Secure the Infrastructure]
 
-//CWP-53557 and CWP-55790 (Doc ticket)
+tt:[24.2.1]
+//RLP-120194
 
-|Prisma Cloud now supports Amazon Linux 2023 OS scans and security feed integration for Amazon Linux 2023.
+|Prisma Cloud offers System Administrators the ability to auto-provision users using the Open ID Connect(OIDC) Single Sign-On (SSO) configuration. Configure https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/setup-sso-integration-on-prisma-cloud/get-started-with-oidc-sso/get-started-with-oidc-jit[OIDC Just in Time (JIT)] provisioning to grant Prisma Cloud users limited real-time access when they log into their IdP with the appropriate credentials.  
 
-|*Enhanced CSV Organization*
 
-tt:[Secure the Runtime]
+|*Support for New Region on GCP*
 
-tt:[24.2.2]
+tt:[Secure the Infrastructure]
 
-//CWP-55094
+tt:[24.2.1]
+//RLP-129451
 
-|Segregating vulnerability and compliance findings based on Download Context.
+|Prisma Cloud now ingests data for resources deployed in the Johannesburg region on GCP.
 
-|*Enhanced Compliance Report*
+To review a list of supported regions, select *Inventory > Assets*, and choose https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/cloud-service-provider-regions-on-prisma-cloud[Cloud Region] from the filter drop-down.
 
-tt:[Secure the Runtime]
+image::gcp-joberg-region.png[]
 
-tt:[24.2.2]
+|*Added non-default branch scanning*
 
-//CWP-54524
+tt:[Secure the Source]
 
-|Added a new *Result* column to the compliance report CSV file. To get the report, go to *Monitor > Compliance > Compliance Explorer* and select *Containers*, *Images*, or *Hosts*. The new column shows either  *pass* or *fail* for each resource and the corresponding compliance check ID.
+tt:[24.2.1]
+//Ticket on JB
 
 |You can now scan branches other than the main or master, such as a feature branch or sprint branch, to obtain a comprehensive overview of the security issues in those branches before merging them into the main branch.
 For more information, under the Application Security documentation, select Get Started and navigate to https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/get-started/non-default-branch-scan[Non-Default Branch Scan].
@@ -495,6 +496,8 @@ Prisma Cloud updated the `gcloud-compute-autoscaler` API to exclude the `recomme
 
 [cols="50%a,50%a"]
 |===
+|*Policies*
+|*Description*
 
 
 |*Azure Batch Account configured with overly permissive network access*
@@ -706,7 +709,7 @@ tt:[*24.2.2*]
 
 //RLP-129123
 
-|Starting with 24.2.2 release there are 196 new *Config* policies of subtype *Build* added by default to the Prisma Cloud platform. See https://docs.prismacloud.io/en/enterprise-edition/policy-reference[Application Security Policy Reference Guide] for more details.
+|Starting with 23.12.1 196 new *Config* policies of subtype *Build* are added in GA on Prisma Cloud platform. See https://docs.prismacloud.io/en/enterprise-edition/policy-reference[Application Security Policy Reference Guide] for more details.
 
 Here are the list of policies:
 
@@ -1085,34 +1088,34 @@ The list of policies with *Informational* policy severity:
 * OCI Network Security Group allows all traffic on RDP port (3389)
 * OCI Kubernetes Engine Cluster endpoint is not configured with Network Security Groups
 
+*Impact-* You will view policy violations for these policies on Prisma Cloud switcher  *Application Security > Projects* in *IaC Misconfigurations* code category. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings.
+You may enable additional subscriptions on *Application Security > Settings* to view violations and alerts for these policies.
+
 |*AWS Log metric filter and alarm does not exist for AWS Organization changes*
 
-// [#api-ingestions]
-// === API Ingestions
+tt:[*24.2.1*]
 
-// [cols="50%a,50%a"]
-// |===
-// |*Service*
-// |*API Details*
+//RLP-126231
 
+|Identifies the AWS regions that do not have a log metric filter and alarm for AWS Organizations changes. Monitoring changes to AWS Organizations will help to ensure any unwanted, accidental, or intentional modifications that may lead to unauthorized access or other security breaches within the AWS account. It is recommended that a metric filter and alarm be established for detecting changes to AWS Organization's configurations.
 
+NOTE: This policy will trigger an alert if you have at least one Cloudtrail with the multi trial enabled, Logs all management events in your account, and is not set with a specific log metric filter and alarm.
 
-// |===
+*Policy Severity—* Information
 
+*Policy Type—* Config
 
-// [#new-policies]
-// === New Policies
+----
+config from cloud.resource where api.name = 'aws-logs-describe-metric-filters' as X; config from cloud.resource where api.name = 'aws-cloudwatch-describe-alarms' as Y; config from cloud.resource where api.name = 'aws-cloudtrail-describe-trails' as Z; filter '(($.Z.cloudWatchLogsLogGroupArn is not empty and $.Z.cloudWatchLogsLogGroupArn contains $.X.logGroupName and $.Z.isMultiRegionTrail is true and $.Z.includeGlobalServiceEvents is true) and (($.X.filterPattern contains "eventName=" or $.X.filterPattern contains "eventName =") and ($.X.filterPattern does not contain "eventName!=" and $.X.filterPattern does not contain "eventName !=") and ($.X.filterPattern contains "eventSource=" or $.X.filterPattern contains "eventSource =") and ($.X.filterPattern does not contain "eventSource!=" and $.X.filterPattern does not contain "eventSource !=") and $.X.filterPattern contains organizations.amazonaws.com and $.X.filterPattern contains AcceptHandshake and $.X.filterPattern contains AttachPolicy and $.X.filterPattern contains CreateAccount and $.X.filterPattern contains CreateOrganizationalUnit and $.X.filterPattern contains CreatePolicy and $.X.filterPattern contains DeclineHandshake and $.X.filterPattern contains DeleteOrganization and $.X.filterPattern contains DeleteOrganizationalUnit and $.X.filterPattern contains DeletePolicy and $.X.filterPattern contains DetachPolicy and $.X.filterPattern contains DisablePolicyType and $.X.filterPattern contains EnablePolicyType and $.X.filterPattern contains InviteAccountToOrganization and $.X.filterPattern contains LeaveOrganization and $.X.filterPattern contains MoveAccount and $.X.filterPattern contains RemoveAccountFromOrganization and $.X.filterPattern contains UpdatePolicy and $.X.filterPattern contains UpdateOrganizationalUnit) and ($.X.metricTransformations[*] contains $.Y.metricName))'; show X; count(X) less than 1
+----
 
-// [cols="50%a,50%a"]
-// |===
-// |*Policies*
-// |*Description*
+|*AWS Log metric filter and alarm does not exist for usage of root account*
 
+tt:[*24.2.1*]
 
-// |===
+//RLP-126208
 
-// [#policy-updates]
-// === Policy Updates
+|identifies the AWS regions that do not have a log metric filter and alarm for usage of a root account. Monitoring for root account logins will provide visibility into the use of a fully privileged account and an opportunity to reduce its use it. Failure to monitor root account logins may result in a lack of visibility into unauthorized use or attempts to access the root account, posing potential security risks to your AWS environment. It is recommended that a metric filter and alarm be established for detecting changes to CloudTrail's configurations.
 
 NOTE: This policy will trigger alert if you have at least one Cloudtrail with the multi trial is enabled, Logs all management events in your account and is not set with specific log metric filter and alarm.
 
@@ -1304,44 +1307,37 @@ tt:[*24.2.2*]
 
 |*Just-In-Time (JIT) Support*
 
-tt:[Secure the Runtime]
+tt:[*24.2.1*]
 
-tt:[24.2.2]
+//RLP-129168
 
-//CWP-50513
+|The following Single Sign-On (SSO) endpoints now support Just-In-Time (JIT) user provisioning:
 
-|This update adds two new policies that alert you to traffic that includes:
+* https://pan.dev/prisma-cloud/api/cspm/get-oauth-2-config/[Get OIDC Configuration]
+* https://pan.dev/prisma-cloud/api/cspm/update-oauth-2-config/[Update OIDC Configuration]
+* https://pan.dev/prisma-cloud/api/cspm/create-oauth-2-config/[Create an OIDC Configuration]
+* https://pan.dev/prisma-cloud/api/cspm/patch-oauth-2-config/[Update OIDC Configuration Partially]
 
-* Sensitive data sent through an API endpoint that is exposed to the internet without authentication.
-* Sensitive data sent through an API endpoint that is exposed to the internet without encryption.
+|*Enterprise Settings APIs*
 
-|*Split Vulnerability and Compliance CSV*
+tt:[*24.2.1*]
 
-tt:[Secure the Runtime]
+//RLP-126439
+|The following APIs have a new boolean field `autoEnableAttackPathAndModulePolicies` with `false` as default.
 
-tt:[24.2.2]
+* https://pan.dev/prisma-cloud/api/cspm/get-enterprise-settings/[GET Enterprise Settings]
+* https://pan.dev/prisma-cloud/api/cspm/update-enterprise-settings/[POST Enterprise settings]
 
-// CWP-55094
+|*Unified Vulnerability Explorer*
 
-|The following APIs include a new parameter, `issueType`:
+tt:[*24.2.1*]
 
-* https://pan.dev/compute/api/get-hosts-download/[Download Host Scan Results]
-* https://pan.dev/compute/api/get-images-download/[Download Image Scan Results]
-* https://pan.dev/compute/api/get-registry-download/[Download Registry Scan Results]
-* https://pan.dev/compute/api/get-scans-download/[Download CI Image Scan Results]
-* https://pan.dev/compute/api/get-vms-download/[Download VM Image Scan Results]
-* https://pan.dev/compute/api/get-serverless-download/[Download Serverless Function Scan Results]
+//RLP-126385, RLP-126386
+|The following new endpoints are now available to get details from the vulnerabilities dashboard:
 
-The `issueType` parameter can be set to `vulnerabilities` or `compliance` for downloading vulnerability or compliance issues respectively. If either value is not provided, both vulnerability and compliance issues are downloaded.
+* `Get Vulnerability Overview V2` - https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-2/[GET uve/api/v2/dashboard/vulnerabilities/overview]
+* `Get Vulnerabilities Burndown` - https://pan.dev/prisma-cloud/api/cspm/get-burndown/[GET uve/api/v2/dashboard/vulnerabilities/burndown]
 
 |===
 
 
-// [cols="50%a,50%a"]
-// |===
-// |*Change*
-// |*Description*
-
-
-
-// |===
