@@ -1,4 +1,6 @@
-Stops current VM image scan immediately.
+Stops the current VM image scan.
+
+Note: It might take a few minutes for the scan to stop completely.
 
 ### cURL Request
 
