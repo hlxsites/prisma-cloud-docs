@@ -4,7 +4,7 @@
 
 == Add Prisma Cloud Code Security Plugin to JetBrains IDE
 
-Integrate the Prisma Cloud Code Security plugin (Prisma Cloud) for JetBrains IDEs to seamlessly enhance security while coding, allowing you to identify issues before you commit your code, reducing the risk of pull requests failing due to undetected issues. Prisma Cloud scans for security policy violations based on both default, out-of-the-box and custom policies.
+Integrate the Prisma Cloud Code Security plugin (plugin) for JetBrains IDEs (IDE) to seamlessly enhance security while coding, allowing you to identify issues before you commit your code, reducing the risk of pull requests failing due to undetected issues. Prisma Cloud scans for security policy violations based on both default, out-of-the-box and custom policies.
 
 For default policies, refer to the https://docs.prismacloud.io/en/enterprise-edition/policy-reference/get-started-code-sec-policies/get-started-code-sec-policies[Policies] documentation.
 
@@ -25,12 +25,11 @@ NOTE: The Prisma Cloud Code Security plugin supports all JetBrains products.
 
 //[.procedure]
 
-. Before you begin.
-.. Install https://www.python.org/downloads/[Python] v3.7 or above, https://docs.pipenv.org/[Pipenv], or a running https://www.docker.com/products/docker-desktop[Docker] daemon.
+. Install https://www.python.org/downloads/[Python] v3.7 or above, https://docs.pipenv.org/[Pipenv], or a running https://www.docker.com/products/docker-desktop[Docker] daemon.
 +
-NOTE: The Prisma Cloud plugin automatically invokes the latest version of Prisma Cloud Code Security.
+NOTE: The plugin automatically invokes the latest version of Prisma Cloud Code Security.
 
-.. On Prisma Cloud.
+. On Prisma Cloud.
 +
 * Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud console
 * xref:../../../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a key ID and secret
@@ -40,17 +39,17 @@ NOTE: For Prisma Cloud API URL, replace *app* in the URL with *api*.
 
 === Installation
 
-You can install the plugin directly from the JetBrains IDE or through the JetBrains Marketplace.  
-+
+You can install the plugin directly through your IDE or the JetBrains Marketplace.  
+
 NOTE: After completing the installation, restart your IDE if prompted.
 
 ==== Install through JetBrains IDE 
 
-. In a JetBrains editor, such as PyCharm, select *Settings* > open the *Plugins* panel > search for *Prisma Cloud* > *Install*.
+. In your IDE, select *Settings* > open the *Plugins* panel > search for *Prisma Cloud* > *Install*.
 
 ==== Install from the JetBrains Marketplace Website
 
-. *Option #1*: Access the Marketplace directly: https://plugins.jetbrains.com/[JetBrains Marketplace]
+. *Option #1*: Access the https://plugins.jetbrains.com/[Prisma Cloud extension] directly on the JetBrains Marketplace.
 +
 *Option #2*: Access the Marketplace from the Prisma Cloud console: 
 +
@@ -75,15 +74,15 @@ image::application-security/jetbrains-settings-config-masked.png[]
 
 === UI Layout
 
-*Access the Prisma Cloud plugin UI*: Select the Prisma CLoud icon from the menu at the bottom of the IDE. The UI of the Prisma Cloud extension includes the following sections:
-
+Select the Prisma Cloud tab at the bottom menu of the IDE to access the plugin. The UI includes the following sections:
++
 image::application-security/jetbrains-ui1.1.png[]
 
-* Left pane: The navigation bar features a tree structure displaying the project folders
+* Left pane: The *Navigation* panel featuring a tree structure displaying the project folders
 
-* Middle pane: The *Code editor*. Allows you to review your codebase and view a list of findings related to a resource (for IaC misconfigurations) or file, along with remediation options
+* Middle pane: The *Code editor*. Allows you to review your codebase, and view a list of findings related to a resource (for IaC misconfigurations) or file, along with remediation options
 
-* Bottom pane: The *Problems Tool*. Enables you to perform scans and view detailed results. After scans are completed, the left pane of the Problems Tool displays a navigation tree listing folders containing files with detected issues under the *Overview* tab. You can also filter the displayed issues by security category (such as IaC misconfigurations) and severity, with values including H (high), M (medium), L (low), and I (informative). Selecting a file in the Problems Tool opens the issues detected within it in the right pane, where you can access detailed information, code differences (when available), and remediation options
+* Bottom pane: The *Problems Tool*. Enables you to perform scans and view detailed results. After scans are completed, the left pane of the Problems Tool displays a navigation tree listing folders containing files with detected issues under the *Overview* tab. You can also filter the displayed issues by security category (such as IaC misconfigurations) and severity, with values including H (high), M (medium), L (low), and I (informative). Selecting a file in the Problems Tool opens the issues detected within it in the right pane, where you can access detailed information, code differences (when available), and <<[#remediation,Remediation]>> options
 
 === Usage
 
@@ -118,12 +117,26 @@ Issues detected during a scan, including context and impact,are displayed in the
 //==== View and Filter Findings
 
 
-* *Code editor*: Red markers indicate the location of issues in code lines or resources. Hover for details and remediation options. Use the arrows to scroll through all issues detected in the resource. Select *Console* to display a detailed view of the issue in the Problems Tool.
+* *Code editor* 
+
+*IaC* issues: A red mark beside a line number indicates issues within a resource. Select the mark to view the first issue, including its name, severity, and affected lines of code. If applicable, line(s) of code displaying the fix are shown, illustrating the correction, or a code diff highlighting the changes between the error and the fix may be provided. If there are multiple issues, the total count is displayed, and an arrow enables scrolling through them. In addition, remediation options are displayed. To display a detailed view of the issue in the Problems Tool, click *Console*.   
 +
 NOTE: A resource block declares a resource of a given type with a given local name. The name is used to refer to this resource from elsewhere in the same Terraform module, but has no significance outside of the scope of a module.
++
+image::application-security/jetbrains-code-editor-iac.png[] 
 
-* *Problems Tool*; Findings are organized by category. The *Overview* tab, which opens by default, displays all findings from all categories organized into folders. Click on a specific folder or subsequent subfolders to view all the findings within that folder. You can select a specific category tab to display findings specific to that category. You can refine a search by filtering findings by severity. Values: 'I' (informative), 'L' (Low), 'M' (Medium), 'H' (High), 'C' (Critical). Selecting a finding displays details of the issue, as well as remediation options.
 
+*SCA vulnerabilities*: A red mark next to a line number indicates vulnerabilities within a package on that line. Selecting the marker reveals detailed information about the first CVE vulnerability, including the CVE identifier, severity, vulnerable package and version, fixed version, and root package and version. Additionally, the total number of vulnerabilities in the package is displayed. Use the arrow to scroll through all vulnerabilities, with the current position and total count displayed. Remediation options are also displayed. To display a detailed view of the issue in the Problems Tool, click *Console*.  
+
+*Licenses*: A red mark next to a line number indicates license non-compliance within a package on that line, and the severity of the issue. Remediation options are displayed. To display a detailed view of the issue in the Problems Tool, click *Console*.
+
+*Secrets*: A red mark next to a line number indicates a secret in the file, including severity. Remediation options are displayed. To display a detailed view of the issue in the Problems Tool, click *Console*.
+
+* *Problems Tool*
+
+The 'Problems Tool' displays expanded details of an issue, as well as remediation options. For more details on each type of finding see *Code editor* findings above.
+
+Findings are organized by category. The *Overview* tab, which opens by default, displays all findings from all categories organized into folders. You can filter findings by selecting a specific category tab such as Iac, and by severity. Values: 'I' (informative), 'L' (Low), 'M' (Medium), 'H' (High), 'C' (Critical). 
 
 ////
 ====  Manage Findings in the Code editor
@@ -150,7 +163,7 @@ A description of the issue and remediation options are displayed in the Problems
 See Remediation below for more details.
 ////
 
-
+[#remediation]
 === Remediation
 
 You can mitigate issues directly through both the *Code editor* or the *Problems Tool*. Options include *Fix*, *Suppress*, or *Documentation*. 
@@ -159,9 +172,9 @@ NOTE: Not all types of remediation are available for all issues.
 
 ==== Fixes
 
-When selecting an issue in either the Code editor and Problems Tool, a suggested fix is displayed when available. Fixes are automatically applied to the code upon selection. If an automated fix is not available, a message to that effect is displayed. You can utilize the suggested fix to manually address the code in such cases. The following list displays the type of fix available for the different categories of issues.
+When selecting an issue in either the Code editor or Problems Tool, you can apply automatic fixes, if available, by clicking *Fix*. The following list displays the type of fix available for the different categories of issues.
 
-* *IaC misconfigurations*: The fix modifies the configuration
+* *IaC misconfigurations*: The fix modifies the configuration. If an automatic fix is not available you can use the suggested fix to manually address the code issue 
 * *SCA vulnerabilities*: The fix bumps the package version. You can directly fix the specific CVE vulnerability that has been detected during the scan by upgrading the package to the version that includes a fix. You can fix all of the CVE vulnerabilities found in a package by selecting *Fix All* in the *Problems Tool*. This fix upgrades the package to a version that addresses all the issues
 * *Secrets* issues: Follow the policy guidelines
 * *License* mis-compliance: Follow the policy guidelines
