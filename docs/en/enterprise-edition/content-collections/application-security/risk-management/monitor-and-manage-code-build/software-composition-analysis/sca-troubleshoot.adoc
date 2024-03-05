@@ -1,0 +1,81 @@
+== Troubleshoot Software Composition Analysis (SCA) Issues
+
+The table below describes error messages that may be encountered during a failed Software Composition Analysis (SCA) scan, along with suggested remediation.
+
+[cols="1,1,2", options="header"]
+
+|===
+
+|Error Type|Error Message|Description
+
+|Main file misaligned with Lock file 
+|MAIN_FILE_NOT_FIT_LOCK_FILE 
+|The main file does not align with the contents of the lock file. +
+*Example*: Inconsistency between `package.json` and `package-lock.json` files. +
+*Solution*: Ensure that the main file and lock file exist and that their configurations are in sync. If the main file does not align with the lock file, it disrupts the native dependencies tree scan, leading to incomplete results. In such cases, only the main file will be scanned, and the full dependent tree will not be built. 
+
+|[[missing-lock-file]]Missing Lock file 
+|LOCK_FILE_IS_MISSING
+|The lock file provides essential dependency information for SCA scans. Without it, the tool may face challenges in accurately identifying vulnerabilities and comprehensively analyzing both direct and transitive dependencies, potentially compromising the effectiveness of the scan. +
+*Example*: The `composer.json` file is present, but its lock file is missing. This absence of the lock file can impact the accuracy of vulnerability detection during the SCA scan. +
+*Solution*: Ensure that the lock file exists and is scanned. 
+
+|Missing Main file
+|MAIN_FILE_IS_MISSING
+|The Main file serves as a key reference for dependency information. Without it, the SCA scan may encounter challenges in accurately identifying and assessing vulnerabilities within the project. This absence could limit the tool's ability to comprehensively analyze both direct and transitive dependencies. +
+*Example*: In a project, the `composer.lock` file exists without the main `composer.json file`. Without the composer.json file, the SCA tool loses information about the declared dependencies and their specific versions. This results in a partial view of the project's dependencies, limiting the tool's ability to accurately identify vulnerabilities. Consequently, the dependency tree remains incomplete, as the tool may only consider direct dependencies, overlooking transitive dependencies and potential security risks. In addition, it may lead to a misalignment with the project's actual dependencies, as the tool relies on information provided in the `composer.json` file. +
+*Solution*: Ensure that the main file exists, and is scanned.
+
+|Corrupted file
+|CORRUPTED_FILE
+|Corrupted files pose a risk of inaccurate or incomplete vulnerability detection, as they may not conform to the required format for scanning. Consequently, Prisma Cloud may overlook critical information within these files, potentially leading to undetected security vulnerabilities in the scan results. +
+*Example #1*: An empty file containing no data lacks the necessary information for the tool to assess dependencies and vulnerabilities. +
+*Example 2*: *Not UTF-8* file - If a file is not encoded in UTF-8, as the scanner often expects files to adhere to standard encoding practices, and deviations from these standards could lead to parsing errors or misinterpretation of the file content. +
+*Solution*: Fix the corrupted file.
+
+|Access to private registry restricted
+|NO_ACCESS_TO_PRIVATE_REGISTRY
+|If there is no access to a private registry, the SCA tool is unable to retrieve and analyze dependencies stored in that registry. The inability to access a private registry restricts the SCA tool from gathering essential information about project dependencies, potentially leading to incomplete scan results, overlooking vulnerabilities, or misidentifying dependencies. +
+*Example*: Failed to connect private registry, cannot fix or build dependency tree. +
+*Solution*: Grant the necessary access permissions to the SCA tool for the private registry.
+
+|Multiple external modules not supported
+|MULTI_MODULE_NOT_SUPPORTED 
+|The SCA scanner does not support multi-module configurations for the framework, resulting in the detection of unsupported multi modules. As a result, the scan results may be incomplete as these modules remain unscanned, potentially leading to undetected vulnerabilities. +
+*Solution*: Consider centralizing version information in a dedicated file within your project. For example, in a Gradle project, if multi-module is not supported, you can address the issue by maintaining  the version information in a separate file.
+
+|File exists in cloud
+|FILE_EXISTS_IN_CLOUD
+|The file, such as a lock file or configuration file, already exists in the cloud storage. However, the SCA scanner cannot fix this file as it cannot change it. This may result in incomplete scan results, as these modules will not be scanned, potentially resulting in undetected vulnerabilities. +
+*Example*: Maven multi-module parent in cloud. +
+*Solution*: Review the cloud storage associated with the SCA tool and identify the duplicated file. Consider removing the redundant file or updating it to match the latest version from your project.
+
+|Unsupported file type for fix
+|FIX_NOT_SUPPORT_THE_FILE_TYPE
+|Although the SCA scan successfully identifies vulnerabilities, it encounters a file type that does not support fixes. This may result in incomplete vulnerability detection and potentially leaving risks unidentified. +
+*Example*: Docker files are not supported by direct fixes. +
+*Solution*: Users must manually address and fix problems within the particular file type.
+
+|YARN lock v2 not supported
+|YARN_LOCK_V2_NOT_SUPPORTED
+|The SCA scan has detected `Yarn.lock` v2 files. However, this version of the `Yarn.lock` file does not support SCA scans, as it lacks dependency provenance information necessary for accurate vulnerability detection. As a result, the scanner may encounter limitations in analyzing dependencies and identifying vulnerabilities accurately, potentially exposing the project to vulnerabilities. +
+*Solution*: To resolve this issue, consider using a different version of the `Yarn.lock` file that supports SCA scans.
+
+|Package lock JSON v3 not supported
+|PACKAGE_LOCK_JSON_V3_NOT_SUPPORTED
+|The SCA scan has detected a `Package-lock` JSON file in version 3. However, this version of the `Package-lock.json` file does not support SCA scans. As a result, the scanner may encounter limitations in analyzing dependencies and identifying vulnerabilities accurately, potentially exposing the project to vulnerabilities. +
+*Solution*: To resolve this issue, consider using a different version of the lock JSON that supports SCA scans.
+
+|Multiple groups detected in Package-lock file
+|PACKAGE_LOCK_SUPPORT_SINGLE_GROUP
+|Multiple lock file groups were detected in the `Package-lock` file of the repository. The SCA scanner is designed to handle single groups exclusively, and does not support multiple groups. As a result, vulnerabilities or issues within these multiple groups will not be detected or analyzed by the scanner, potentially leaving the system vulnerable to security risks. +
+*Solution*: Consider restructuring the package lock file to support multiple groups. 
+
+
+|===
+
+
+
+
+
+
