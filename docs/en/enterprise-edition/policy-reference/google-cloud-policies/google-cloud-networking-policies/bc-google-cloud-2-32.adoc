@@ -1,0 +1,51 @@
+
+== TPU v2 VM is public
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| bcc85617-47ce-4c79-80f5-1b01ec3941de
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPTpuV2VmPrivateEndpoint.yaml[CKV2_GCP_32]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that Tensor Processing Units (TPU) virtual machines are set to private in a Google Cloud Platform (GCP) environment. TPUs are Google's custom-developed application-specific integrated circuits (ASICs) used to accelerate machine learning workloads. 
+
+Keeping TPU VMs set to private is necessary as it makes sure the TPU resources are not exposed to the public internet, thereby reducing the risk of unauthorized access. If a TPU is not private, it can be exposed to potential cyber threats including data breaches, hacking, and data corruption. Hence, the non-compliance with this policy can lead to potential security vulnerabilities.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_tpu_v2_vm
+* *Arguments:* network_config.enable_external_ips
+
+To fix this issue, set the "enable_external_ips" attribute to "false" in your resource configuration.
+
+[source,go]
+----
+resource "google_tpu_v2_vm" "tpu_good" {
+  ...
+  network_config {
+    ...
+    enable_external_ips = false
+  }
+}
+----
+

@@ -1,0 +1,49 @@
+== Vertex AI instance disks not encrypted with a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| f77cb04b-0035-46f1-a872-19dd39807ec6
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexInstanceEncryptedWithCMK.yaml[CKV2_GCP_21]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is assessing whether instance disks in Vertex AI are encrypted using a Customer Managed Key (CMK). This is critical in providing a higher level of security for your data at rest. By using CMK, you have more control over your cryptographic key, increasing data protection. Forgoing use of a CMK could potentially lead to sensitive data being exposed or compromised. The encryption you employ should be as strong as possible to ensure maximum data security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_notebooks_instance
+* *Arguments:* kms_key, disk_encryption
+
+To fix this issue, you need to specify a Customer Managed Key (CMK) for encrypting the Vertex AI instance disks. You can do this by setting the `kms_key` field and the `disk_encryption` to `CMEK`.
+
+[source,go]
+----
+resource "google_notebooks_instance" "instance_good_vm" {
+  ...
+  disk_encryption = "CMEK"
+  kms_key = var.kms_key
+  ...
+}
+----
+
+The above code is secure because it ensures that the Vertex AI instance disks are encrypted with a CMK. This provides better encryption management and control, as well as an added layer of security for the data stored in these disks. The data can only be decrypted with the specified key which is under the control of the customer, making it much harder for unauthorized persons to access the data.
+

@@ -1,0 +1,54 @@
+
+== Azure Container Instance environment variable with regular value type
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 743e8910-6a4c-466c-8ba2-d9c207a5efe6
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AzureContainerInstanceEnvVarSecureValueType.py[CKV_AZURE_235]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks for Azure Container Instances (ACI) instances where environment variables are configured with regular values instead of using the secure values property.
+Objects with secure values are designed to safeguard sensitive information such as passwords or keys for your application. Using secure values for environment variables is a more secure and flexible practice compared to embedding them in your container's image.
+
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_container_group
+* *Arguments:* environment_variables
+
+To fix this issue, ensure that environment variables in your Azure container are securely configured, avoiding the use of regular environment variables. Consider using 'secure_environment_variables' or alternative methods to enhance the security of your environment variables. It is recommended to specify the 'secureValue' property instead of the regular 'value' for the variable's type.
+
+[source,go]
+----
+resource "azurerm_container_group" "fail_1" {
+  ...
+
+  init_container {
+    ...
+-    environment_variables = {
+-      ENV_INIT_FAIL_1 = random_string.pud-random-str
+-    }
+ }
+}
+----
+

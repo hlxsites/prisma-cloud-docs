@@ -1,0 +1,62 @@
+
+== Azure Database for MySQL server not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 19c4d9f1-a1fd-4e53-a3ca-4eedc720ec36
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMySQLserverConfigPrivEndpt.yaml[CKV2_AZURE_44]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether Azure MySQL database servers are configured with private endpoints. Private endpoint connections are essential for ensuring secure communication, establishing exclusive, private connectivity to Azure Database for MySQL. Configuring a private endpoint ensures access only from recognized networks, preventing entry from potentially malicious or unknown IP addresses, including those within Azure. It is recommended to establish a private endpoint to enhance the security of communication for your Azure MySQL database.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mysql_server, azurerm_private_endpoint
+* *Arguments:* private_connection_resource_id
+
+To fix this issue and establish secure communication with your network, configure your Azure MySQL server with a private endpoint.
+
+[source,go]
+----
+resource "azurerm_mysql_server" "example" {
+  name                = "example-mysql-server"
+  //...
+}
+
+resource "azurerm_private_endpoint" "example" {
+  name                = "example-private-endpoint"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  subnet_id           = azurerm_subnet.example.id
+
+  private_service_connection {
+    name                           = "example-privateserviceconnection"
+    private_connection_resource_id = azurerm_mysql_server.example.id
+    subresource_name               = "mysqlServer"
+    is_manual_connection           = false
+  }
+}
+----
+
+This code enhances Azure MySQL server security by enabling a private endpoint connection. The private endpoint allows secure connections between your virtual network and the service, traversing exclusively over the Azure network. This prevents exposure to the public internet, and helps to reduce the threat of data leakage and external threats.
+
