@@ -2,12 +2,12 @@
 
 //Learn about Network Configuration Query attributes using Cloud Network Analyzer.
 
-The Cloud Network Analyzer engine of Prisma Cloud calculates the external exposure of your cloud assets using routing path that exists from *source* to *destination* and the net effectiveness of all network security policies in that network path. You can use `config from network where` query and if the search expression is valid and complete, a green checkmark displays along with your query results.
+The Cloud Network Analyzer (CNA) engine of Prisma Cloud calculates the external exposure of your cloud assets using routing path that exists from *source* to *destination* and the net effectiveness of all network security policies in that network path. You can use `config from network where` query and if the search expression is valid and complete, a green checkmark displays along with your query results.
 
 //You can save the searches that you have created in *My Saved Searches*, which enables you to use the same query at a later time, instead of typing the query again. You can also use the saved search to create a policy.
 //image::config-from-network-where-options-query.png[scale=40]
 
-Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion capability shows the available expressions and xref:../rql-operators.adoc[operators] that are applicable for each attribute. In order for the network configuration query to be valid, you need to specify at least one `source` , one `dest` (destination), and one `cloud.type` attribute. You can only use the `and` operator in the RQL query. Use `=` to specify a single value and `in` to specify comma separated value (csv).
+Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion capability shows the available expressions and xref:../rql-operators.adoc[operators] that are applicable for each attribute. In order for the network configuration query to be valid, you need to specify at least one `source` , one `dest` (destination), and one `cloud.type` attribute. You can only use the `and` operator in the RQL query. Use `=` to specify a single value and `in` to specify comma separated values (csv).
 
 [NOTE]
 ====
@@ -16,7 +16,7 @@ Any IP addresses or CIDR that you have not defined as xref:../../administration/
 
 *  `source/dest.network` 
 +
-Use the `source/dest.network` attribute to search for all public untrusted Internet IPs. Specify it in an IP CIDR format, such as `1.2.3.4/32` .
+Use the `source/dest.network` attribute to search for all public untrusted Internet IPs. Specify it in an IP CIDR format, such as `1.2.3.4/32`.
 
 *  `address.match.criteria` 
 +
@@ -30,7 +30,10 @@ You can use a `full_match` or a `partial_match` for IP addresses with this crite
 +
 *Query example:*
 +
-`config from network where source.network = '20.0.0.0/24' and address.match.criteria = 'partial_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )`
+[screen]
+----
+config from network where source.network = '20.0.0.0/24' and address.match.criteria = 'partial_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )
+----
 
 *  `source/dest.resource.type` 
 +
@@ -42,7 +45,11 @@ Use the `source/dest.cloud.type` attribute to narrow down your search option to 
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS'
+----
+
 
 * (Optional) `source/dest.resource.state` 
 +
@@ -50,7 +57,10 @@ Use the `source/dest.resource.state` attribute to find resources that are Active
 +
 *Query example:*
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.resource.state = 'Active'`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.resource.state = 'Active'
+----
 
 * (Optional) `source/dest.cloud.account` 
 +
@@ -58,9 +68,15 @@ Use the `source/dest.cloud.account` attribute to narrow down the search to one o
 +
 *Query examples:*
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.account in ( '345744466724', '667116190384' )`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.account in ( '345744466724', '667116190384' )
+----
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.account = '345744466724'`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.account = '345744466724'
+----
 
 * (Optional) `source/dest.cloud.region` 
 +
@@ -68,9 +84,15 @@ Use the `source/dest.cloud.region` attribute to narrow down the search based on 
 +
 *Query examples:*
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.region = 'AWS Virginia'`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.region = 'AWS Virginia'
+----
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.region in ( 'AWS Virginia', 'AWS Ohio' )`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.region in ( 'AWS Virginia', 'AWS Ohio' )
+----
 
 * (Optional) `source/dest.cloud.instance.id` 
 +
@@ -78,9 +100,15 @@ Use the `source/dest.cloud.instance.id` attribute to search exposure of a specif
 +
 *Query examples:*
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.id = 'i-07c6c16595ed9196b'`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.id = 'i-07c6c16595ed9196b'
+----
 +
-`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.id in ( 'i-0a0e018fc73917ba7' , 'i-0a0e018fc73917ba7' )`
+[screen]
+----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.id in ( 'i-0a0e018fc73917ba7' , 'i-0a0e018fc73917ba7' )
+----
 
 * (Optional) `source/dest.instance.image.id` 
 +
@@ -88,7 +116,10 @@ Use the `source/dest.instance.image.id` attribute to search for virtual machines
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.image.id = 'ami-0fe8c3a9b6b9b3c6e'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.image.id = 'ami-0fe8c3a9b6b9b3c6e'
+----
 
 * (Optional) `source/dest.instance.product.code` 
 +
@@ -96,7 +127,10 @@ Use the `source/dest.instance.product.code` attribute to search for virtual mach
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.image.product.code = '5tiyrfb5tasxk9gmnab39b843'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.image.product.code = '5tiyrfb5tasxk9gmnab39b843'
+----
 
 * (Optional) `source/dest.cloud.interface.id` 
 +
@@ -108,7 +142,10 @@ Use the `source/dest.network.interface.id` attribute to search exposure of a spe
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.id = 'eni-083bb56febfd55383'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.id = 'eni-083bb56febfd55383'
+----
 
 * (Optional) `source/dest.network.interface.owner` 
 +
@@ -116,7 +153,10 @@ Use the `source/dest.network.interface.owner` attribute to search exposure of a 
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner = 'amazon-rds'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner = 'amazon-rds'
+----
 
 * (Optional) `source/dest.network.interface.type` 
 +
@@ -124,7 +164,10 @@ Use the `source/dest.network.interface.type` attribute to search exposure of a s
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.type = 'Lambda'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.type = 'Lambda'
+----
 
 * (Optional) `source/dest.security.group.id` 
 +
@@ -132,7 +175,10 @@ Use the `source/dest.security.group.id` attribute to search exposure of a specif
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.security.group.id = 'sg-04242ff5c55da0c84'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.security.group.id = 'sg-04242ff5c55da0c84'
+----
 
 * (Optional) `source/dest.service.name` 
 +
@@ -140,7 +186,10 @@ Use the `source/dest.service.name` attribute to search exposure of a specific VP
 +
 *Query example:*
 +
-`config from network where source.resource.type = 'Instance' and dest.resource.type = 'Service Endpoint' and source.vpc.id = 'vpc-079e9bb7bc4ba9db2' and dest.vpc.id = 'vpc-079e9bb7bc4ba9db2' and dest.service.name = 'com.amazonaws.us-east-1.secretsmanager'`
+[screen]
+----
+config from network where source.resource.type = 'Instance' and dest.resource.type = 'Service Endpoint' and source.vpc.id = 'vpc-079e9bb7bc4ba9db2' and dest.vpc.id = 'vpc-079e9bb7bc4ba9db2' and dest.service.name = 'com.amazonaws.us-east-1.secretsmanager'
+----
 
 * (Optional) `source/dest.subnet.id` 
 +
@@ -148,7 +197,10 @@ Use the `source/dest.subnet.id` attribute to search exposure of a specific netwo
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.network.interface.id = 'subnet-0d8b58217812f9c42'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.network.interface.id = 'subnet-0d8b58217812f9c42'
+----
 
 * (Optional) `source/dest.tag` 
 +
@@ -156,7 +208,10 @@ Use the `source/dest.tag` attribute to search exposure of a specific network int
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.tag = 'env=prod'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.tag = 'env=prod'
+----
 
 * (Optional) `source/dest.vpc.id` 
 +
@@ -164,7 +219,10 @@ Use the `source/dest.vpc.id` attribute to search exposure of a specific network 
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.vpc.id = 'vpc-079e9bb7bc4ba9db2'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.vpc.id = 'vpc-079e9bb7bc4ba9db2'
+----
 
 * (Optional) `excluded.networks` 
 +
@@ -172,7 +230,10 @@ Use the `excluded.networks` attribute to exclude certain IP/IPv6 CIDR blocks fro
 +
 *Query example:*
 +
-`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and excluded.networks in ( '1.2.3.4/32', '100.0.0.0/24' )`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and excluded.networks in ( '1.2.3.4/32', '100.0.0.0/24' )
+----
 
 * (Optional) `alert.on` 
 +
@@ -180,7 +241,10 @@ The `alert.on` attribute is only applicable when the RQL query is used as a Poli
 +
 *Query example:*
 +
-` config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS'  and alert.on = 'DestVPC'`
+[screen]
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS'  and alert.on = 'DestVPC'
+----
 
 * (Optional) `protocol.ports` 
 +
@@ -207,3 +271,8 @@ Use the `effective.action` attribute to search for the net effective action that
 ** Deny: A routing path exists, however security policies reject the traffic.
 
 ** Any
++
+[NOTE]
+====
+If you do not specify the value for `effective.action` in your query, by default, CNA considers it as `Allow`.
+====
