@@ -1,5 +1,5 @@
 
-== IAM policy document allows "*" as a resource for any action that can be restricted
+== IAM policy document allows all resources with restricted actions
 
 === Policy Details
 
@@ -7,7 +7,7 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| d9b86448-11a2-f9d4-74a5-f6fc590caeef
+| TBD
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMStarResourcePolicyDocument.py[CKV_AWS_355]
@@ -33,10 +33,30 @@ For more info, visit https://cloudsplaining.readthedocs.io/en/latest/glossary/re
 
 *Terraform*
 
-* *Resource:* aws_iam_policy
+* *Resource:* aws_iam_policy, aws_iam_role_policy, aws_iam_user_policy, aws_iam_group_policy, aws_ssoadmin_permission_set_inline_policy
 * *Arguments:* policy
 
-Firstly, check your AWS IAM policy and identify if there are any resources where action is allowed to "*". This kind of policy allows full access to all resources which can potentially lead to security risks like unauthorized access to data, service disruption etc. 
+Check your AWS IAM policy and identify if there are any resources where action is allowed to "*". This kind of policy allows full access to all resources which can potentially lead to security risks like unauthorized access to data, service disruption etc. 
 
 The fix here is to provide specified resources in the policy instead of `"*"` for the field `Resource` within the respective `Statement` block.
 
+Example:
+[source,go]
+----
+resource "aws_iam_policy" "fail" {
+  ...
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ec2:Describe*",
+        ]
+        Effect   = "Allow"
+-        Resource = "*"
++        Resource = "arn:aws:ec2:us-east-1:123456789012:instance/*"
+      },
+    ]
+  })
+}
+----
