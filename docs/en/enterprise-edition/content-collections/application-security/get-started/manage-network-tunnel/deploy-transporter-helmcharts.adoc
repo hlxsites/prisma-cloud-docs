@@ -51,11 +51,53 @@ NOTE: To use a specific transporter image tag other than the latest version, unc
 
 [.procedure]
 
-. Generate the Transporter client ENVIRONMENT variables required for the Helm chart setup.
+. Generate the Transporter client environment variables required for the Helm chart setup.
 
+////
 .. Setup Transporter through the Prisma Cloud console. 
 +
 NOTE: Refer to xref:deploy-transporter-docker.adoc[Set Up Transporter Network Tunnels using Docker Containers] for more information. 
+////
+
+.. On the *Application Security* console, select *Home* > *Settings* > *Network Tunnels*.
++
+The *Manage Integrations* step of the installation wizard is displayed.
++
+image::application-security/transporter-mng-int2.1.png[]
+
+.. Select *New Transporter*.
++
+The *Manage Integrations* modal is expanded to include additional fields.
++
+image::application-security/transporter-mng-int-exp.png[]
+
+.. Fill in the provided fields.
++
+* *Transporter Name*: A unique alias. Helps to group and define multiple connections on the Prisma Cloud console. The Transporter name cannot contain spaces
+* *Transporter URL*: The URL that your firewall or proxies route to the Transporter at the port configured in the Port section
+* *Port*: The Transporter URL is a proxy URL with a port number you must define. This information will also be used in the Docker files that are configured in Transporter to communicate with Prisma Cloud
+* *Prisma Cloud Access Key ID*: The Access Key ID generated in step 1 above
+* *Prisma Cloud Secret Key*: The Secret key generated in step 1 above
+* *TLS Certificate path*: The path to the TLS certificate in order to use Transporter. Webhooks use the certificate path to integrate with Transporter. Ensure that the path is for the specified Transporter client URL and port
+* *TLS Certificate key path*: The path to the TLS certificate key. Allows WebSockets to encrypt traffic (communicate over HTTP). 
+* *Provider Self Signed CA certificate path (Optional)*: The path for the self-signed CA certificate of your VCS provider when using self-signed certificates. 
+* *VPN/Proxy CA certificate path (Optional)*: The path for the self-signed CA certificate of your VPN/proxy provider when using self-signed certificates, if it differs from the self-signed certificate used by the provider
+* *Proxy URL (Optional)*: The proxy URL, when using a proxy
+
+..Select *Next*. 
++
+The *Deploy Client* step of the wizard is displayed.
++
+image::application-security/ui-wizard-deploy-client.png[]
+
+.. Copy the command from the *Verify and add permissions for set TLS Certificate path* field, and run it in your CLI terminal.
++
+NOTE: This command sets the permissions for the TLS certificate and defines the local path to the certificate.
+.. Pull the Docker image: Copy the command from the *Docker pull CLI* field and run it in your CLI terminal.
+. Select *Using Docker commands* or *Docker compose* from the *Run Image* field to run the image and establish communication between Prisma Cloud and your self-hosted VCS. 
++
+image::application-security/docker-run-image1.1.png[]
+
 
 .. During the setup, in the *Deploy Client* step of the installation wizard, select the *Docker commands* option from the *Run Image* field.
 +
