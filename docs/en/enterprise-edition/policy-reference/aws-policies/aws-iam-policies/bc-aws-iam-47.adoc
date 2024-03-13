@@ -1,0 +1,106 @@
+== AWS IAM policies that allow full \"*-*\" administrative privileges are created
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/checks/resource/aws/IAMAdminPolicyDocument.py[CKV_AWS_62]
+
+|Severity
+| CRITICAL
+
+|Subtype
+| Build
+
+|Frameworks
+| Terraform
+
+|=== 
+
+
+
+=== Description 
+
+
+Creating IAM policies that grant full "*-*" administrative privileges effectively provides unlimited access to all resources in an AWS account, which violates the principle of least privilege. 
+Such policies can lead to security vulnerabilities by allowing overly broad permissions that can be exploited by malicious actors. 
+It is essential to ensure that IAM policies are scoped down to only the permissions necessary for the specific tasks or roles they are meant to support. 
+This policy aims to detect and prevent the creation of IAM policies with overly permissive configurations, promoting better security practices in managing AWS resources.
+
+
+=== Fix - Buildtime
+
+
+*Terraform* 
+
+*Resources:* aws_iam_role_policy, aws_iam_user_policy, aws_iam_group_policy, aws_iam_policy, aws_ssoadmin_permission_set_inline_policy
+*Policy Definition:* Avoid using broad permissions in the policy and inline_policy definitions.
+
+
+[source,go]
+----
+# Example of a more restrictive IAM policy definition
+
+resource "aws_iam_policy" "example" {
+  name        = "example_policy"
+  description = "A more restrictive policy example"
+  policy      = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::example_bucket",
+        "arn:aws:s3:::example_bucket/*"
+      ]
+    }
+  ]
+}
+EOF
+}
+----
+
+This example restricts the actions to specific S3 operations, thereby following the principle of least privilege by not granting full administrative privileges.
+
+
+*CloudFormation*
+
+*Resources:* AWS::IAM::Policy, AWS::IAM::Group, AWS::IAM::Role, AWS::IAM::User
+*Policy Document:* Ensure that the policy does not grant full administrative privileges.
+
+
+[source,yaml]
+----
+# Example of a secure and scoped-down IAM policy in CloudFormation
+
+Resources:
+  SecurePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'secure-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:ListBucket'
+              - 's3:GetObject'
+            Resource:
+              - 'arn:aws:s3:::example_bucket'
+              - 'arn:aws:s3:::example_bucket/*'
+      Roles:
+        - !Ref SecureRole
+----
+
+This CloudFormation snippet demonstrates how to define a policy that grants specific permissions for S3 actions, aligning with the principle of least privilege by avoiding full "*-*" administrative access.

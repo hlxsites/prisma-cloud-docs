@@ -1,0 +1,57 @@
+== GCP project is using the default network
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| c2cf4439-9ac2-44b8-a0d2-7076cf82c29a
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleProjectDefaultNetwork.py[CKV_GCP_27]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build, Run
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+
+
+=== Description 
+
+
+The *auto_create_network* setting in a Google Cloud Project controls whether a default network is automatically created for the project. 
+Having a default network in place can pose security risks as it may not conform to the organization's custom networking and security requirements. 
+To improve the security posture of your Google Cloud environment, it's recommended to disable the automatic creation of a default network. 
+This allows for the manual setup of a network that aligns with specific security policies and configurations. 
+
+
+=== Fix - Buildtime
+
+
+*Terraform* 
+
+
+* *Resource:* google_project
+* *Argument:* auto_create_network
+
+By setting *auto_create_network* to *false*, you ensure that no default network is created, enabling more granular control over the networking environment of your Google Cloud Project.
+
+[source,go]
+----
+resource "google_project" "your_project" {
+  name                = "Your Project Name"
+  project_id          = "your-project-id"
+  org_id              = "your-org-id"
+  billing_account     = "your-billing-account-id"
++ auto_create_network = false
+}
+----

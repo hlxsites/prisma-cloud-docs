@@ -1,0 +1,79 @@
+== Azure Microsoft Defender for Cloud security alert email notification is not set
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| To be assigned
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/SecurityCenterContactEmailAlert.py[CKV_AZURE_21]
+
+|Severity
+| LOW
+
+|Subtype
+| Build
+
+|Frameworks
+| Terraform, Terraform Plan, ARM, Bicep
+
+|=== 
+
+
+
+=== Description 
+
+
+The *alert notifications* setting within an Azure Security Center contact configuration specifies whether email notifications for high severity alerts are sent to the security contact. 
+Enabling this setting ensures that the designated contacts are promptly informed of high severity security alerts, allowing for a quicker response to potential security incidents. 
+
+
+=== Fix - Buildtime
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_security_center_contact
+* *Argument:* alert_notifications
+
+It is a best practice to have *alert_notifications* set to *true* to enhance the overall security posture and incident response capabilities of your Azure environment.
+
+
+[source,go]
+----
+resource "azurerm_security_center_contact" "example" {
+  email = "security_contact@example.com"
+  phone = "(555) 555-5555"
+
++ alert_notifications = true
+  alerts_to_admins    = false  # or true, depending on your organization's requirements
+}
+----
+
+
+*ARM*
+
+
+* *Resource:* Microsoft.Security/securityContacts
+* *Property:* properties.alertNotifications
+
+
+[source,json]
+----
+{
+  "type": "Microsoft.Security/securityContacts",
+  "apiVersion": "2020-01-01",
+  "name": "default",
+  "properties": {
+    "email": "security_contact@example.com",
++   "alertNotifications": "On",
+    "phone": "(555) 555-5555",
+    "alertsToAdmins": "Off"  // Or "On", depending on organizational requirements
+  }
+}
+----
