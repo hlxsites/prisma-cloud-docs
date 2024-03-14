@@ -1,0 +1,180 @@
+[#idb236291f-7137-46c9-8452-4d94b3ae5ba8]
+== カスタムポリシーを作成します。
+
+コンプライアンスまたはクラウドリソース監視のための、特定のニーズを満たすには、カスタムポリシーを作成します。
+
+ご自分の組織の要件を満たすように設定された修正ルールを持つカスタムポリシーを作成してください。新しいポリシーを作成する場合、xref:../search-and-investigate/search-and-investigate.adoc[RQL]を使ってクエリを作成する、または保存済み検索を使ってクラウドリソースとの照合に必要なクエリを自動入力することができます。xref:../application-security/get-started/get-started.adoc[Cloud Application Security]の場合、設定ポリシーを作成して、クラウドリソースのデプロイに使用されるInfrastructure as Code（IaC）テンプレートをスキャンすることもできます。IaCテンプレートのスキャンに使用されているポリシーは、RQLではなくJSONクエリを使用しています。
+
+自動修正を有効にする場合、修正コマンドを正常に実行するために、Prisma Cloudにはクラウドプラットフォームに対する書き込みアクセスが必要になります。
+
+次のタイプのカスタム ポリシーのいずれかを作成できます。
+
+* *攻撃経路* - 攻撃経路ポリシーは、侵害の可能性がある高リスクの攻撃パスを監視します。xref:attack-path-policies.adoc[「攻撃経路ポリシー」]を参照してください。
+
+* *Audit Event（監査イベント）*—イベントポリシーは、環境内の監査イベントに潜在的なポリシー違反がないかどうかを監視します。監査ポリシーを作成することで、クラウド環境を危険にさらす可能性のあるルートアクティビティや設定変更など、機密性の高いイベントにフラグを付けることができます。xref:#create-an-audit-event-policy[ネットワークまたは監査イベントポリシーの作成]を参照してください。
+
+* *Config（設定）*—設定ポリシーは、リソース設定を監視し、ポリシー違反の可能性を確認します。レイヤー化したアプローチを可能にするために、Prisma Cloudの設定ポリシーは、BuildおよびRunの2種類のサブタイプにすることができます。Buildポリシーは、IaCテンプレート内のセキュリティの設定誤りをチェックして、それらの問題がプロダクション環境に持ち込まれないようにします。Runポリシーはデプロイされたクラウドリソースを監視し、潜在的な問題をチェックします。xref:#create-a-config-policy[設定ポリシーの作成]を参照してください。
+
+* *Data（データ）*—データポリシーはマルウェアから保護し、データ分類を可能にします。クラウドストレージバケット内の機密データを識別するために、機械学習とパターンマッチングを使用します。xref:../administration/configure-data-security/monitor-data-security-scan/data-policies.adoc[「データ ポリシー」]を参照してください。
+
+* *IAM*—IAMポリシーは、クラウド環境のIDを監視して、過剰または未使用の権限を確認します。xref:create-an-iam-policy.adoc[IAMポリシーの作成]を参照してください。
+
+* *Network（ネットワーク）*—ネットワークポリシーは、環境内のネットワーク活動を監視します。xref:#create-an-audit-event-policy[ネットワークまたは監査イベントポリシーの作成]を参照してください。
+
+[.task]
+[#create-a-config-policy]
+=== 設定ポリシーの作成
+
+アプリケーションのライフサイクルの作成または実行フェーズにおいてリソースをチェックするためにカスタム設定ポリシーを追加するには、ここの説明に従ってください。ルールを作成するには訓練が必要なため、作業を開始する前に管理コンソールから直接Prisma Cloudのデフォルトポリシーをいくつか参照して、ルール内のクエリフォーマットを確認してください。
+
+ビルドタイムの詳細をアラートで表示する場合は、サブタイプ「実行、構築」を持つ Configuration（構成）ポリシーを有効にし、Prisma Cloud上のアラートルールにアタッチします。
+
+image::governance/add-new-view-policies.png[]
+
+[.procedure]
+. *[ガバナンス]*を選択します。
+
+. *[Add Policy（ポリシーを追加）] > [設定]*を順に選択します。
+
+. *Policy Name（ポリシー名）*を入力します。
++
+必要に応じて*Description（説明）*および*Labels（ラベル）*を追加できます。
+
+. ポリシーのサブタイプを選択して、*Next（次へ）*を選択します。
++
+2種類のサブタイプオプションの1つまたは両方を選択することができます。
++
+*Run*サブタイプは、サポートされているクラウドプラットフォームに、すでにデプロイされているクラウドリソースのスキャンを可能にします。
++
+*Build（構築）*サブタイプは、クラウドリソースのデプロイに用いられる、コードリポジトリやIaCテンプレートのスキャンを可能にします。
++
+image::governance/add-new-config-policy.png[]
+
+. ポリシーの*Severity（重大度）*を選択して、*Next（次へ）*を選択します。
++
+Runポリシーの場合、アラートはポリシー違反時に生成されます。
+
+. ポリシーの一致基準を定義するクエリを作成します。
++
+.. [[id288ced4a-725b-4572-ae13-0f64775676ea]]*Run*フェーズのルールを追加します。
++
+設定—RunポリシーはRQLを使用します。*Saved Search（保存済み検索）*を使用する場合、事前定義オプションを選択してクエリに自動記入することができます。*New Search（新規検索）*を作成する場合、`config from cloud resource where`および、自動提案を使って利用可能な属性を選択して、クエリを完成します。
++
+image::governance/build-query-for-policy.png[]
++
+クエリの作成には、いくつかの必須属性が必要です。`config where cloud.resource where`で開始し、少なくとも`api.name`と`json.rule`を組み合わせているか、完了提案からの属性がある、または2つの`api.name`属性と`filter`属性が必要です。
++
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-usage' AND json.rule = StaticPublicIPAddresses.currentValue greater than 1
+----
++
+----
+config from cloud.resource where finding.type = 'Host Vulnerability'
+----
++
+----
+config cloud.resource where api.name = 'aws-ec2-describe-internet-gateways' as X; config where api.name = 'aws-ec2-describe-vpcs' as Y; filter '$.X.attachments[*].vpcId == $.Y.vpcId and $.Y.tags[*].key contains IsConnected and $.Y.tags[*].value contains true'; show Y;
+----
++
+----
+config from cloud.resource where resource.status = Active AND api.name = 'aws-acm-describe-certificate' AND json.rule = 'domainValidationOptions[*].domainName contains *'
+----
++
+[NOTE]
+====
+カスタムポリシーを作成する場合のベストプラクティスとして、RQLクエリ内にはcloud.account、cloud.account.group、cloud.regionまたはtag属性を含めないでください。これらの属性を含む保存済み検索がある場合は、カスタムポリシーを作成する前に、RQLを編集してください。これらの属性は*Investigate（調査）*タブに表示する結果をフィルタリングするために役立ちますが、カスタムポリシー内で使用する場合は無視されます。
+====
+
+.. [[idbdc1e8bb-8c17-4b05-b428-0bb4fd6f5a2a]]*Build*フェーズのルールを追加します。
++
+ポリシーにRunとBuildの両方のチェックが含まれており、RQLクエリを追加した場合、作成ルールのクラウドタイプは自動的に選択されます。これはRQLクエリで参照されているクラウドタイプに基づいています。
++
+[NOTE]
+====
+アプリケーションセキュリティモジュールを有効化した場合は、xref:custom-build-policies/custom-build-policies.adoc[カスタムビルドポリシーの作成]を参照して、構築ポリシールールの作成を続行してください。
+====
+
+. [[id50be0f15-ebdd-45e6-b9fc-ec84885da9bb]]ポリシーにコンプライアンス基準を追加します。
+
+.. コンプライアンス*Standard（基準）*、*Requirement（要件）*、および*Section（セクション）*を選択します。
+
+.. 必要に応じて*+*をクリックして、他の基準を追加して、*Next（次へ）*をクリックします。
+
+. [[id7a3a1f02-2f66-433a-94e1-aedf50203a64]]ポリシー違反のアラートを自動的に修正する場合は、修正セクションに詳細を入力します。
+
+.. *Run*または*Build*を選択します。
++
+Buildフェーズのポリシーは、修正CLIをサポートしていません。ただし、*Recommendation for Remediation（修正の推奨事項）*に手動で問題を修正するための説明を追加することができます。
+
+.. (tt:[設定—Runポリシーのみ])*CLI Remediation（CLI修正）*に、修正用のコマンドラインコマンドを入力します。
++
+CLI修復は、`config from`クエリでのみ利用できます。最高5つのCLIコマンドを追加できます。シーケンス内の各コマンドは、セミコロンで区切ってください。シーケンスはポリシー内での定義順に実行され、CLIコマンドが失敗した場合は、その時点で実行が中止されます。修正コマンドの作成に使用できるパラメータは、インターフェイスにCLI変数として表示されます。構文の例を次に示します:`gcloud -q compute --project=$\{account} firewall-rules delete $\{resourceName}; gsutil versioning set off gs://$\{resourceName};`:
++
+* $account—Prisma Cloud内のアカウントのアカウントIDです。
+* $azurescope — tt:[(Azureのみ)] リソースがデプロイされている、Azureリソース階層内のノードを指定することができます。
+* $gcpzoneid — tt:[(GCPのみ)]  リソースがデプロイされている、GCPプロジェクト、フォルダ、または組織内のゾーンを指定することができます。
+* $region — Region は、リソースが属するクラウド領域の名です。
+* リソースグループ — tt:[(Azureのみ)] アラートのトリガーとなった Azure Resource Group の名前を指定できるようにします。
+* $resourceid —リソースIDは、アラートのトリガーとなったリソースの識別情報です。
+* $resourcename —Resource name は、アラートのトリガーとなったリソースの名前です。
+
+
+.. コードの構文を検証するには、*Validate syntax（構文の検証）*をクリックしてください。
++
+Prisma Cloudのデフォルトの修復可能なポリシーのCLI構文の例を参照したい場合、xref:manage-prisma-cloud-policies.adoc[Prisma Cloud ポリシーを管理し] 、既存のポリシーを編集します。
++
+[NOTE]
+====
+デフォルトポリシーには、使用がデフォルトポリシーのみに制限されている変数が含まれています。カスタムポリシーで、それらの変数を利用することはできません。制限されている変数を使用すると、構文検証時にエラーが表示されます。
+====
+
+.. [*送信]*を選択します。
++
+CLIコマンドに変更があると、すべてのシステム管理者、アカウントおよびクラウドプロビジョニング管理者、およびアカウント グループ管理者に通知されます。
++
+サーバーレス自動修復はオプションです (現時点では AWS のみ)。より複雑な、またはカスタマイズ可能な修復ソリューションについては、serverless-autoremediation を確認してください。 https://github.com/PaloAltoNetworks/Prisma-Enhanced-Remediation
+
+
+[.task]
+[#create-an-audit-event-policy]
+=== ネットワークまたは監査イベントポリシーの作成
+
+Prisma Cloudで、カスタムのネットワークまたは監査イベントポリシーを追加するには、以下の手順に従ってください。
+
+ネットワークポリシーの場合、保存された検索で使用されるRQLクエリは、xref:create-a-network-policy.adoc[ネットワーク公開]とネットワーク保護のリスクを検出するために異なります。
+
+[.procedure]
+. *[ガバナンス]*を選択します。
+
+. *[Add Policy（ポリシーを追加） > Network（ネットワーク）]*を順に選択します。
+
++
+//Delete > image::governance/add-new-policy-0.png[]
+
+. *Policy Name（ポリシー名）*および*Severity（重大度）*を入力します。
+
+. 必要に応じて*Description（説明）* および*Labels（ラベル）*を入力してから、*Next（次へ）*をクリックします。
++
+image::governance/add-new-policy.png[]
+
+. *New Search（新規検索）*または*Saved Search（保存済み検索）*を使って、ポリシーの照合基準を定義したクエリを作成し、*Next（次へ）*をクリックします。
++
+*Saved Search（保存済み検索）*を使用する場合、事前定義オプションのリストから選択してクエリに自動記入することができます。*Select Saved Search（保存済み検索の選択）*ドロップダウンには、先ほどのステップ2で選択したポリシータイプに一致する保存済み検索のRQLが表示されます。
++
+*New Search（新規検索）*の作成時、RQLクエリは監査イベントポリシーの場合は`event where`で、ネットワークポリシーの場合は`config from network where`、`network from`、または`network from vpc.flow_record where`で始める必要があります。自動提案機能を使って利用可能な属性を選択し、クエリを完成することができます。
++
+image::governance/add-new-policy-2.png[]
+
+. (tt:[任意]) ポリシーのコンプライアンス基準を選択します。
++
+コンプライアンス基準は、監査イベントのカスタムポリシー、およびRQL、`config from network where`を使用しないネットワークポリシーのカスタムポリシーにのみ関連付けることができます。
+
+.. コンプライアンス*Standard（基準）*、*Requirement（要件）*、および*Section（セクション）*を選択します。
+
+.. 必要に応じて*+*をクリックして、他の基準を追加して、*Next（次へ）*をクリックします。
+
+. (tt:[任意])*Recommendation for Remediation（修正の推奨事項）*を指定します。
++
+Audit Event（イベントの監査）またはNetwork（ネットワーク）ポリシーでは、自動修正を行うためのCLIコマンドはサポートされていません。
+
+. ポリシーを*Save（保存）*します。

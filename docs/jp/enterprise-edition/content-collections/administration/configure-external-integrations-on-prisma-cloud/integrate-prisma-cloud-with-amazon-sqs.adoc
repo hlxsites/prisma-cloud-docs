@@ -1,0 +1,124 @@
+:topic_type: タスク
+[.task]
+[#id72fd0b2f-689a-4053-830c-ecb02efa5fbc]
+== Prisma CloudとAmazon SQSの統合
+
+Prisma® Cloud with Amazon Simple Queue Service（SQS）の統合方法を学習します。
+
+Amazon Simple Queue Service（SQS）を使用してアラートのカスタムワークフローを有効にしている場合、Prisma® CloudはAmazon SQSと統合されます。統合を設定すると、アラートが生成されるとすぐにアラートペイロードがAmazon SQSに送信されます。
+
+統合により、Prisma Cloudに登録した同じAWSアカウントのキューまたは別のAWSアカウントのキューにアラートを送信する柔軟性が得られます。別のAWSアカウントのSQSにアラートを送信する場合は、関連するIAM認証情報（アクセスキーまたはIAMロール）を指定する必要があります。
+
+[NOTE]
+====
+Amazon SQSでは、最大ペイロードサイズを256KBにすることができます。異常ポリシーアラートなど、一部のPrisma Cloudアラートはこのサイズ制限を超える可能性があるため、https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-s3-messages.html[このような場合は、S3]を使用することをお勧めします。アラートを送信するように Amazon S3 統合を設定するには、xref:integrate-prisma-cloud-with-amazon-s3.adoc[Prisma Cloud と Amazon S3 の統合]を参照してください。
+====
+
+[.procedure]
+. Amazon SQSがPrisma Cloudアラートを受信するように設定します。
+
+.. SQSを作成、設定するには、必要な認証情報を使ってAmazonコンソールにログインします。
+
+.. *Simple Queue Services*（*Application Integration（アプリケーション統合）*下）をクリックします。
+
+.. *Create New Queue（新しいキューを作成）*をクリックするか、または既存のキューを使用します。
++
+image::administration/sqs-create-new-queue.png[]
+
+.. キュー名とキュータイプ（*—Standard*または*FIFO*）を選択します。
+
+.. *Configure Queue（キューの設定）*をクリックします。
++
+キュー固有の属性については、AWSデフォルト選択項目を使用するか、または自社のポリシーに従って設定してください。暗号化されたキュー内のすべてのメッセージを保持するには、*Use SSE（SSEを使用）*を選択し、デフォルトのAWS KMS Customer Master Key（CMK）を選択するか、またはご自分のCMK ARNを入力してください。
++
+image::administration/sqs-confiqure-queue.png[]
+
+.. *Create Queue（キューを作成）*をクリックしてキューを作成します。
++
+これにより、SQS キューが作成されて表示されます。
+
+.. 作成したキューをクリックして、*Details（詳細）*を確認の上、このキューの*URL*をコピーします。
++
+Prisma Cloud通知をこのキューと統合するには、この値をPrisma Cloudに設定します。
++
+image::administration/sqs-queue-details.png[]
+
+. Amazon SQS内でキューの暗号化にCustomer Managed Key（カスタマー管理のキー）を使用している場合、Prisma Cloudロールにキーを読み取るための権限を明示的に設定する必要があります。
+
+.. Amazonコンソールで、*KMS > Customer Managed Keys（カスタマー管理のキー）*、*Create Key（キーの作成）*を順に選択します。
++
+https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html[キーの作成]の詳細は、AWSのドキュメントを参照してください。
++
+image::administration/sqs-create-encrypted-key.png[]
+
+.. Alias（エイリアス）およびDescription（説明）を入力し、必要な*Tags（タグ）*を追加して、*Next（次へ）*をクリックします。
+
+.. *KMS* API経由でこのキーを使用できるIAMユーザーとロールを選択して、*Next（次へ）*をクリックします。
+
+.. このキーを使用してデータの暗号化と復号化を行えるIAMユーザーとロールを選択します。
+
+.. キーポリシーを確認し、*Finish（完了）*をクリックします。
+
+. IAMロールポリシーでAmazon SQSへの読み取りアクセス権を有効にします。
++
+AWSセットアップにオンボードするために使用するPrisma Cloud IAMロールポリシーは、以下の権限が必要です: screen:["sqs:GetQueueAttributes", "sqs:ListQueues","sqs:SendMessage", "sqs:SendMessageBatch", "tag:GetResources", "iam:GetRole ]
++
+[NOTE]
+====
+SQS用にサーバー側暗号化（SSE）を設定している場合は、kms:GenerateDataKey IAM権限も含める必要があります。
+====
++
+上記のアクセス許可をCFTテンプレートに追加し、テンプレートを実行するアカウントがSQSキューが属するアカウントと同じである場合、Prisma Cloud IAMロールにはキューへの書き込みに必要なアクセス権限があります。ロールに権限を追加しない場合、またはSQS Queueが別のアカウントに属している場合は、xref:#id72fd0b2f-689a-4053-830c-ecb02efa5fbc/id34bfb74f-01c2-49ac-bd11-8d4abe2ae787[Prisma CloudとAmazon SQSの統合に進みます]。
+
+. Prisma CloudでのAmazon SQS統合の設定。
+
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定） > Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加） > Amazon SQS*を選択します。モーダルウィザードが開き、SQS統合を追加できます。
++
+image::administration/amazon-s3-int-1.png[]
+
+.. 統合の*Name（名前）*と*Description（説明）*を入力します。
+
+.. Amazon SQSでのPrisma Cloud設定時にコピーした、*Queue URL（キューURL）*を入力します。
++
+AWS ChinaのキューURL形式は、`\https://sqs.<中国リージョンAPI識別子>.amazonaws.com.cn/<アカウントid>/<キュー名>にする必要があります`。
++
+image::administration/amazon-sqs-int-1.png[]
+
+.. [[id34bfb74f-01c2-49ac-bd11-8d4abe2ae787]](tt:[任意])*More Options（その他のオプション）*を選択して、別のAWSアカウントに関連付けられたIAM認証情報を指定します。
++
+デフォルトでは、Prisma Cloudは、AWSアカウントをPrisma Cloudに登録したのと同じ認証情報を使用してSQSキューにアクセスします。キューが別のアカウントにある場合、またはIAM Security認証情報の別のセットを使用してアクセスを承認する場合は、以下のオプションを選択できます。
++
+*IAMアクセスキー*を選択し、アクセスキーと秘密鍵、または*IAM*ロールを入力して、外部IDとロールARNを入力します。
++
+IAMロールに関連付けられている外部IDは、ランダムな文字列ではなく、128ビット形式のUUIDである必要があります。便宜上、*Generate（生成）*をクリックすると、Prisma Cloud Webコンソールで外部IDが自動的に生成されます。Prisma Cloud APIを使用している場合は、手動で作成する必要があります。
++
+既存の統合は引き続き機能します。既存のAmazon SQS統合を変更する場合は、外部IDを置き換えて検証チェックを完了し、変更を保存する必要があります。
++
+[NOTE]
+====
+両方のオプションのこのIAM権限には、sqs:SendMessageとsqs:SendMessageBatchが含まれている必要があります。さらに、SQS用にサーバー側暗号化（SSE）を構成している場合は、kms:GenerateDataKeyが必要です。
+====
+
+.. *Next（次へ）*をクリックして*Summary（サマリー）*を確認します。
+
+.. 統合を*Test（テスト）*して、*Save（保存）*します。
++
+統合を正常にセットアップした後、*Settings（設定） > Integrations（統合）* の Get Status（ステータスを取得） リンクを使用して定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
+
+.. 統合を編集するには*Settings（設定） > Integrations（統合）*で、対応する*(編集)*アイコンをクリックします。統合の*Summary（サマリー）*ページが開きます。
++
+image::administration/amazon-sqs-int-2.png[]
+
+.. *編集*して、必要に応じて統合を更新します。
+
+.. *Next（次へ）*をクリックして編集内容を確認します。
+
+.. 統合を*Test（テスト）*して、*Save（保存）*します。
+
+. xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[ランタイム チェックのアラート ルールを作成する] か、既存のルールを変更して Amazon SQS 統合を有効にします。

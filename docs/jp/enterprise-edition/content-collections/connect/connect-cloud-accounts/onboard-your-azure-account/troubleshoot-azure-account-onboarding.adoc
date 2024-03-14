@@ -1,0 +1,154 @@
+== Azureアカウントオンボーディングのトラブルシューティング
+
+オンボーディング プロセス中およびログ、メタデータの取得、ネットワーク トラフィックのスキャン、または Azure リソースの脆弱性の特定に関する問題につながる可能性のある問題が発生する可能性があります。
+
+このトラブルシューティングガイドでは、発生した問題を特定、検出、改善するためのヒントを見つけることができます。
+
+[cols="50%a,50%a"]
+|===
+
+|*問題*|*トラブルシューティングのヒント*
+
+2+|*Azure オンボーディング Terraform の問題*
+
+|ローカル システムまたは Azure Cloud Shell で Azure オンボーディング Terraform テンプレートを実行すると、以下のエラーが発生します。
+[userinput]
+----
+プロバイダー hashicorp/random で使用可能なバージョンのリストを取得できませんでした: ... 新しいバージョンの選択を許可するには、terraform init -upgrade を使用する必要があります
+----
+|ローカル システムまたは Azure Cloud Shell には、古いバージョンの Terraform ライブラリがインストールされたままです。新しい terraform ライブラリ バージョンに更新するには、terraform を実行するディレクトリで *terraform init -upgrade コマンド* を実行します。次に、*terraform apply* を実行して Terraform を実行します。
+
+|ローカル システムまたは Azure Cloud Shell で Azure オンボーディング Terraform テンプレートを実行しているときに、*Terraform apply* ステップ中に次のエラーが発生しました
+[userinput]
+----
+403 状態コードのアクセス拒否エラー
+----
+|Azure Active Directory (AD) で https://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin#elevate-access-for-a-global-administrator[グローバル管理者] ロールが割り当てられていることを確認します。
+
+|ローカル システムまたは Azure Cloud Shell で Azure オンボーディング Terraform テンプレートを実行しているときに、Terraform applyステップ中に次のエラーが発生しました
+[userinput]
+----
+data.azurerm_management_group.tenant_root_group読書...
+
+エラー: 管理グループ "<テナント ID>" を読み込んでいます: managementgroups。クライアント#Get:要求への応答の失敗:StatusCode=404 -- 元のエラー: autorest/azure:サービスがエラーを返しました。Status=404 Code="NotFound" Message="'/providers/Microsoft.Management/managementGroups/<tenant-id>' not found"
+ 
+with data.azurerm_management_group.tenant_root_group,
+on prisma-cloud-azure-terraform.tf.json line 26, in data.azurerm_management_group.tenant_root_group:
+----
+|Azure テナントで管理グループ サービスが有効になっていないか、terraform コマンドを実行しているユーザーに Azure サブスクリプションへの昇格されたアクセス権がありません。グローバル管理者ユーザーが Azure サブスクリプションへのhttps://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin#elevate-access-for-a-global-administrator[昇格アクセス権] を持っていることを確認します。
+
+|ローカル システムまたは Azure Cloud Shell で Azure オンボーディング Terraform テンプレートを実行しているときに、*Terraform apply* ステップ中に次のエラーが発生しました 
+[userinput]
+----
+エラー:サービス プリンシパルを作成できませんでした
+
+with azuread_service_principal.prisma_cloud_sp,
+on terraform (1).tf line 124, in resource "azuread_service_principal" "prisma_cloud_sp":
+124: resource "azuread_service_principal" "prisma_cloud_sp" {
+ 
+ServicePrincipalsClient.BaseClient.Post(): unexpected status 403 with OData error:承認要求拒否:このアクセス許可を使用する場合、作成されるサービス プリンシパルのバッキング アプリケーションは、ローカル テナントに存在する必要があります
+
+エラー:オブジェクト ID "89d14baf-ab16-4a66-a2c8-1719b6085d28" のアプリケーションのパスワードを追加
+----
+|Azure Active Directory (AD) で https://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin#elevate-access-for-a-global-administrator[グローバル管理者] ロールが割り当てられていることを確認します。
+
+2+|*Azure クラウド アカウントのステータス関連の問題*
+ 
+|クラウド アカウントのステータスは、[クラウド アカウントのステータス] ページの [構成] の下に次のエラー/警告を示します。
+[userinput]
+----
+Prisma Cloudアプリケーションには、次のロールが割り当てられていません。必要な権限は、directory.read.all、domain.read.all、group.read.all、groupmember.read.all、policy.read.all、reports.read.all、user.read、user.read.allです。 
+----
+|Azure Portal のすべての *Microsoft Graph API アクセス 許可*に *管理者の同意*が付与されていることを確認し、すべての API アクセス許可の [状態] 列に緑色のチェックマークが付いていることを確認します。
+
+ステップ：[Azure テナント] > [アプリの登録] に移動し> [Prisma Cloud アプリ> API のアクセス許可] > [テナントの管理者に権限を付与する] を選択します (チェック マーク) 
+
+image::connect/so-az-troubleshooting-grant-permissions.png[]
+
+|クラウド アカウントのステータスに、複数のコンポーネントのエラーが表示されます。
+|必要な役割を作成し、役割の割り当てを追加し、API アクセス許可に対して [*管理者の同意を付与*] を選択したことを確認します 上記の項目を問題として排除した後も問題が解決しない場合は、適切な *エンタープライズ アプリケーション オブジェクト ID*を Prisma Cloud に与えたことを確認してします:
+
+.. [エンタープライズ] > [*アプリケーション] > [すべてのアプリケーション]*をクリックします。
+
+.. 検索ボックスでアプリケーションを検索し、 *オブジェクト ID*をコピーします。
+
+.. これをコピーして、Prisma Cloud Azure オンボーディング ワークフローの *エンタープライズ アプリケーション オブジェクト ID* に貼り付け、[*ステータスの確認*] ダイアログですべてのステータスが緑色であることを確認します。
+
+image::connect/so-az-troubleshooting-comp-error.png[]
+
+|アカウントのオンボーディング ステータス タブのエージェント ベースのワークロード保護コンポーネントで、次の権限が欠落していると表示されます。
+[userinput]
+----
+Prisma Cloudには、次のデータ アクションが割り当てられていません。
+"Microsoft.KeyVault/vaults/keys/unwrapaction"
+"Microsoft.KeyVault/vaults/keys/wrapaction"
+----
+|*Key Vault Crypto Service 暗号化ユーザー* ビルトイン ロールが *テナント/サブスクリプション* スコープで Prisma Cloud アプリ登録に割り当てられていることを確認します。
+
+image::connect/so-az-troubleshooting-keyvault.png[]
+
+|クラウドアカウントのステータスが赤く表示され、以下のエラーメッセージが表示されます。
+[userinput]
+----
+Authentication failedAzure Subscription not found.（認証に失敗しました。Azureサブスクリプションが見つかりません。）」が表示されます。
+----
+|Azure ポータルにログインし、Azure サブスクリプションが削除または無効になっていないかどうかを確認します。サブスクリプションが削除されているか無効になっている場合、Prisma Cloud はサブスクリプションを監視できません。
+
+|Prisma Cloud に既に追加されているテナントの子アカウントは、Azure ポータルで変更されますが、その変更は、既に追加されたテナントの *管理グループとサブスクリプション* にある Prisma Cloud に反映されません。
+|Prisma Cloud で新しい子アカウント情報が追加、更新、または削除されるまで、最大 6 時間かかる場合があります。
+
+2+|*Azure フロー ログの構成に関連する問題*
+
+|*ネットワーク セキュリティ グループ フロー ログの取り込みと監視* チェックボックスは、オンボーディング中にチェックされ、フロー ログの取り込みに関する問題に直面しています。
+|*Azureフローログが生成され*、ストレージアカウントに書き込まれていることを確認します。
+
+.. Azure ポータルにログインします。
+
+.. Storage Accounts（ストレージアカウント）を選択して、確認するストレージアカウントを選択します。
+
+.. Blobs>Blob Serviceを順に選択して、フォルダー間を移動して*.jsonファイルを探します。
+これらは、Prisma Cloudが取り込むフローログです。
+
+*ネットワークセキュリティグループと同じ地域にストレージアカウントを作成していることを確認します*。
+
+ネットワークセキュリティグループ（NSG）フローログはNetwork Watcherの機能で、NSGを通過する着信/発信IPトラフィックに関する情報を表示できます。Azureフローログは、NSGと同じ地域にあるストレージアカウント内に保管する必要があります。
+
+.. Prisma Cloudにログインします。
+
+.. *Investigate（調査）*を選択して、以下のRQLクエリを入力します。
++
+----
+network from vpc.flow_record where source.publicnetwork IN ( 'Internet IPs', 'Suspicious IPs') AND bytes > 0
+----
++
+このクエリは、インターネットまたは不審なIPアドレスから、クラウド環境にある任意のリソース上のネットワークインターフェイスに、0バイトを超えるデータを転送した、すべてのネットワークトラフィックを表示します。
+
+*Network Watcher インスタンスが有効になっていることを確認します*。
+
+Network Watcherは、Azureでフローログを生成するために必要です。
+
+.. Azureポータルにログインして、*Network Watcher>Overview（概要）*を選択して、ステータスが*Enabled（有効）*になっていることを確認します。
+
+.. Prisma Cloudにログインします。
+
+.. *Investigate（調査）*を選択して、以下のRQLクエリを入力します。
++
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' addcolumn pr provisioningState
+----
+
+*NSG でフロー ログが有効になっていることを確認します*。
+
+.. Azureポータルにログインして、*Network Watcher(ネットワークウォッチャー）> NSG Flow Logs（NSGフローログ）*を選択して、ステータスが*Enabled（有効）*になっていることを確認します。
+
+.. Prisma Cloudにログインします。
+
+.. *Investigate（調査）*を選択して、以下のRQLクエリを入力します。
++
+----
+network from vpc.flow_record where source.publicnetwork IN ('Internet IPs', 'Suspicious IPs') AND bytes > 0
+----
++
+このクエリは、インターネットまたは不審なIPアドレスから、クラウド環境にある任意のリソース上のネットワークインターフェイスに、0バイトを超えるデータを転送した、すべてのネットワークトラフィックを表示します。
+
+|===

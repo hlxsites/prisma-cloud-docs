@@ -1,0 +1,101 @@
+:topic_type: タスク
+[.task]
+[#id80669b57-2586-4651-a17f-40a7fe7e15df]
+== Prisma CloudとAmazon S3の統合
+Prisma® CloudとAmazon S3の統合方法を学習します。
+
+Amazon S3は、データのストレージとステージングに広く使用されています。Prisma CloudをAmazon S3と統合して、設定、監査、アノマリポリシー違反の通知を受け取ることができます。
+
+この統合を使用して、Prisma CloudアラートをAmazon S3バケットまたはフォルダにストリーミングできます。また、*File Roll Up Time（ファイルのロールアップ時間）*を使用して、S3バケットに通知を発行する頻度を決定することもできます。
+
+
+[NOTE]
+====
+この統合は、アラート2.0が有効なテナントでのみサポートされます。
+====
+
+
+
+[.procedure]
+. Amazon S3がPrisma Cloudアラートを受信するように設定します。
++
+.. AWS管理コンソールにログインし、S3を選択します。
++
+* ご希望のリージョンにS3バケットを作成します。
+
+* （任意）フォルダを作成します。目的のバケットまたはフォルダのパスが既に存在する場合は、この手順をスキップできます。
+
+.. IAMを選択し、Prisma Cloudのロールを作成して、S3バケットに通知を書き込めるようにします。
++
+* 手順1で作成したバケットの*s3:PutObject*権限を使用して新しいポリシーを作成します。ポリシードキュメントは次のようになります。
++
+image::administration/integrate-amazon-s3-1-1.png[]
++
+[NOTE]
+====
+Prisma Cloudコンソールでアラートが生成される可能性があるため、すべてのバケットでPutObject権限を使用しないでください。
+====
+
+* 複数のバケットで複数のS3統合を設定するには、ポリシードキュメントは次のようになります。
++
+image::administration/integrate-amazon-s3-1-2.png[]
+
+* 以下の設定で IAMロールを作成します。
+
+* 信頼エンティティのタイプの*Another AWS Account（別のAWSアカウント）*を選択します。
++
+アカウントID * *188619942792*を入力します。AWS政府アカウントの場合は、アカウントID * *342570144056*を入力します。
+
+* IAMロールの*外部ID*を設定します。IAMロールに関連付けられている外部IDは、ランダムな文字列ではなく、128ビット形式のUUIDである必要があります。Prisma Cloudウェブコンソールを使用している場合は、S3統合を追加する際に、*Generate Token（トークンを生成）*をクリックして外部IDを生成します。Prisma Cloud APIを使用している場合は、外部IDを手動で作成する必要があります。
++
+image::administration/integrate-amazon-s3-2.png[]
+
+* ステップ2で作成したポリシーを選択し、手順に従ってIAMロールを設定します。
+
+* *Save（保存）*を選択します。
+
+. Prisma CloudでAmazon S3統合をセットアップします。
+
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定） > Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合を追加） > Amazon SQS*。モーダルウィザードが開き、S3統合を追加できます。
++
+image::administration/amazon-s3-int-1.png[]
+
+.. *Name（名前）*と*Description（説明）*（任意）を入力します。
+
+.. 手順1のS3バケットまたはフォルダパスの*S3 URI*を入力します。フォーマット： userinput:[s3://bucketname/] または userinput:[s3://bucketname/foldername/] である必要があります。
+
+.. S3バケットを作成した*AWS Region（AWSリージョン）*を入力します。
+
+.. 外部IDを*生成*してIAMロールに関連付けます。このロールは、Prisma CloudがS3バケットに通知を書き込むために必要です。
+
+.. 手順1bでIAMロールセットアップの*ロールARN*を入力します。
+
+.. ドロップダウンから*File Roll Up Time（ファイルのロールアップ時間）*を選択します。デフォルトは1時間で、15分、30分、または3時間に変更できます。
++
+image::administration/amazon-s3-int-2.png[]
+
+.. *Next（次へ）*をクリックします。
+
+.. 統合を*Test（テスト）*して、*Save（保存）*します。
++
+image::administration/amazon-s3-int-3.png[]
+
+.. 成功メッセージが表示され、指定したS3 URIにテストファイルが作成されます。
+
+.. 統合を編集するには、対応する*Edit（編集）*アイコンをクリックします。統合の*Summary（サマリー）*ページが開きます。
++
+image::administration/amazon-s3-int-4.png[]
++
+image::administration/amazon-s3-int-5.png[]
+
+.. *編集*して、必要に応じて統合を更新します。
++
+image::administration/amazon-s3-int-6.png[]
+
+.. *Next（次へ）*をクリックして編集内容を確認します。
+
+.. 統合を*Test（テスト）*して、*Save（保存）*します。

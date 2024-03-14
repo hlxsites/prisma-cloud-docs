@@ -1,0 +1,98 @@
+:topic_type: タスク
+[.task]
+[#id8004a7e2-2f6c-4450-85d0-4f407fa201f3]
+== OneLloginでのジャストインタイム（JIT）プロビジョニングの設定
+OneLoginでのジャストインタイム（JIT）プロビジョニングで、SSOを設定します。
+
+ジャストインタイム（JIT）プロビジョニングでローカル管理者を正常にセットアップするには、Okta用のPrisma Cloudアプリを設定して、Prisma Cloudに認証されたSSOユーザーを追加するための、SAML応答を提供する必要があります。次に、Prisma Cloud上でSSOユーザーが正しいアクセス権を保有するように、ユーザーにPrisma Cloudロールを割り当てる必要があります。このロールでPrisma Cloudのデフォルトロールでない場合、OneLoginのユーザーにロールを割り当てる前に、このロールを定義する必要があります。
+
+
+
+
+[.procedure]
+. OneLogin用Prisma Cloudアプリを作成します。
++
+OneLoginでPrisma Cloud用のSAMLアプリをまだ作成していない場合は、xref:setup-sso-integration-on-prisma-cloud-for-onelogin.adoc#idc011bcde-1fa7-4759-bf86-d857aac95346[Prisma CloudでのOneLogin SSOのセットアップ]を参照してください。
+
+. JITの場合、OneLoginでカスタムロールを作成します。
++
+.. 管理者としてOneLoginにログインし、*Administration（管理）*を選択します。
+
+.. *Users（ユーザー）> Roles（ロール）*に移動します。
+
+.. *新しいロール*。
+
+.. ルールの*Name（名前）*を入力します。ロール名は、システム管理者など、Prisma Cloudで使用可能なロールと一致する必要があります。
+
+.. チェックマークをクリックしてロール名を登録し、このロールを使用できるようにするアプリケーションを選択します。
++
+image::administration/sso-onelogin-jit-1.png[]
+
+.. *保存*
++
+image::administration/sso-onelogin-jit-2.png[]
+
+
+
+. ユーザーをロールに追加します。
++
+.. OneLoginで、*Administration（管理）*を選択します。
+
+.. *Users（ユーザー）> Roles（ロール）*に移動し、ユーザーを追加するロールを選択します。
+
+.. *Users（ユーザー）*をクリックし、自動（フィルタベース）または手動ベースのオプションを使用して、新しいユーザーをロールに追加します。
++
+image::administration/sso-onelogin-jit-5.png[]
+
+
+
+. Prisma Cloud OneLoginアプリでJIT属性を設定します。
++
+.. OneLoginで、*Administration（管理）*を選択します。
+
+.. *Applications（アプリケーション）*をクリックし、変更するアプリケーションとして作成したアプリ（Prisma Trialなど）を選択します。
+
+.. *Parameters（パラメータ）*を選択し、*+*をクリックして新しいパラメータを追加します。
++
+image::administration/sso-onelogin-jit-7.png[]
+
+.. *Field name（フィールド名）*を入力し、適切なフラグを選択します。例えば、ロールの場合は、複数値パラメータも選択します。
++
+image::administration/sso-onelogin-jit-8.png[]
+
+.. *Save（保存）*を選択します。
+
+.. 入力したフィールド名に基づいて、ドロップダウンから正しい属性を選択します。
+
+.. 各ユーザーの電子メール、ロール、名、姓など、Prisma Cloudに必要なすべての属性を必ず設定してください。
++
+image::administration/sso-onelogin-jit-9.png[]
+
+
+
+. JITを有効にします。
++
+.. Prisma Cloudにログインして、 *Settings（設定）> SSO*の順に選択します。
+
+.. Just in Time (JIT) Provisioning（ジャストインタイム（JIT）プロビジョニングで、*JIT プロビジョニングを有効にします*。
+
+.. 属性の値を入力します。これらは、上記の手順4の属性名です。
+
+.. *Save(保存）*して、ユーザーのJITを有効にします。
++
+image::administration/sso-onelogin-jit-10.png[]
+
+
+
+. JITを検証します。
++
+.. Prisma CloudでまだプロビジョニングされていないユーザーとしてOneLoginポータルにログインします。Prisma固有のロールを含むすべての属性がこのユーザーに対して設定されていることを確認します。
+
+.. ダッシュボードから*Prisma App（Prismaアプリ）*をクリックして、Prisma Cloudインスタンスに直接ログインします。
+
+.. 管理者としてPrisma Cloudにログインし、*Settings（設定）> Users（ユーザー）*を選択して、上記のユーザーがプロビジョニングされていることを検証します。
+
+
+
+
+

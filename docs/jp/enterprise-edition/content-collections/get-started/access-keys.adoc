@@ -1,0 +1,78 @@
+:topic_type: タスク
+[.task]
+[#id3bbd1546-c54e-4a57-8540-b9b2125a07a5]
+== Prisma Cloud REST APIへのアクセス
+Prisma Cloudには、プログラムでPrisma Cloudの機能にアクセスできるREST APIがあります。Prisma CloudのWebインターフェイスでサポートされているほとんどのアクションは、REST APIで利用できます。REST APIの詳細については、https://pan.dev/prisma-cloud/api/cspm/[Prisma Cloud REST API Reference]を参照してください。
+
+REST APIへのプログラムによるアクセスを有効にするには、Prisma CloudにAPIアクセスキーが必要になります。デフォルトでは、システム管理者のみがAPIにアクセスできます。他の管理者のAPIへのアクセスを有効にすることもできます。アクセス キーを生成するには、*update xrefアクセス キーの作成と管理*を参照してください。アクセスキーを入手したら、REST APIリクエストでキーを送信し、JSON Web Token（JWT）を生成することができます。以後、JWTは、Prisma Cloud上でのREST APIリクエストの認証に用いられます。
+
+
+[.procedure]
+. 認証して、JWTを取得します。
++
+JWTを取得するためのREST APIリクエストのuserinput:[curl]呼び出しの例を次に示します。Prisma Cloudアクセスキーは、リクエストパラメータを提供しています。アクセスキーは、アクセスキーIDと秘密鍵の2種類から構成されています。パラメータ本体の、userinput:[userName]の文字列値としてアクセスキーIDを、userinput:[password]の文字列値として秘密鍵を指定します。
+テナントのhttps://pan.dev/prisma-cloud/api/cspm/api-urls/[API URL] を使用する必要があります。この例ではhttps://api.prismacloud.io.を使用します。
++
+[userinput]
+----
+curl --request POST \
+  'https://api.prismacloud.io/login' \
+  -H 'Content-Type: application/json' \
+  --data '{"username":"<Access Key ID>","password":"<Secret Key>"}'
+----
++
+成功したリクエストに対するレスポンスを次に示します。
++
+[userinput]
+----
+{
+  "token": "<JWT>",
+  "message": "login_successful",
+  "customerNames": [
+    {
+    "customerName":"Test",
+    "tosAccepted": true,
+    "prismaId":"123456789999999999"
+    }
+  ]
+}
+----
++
+レスポンス内のuserinput:[token]の値は、それ以降のREST APIリクエストを認可するために使用するJWTです。
+
+. JWTの使用を承認します。
++
+各Prisma Cloud REST APIリクエストのHTTPヘッダーパラメータに、JWTを指定します。ヘッダーパラメータキーの詳細と以下の対応する値を確認してください。
++
+* x-redlock-auth: <your JWT>
+
+. JWTを更新します。
++
+JWTの有効期間は10分です。そのため、Prisma Cloud APIへのアクセスを継続するには、トークンを更新する必要があります。失効したJWTリクエストでAPIリクエストを行った場合、HTTP 401（Unauthorized）レスポンスが返されます。更新されたJWTを取得するAPIリクエストを行う、curl呼び出しの例を次に示します。
++
+[userinput]
+----
+curl --request GET \
+'https://api.prismacloud.io/auth_token/extend' \
+-H 'Content-Type: application/json' \
+-H 'x-redlock-auth:<current JWT>'
+----
++
+JWTを更新するためのリクエストが正常に行われたレスポンスの例を次に示します。
++
+[userinput]
+----
+{
+  "token": "<JWT>",
+  "message": "login_successful",
+  "customerNames": [
+    {
+      "customerName":"Test",
+      "tosAccepted": true,
+      "prismaId":"123456789999999999"
+    }
+  ]
+}
+----
++
+レスポンス内のuserinput:[token]の値は、それ以降のREST APIリクエストのHTTPヘッダーに指定する必要がある、新たなJWTです。
