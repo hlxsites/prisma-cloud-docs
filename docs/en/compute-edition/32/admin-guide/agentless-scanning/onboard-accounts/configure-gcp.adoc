@@ -6,22 +6,6 @@
 
 toc::[]
 
-ifdef::prisma_cloud[]
-
-[.procedure]
-
-. Log in to the Prisma Cloud administrative console.
-
-. Select *Compute > Manage > Cloud Accounts*.
-
-. Click the edit button of your cloud account.
-
-. Go to the *Agentless Scanning* section.
-
-endif::prisma_cloud[]
-
-ifdef::compute_edition[]
-
 [.procedure]
 
 . Log in to your Prisma Cloud Compute Console.
@@ -54,46 +38,72 @@ image::agentless-gcp-account-config.png[width=400]
 
 .. Set the *Console URL* and *Port* to the address of your Prisma Cloud console that can be reached from the internet. To create an address or FQDN reachable from the internet, complete the xref:../../configure/subject-alternative-names.adoc[Subject Alternative Names procedure].
 
-endif::compute_edition[]
-
 . *Hub account*: Enable the toggle to configure this account as a xref:../agentless-scanning-modes.adoc[hub account].
-
-. Expand the *Advanced settings*.
 +
-image::agentless-gcp-pcee-advanced-settings.png[width=400]
+image::agentless-hub-toggle.png[]
 
-.. *Select where to scan*: For GCP accounts, you can decide between xref:../agentless-scanning.adoc#scanning-modes[two scanning modes].
+. Expand the *Advanced settings* and provide the appropriate values based on your deployment for the following items.
++
+image::agentless-gcp-pcee-advanced-settings.png[]
 
-... *Same Account*: Perform the agentless scanning process using this account.
+. Click *Save* to return to *Compute > Manage > Cloud accounts*.
 
-... *Hub Account*: Perform the agentless scanning process using a centralized hub account.
+[#gcp-agentless-modes]
+=== Scan Settings
+
+*Select where to scan*: For GCP accounts, you can decide between xref:../agentless-scanning.adoc#scanning-modes[two scanning modes].
+
+* *Same Account*: Perform the agentless scanning process using this account.
+
+* *Hub Account*: Perform the agentless scanning process using a centralized hub account.
 Select another account from the list to use as the centralized hub account to scan this account.
- on the target accounts.
++
 If you wish Prisma Cloud to scan encrypted volumes on the target accounts, follow the steps on <<gcp-encrypted-volumes,encrypted volumes>>.
 
-.. *Auto-scale scanning*: Automatically create the required amount of scanners to scan all of the hosts within a region, up to a limit of 50 scanners.
+[#gcp-agentless-auto-scale]
+=== Auto-scale Scanning
+
+Automatically create the required amount of scanners to scan all of the hosts within a region, up to a limit of 50 scanners.
 To use a different limit specify the *Max number of scanners*.
 
-.. *Max number of scanners*: Enter the upper limit of scanners that Prisma Cloud can automatically spin up within a region in your account for faster results.
+*Max number of scanners*: Enter the upper limit of scanners that Prisma Cloud can automatically spin up within a region in your account for faster results.
 
-.. *Enforce permissions check*: In case of failure to validate the appropriate permissions, this account won't be scanned.
-If this is a hub account, the associated target accounts won't be scanned as well.
+[#gcp-agentless-permissions]
+=== Enforce Permissions Check
 
-.. Enter a *Proxy* value if traffic leaving your GCP tenant uses a proxy.
+When enabled, this account isn't scanned in case of failure to validate the required permissions.
 
-.. *Custom labels*: Apply custom labels to any resources Prisma Cloud creates during agentless scanning.
+When disabled, the pre-scan check to validate permissions is skipped.
 
-.. Under *Scan scope* you can refine the scope of the scanning by *Regions* or using labels.
-+
+If permissions are missing or blocked by an organizational policy, the scan fails at that stage.
+
+Review the xref:../../configure/permissions.adoc#gcp-agentless[needed permissions to enable agentless scanning in AWS].
+
+[#gcp-agentless-proxy]
+=== Proxy
+
+Enter a *Proxy* value if traffic leaving your GCP tenant uses a proxy.
+
+Provide the proxy's CA certificate.
+
+[#gcp-custom-labels]
+=== Custom Labels
+
+Apply *Custom labels* to any resources Prisma Cloud creates during agentless scanning.
+
+[#gcp-agentless-scope]
+=== Scan Scope
+
+Under *Scan scope* you can refine the scope of the scanning by *Regions* or using labels.
 image::tags-scope.png[width=300]
 
-... *All regions*: Scan in all GCP regions.
+* *All regions*: Scan in all GCP regions.
 
-... *Custom regions*: Specify the GCP regions, which you want scanned.
+* *Custom regions*: Specify the GCP regions, which you want scanned.
 
-... *Scan non running hosts*: Choose whether or not to scan hosts that aren't running.
+* *Scan non running hosts*: Choose whether or not to scan hosts that aren't running.
 
-... *Exclude hosts by labels*: Select a subset of hosts which you want to exclude from the scan process
+* *Exclude hosts by labels*: Select a subset of hosts which you want to exclude from the scan process
 +
 You can use wildcards to specify a range of labels in both keys and values following these examples:
 +
@@ -106,7 +116,7 @@ You can use wildcards to specify a range of labels in both keys and values follo
 "*abcd*"
 ----
 
-... *Include hosts by labels*: Select a subset of hosts to scan
+* *Include hosts by labels*: Select a subset of hosts to scan
 +
 You can use wildcards to specify a range of labels in both keys and values following these examples:
 +
@@ -119,31 +129,23 @@ You can use wildcards to specify a range of labels in both keys and values follo
 "*abcd*"
 ----
 
-.. *Network resources*: Configure custom network resources for agentless scanning
+[#gcp-agentless-network]
+=== Network Resources
 
-... *Subnet*: If left blank, agentless scanning uses the default xref:../agentless-scanning.adoc#networking-infrastructure[networking infrastructure] and assigns scanners with a public IP. Specify a subnet name to use an existing subnet in your environment and to use a private IP. The subnet must be unique and identical across all regions.
+Configure custom network resources for agentless scanning
+
+* *Subnet*: If left blank, agentless scanning uses the default xref:../agentless-scanning.adoc#networking-infrastructure[networking infrastructure] and assigns scanners with a public IP. Specify a subnet name to use an existing subnet in your environment and to use a private IP. The subnet must be unique and identical across all regions.
 If you are configuring a hub account, this requirement only applies to the hub account and not for the targets.
 
-... *Shared VPC*: If you are using a shared VPC, enter the shared VPC path in this field with the following convention. Replace `{host_project_name}` with the ID of the project that owns the shared VPC.
+* *Shared VPC*: If you are using a shared VPC, enter the shared VPC path in this field with the following convention. Replace `{host_project_name}` with the ID of the project that owns the shared VPC.
 +
 [source]
 ----
 projects/{host_project_name}/regions/{region_name}/subnetworks/{subnet_name}
 ----
 +
-Using a shared VPC requires xref:../../configure/permissions.adoc#gcp-agentless[additional permissions] on the shared VPC host project. 
+Using a shared VPC requires xref:../../configure/permissions.adoc#gcp-agentless[additional permissions] on the shared VPC host project.
 Refer to the GCP documentation to https://cloud.google.com/vpc/docs/shared-vpc[learn more about shared VPCs].
-
-
-. Click Next.
-
-. Leave the *Server scan* toggle unchanged.
-
-. Click Next.
-
-. Leave the *Discovery features* toggle unchanged.
-
-. Click *Save*.
 
 [.task]
 [#gcp-encrypted-volumes]
