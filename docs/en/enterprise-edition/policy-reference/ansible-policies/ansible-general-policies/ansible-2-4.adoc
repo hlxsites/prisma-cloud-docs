@@ -1,0 +1,49 @@
+== dnf using packages with untrusted or missing GPG signatures
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/DnfDisableGpgCheck.yaml[CKV2_ANSIBLE_4]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that the Ansible `dnf` module is not used to install packages without GPG signature verification. GPG signatures provide assurance that the packages have not been tampered with and come from a trusted source. The policy checks that the `disable_gpg_check` attribute is not set to true in tasks using the `dnf` module, ensuring that signature verification is enforced, which is crucial for system security.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* dnf
+* *Attribute:* disable_gpg_check
+
+To comply with this policy, ensure that `disable_gpg_check` is either set to false or not specified (defaulting to false) in your `dnf` tasks. This setting guarantees that GPG signature checks are performed, preventing the installation of potentially compromised or untrusted packages.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure GPG checks are enforced for DNF
+  ansible.builtin.dnf:
+    name: nginx
+    state: latest
+    disable_gpg_check: false
+----
+
+In the example above, `disable_gpg_check` is explicitly set to false, ensuring that the DNF module verifies GPG signatures, aligning with this policy's requirement for secure package management.

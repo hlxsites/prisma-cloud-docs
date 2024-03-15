@@ -1,0 +1,52 @@
+== IPsec profile uses insecure protocol
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosIPsecProtocols.yaml[CKV_PAN_13]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that IPsec profiles in Palo Alto Networks devices do not use insecure protocols. The focus here is on the avoidance of the AH (Authentication Header) protocol in IPsec configurations, as it does not provide encryption and is considered less secure compared to ESP (Encapsulating Security Payload). The policy checks that the `ah_authentication` attribute is not configured in `panos_ipsec_profile` resources, promoting the use of ESP for secure IPsec tunnels.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_ipsec_profile
+* *Attribute:* ah_authentication
+
+To comply with this policy, do not configure the `ah_authentication` attribute in your `panos_ipsec_profile` resources. Omitting this attribute ensures the use of ESP, which provides both authentication and encryption, enhancing the security of your IPsec VPN connections.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Verify tests
+  ...
+  tasks:
+    - name: ipsec
+      paloaltonetworks.panos.panos_ipsec_profile:
+        ...
+-        ah_authentication: 'sha1' # Unencrypted AH should not be used
++        esp_encryption: ['aes-256-gcm'] # Encrypted ESP, not unencrypted AH, should be used
+----
+
+By not defining `ah_authentication` in your IPsec profile, you adhere to this policy, ensuring a higher security level by utilizing protocols that provide comprehensive security features.

@@ -1,0 +1,53 @@
+== DSRI is enabled within security policies
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyNoDSRI.yaml[CKV_PAN_4]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that Disable Server Response Inspection (DSRI) is not enabled in security policies for Palo Alto Networks devices. Enabling DSRI can reduce security by disabling the inspection of server responses, potentially allowing malicious content to pass through the network unchecked. The policy verifies that the `disable_server_response_inspection` attribute in `panos_security_rule` resources is either set to false or not defined (where the default is false).
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* disable_server_response_inspection
+
+Ensure the `disable_server_response_inspection` attribute is either set to false or not included in your `panos_security_rule` definitions. Not enabling DSRI ensures that server responses are inspected, maintaining the efficacy of security policies.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Verify tests
+  hosts: all
+  connection: local
+  tasks:
+    - name: Security_rule
+      paloaltonetworks.panos.panos_security_rule:
+        rule_name: 'Test rule'
+        ...
+-        disable_server_response_inspection: true
+----
+
+By explicitly setting `disable_server_response_inspection` to false or omitting it, the security rule aligns with this policy, reinforcing the security posture by enabling server response inspection.

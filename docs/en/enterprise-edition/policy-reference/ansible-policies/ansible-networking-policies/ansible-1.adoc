@@ -1,0 +1,53 @@
+== Certificate validation is disabled with uri
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/task/builtin/UriValidateCerts.py[CKV_ANSIBLE_1]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that the Ansible URI tasks enforce certificate validation. Disabling certificate validation in URI tasks can expose the system to various security issues, including man-in-the-middle (MITM) attacks. The policy checks that the `validate_certs` attribute is not set to false, ensuring that HTTPS requests validate the authenticity of the SSL certificate of the host.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Attribute:* uri.validate_certs
+
+To remediate this issue, ensure that the `validate_certs` attribute is not set to false in your Ansible URI tasks. Setting `validate_certs` to true ensures that the SSL certificates are validated, thereby enhancing the security of your HTTPS requests.
+
+[source,yaml]
+----
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: disabled
+      uri:
+        url: https://www.example.com
+        return_content: yes
+-        validate_certs: false
++        validate_certs: true
+      register: this
+      failed_when: "'AWESOME' not in this.content"
+----
+
+The above task is secure as per the policy because it ensures that the SSL certificate of the specified URL is validated by setting `validate_certs` to true.

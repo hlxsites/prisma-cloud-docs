@@ -1,0 +1,52 @@
+== IPsec profile uses insecure authentication algorithm
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosIPsecAuthenticationAlgorithms.yaml[CKV_PAN_12]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that IPsec profiles in Palo Alto Networks devices do not use insecure authentication algorithms. Specifically, the policy checks that IPsec profiles do not use 'none', 'md5', or 'sha1' for ESP (Encapsulating Security Payload) authentication, as these algorithms are considered weak and vulnerable to attacks. Strong authentication algorithms are crucial for ensuring the confidentiality and integrity of IPsec VPN connections.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_ipsec_profile
+* *Attribute:* esp_authentication
+
+To adhere to this policy, configure your `panos_ipsec_profile` resources to avoid using 'none', 'md5', or 'sha1' as the ESP authentication algorithm. Instead, use stronger algorithms like 'sha256' or 'sha512' to ensure robust authentication.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Verify tests
+  ...
+  tasks:
+    - name: ipsec
+      paloaltonetworks.panos.panos_ipsec_profile:
+        ...
+-        esp_authentication: ['md5'] # Unacceptable authentication algorithm
++        esp_authentication: ['sha256'] # Acceptable
+----
+
+Configuring `esp_authentication` with secure algorithms such as 'sha256' or 'sha512' complies with this policy, enhancing the security of IPsec VPN connections by using robust authentication methods.

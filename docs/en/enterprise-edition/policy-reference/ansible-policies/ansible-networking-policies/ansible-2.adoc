@@ -1,0 +1,55 @@
+== Certificate validation is disabled with get_url
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/task/builtin/GetUrlValidateCerts.py[CKV_ANSIBLE_2]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy verifies that the Ansible `get_url` tasks enforce SSL certificate validation. Disabling certificate validation in `get_url` tasks may lead to security vulnerabilities, such as man-in-the-middle attacks, by accepting potentially compromised certificates. The policy checks that the `validate_certs` attribute within `get_url` tasks is not falsely disabled, ensuring the authenticity of the SSL certificates during HTTPS requests.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* ansible.builtin.get_url or get_url
+* *Attribute:* validate_certs
+
+To address this issue, make sure the `validate_certs` attribute within your `get_url` tasks is not set to false. Setting `validate_certs` to true is crucial for validating the SSL certificates and securing your HTTPS connections.
+
+Secure code example:
+
+[source,yaml]
+----
+---
+- name: Ensure SSL certificate validation is enabled
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: Ensure certificate validation is not disabled
+      ansible.builtin.get_url:
+        url: "https://example.com/file.tar.gz"
+        dest: "/tmp/file.tar.gz"
+-       validate_certs: false
++       validate_certs: true
+----
+
+This task is secure according to the policy as it ensures SSL certificate validation by setting `validate_certs` to true.

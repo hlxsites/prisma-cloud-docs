@@ -1,0 +1,48 @@
+== HTTPS url is not used with get_url
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/GetUrlHttpsOnly.yaml[CKV2_ANSIBLE_2]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy mandates the use of HTTPS URLs in the Ansible `get_url` module to ensure secure data transmission. HTTPS encrypts the data between the client and the server, significantly enhancing security by preventing data interception and ensuring data integrity. This check ensures that the `url` attribute in the `get_url` module tasks begins with "https://", confirming that the data transfer is conducted over a secure channel.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* get_url
+* *Attribute:* url
+
+To align with this policy, make sure that all tasks using the `get_url` module specify URLs that start with "https://". This practice ensures that the data is transferred over an encrypted connection.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure HTTPS is used in get_url tasks
+  ansible.builtin.get_url:
+    url: "https://example.com/file.tar.gz"
+    dest: "/tmp/file.tar.gz"
+----
+
+Ensuring that URLs in `get_url` tasks start with "https://" as demonstrated above, your Ansible playbooks adhere to this policy, bolstering the security of your data transfers.

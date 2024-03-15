@@ -1,0 +1,53 @@
+== Security rule with source_ip and destination_ip both containing values of any
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyNoSrcAnyDstAny.yaml[CKV_PAN_7]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that security rules in Palo Alto Networks devices do not use 'any' for both 'source_ip' and 'destination_ip' simultaneously. Configuring both source and destination IPs to 'any' in a security rule can lead to overly broad permissions, potentially exposing the network to unintended traffic. The policy requires that at least one of these attributes, either `source_ip` or `destination_ip`, is set to a specific value other than 'any' to enforce more granular and secure traffic filtering.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attributes:* source_ip, destination_ip
+
+To comply with this policy, ensure that either `source_ip` or `destination_ip` (or both) in your `panos_security_rule` resources are defined with specific IP addresses or ranges instead of 'any'. This approach helps in defining precise and secure network traffic rules.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure specific IPs are used in security rules
+  tasks:
+    - name: Security_rule_fail_1
+      paloaltonetworks.panos.panos_security_rule:
+        name: "example-rule"
+-        source_ip: ['any']
+-        destination_ip: ['any']
++        source_ip: ['192.168.1.0/24']
++        destination_ip: ['10.1.2.0/24']
+----
+
+Specifying exact IP addresses or ranges for `source_ip` and `destination_ip` ensures that the security rule does not unintentionally permit all traffic, aligning with this policy's requirements.

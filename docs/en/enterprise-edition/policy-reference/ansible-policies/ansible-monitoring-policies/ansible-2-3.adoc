@@ -1,0 +1,52 @@
+== block found that does not handle task errors properly
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/BlockErrorHandling.yaml[CKV2_ANSIBLE_3]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that Ansible blocks are equipped with proper error handling mechanisms. In Ansible, the `block` keyword is used to group multiple tasks together, and `rescue` sections within blocks allow for specifying tasks to be executed in case of errors in the preceding block tasks. This check verifies that each `block` contains a `rescue` section, ensuring that appropriate actions are taken when tasks fail, which is crucial for robust error handling and recovery strategies.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Resource Type:* block
+* *Attribute:* rescue
+
+To comply with this policy, ensure that each `block` in your Ansible playbooks includes a `rescue` section. The `rescue` section should contain tasks that are executed if any task within the block fails, providing a mechanism for error recovery or cleanup.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure error handling is implemented with blocks
+  block:
+    - name: Attempt task
+      ansible.builtin.command: /bin/false
+  rescue:
+    - name: Handle error
+      ansible.builtin.debug:
+        msg: "An error occurred."
+----
+
+In the example above, if the command `/bin/false` fails, the playbook automatically executes the `rescue` block, thus adhering to the policy by providing error handling within the block.

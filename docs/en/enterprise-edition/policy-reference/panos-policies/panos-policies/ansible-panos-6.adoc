@@ -1,0 +1,53 @@
+== Security rule has service set to any
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyNoServiceAny.yaml[CKV_PAN_6]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that security rules in Palo Alto Networks devices specify a particular service instead of using 'any'. Setting the 'service' attribute to 'any' can create overly permissive rules, potentially allowing traffic that should be controlled or blocked. This policy verifies that the `service` attribute in `panos_security_rule` resources is set to a specific value rather than 'any', encouraging tighter control and specificity in traffic management.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* service
+
+To comply with this policy, specify the `service` attribute in your `panos_security_rule` resources with exact service definitions instead of 'any'. Defining specific services in security rules helps to enforce the intended access controls and enhances the overall security posture.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure service is defined specifically in security rules
+  ...
+  tasks:
+    - name: Security_rule_fail_1
+      paloaltonetworks.panos.panos_security_rule:
+        ...
+        application: ['ssl']
+-        service: ['any'] # Service is any
++        service: ['http', 'https']
+----
+
+Defining the `service` attribute with precise values instead of 'any' adheres to this policy, ensuring more granular and secure control of the network traffic.

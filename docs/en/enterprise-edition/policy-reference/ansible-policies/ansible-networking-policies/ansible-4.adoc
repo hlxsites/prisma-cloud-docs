@@ -1,0 +1,54 @@
+== SSL validation is disabled with yum
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/task/builtin/YumValidateCerts.py[CKV_ANSIBLE_3]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that Ansible `yum` tasks do not disable SSL validation. Disabling SSL validation can significantly increase security risks, exposing the system to potential man-in-the-middle attacks. The policy verifies that the `sslverify` attribute in `yum` tasks is set to true, ensuring the SSL connections are authenticated and encrypted.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* ansible.builtin.yum or yum
+* *Attribute:* sslverify
+
+To address this vulnerability, you should ensure that the `sslverify` attribute in your `yum` tasks is set to true. Enforcing SSL verification helps in maintaining the integrity and confidentiality of the communication with yum repositories.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure yum SSL verification is enabled
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: Validate SSL certificates with yum
+      ansible.builtin.yum:
+        name: nginx
+        state: latest
+-       sslverify: false
++       sslverify: true
+----
+
+By setting `sslverify` to true, this task adheres to the policy, enhancing the security posture by validating SSL certificates in yum operations.

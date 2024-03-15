@@ -1,0 +1,54 @@
+== Use of the force parameter disabling signature validation
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/task/builtin/AptForce.py[CKV_ANSIBLE_6]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that the `force` parameter is not used with the Ansible `apt` module. The `force` parameter, when used, can override important safety mechanisms in package management: it allows the installation of packages without signature validation and can enable package downgrades, potentially leaving the system in a broken or inconsistent state. This check confirms that the `force` attribute is set to false or not used, maintaining the integrity and consistency of the system.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* ansible.builtin.apt or apt
+* *Attribute:* force
+
+To ensure system integrity and consistency, the `force` attribute should not be used in your `apt` tasks. If it is necessary to specify, it should be explicitly set to false to avoid bypassing important safety checks and potentially compromising the system.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure apt does not use the force parameter
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: Avoid using force with apt
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+-       force: yes
++       force: no
+----
+
+Ensuring `force` is set to no or is absent in apt tasks is crucial to comply with this policy, safeguarding the system's stability and security.

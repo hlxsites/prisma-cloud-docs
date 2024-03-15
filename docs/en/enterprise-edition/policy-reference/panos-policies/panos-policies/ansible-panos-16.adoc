@@ -1,0 +1,62 @@
+== Logging at session start is enabled
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyLogSessionStart.yaml[CKV_PAN_16]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that logging at the start of a session is generally disabled within security policies on Palo Alto Networks devices. While logging at session start can provide detailed insights for troubleshooting or monitoring specific long-lived GRE tunnel connections, it typically generates a large volume of logs and can lead to resource consumption issues. This check ensures that the `log_start` attribute in `panos_security_rule` resources is not set to true, except when needed for specific use cases like troubleshooting or monitoring GRE tunnels.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* log_start
+
+To comply with this policy, ensure that the `log_start` attribute is either not set (defaulting to false) or explicitly set to false in your `panos_security_rule` resources. This should be the standard practice unless there is a clear, documented need to enable start-of-session logging for troubleshooting or monitoring specific scenarios.
+
+Secure code example:
+
+[source,yaml]
+----
+---
+- name: Verify tests
+  ...
+  tasks:
+    - name: Security_rule_pass_1
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['inside']
+        destination_zone: ['outside']
+        source_ip: ['10.10.10.1']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+        # log_start not specified, default is true which is a pass
+----
+
+By ensuring `log_start` is set to false or is absent, you align with this policy, optimizing log management while still allowing for exceptions in scenarios where start-of-session logging is necessary.

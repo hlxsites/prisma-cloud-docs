@@ -1,0 +1,52 @@
+== Include ACL is not defined for a Zone with User-ID enabled
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosZoneUserIDIncludeACL.yaml[CKV_PAN_15]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that when User-ID is enabled on a security zone in Palo Alto Networks devices, an Include ACL (Access Control List) is also defined. User-ID is a feature that maps IP addresses to users, allowing for policy enforcement based on user identity. When User-ID is enabled, the Include ACL specifies which traffic should be included for user mapping. Without a properly defined Include ACL, User-ID might incorrectly process or exclude important traffic. This check validates that if `enable_userid` is set to true for a zone, then `include_acl` is also configured and non-empty.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_zone
+* *Attributes:* enable_userid, include_acl
+
+To comply with this policy, ensure that for each `panos_zone` where `enable_userid` is true, there is a corresponding `include_acl` that is non-empty. The Include ACL should specify the traffic to be included in the User-ID mapping process, enhancing the accuracy and effectiveness of user-based policies.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Verify tests
+  ...
+  tasks:
+    - name: Zone
+      paloaltonetworks.panos.panos_zone:
+        ...
+        enable_userid: true
+        include_acl: ['10.0.200.0/24']
+----
+
+By defining an Include ACL for zones where User-ID is enabled, as shown above, you ensure that user identification is accurately applied to the correct set of traffic, aligning with this policy's requirements.

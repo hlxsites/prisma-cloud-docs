@@ -1,0 +1,54 @@
+== Use of packages with untrusted or missing signatures
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/task/builtin/AptAllowUnauthenticated.py[CKV_ANSIBLE_5]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that Ansible `apt` tasks do not install packages without authenticating their signatures. Allowing the installation of unauthenticated packages can lead to serious security risks, including the installation of modified or malicious packages. The policy checks that the `allow_unauthenticated` attribute in `apt` tasks is set to false or not present, ensuring that only packages with verified signatures are used.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* ansible.builtin.apt or apt
+* *Attribute:* allow_unauthenticated
+
+To mitigate this risk, you should ensure that the `allow_unauthenticated` attribute in your `apt` tasks is either set to false or omitted. This enforces the authentication of package signatures, thereby safeguarding your systems against potentially harmful packages.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure all apt packages are authenticated
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: Do not allow unauthenticated packages
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+-       allow_unauthenticated: true
++       allow_unauthenticated: false
+----
+
+Setting `allow_unauthenticated` to false in this task aligns with the policy, ensuring that only authenticated packages are installed via apt.

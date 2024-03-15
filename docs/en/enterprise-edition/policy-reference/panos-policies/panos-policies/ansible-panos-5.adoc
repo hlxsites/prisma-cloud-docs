@@ -1,0 +1,48 @@
+== Security rule has application set to any
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyNoApplicationAny.yaml[CKV_PAN_5]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy ensures that security rules in Palo Alto Networks devices are defined with specific applications rather than using 'any'. Setting the 'application' attribute to 'any' in security rules can lead to overly permissive configurations, potentially allowing traffic that should be inspected or blocked. The policy checks that the `application` attribute in `panos_security_rule` resources is explicitly set to a value other than 'any', promoting precise and secure application-based rule definitions.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* application
+
+To adhere to this policy, define the `application` attribute in your `panos_security_rule` resources with specific applications instead of 'any'. Specifying applications enhances the security by ensuring that only traffic corresponding to the defined applications is matched by the rule.
+
+Secure code example:
+
+[source,yaml]
+----
+- name: Ensure application is defined specifically in security rules
+  paloaltonetworks.panos.panos_security_rule:
+    name: "example-rule"
+    application: ['web-browsing', 'ssl']
+----
+
+Setting the `application` to specific values rather than 'any' aligns with this policy, ensuring that the rule accurately reflects the intended traffic control, thereby enhancing network security.
