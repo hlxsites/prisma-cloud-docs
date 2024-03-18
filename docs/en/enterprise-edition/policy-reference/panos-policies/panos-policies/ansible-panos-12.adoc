@@ -1,4 +1,4 @@
-== IPsec profile uses insecure authentication algorithm
+== IPsec profile uses insecure authentication algorithms on Palo Alto Networks devices
 
 === Policy Details 
 
@@ -24,7 +24,8 @@
 
 === Description
 
-This policy ensures that IPsec profiles in Palo Alto Networks devices do not use insecure authentication algorithms. Specifically, the policy checks that IPsec profiles do not use 'none', 'md5', or 'sha1' for ESP (Encapsulating Security Payload) authentication, as these algorithms are considered weak and vulnerable to attacks. Strong authentication algorithms are crucial for ensuring the confidentiality and integrity of IPsec VPN connections.
+This policy detects whether IPsec profiles in Palo Alto Networks devices use insecure authentication algorithms. Specifically, the policy checks that IPsec profiles do not use 'none', 'md5', or 'sha1' for ESP (Encapsulating Security Payload) authentication, as these algorithms are considered weak and vulnerable to attacks. Strong authentication algorithms are crucial for ensuring the confidentiality and integrity of IPsec VPN connections.
+
 
 === Fix - Buildtime
 
@@ -33,13 +34,15 @@ This policy ensures that IPsec profiles in Palo Alto Networks devices do not use
 * *Resource:* panos_ipsec_profile
 * *Attribute:* esp_authentication
 
-To adhere to this policy, configure your `panos_ipsec_profile` resources to avoid using 'none', 'md5', or 'sha1' as the ESP authentication algorithm. Instead, use stronger algorithms like 'sha256' or 'sha512' to ensure robust authentication.
+To mitigate risks, configure your panos_ipsec_profile resources to use stronger algorithms like 'sha256' or 'sha512' to ensure robust authentication. Avoid using weak algorithms such as 'none', 'md5', or 'sha1' as the ESP authentication algorithm.
 
-Secure code example:
+
+Secure Code Example:
+
 
 [source,yaml]
 ----
-- name: Verify tests
+- name: Example
   ...
   tasks:
     - name: ipsec
@@ -49,4 +52,4 @@ Secure code example:
 +        esp_authentication: ['sha256'] # Acceptable
 ----
 
-Configuring `esp_authentication` with secure algorithms such as 'sha256' or 'sha512' complies with this policy, enhancing the security of IPsec VPN connections by using robust authentication methods.
+In this example, configuring `esp_authentication` with secure algorithms such as 'sha256' or 'sha512' enhances the security of IPsec VPN connections by using robust authentication methods.

@@ -1,4 +1,4 @@
-== Certificate validation is disabled with dnf
+== Certificate validation disabled within Ansible DNF module
 
 === Policy Details 
 
@@ -24,7 +24,8 @@
 
 === Description
 
-This policy ensures that the `dnf` module in Ansible does not disable certificate validation when making HTTPS requests. Disabling certificate validation can expose the system to various security vulnerabilities, including man-in-the-middle attacks. The policy checks that the `validate_certs` attribute in tasks using the `dnf` module is not set to false, thereby enforcing the verification of the server's SSL/TLS certificate.
+This policy detects whether the dnf module in Ansible disables certificate validation when making HTTPS requests. Disabling certificate validation can potentially expose the system to various security vulnerabilities, including man-in-the-middle attacks.
+
 
 === Fix - Buildtime
 
@@ -33,17 +34,20 @@ This policy ensures that the `dnf` module in Ansible does not disable certificat
 * *Module:* dnf
 * *Attribute:* validate_certs
 
-To comply with this policy, make sure that the `validate_certs` attribute in your `dnf` tasks is either left at its default value (true) or explicitly set to true. This ensures that the SSL/TLS certificates are verified during connections, maintaining the security of the HTTPS communication.
+To mitigate this risk, ensure that the `validate_certs`` attribute in your Ansible dnf tasks is either left at its default value (true) or explicitly set to 'true'. This ensures that SSL/TLS certificates are verified during connections, maintaining the security of HTTPS communication.
 
-Secure code example:
+
+Secure Code Example:
+
 
 [source,yaml]
 ----
-- name: Ensure certificate validation is enabled for DNF
+- name: Example
   ansible.builtin.dnf:
     name: nginx
     state: latest
     validate_certs: true
 ----
 
-Setting `validate_certs` to true, as demonstrated, aligns with this policy by ensuring secure HTTPS communication during package management operations.
+In this example, setting validate_certs to 'true', ensures secure HTTPS communication during package management operations.
+

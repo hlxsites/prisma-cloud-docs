@@ -1,4 +1,4 @@
-== block found that does not handle task errors properly
+== Missing 'Rescue' section in Ansible block tasks
 
 === Policy Details 
 
@@ -24,7 +24,8 @@
 
 === Description
 
-This policy ensures that Ansible blocks are equipped with proper error handling mechanisms. In Ansible, the `block` keyword is used to group multiple tasks together, and `rescue` sections within blocks allow for specifying tasks to be executed in case of errors in the preceding block tasks. This check verifies that each `block` contains a `rescue` section, ensuring that appropriate actions are taken when tasks fail, which is crucial for robust error handling and recovery strategies.
+This policy detects whether each Ansible block contains a rescue section, ensuring proper error handling mechanisms are in place. In Ansible, the block keyword is used to group multiple tasks together, with rescue sections allowing specification of tasks to execute in case of preceding block task errors.
+
 
 === Fix - Buildtime
 
@@ -33,13 +34,14 @@ This policy ensures that Ansible blocks are equipped with proper error handling 
 * *Resource Type:* block
 * *Attribute:* rescue
 
-To comply with this policy, ensure that each `block` in your Ansible playbooks includes a `rescue` section. The `rescue` section should contain tasks that are executed if any task within the block fails, providing a mechanism for error recovery or cleanup.
+To mitigate this risk, ensure that each block in your Ansible playbooks includes a rescue section containing tasks that are executed if any task within the block fails. This provides a mechanism for error recovery or cleanup, enhancing the robustness of your playbooks.
 
-Secure code example:
+Secure Code Example:
+
 
 [source,yaml]
 ----
-- name: Ensure error handling is implemented with blocks
+- name: Example
   block:
     - name: Attempt task
       ansible.builtin.command: /bin/false
@@ -49,4 +51,5 @@ Secure code example:
         msg: "An error occurred."
 ----
 
-In the example above, if the command `/bin/false` fails, the playbook automatically executes the `rescue` block, thus adhering to the policy by providing error handling within the block.
+In the example above, if the command `/bin/false`` fails, the playbook automatically executes the rescue block, providing error handling within the block.
+

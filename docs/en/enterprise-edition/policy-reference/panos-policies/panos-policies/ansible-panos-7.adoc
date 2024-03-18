@@ -1,4 +1,4 @@
-== Security rule with source_ip and destination_ip both containing values of any
+== Security Rule in Palo Alto Networks devices with overly broad Source and Destination IPs
 
 === Policy Details 
 
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy ensures that security rules in Palo Alto Networks devices do not use 'any' for both 'source_ip' and 'destination_ip' simultaneously. Configuring both source and destination IPs to 'any' in a security rule can lead to overly broad permissions, potentially exposing the network to unintended traffic. The policy requires that at least one of these attributes, either `source_ip` or `destination_ip`, is set to a specific value other than 'any' to enforce more granular and secure traffic filtering.
+This policy detects whether security rules in Palo Alto Networks devices use 'any' for both 'source_ip' and 'destination_ip' simultaneously. Configuring both source and destination IPs to 'any' in a security rule can lead to overly broad permissions, potentially exposing the network to unintended traffic. At least one of these attributes, either source_ip or destination_ip, should be set to a specific value other than 'any' to enforce more granular and secure traffic filtering.
 
 === Fix - Buildtime
 
@@ -33,15 +33,15 @@ This policy ensures that security rules in Palo Alto Networks devices do not use
 * *Resource:* panos_security_rule
 * *Attributes:* source_ip, destination_ip
 
-To comply with this policy, ensure that either `source_ip` or `destination_ip` (or both) in your `panos_security_rule` resources are defined with specific IP addresses or ranges instead of 'any'. This approach helps in defining precise and secure network traffic rules.
+To mitigate this risk, ensure that either the source_ip or destination_ip (or both) attributes in your panos_security_rule resources are configured with specific IP addresses or ranges instead of using any. This approach helps define precise and secure network traffic rules.
 
-Secure code example:
+Secure Code Example:
 
 [source,yaml]
 ----
-- name: Ensure specific IPs are used in security rules
+- name: Example
   tasks:
-    - name: Security_rule_fail_1
+    - name: Example
       paloaltonetworks.panos.panos_security_rule:
         name: "example-rule"
 -        source_ip: ['any']
@@ -50,4 +50,4 @@ Secure code example:
 +        destination_ip: ['10.1.2.0/24']
 ----
 
-Specifying exact IP addresses or ranges for `source_ip` and `destination_ip` ensures that the security rule does not unintentionally permit all traffic, aligning with this policy's requirements.
+In this example, specifying exact IP addresses or ranges for source_ip and destination_ip ensures that the security rule does not unintentionally permit all traffic.

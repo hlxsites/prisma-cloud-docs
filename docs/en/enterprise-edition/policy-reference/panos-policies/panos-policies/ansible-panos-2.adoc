@@ -1,4 +1,4 @@
-== Plain-text management HTTP is enabled for an Interface Management Profile
+== Plain-text management HTTP enabled for Interface Management Profile in Palo Alto Networks devices
 
 === Policy Details 
 
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy ensures that plain-text management HTTP is not enabled for Interface Management Profiles in Palo Alto Networks devices. Enabling HTTP for management purposes exposes the device to interception and man-in-the-middle attacks due to the lack of encryption. This check verifies that the `http` attribute in the `panos_management_profile` resource is either not present or explicitly set to false, thereby enforcing the use of encrypted protocols for management.
+This policy detects whether plain-text management HTTP is enabled for Interface Management Profiles in Palo Alto Networks devices. HTTP lacks encryption, therefore enabling HTTP for management purposes exposes the device to interception and man-in-the-middle attacks, potentially exposing sensitive information to unauthorized access.
 
 === Fix - Buildtime
 
@@ -33,18 +33,18 @@ This policy ensures that plain-text management HTTP is not enabled for Interface
 * *Resource:* panos_management_profile
 * *Attribute:* http
 
-To comply with this policy, ensure that the `http` attribute in the `panos_management_profile` resource is not set to true. If this attribute is necessary, it should be explicitly set to false, thereby disabling plain-text HTTP and promoting secure management practices.
+To mitigate this risk, ensure that the http attribute in the panos_management_profile resource is not set to 'true'. If this attribute is necessary, it should be explicitly set to 'false', thereby disabling plain-text HTTP and promoting secure management practices.
 
-Secure code example:
+Secure Code Example:
 
 [source,yaml]
 ----
-- name: Verify tests
+- name: Example
   hosts: all
   connection: local
   gather_facts: false
   tasks:
-    - name: Interface_mgmt_profile_fail_1
+    - name: Example
       paloaltonetworks.panos.panos_management_profile:
         provider: '{{ provider }}'
         name: 'Test profile'
@@ -52,4 +52,4 @@ Secure code example:
 +        http: false # http defined as true, which is a fail
 ----
 
-Ensuring that the `http` attribute is set to false or is omitted in the management profile configuration aligns with this policy, enhancing the security posture of the Palo Alto Networks device.
+In this example, the `http` attribute is set to false or omitting it in the management profile configuration disables plain-text HTTP, and enhances the security posture of the Palo Alto Networks device.

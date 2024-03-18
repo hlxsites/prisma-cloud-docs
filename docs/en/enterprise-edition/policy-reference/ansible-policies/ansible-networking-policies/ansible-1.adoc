@@ -1,4 +1,4 @@
-== Certificate validation is disabled with uri
+== Disabled Ansible URI certificate validation
 
 === Policy Details 
 
@@ -24,7 +24,8 @@
 
 === Description
 
-This policy ensures that the Ansible URI tasks enforce certificate validation. Disabling certificate validation in URI tasks can expose the system to various security issues, including man-in-the-middle (MITM) attacks. The policy checks that the `validate_certs` attribute is not set to false, ensuring that HTTPS requests validate the authenticity of the SSL certificate of the host.
+This policy detects whether Ansible URI tasks enforce certificate validation, thereby enhancing the security of your HTTPS requests. Disabling certificate validation in URI tasks can expose the system to various security issues, including man-in-the-middle (MITM) attacks.
+
 
 === Fix - Buildtime
 
@@ -32,11 +33,15 @@ This policy ensures that the Ansible URI tasks enforce certificate validation. D
 
 * *Attribute:* uri.validate_certs
 
-To remediate this issue, ensure that the `validate_certs` attribute is not set to false in your Ansible URI tasks. Setting `validate_certs` to true ensures that the SSL certificates are validated, thereby enhancing the security of your HTTPS requests.
+To mitigate this risk, ensure that the `validate_certs`` attribute is set to `true`` in your Ansible URI tasks. This setting ensures that SSL certificates are properly validated during HTTPS requests, enhancing the security of your system.
+
+Secure Code Example:
+
+
 
 [source,yaml]
 ----
-- name: Verify tests
+- name: Example
   hosts: all
   gather_facts: False
   tasks:
@@ -50,4 +55,4 @@ To remediate this issue, ensure that the `validate_certs` attribute is not set t
       failed_when: "'AWESOME' not in this.content"
 ----
 
-The above task is secure as per the policy because it ensures that the SSL certificate of the specified URL is validated by setting `validate_certs` to true.
+The above example ensures that the SSL certificate of the specified URL is validated by setting validate_certs to true in Ansible URI tasks.

@@ -1,4 +1,4 @@
-== Use of packages with untrusted or missing signatures
+== Usage of packages with unauthenticated or missing signatures allowed
 
 === Policy Details 
 
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy ensures that Ansible `apt` tasks do not install packages without authenticating their signatures. Allowing the installation of unauthenticated packages can lead to serious security risks, including the installation of modified or malicious packages. The policy checks that the `allow_unauthenticated` attribute in `apt` tasks is set to false or not present, ensuring that only packages with verified signatures are used.
+This policy detects whether Ansible apt modules install packages without authenticating their signatures, including those with missing signatures. Unauthenticated packages can result in the installation of modified or malicious packages through several mechanisms such as Man-in -the-Middle_Attacks. Malicious attackers could potentially manipulate packages during download, inserting malicious code or substituting them with entirely malicious versions.
 
 === Fix - Buildtime
 
@@ -33,13 +33,13 @@ This policy ensures that Ansible `apt` tasks do not install packages without aut
 * *Module:* ansible.builtin.apt or apt
 * *Attribute:* allow_unauthenticated
 
-To mitigate this risk, you should ensure that the `allow_unauthenticated` attribute in your `apt` tasks is either set to false or omitted. This enforces the authentication of package signatures, thereby safeguarding your systems against potentially harmful packages.
+To mitigate this risk, set the allow_unauthenticated attribute in your apt module to either 'false' or 'omitted'. When you set allow_unauthenticated to 'false', Ansible strictly enforces package authentication. This enforces the authentication of package signatures, thereby safeguarding your systems against potentially harmful packages. If you omit the allow_unauthenticated attribute from your apt module, Ansible defaults to the system's behavior regarding package authentication. Typically, this behavior requires package signatures to be authenticated before installation.
 
-Secure code example:
+Secure Code Example:
 
 [source,yaml]
 ----
-- name: Ensure all apt packages are authenticated
+- name: Example
   hosts: all
   gather_facts: False
   tasks:
@@ -51,4 +51,4 @@ Secure code example:
 +       allow_unauthenticated: false
 ----
 
-Setting `allow_unauthenticated` to false in this task aligns with the policy, ensuring that only authenticated packages are installed via apt.
+Setting allow_unauthenticated to false in this example ensures that only authenticated packages are installed via your apt module.

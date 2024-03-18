@@ -1,4 +1,4 @@
-== Logging at session start is enabled
+== Logging at session start enabled on Palo Alto Networks devices
 
 === Policy Details 
 
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy ensures that logging at the start of a session is generally disabled within security policies on Palo Alto Networks devices. While logging at session start can provide detailed insights for troubleshooting or monitoring specific long-lived GRE tunnel connections, it typically generates a large volume of logs and can lead to resource consumption issues. This check ensures that the `log_start` attribute in `panos_security_rule` resources is not set to true, except when needed for specific use cases like troubleshooting or monitoring GRE tunnels.
+This policy detects whether logging at the start of a session is enabled on Palo Alto Networks devices. While logging at session start can provide detailed insights for troubleshooting or monitoring specific long-lived GRE tunnel connections, it typically generates a large volume of logs and can lead to resource consumption issues.
 
 === Fix - Buildtime
 
@@ -33,17 +33,17 @@ This policy ensures that logging at the start of a session is generally disabled
 * *Resource:* panos_security_rule
 * *Attribute:* log_start
 
-To comply with this policy, ensure that the `log_start` attribute is either not set (defaulting to false) or explicitly set to false in your `panos_security_rule` resources. This should be the standard practice unless there is a clear, documented need to enable start-of-session logging for troubleshooting or monitoring specific scenarios.
+To mitigate this risk, ensure that the `log_start` attribute is either not set (defaulting to 'false') or explicitly set to 'false' in your panos_security_rule resources. This should be the standard practice unless there is a clear, documented need to enable start-of-session logging for troubleshooting or monitoring specific scenarios.
 
-Secure code example:
+Secure Code Example:
 
 [source,yaml]
 ----
 ---
-- name: Verify tests
+- name: Example
   ...
   tasks:
-    - name: Security_rule_pass_1
+    - name: Example
       paloaltonetworks.panos.panos_security_rule:
         provider: '{{ provider }}'
         rule_name: 'Test rule'
@@ -59,4 +59,4 @@ Secure code example:
         # log_start not specified, default is true which is a pass
 ----
 
-By ensuring `log_start` is set to false or is absent, you align with this policy, optimizing log management while still allowing for exceptions in scenarios where start-of-session logging is necessary.
+In this example, by ensuring `log_start` is set to false or is absent, you ensure that ogging at the start of a session is disabled on Palo Alto Networks devices, optimizing log management while still allowing for exceptions in scenarios where start-of-session logging is necessary.

@@ -1,4 +1,4 @@
-== Security rules have source_zone and destination_zone containing values of any
+== Security rules apply to all zones on Palo Alto Networks devices
 
 === Policy Details 
 
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy ensures that security rules on Palo Alto Networks devices do not indiscriminately apply to all zones by having both 'source_zone' and 'destination_zone' set to 'any'. Such configurations can lead to overly permissive rules and unintended access across network segments. The policy checks that either `source_zone` or `destination_zone` (or both) are specified with particular zone names rather than the broad 'any' setting, ensuring more precise and secure rule definitions.
+This policy detects whether security rules on Palo Alto Networks devices indiscriminately apply to all zones due to configuration of both 'source_zone' and 'destination_zone' to 'any'. This configuration can potentially lead to overly permissive rules and unintended access across network segments.
 
 === Fix - Buildtime
 
@@ -33,16 +33,16 @@ This policy ensures that security rules on Palo Alto Networks devices do not ind
 * *Resource:* panos_security_rule
 * *Attributes:* source_zone, destination_zone
 
-To align with this policy, verify that each `panos_security_rule` specifies particular zones for both `source_zone` and `destination_zone` instead of using 'any'. This approach ensures targeted application of security rules, minimizing the risk of unintended traffic flow.
+To mitigate this issue, verify that each panos_security_rule specifies particular zones for both source_zone and destination_zone instead of using 'any'. This approach ensures targeted application of security rules, minimizing the risk of unintended traffic flow.
 
-Secure code example:
+Secure Code Example:
 
 [source,yaml]
 ----
-- name: Verify tests
+- name: Example
   ...
   tasks:
-    - name: Security_rule_pass_1
+    - name: Example
       paloaltonetworks.panos.panos_security_rule:
         ...
 -        source_zone: ['any']
@@ -51,4 +51,4 @@ Secure code example:
 +        destination_zone: ['inside']
 ----
 
-Specifying exact zones rather than using 'any' ensures that the security rules are applied deliberately and securely, conforming to the policy's requirements.
+In this example, specifying exact zones rather than using 'any' ensures that the security rules are not indiscriminately applied to all zones. This ensures that security rules are applied deliberately and securely, minimizing the risk of unintended traffic flow.

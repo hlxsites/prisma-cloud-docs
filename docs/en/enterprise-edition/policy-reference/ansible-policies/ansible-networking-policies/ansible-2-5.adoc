@@ -1,4 +1,4 @@
-== SSL validation is disabled with dnf
+== SSL validation disabled within Ansible DNF module
 
 === Policy Details 
 
@@ -24,7 +24,8 @@
 
 === Description
 
-This policy ensures that SSL certificate validation is enforced when using the `dnf` module in Ansible. SSL validation is critical for preventing man-in-the-middle attacks by verifying the authenticity of the server's SSL certificate. The policy checks that the `sslverify` attribute is not set to false in `dnf` module tasks, ensuring that HTTPS connections are secure and the server's identity is validated.
+This policy detects whether SSL certificate validation is enforced when using the DNF module in Ansible. SSL verifies the authenticity of the server's SSL certificate, ensuring that HTTPS connections are secure and the server's identity is validated. This is critical for preventing Man-in-the-Middle attacks.
+
 
 === Fix - Buildtime
 
@@ -33,17 +34,20 @@ This policy ensures that SSL certificate validation is enforced when using the `
 * *Module:* dnf
 * *Attribute:* sslverify
 
-To adhere to this policy, ensure that `sslverify` is not set to false in your `dnf` tasks. If not explicitly set, the default behavior is to perform SSL validation. Explicitly setting `sslverify` to true is recommended to enforce clarity and intent in the code.
+To mitigate this risk, ensure that the sslverify attribute is not set to 'false' in your DNF tasks. If not explicitly set, the default behavior is to perform SSL validation. It is recommended to explicitly set sslverify to 'true' to enforce clarity and intent in the code.
 
-Secure code example:
+
+Secure Code Example:
+
 
 [source,yaml]
 ----
-- name: Ensure SSL validation is enabled for DNF
+- name: Example
   ansible.builtin.dnf:
     name: nginx
     state: latest
     sslverify: true
 ----
 
-By ensuring `sslverify` is set to true, as shown above, you comply with this policy, enhancing the security of your package management operations by ensuring the integrity and authenticity of your SSL connections.
+In this example, setting `sslverify` to 'true' ensures the integrity and authenticity of your SSL connections enhancing the security of your package management operations.
+

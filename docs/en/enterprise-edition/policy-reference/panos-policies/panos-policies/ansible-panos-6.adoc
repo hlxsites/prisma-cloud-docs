@@ -1,4 +1,4 @@
-== Security rule has service set to any
+== Security rule permits any service on Palo Alto Networks devices
 
 === Policy Details 
 
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy ensures that security rules in Palo Alto Networks devices specify a particular service instead of using 'any'. Setting the 'service' attribute to 'any' can create overly permissive rules, potentially allowing traffic that should be controlled or blocked. This policy verifies that the `service` attribute in `panos_security_rule` resources is set to a specific value rather than 'any', encouraging tighter control and specificity in traffic management.
+This policy detects whether security rules in Palo Alto Networks devices use the 'any' setting for the service attribute instead of specifying a particular service. Setting the 'service' attribute to 'any' can create overly permissive rules, potentially allowing uncontrolled or blocked traffic. On the other hand, configuring a specific value results in tighter control and specificity in traffic management.
 
 === Fix - Buildtime
 
@@ -33,16 +33,16 @@ This policy ensures that security rules in Palo Alto Networks devices specify a 
 * *Resource:* panos_security_rule
 * *Attribute:* service
 
-To comply with this policy, specify the `service` attribute in your `panos_security_rule` resources with exact service definitions instead of 'any'. Defining specific services in security rules helps to enforce the intended access controls and enhances the overall security posture.
+To mitigate this issue, define specific services in security rules to enforce the intended access controls and enhance the overall security posture. Specify the service attribute in your panos_security_rule resources with exact service definitions, avoiding the use of any.
 
-Secure code example:
+Secure Code Example:
 
 [source,yaml]
 ----
-- name: Ensure service is defined specifically in security rules
+- name: Example
   ...
   tasks:
-    - name: Security_rule_fail_1
+    - name: Example
       paloaltonetworks.panos.panos_security_rule:
         ...
         application: ['ssl']
@@ -50,4 +50,4 @@ Secure code example:
 +        service: ['http', 'https']
 ----
 
-Defining the `service` attribute with precise values instead of 'any' adheres to this policy, ensuring more granular and secure control of the network traffic.
+In this example, defining the service attribute with precise values instead of 'any' ensures more granular and secure control of the network traffic.
