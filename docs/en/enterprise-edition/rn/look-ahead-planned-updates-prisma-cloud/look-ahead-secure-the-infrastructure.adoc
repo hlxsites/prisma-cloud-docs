@@ -3,7 +3,9 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.3.2 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
+Read this section to learn about what is planned in the 24.4.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+
+The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
 [NOTE]
 ====
@@ -57,6 +59,10 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
+|
+
+//RLP-134289
+|
 
 |*API Rate Limits*
 
@@ -74,7 +80,7 @@ tt:[This change was first announced in the look ahead that was published with th
 
 To make this change, https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-aws/configure-flow-logs[Configure Flow Logs] to use the hourly partition and enable the required additional fields.
 
-*Impact*— VPC Flow logs with partitions set to *Every 24 hours (default)* will be disabled on February 29th, 2024. As a result, you will no longer be able to monitor or receive alerts for these logs. If you have any questions, contact your Prisma Cloud Customer Success Representative immediately.
+*Impact*— VPC Flow logs with partitions set to *Every 24 hours (default)* was disabled on February 29th, 2024. As a result, you will no longer be able to monitor or receive alerts for these logs. If you have any questions, contact your Prisma Cloud Customer Success Representative immediately.
 
 |===
 
@@ -97,7 +103,7 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 +
 The *Master* branch represents rrent Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.3.2.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.4.1.
 
 . Review the updates.
 +
@@ -115,86 +121,31 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
+|tt:[Update] *Placeholder*
 
-|tt:[Update] *Azure Microsoft Defender for Cloud set to Off for DNS*
+tt:[*24.4.1*]
 
-tt:[*24.3.2*]
+//RLP-
 
-//RLP-130970
+|*Changes—* .
 
-|*Changes—* The Policy RQL has been updated to check either of the config i.e, Azure Microsoft Defender for servers plan 2 (which includes DNS) has not been enabled or Azure Microsoft Classic Defender for Cloud which has defender setting for DNS set to Off 
+*Severity—* 
 
-*Severity—* Informational
-
-*Policy Type—* Config
+*Policy Type—* 
 
 *Current RQL—*
 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+
 ----
 
 *Updated RQL—*
 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
-----
-
-*Impact—* Low. New Alerts might be generated in case the Azure Microsoft Defender for servers plan 2 is not enabled or Azure Microsoft Defender for Cloud which has defender setting for DNS set to Off. Existing alerts might get resolved in case Azure Microsoft Classic Defender for servers plan 2 is enabled.
-
-
-|tt:[Update] *AWS SQS queue access policy is overly permissive*
-
-tt:[*24.3.2*]
-
-//RLP-130581
-
-|*Changes—* Policy RQL has been updated to consider Action: SQS* as the IAM action and prefix are case-insensitive.
-
-*Severity—* Informational
-
-*Policy Type—* Config
-
-*Current RQL—*
 
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-sqs-get-queue-attributes' AND json.rule = attributes.Policy.Statement[?any(Effect equals Allow and Action anyStartWith sqs: and (Principal.AWS contains * or Principal equals *) and Condition does not exist)] exists
-----
 
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-sqs-get-queue-attributes' AND json.rule = attributes.Policy.Statement[?any(Effect equals Allow and (Action anyStartWith sqs: or Action anyStartWith SQS:) and (Principal.AWS contains * or Principal equals *) and Condition does not exist)] exists
-----
-
-*Impact—* Low. New Alerts might be generated in case the IAM action starts with SQS*
-
-
-|tt:[Update] *GCP Storage buckets are publicly accessible to all users*
-
-tt:[*24.3.2*]
-
-//RLP-128109
-
-|*Changes—* Policy RQL will be updated to account for bucket level prevent public access feature. The recommendation is also updated as per the updated GCP UI.
-
-*Severity—* High
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-storage-buckets-list' AND json.rule = 'iam.bindings[*] size greater than 0 and iam.bindings[*].members[*] any equal allUsers'
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-storage-buckets-list' AND json.rule = iamConfiguration.publicAccessPrevention does not equal ignore case "enforced" and iam.bindings[*] size greater than 0 and iam.bindings[*].members[*] any equal allUsers'
-----
-
-*Impact—* Low. Existing alerts on buckets with the prevent public access feature enabled at the bucket level will be resolved. Alerts will be generated against the policy violations.
+*Impact—* .
 
 |===
 
@@ -206,101 +157,67 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-stora
 |*Service*
 |*API Details*
 
-|*AWS Glue*
+|tt:[Update] *Amazon API Gateway*
+//RLP-134216 
 
-//RLP-125110
+|*aws-apigateway-method*
 
-|*aws-batch-job-definition*
+Prisma Cloud will update the `aws-apigateway-method` API to exclude the `methodIntegration.cacheNamespace` field from the JSON because it changes frequently causing too many resource snapshots.
 
-Additional permissions required:
-
-* `aws-glue-schema`
-* `glue:ListSchemas`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-
-|*AWS Backup*
-
-//RLP-125127
-
-|*aws-backup-protected-resources*
-
-Additional permission required:
-
-* `backup:ListProtectedResources`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-
-|*AWS Glue*
-
-//RLP-125128
-
-|*aws-glue-job*
-
-Additional permission required:
-
-* `glue:GetJobs`
-
-The Security Audit role includes the permission.
-
-
-|*Amazon EC2*
-
-//RLP-126443
-
-|*aws-ec2-vpc-endpoint-connection-notification*
-
-Additional permission required:
-
-* `ec2:DescribeVpcEndpointConnectionNotifications`
-
-The Security Audit role includes the permission.
-
-
-|*AWS Security Hub*
-
-//RLP-126444
-
-|*aws-securityhub-hub*
-
-Additional permission required:
-
-* `securityhub:DescribeHub`
-
-The Security Audit role includes the permission.
-
-
-|*AWS Account Management*
-
-//RLP-126445
-
-|*aws-account-contact-information*
-
-Additional permission required:
-
-* `account:GetContactInformation`
-
-The Security Audit role includes the permission.
-
-
-|*AWS CodeCommit*
-
-//RLP-120745
-
-|*aws-code-commit-approval-rule-template*
-
-Additional permission required:
-
-* `codecommit:ListApprovalRuleTemplates`
-* `codecommit:GetApprovalRuleTemplate`
-
-The Security Audit role includes the permission.
-
+//*AWS CodeCommit*
+//RLP-120745?
+//*aws-code-commit-approval-rule-template*
+//Additional permissions required:
+//* `codecommit:ListApprovalRuleTemplates`
+//* `codecommit:GetApprovalRuleTemplate`
+//The Security Audit role includes the permissions.
 
 |===
 
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|tt:[Update] *Alerts API Responses*
+
+//RLP-134238
+
+|The following *Alert API* responses will include a new `investigateOptions` field:
+
+* *List Alerts*
+** https://pan.dev/prisma-cloud/api/cspm/get-alerts/[GET /alert]
+** https://pan.dev/prisma-cloud/api/cspm/post-alerts/[POST /alert]
+
+* *List Alerts V2*
+** https://pan.dev/prisma-cloud/api/cspm/get-alerts-v-2/[GET v2/alert]
+** https://pan.dev/prisma-cloud/api/cspm/post-alerts-v-2/[POST v2/alert]
+
+* *Alert Info*
+** https://pan.dev/prisma-cloud/api/cspm/get-alert/[GET alert/:id]
+
+|tt:[Update] *GET CVE Overview API*
+
+//RLP-134310
+
+|The response of the https://pan.dev/prisma-cloud/api/cspm/cve-overview/[GET CVE Overview] endpoint will include the following changes:
+
+* The following new parameters will be added to *impactedDistrosList*:
+** highestCVSS
+** highestSeverity
+** firstPublishedDate
+** lastModifiedDate
+
+* The following new parameters will be added to *impactedDistrosList.distroDetailsList*:
+** publishedDate
+** modifiedDate
+
+* The data type of *impactedDistrosList.distroDetailsList.severity* will be changed from integer to string.
+
+|===
 
 [#deprecation-notices]
 === Deprecation Notices
@@ -312,6 +229,23 @@ The Security Audit role includes the permission.
 |*Deprecated Release*
 |*Sunset Release*
 |*Replacement Endpoints*
+
+|*End of support for Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services*
+
+//RLP-134902
+
+|NA
+|24.4.2
+|The following APIs are planned for deprecation at the end of April 2024 because Azure has announced the retirement of Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
+
+* azure-data-lake-analytics-account
+* azure-data-lake-analytics-diagnostic-settings
+* azure-data-lake-store-gen1-account
+* azure-data-lake-store-gen1-diagnostic-settings
+
+In RQL, the key will not available in the `api.name` attribute auto-completion.
+
+*Impact—* If you have a saved search or custom policies based on this API, you must delete them manually. The policy alerts will be resolved as Policy_Deleted.
 
 |tt:[*Resource Explorer API*]
 
