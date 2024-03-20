@@ -33,47 +33,56 @@ image::administration/qualys-azure-vm-info.png[]
 
 . Set up Qualys Integration on Prisma Cloud.
 +
-.. Select *Settings > Integrations*.
+.. Login to Prisma Cloud.
 
-.. *Add Integration > Qualys*. A modal wizard opens where you can add the Qualys integration.
+.. Select *Settings > Integrations & Notifications > Integrations*.
+
+.. Select *Add Integration > Qualys* from the list.
 
 .. Enter an *Integration Name* and *Description*.
 
 .. Enter the *Qualys API Server URL (without http[s])*.
 +
-This is the *API URL* for your Qualys account. When you enter this URL, (http(s)) or the port (:443).
+This is the *API URL* for your Qualys account. When you enter this URL, (http(s)) or the port (:443). For example, *qualysapi.qg1.apps.qualys.in*
 
 .. Enter your Qualys *User Login* and *Password*.
 +
 image::administration/qualys-int-1.png[]
 
-.. *Next*.
-
-.. *Test* and *Save* the integration.
+.. Click *Next*, review the *Summary* and then *Test Integration*.
 +
-The integration will be listed on the Integrations page, where you can enable, disable, or delete integrations as needed.
+image::administration/qualys-int-2.png[]
+
+.. *Save Integration* after the testing is successful.
++
+image::administration/qualys-int-3.png[]
+
+.. The integration will be listed on the *Integrations* page, where you can *View*, *Edit*, or *Delete* the integration as needed.
++
+image::administration/qualys-int-4.png[]
 
 . View Qualys host vulnerability data in Prisma Cloud.
 +
-After you configure Prisma Cloud with access to the Qualys findings, you can use RQL queries for visibility in to the host vulnerability information collected by Qualys.
+After you configure Prisma Cloud with access to the Qualys findings, you can use RQL queries for visibility into the host vulnerability information collected by Qualys.
 
-.. Use *Config Query* for visibility for host vulnerabilities.
+.. Use *Config Query* for visibility of host vulnerabilities.
 +
-`config from cloud.resource where finding.type = 'Host Vulnerability'`
+`config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.source = 'Qualys'`
 +
 image::administration/qualys-host-vulnerability.png[]
 +
 ... Click View the *Audit Trail* see the CVE numbers.
 +
 image::administration/qualys-audit-trail.png[]
-+
-... Click *Host Findings* for information related to vulnerabilities. The Source column in Host Findings displays the Qualys icon to help you easily identify the source for the vulnerability findings.
-+
-image::administration/qualys-host-findings.png[]
-+
+
+//... Click *Host Findings* for information related to vulnerabilities. The Source column in Host Findings displays the Qualys icon to help you easily identify the source for the vulnerability findings.
+//+
+//image::administration/qualys-host-findings.png[]
 //I think this is supposed to be substep “b” (otherwise, there should not be a substep “a” above). Then you can mimic substep a text to say “Use Network Query to...” and then can remove this bold entry here--redundant.
+
+.. Use *Network Query* for visibility of host vulnerabilities.
 +
-*Network Query*  `network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' )`
+`network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' AND finding.source = 'Qualys' )`
 +
 image::administration/qualys-network-query.png[]
 
