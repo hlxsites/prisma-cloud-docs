@@ -1,0 +1,84 @@
+:topic_type: task
+[.task]
+== Onboard Your Google Workspace
+
+Connect your Google Workspace account to Prisma Cloud to monitor your users, groups, and group memberships.
+
+If you use Workspace as an IdP for your user and group management and you want visibility and security of those accounts, onboard the Workspace accounts to Prisma Cloud. After completing onboarding, you can configure alert rules on Workspace related MFA policies (identifying Workspace users that have MFA enabled or disabled).
+
+You need to complete steps on your Workspace console and the Prisma Cloud console.
+
+[.procedure]
+
+. *Configure your Workspace Account*
+
+.. Go to https://workspace.google.com/intl/en_in/[Google Workspace]
+
+.. Click *Admin console* on the top right of the page.
+
+.. Log in using your Google ID.
+
+.. Select *Account > Admin roles* from the left navigation.
++
+image::connect/configure-gcp-workspace-1.png[]
+
+.. Create a *prisma-gcp-workspace-readonly* custom role with the following *Admin API privileges*:
++
+* ou-read
+* users-read
+* groups-read
++
+image::connect/configure-gcp-workspace-2.png[]
+
+.. Select the role and click *Assign admin*.
+
+.. Create a service account in the GCP project, generate a *Service Account Key* (JSON), and copy the client email.
+
+.. Under Admin, click *Assign service accounts*.
+
+.. Enter the service account client email that you created and copied in Step 7 above: <example>@<project-name>.iam.gserviceaccount.com 
+
+.. Click *Add*.
++
+image::connect/configure-gcp-workspace-3.png[]
+
+.. Click *Assign Role*.
+
+. *Connect your Workspace Account to Prisma Cloud*
+
+.. Select *Settings > Providers > Cloud Accounts*.
+
+.. From the *Connect Provider* drop-down, select *Cloud Account*.
+
+.. Select *Google Cloud Platform* as the cloud provider you want to onboard and *Get Started*.
+
+.. Under *Scope*, select *Workspace*.
++
+image::connect/gcp-add-workspace-1.png[]
+
+.. Under *Security Capabilities and Permissions*, the *Foundational* capabilities are enabled, by default:
++
+** *Misconfigurations (CSPM)* grants the permissions required to scan cloud resources and ingest metadata.
+** *Identity Security* grants the permissions required to calculate net effective permissions for identities and manage access.  
+
+.. Click *Next*.
+
+.. To *Configure Account*, enter *Domain Name* and *Account Name*. An account name is auto-populated for you. You can replace it with an account name that uniquely identifies your GCP Workspace on Prisma Cloud.
++
+image::connect/gcp-add-workspace-2.png[]
+
+.. Upload the *Service Account Key (JSON) file* that you generated and saved while configuring your Workspace account in Step 1.7 above.
+
+.. Select the xref:../../../administration/create-manage-account-groups.adoc[Account Group] to associate with your Workspace.
+
+.. Click *Next*.
+
+.. *Review Status*.
++
+image::connect/gcp-add-workspace-3.png[]
++
+Verify the *Account Details* of the GCP Workspace and the status checks for the *Security Capabilities and Permissions*. Ensure that all the selected security capabilities display a green *Enabled* icon. 
+
+.. Click *Save and Close* to complete onboarding.
++
+After you sucessfully onboard your GCP Workspace on Prisma Cloud, you can view the account on the *Providers > Cloud Accounts* page.
