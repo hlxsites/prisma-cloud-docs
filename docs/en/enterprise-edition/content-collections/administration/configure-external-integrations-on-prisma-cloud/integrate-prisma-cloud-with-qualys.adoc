@@ -8,11 +8,11 @@ Learn how to integrate Prisma® Cloud with Qualys.
 Prisma® Cloud integrates with the Qualys platform to ingest and visualize vulnerability data for your resources that are deployed on the AWS and Azure cloud platforms.
 
 [.procedure]
-. Gather the information that you need to set up the Qualys integration on Prisma Cloud.
+. Gather the information that you need to set up Qualys integration on Prisma Cloud.
 +
 * You must obtain the Qualys Security Operations Center (SOC) server API URL (also known as or associated with a POD—the point of delivery to which you are assigned and connected for access to Qualys).
 +
-Get the API URL from your Qualys account (*Help > About*). The Qualys API URL is listed under *Qualys Scanner Appliances*. When you enter this URL in as the *Qualys API Server URL*, do not include :443.
+Get the API URL from your Qualys account (*Help > About*). The Qualys API URL is listed under *Qualys Scanner Appliances*. 
 +
 image::administration/qualys-azure-api-server-url.png[]
 
@@ -21,6 +21,20 @@ image::administration/qualys-azure-api-server-url.png[]
 * You must enable Vulnerability Management (VM), Cloud Agent (CA), and Asset View (AV) for Qualys users.
 
 * You must enable Qualys API and Qualys EC2 API access for Qualys users.
++
+If you have trouble connecting with Qualys API, you can use the CLI to confirm if API access is available for your account. Replace the username, password, and URL for the Qualys service in the following cURL examples with your credentials to verify the connectivity:
++
+----
+curl -H “X-Requested-With: Curl Sample” -u “Username:Password” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/?action=list&echo_request=1”
+----
++
+----
+curl -k “https://qualysapi.qg1.apps.qualys.in/msp/asset_group_list.php” -u “Username:Password”
+----
++
+----
+curl -k -H “X-Requested-With:curl” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/stats/?action=list” -u “Username:Password”
+----
 
 * You must configure Qualys Sensors for AWS cloud, such as Virtual Scanner Appliances, Cloud Agents, AWS Cloud Connectors, and Internet Scanners. The cloud agents or cloud connectors enable Prisma Cloud to retrieve vulnerability data so that you can correlate this data with your AWS asset inventory. (Refer to the https://www.qualys.com/[Qualys documentation] for more information.)
 
@@ -42,7 +56,9 @@ image::administration/qualys-azure-vm-info.png[]
 
 .. Enter the *Qualys API Server URL (without http[s])*.
 +
-This is the *API URL* for your Qualys account. When you enter this URL, (http(s)) or the port (:443). For example, *qualysapi.qg1.apps.qualys.in*
+This is the *API URL* for your Qualys account. 
++
+(tt:[NOTE]) When you enter this URL, do not include (http(s)) or the port (:443). For example, enter only *qualysapi.qg1.apps.qualys.in*.
 
 .. Enter your Qualys *User Login* and *Password*.
 +
@@ -56,7 +72,7 @@ image::administration/qualys-int-2.png[]
 +
 image::administration/qualys-int-3.png[]
 
-.. The integration will be listed on the *Integrations* page, where you can *View*, *Edit*, or *Delete* the integration from the *Actions* panel. The *Actions* panel provides options to manage integrations on Prisma Cloud.
+.. The integration will be listed on the *Integrations* page, where you can *View*, *Edit*, or *Delete* the integration from the *Actions* panel. 
 +
 image::administration/qualys-int-4.png[]
 
@@ -72,7 +88,7 @@ After you configure Prisma Cloud with access to the Qualys findings, you can use
 config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.source = 'Qualys'
 ----
 +
-The query returns a list of affected assets for further investigation. Select an asset to open the *Finding Types* side panel to see the list of threats or security issues associated with the asset. 
+The query returns a list of affected assets for further investigation. Select an asset to view the *Finding Types* side panel. The panel lists threats or security issues associated with the asset. 
 +
 ... Select *Vulnerability* to see information related to host vulnerabilities.
 +
@@ -90,20 +106,20 @@ image::administration/qualys-audit-trail.png[]
 //image::administration/qualys-network-query.png[]
 //Need to re-visit steps after there is more clarity on the functionality of network query for Qualys. Radhika suggested we comment the steps for now.
 
-. Use the Qualys APIs on the CLI to confirm if API access is enabled for your account.
-+
-If you have trouble connecting with Qualys API, enter your username, password, and the URL for the Qualys service in the following Curl examples:
-+
-----
-curl -H “X-Requested-With: Curl Sample” -u “Username:Password” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/?action=list&echo_request=1”
-----
-+
-----
-curl -k “https://qualysapi.qg1.apps.qualys.in/msp/asset_group_list.php” -u “Username:Password”
-----
-+
-----
-curl -k -H “X-Requested-With:curl” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/stats/?action=list” -u “Username:Password”
-----
+//. Use the Qualys APIs on the CLI to confirm if API access is enabled for your account.
+//+
+//If you have trouble connecting with Qualys API, enter your username, password, and the URL for the Qualys service in the following Curl examples:
+//+
+//----
+//curl -H “X-Requested-With: Curl Sample” -u “Username:Password” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/?action=list&echo_request=1”
+//----
+//+
+//----
+//curl -k “https://qualysapi.qg1.apps.qualys.in/msp/asset_group_list.php” -u “Username:Password”
+//----
+//+
+//----
+//curl -k -H “X-Requested-With:curl” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/stats/?action=list” -u “Username:Password”
+//----
 
 
