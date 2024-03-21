@@ -17,7 +17,6 @@ Get the API URL from your Qualys account (*Help > About*). The Qualys API URL is
 image::administration/qualys-azure-api-server-url.png[]
 
 * You must provide Qualys users with the privileges required to enable the integration using the Manager role, the Unit Manager role, or both. You can modify the Manager role to enable read-only access permission if needed. (Refer to the Qualys documentation for details about https://qualysguard.qualys.com/qwebhelp/fo_portal/user_accounts/user_roles_comparison_vm.htm[User Roles Comparison (Vulnerability Management)].)
-//I couldn’t tell if both roles are required or optional; I think that you can use either or both and that you can confine it to the Unit Manager role and set the Manager role to read-only if you need to have a manager role that does not have permission to enable the integration... but let me know what you think. =)
 
 * You must enable Vulnerability Management (VM), Cloud Agent (CA), and Asset View (AV) for Qualys users.
 
@@ -49,7 +48,7 @@ This is the *API URL* for your Qualys account. When you enter this URL, (http(s)
 +
 image::administration/qualys-int-1.png[]
 
-.. Click *Next*, review the *Summary* and then *Test Integration*.
+.. Click *Next*, review the *Summary*, and then *Test Integration*.
 +
 image::administration/qualys-int-2.png[]
 
@@ -57,32 +56,35 @@ image::administration/qualys-int-2.png[]
 +
 image::administration/qualys-int-3.png[]
 
-.. The integration will be listed on the *Integrations* page, where you can *View*, *Edit*, or *Delete* the integration as needed.
+.. The integration will be listed on the *Integrations* page, where you can *View*, *Edit*, or *Delete* the integration from the *Actions* panel. The *Actions* panel provides options to manage integrations on Prisma Cloud.
 +
 image::administration/qualys-int-4.png[]
 
 . View Qualys host vulnerability data in Prisma Cloud.
 +
 After you configure Prisma Cloud with access to the Qualys findings, you can use RQL queries for visibility into the host vulnerability information collected by Qualys.
-
-.. Use *Config Query* for visibility of host vulnerabilities.
 +
+.. Navigate to *Investigate > Search* page.
++ 
+.. To search for *Config Query*, enter the following RQL query.  
++ 
 `config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.source = 'Qualys'`
 +
-image::administration/qualys-host-vulnerability.png[]
+The query returns a list of affected assets for further investigation. Select an asset to open the *Finding Types* side panel to see the list of threats or security issues associated with the asset. 
 +
-... Click View the *Audit Trail* see the CVE numbers.
+... Select *Vulnerability* to see information related to host vulnerabilities.
++
+image::administration/qualys-host-vulnerability.png[]
+
+... Select *Audit Trail* to see the CVE numbers.
 +
 image::administration/qualys-audit-trail.png[]
 
-//... Click *Host Findings* for information related to vulnerabilities. The Source column in Host Findings displays the Qualys icon to help you easily identify the source for the vulnerability findings.
-//+
-//image::administration/qualys-host-findings.png[]
-//I think this is supposed to be substep “b” (otherwise, there should not be a substep “a” above). Then you can mimic substep a text to say “Use Network Query to...” and then can remove this bold entry here--redundant.
-
-.. Use *Network Query* for visibility of host vulnerabilities.
+.. To search for *Network Query*, enter the following RQL query.
 +
 `network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' AND finding.source = 'Qualys' )`
++
+The query returns a visual representation of the affected assets for further investigation.
 +
 image::administration/qualys-network-query.png[]
 
