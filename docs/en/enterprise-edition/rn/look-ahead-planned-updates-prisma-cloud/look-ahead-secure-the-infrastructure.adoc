@@ -19,6 +19,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<policy-updates>>
 //* <<policy-updates-iam>>
 * <<api-ingestions>>
+* <<rest-api-updates>>
 * <<deprecation-notices>>
 
 //[#announcement]
@@ -121,31 +122,31 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
-|tt:[Update] *Placeholder*
+|*AWS MFA is not enabled on Root account*
 
 tt:[*24.4.1*]
 
-//RLP-
+//RLP-135019
 
-|*Changes—* .
+|*Changes—* The RQL has been updated to be inline with standard conventions followed by Prisma Cloud.
 
-*Severity—* 
+//*Severity—* 
 
-*Policy Type—* 
+*Policy Type—* Config
 
 *Current RQL—*
 
 ----
-
+config from cloud.resource where cloud.type = 'aws' AND cloud.service = 'IAM' AND api.name  = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and mfa_active is false and arn does not contain gov:'
 ----
 
 *Updated RQL—*
 
 ----
-
+config from cloud.resource where cloud.type = 'aws' AND api.name  = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and mfa_active is false and arn does not contain gov:'
 ----
 
-*Impact—* .
+*Impact—* None.
 
 |===
 
@@ -164,13 +165,120 @@ tt:[*24.4.1*]
 
 Prisma Cloud will update the `aws-apigateway-method` API to exclude the `methodIntegration.cacheNamespace` field from the JSON because it changes frequently causing too many resource snapshots.
 
-//*AWS CodeCommit*
-//RLP-120745?
-//*aws-code-commit-approval-rule-template*
-//Additional permissions required:
-//* `codecommit:ListApprovalRuleTemplates`
-//* `codecommit:GetApprovalRuleTemplate`
-//The Security Audit role includes the permissions.
+|*Amazon GuardDuty*
+//RLP-134711
+
+|*aws-guardduty-organization-configuration*
+
+Additional permissions required:
+* `guardduty:ListDetectors`
+* `guardduty:DescribeOrganizationConfiguration`
+
+The Security Audit role includes the `guardduty:ListDetectors` permission.
+You must manually add the `guardduty:DescribeOrganizationConfiguration` permission to the CFT template to enable it.
+
+|*Amazon Comprehend*
+//RLP-134166
+
+|*aws-comprehend-document-classifier-summary*
+
+Additional permission required:
+
+* `comprehend:ListDocumentClassifierSummaries`
+
+The Security Audit role includes the permission.
+
+|*Amazon Comprehend*
+//RLP-134162
+
+|*aws-comprehend-document-classifier*
+
+Additional permission required:
+
+* `comprehend:ListDocumentClassifiers`
+
+The Security Audit role includes the permission.
+
+|*Azure Data Factory*
+//RLP-129307
+
+|*azure-data-factory-v2-integration-runtimes*
+
+Additional permissions required:
+
+* `Microsoft.DataFactory/factories/read`
+* `Microsoft.DataFactory/factories/integrationruntimes/read`
+
+The Reader role includes the permissions.
+
+|*Azure Active Directory*
+//RLP-122229
+
+|*azure-active-directory-directoryrole-definition*
+
+Additional permissions required:
+
+* `EntitlementManagement.Read.All`
+* `RoleManagement.Read.All`
+
+The Global Reader role includes the permissions.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124671
+
+|*gcloud-vertex-ai-aiplatform-deployment-resource-pool*
+
+Additional permission required:
+
+* `aiplatform.deploymentResourcePools.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124670
+
+|*gcloud-vertex-ai-aiplatform-nas-job*
+
+Additional permission required:
+
+* `aiplatform.nasJobs.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124647
+
+|*gcloud-vertex-ai-aiplatform-batch-prediction-job*
+
+Additional permission required:
+
+* `aiplatform.batchPredictionJobs.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-124013
+
+|*gcloud-vertex-ai-aiplatform-model*
+
+Additional permission required:
+
+* `aiplatform.models.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Vertex AI AIPlatform*
+//RLP-121321
+
+|*gcloud-vertex-ai-aiplatform-specialist-pool*
+
+Additional permission required:
+
+* `aiplatform.specialistPools.list`
+
+The Viewer role includes the permission.
+
 
 |===
 

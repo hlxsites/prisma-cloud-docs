@@ -111,8 +111,27 @@ tt:[24.3.2]
 
 //RLP-130605
 
-|A new *Use Tenant Specific External ID* option in now available under *Advanced Settings* during account configuration while onboarding https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-org#:~:text=Click%20Next.-,Configure%20Account.,-Enter%20Account%20ID[AWS Organization] or https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-account#:~:text=Click%20Next.-,Configure%20Account.,-Enter%20an%20Account[AWS Accounts] to Prisma Cloud. When you select *Use Tenant Specific External ID*, it enables you to have the single tenant level external ID for that particular AWS account once you download the CFT. 
+|A new *Use Tenant Specific External ID* option in now available under *Advanced Settings* during account configuration while onboarding https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-org#:~:text=Click%20Next.-,Configure%20Account.,-Enter%20Account%20ID[AWS Organization] or https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-account#:~:text=Click%20Next.-,Configure%20Account.,-Enter%20an%20Account[AWS Accounts] to Prisma Cloud. When you select *Use Tenant Specific External ID*, it enables you to have the single tenant level external ID for that particular AWS account once you download the CFT. You can use this capability both while onboarding a new as well as editing an existing account or organization.
 
+|tt:[Update] *Policy Subtype Column Included in Downloaded .csv*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.3.2]
+
+//RLP-131575
+
+|On the Governance page if you filter by *Policy Subtype*, the column is now also displayed in the resulting .csv file when you select *Download policies data > Download detailed view*. Previously, the *Policy Subtype* column was displayed in the downloaded csv only on selecting *Download policies data > Download current view*.
+
+|tt:[Update] *Resource Type Column Included in Download all filtered assets .csv*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.3.2]
+
+//RLP-132702, RLP-131241
+
+|In *Asset Explorer*, if you select *Download all filtered assets*, the resulting .csv file now includes a *Resource Type* column that lists the asset type. Previously, the  column was displayed only on selecting *Download the current table*.
 
 |*Prisma Cloud Code Security Scanner Extension Available for VS Code*
 
@@ -189,7 +208,7 @@ Additional permission required:
 
 * `account:GetContactInformation`
 
-//The Security Audit role includes the permission.
+The Security Audit role includes the permission.
 
 |*AWS Backup*
 
@@ -499,13 +518,13 @@ Ensuring limiting privileges according to business requirements can help in rest
 config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and Action contains :* and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X;
 ----
 
-|*AWS Redshift cluster instance configured with public accessibility and using a commonly used master username*
+|*AWS Redshift cluster with commonly used master username and public access setting enabled*
 
 tt:[*24.3.2*]
 
 //RLP-132006
 
-|Identifies AWS Redshift clusters with the 'publicly accessible' setting enabled and master usernames set to commonly used options like 'awsuser', 'administrator', or 'admin'. Making Amazon Redshift clusters publicly accessible heightens the risk of unauthorized access and Distributed Denial of Service (DDoS) attacks. Using standard usernames increases the vulnerability to brute-force password attacks by potential intruders. As a recommended security measure, it is advised to disable the 'publicly accessible' parameter for Redshift clusters. Furthermore, to reduce the possibility of authentication-based attacks, it is suggested to customize the master username.
+|Identifies AWS Redshift clusters configured with commonly used master usernames like 'awsuser', 'administrator', or 'admin', and the public access setting is enabled. AWS Redshift, a managed data warehousing service typically stores sensitive and critical data. Allowing public access increases the risk of unauthorized access, data breaches, and potential malicious activities. Using standard usernames increases the risk of password brute-force attacks by potential intruders. As a recommended security measure, it is advised not to use commonly used usernames and to disable public access for the Redshift cluster.
 
 *Policy Severity—* Informational
 
@@ -537,7 +556,7 @@ tt:[*24.3.2*]
 
 //RLP-131340
 
-|Identifies s3 buckets that have CloudTrail logs using a Customer Managed Key (CMK) that has been scheduled for deletion. Deleting keys in AWS KMS is destructive and potentially dangerous and might be related to a defense evasion technique used by adversaries. After a key is deleted, you can no longer decrypt the data that was encrypted under that key, which impacts the CloudTrail logs and causes them to become unrecoverable. It is recommended to regularly monitor the key used for encryption should not be accidentally deleted.
+|Identifies AWS CloudTrail S3 buckets encrypted with Customer Managed Key (CMK) that is scheduled for deletion. CloudTrail logs contain account activity related to actions across your AWS infrastructure. These log files stored in Amazon S3 are encrypted by AWS KMS keys. Deleting keys in AWS KMS that are used by CloudTrail is a common defense evasion technique and could be a potential ransomware attacker activity. After a key is deleted, you can no longer decrypt the data that was encrypted under that key, which helps the attacker to hide their malicious activities. It is recommended to regularly monitor the key used for encryption to prevent accidental deletion.
 
 *Policy Severity—* High
 
@@ -547,15 +566,15 @@ tt:[*24.3.2*]
 config from cloud.resource where cloud.type = 'aws' AND api.name= 'aws-s3api-get-bucket-acl' AND json.rule = (sseAlgorithm contains "aws:kms" or sseAlgorithm contains "aws:kms:dsse") and kmsMasterKeyID exists as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyManager equal ignore case CUSTOMER and keyMetadata.keyState contains PendingDeletion as Y; config from cloud.resource where api.name = 'aws-cloudtrail-describe-trails' as Z; filter '$.X.kmsMasterKeyID contains $.Y.key.keyArn and $.Z.s3BucketName equals $.X.bucketName'; show X;
 ----
 
-|*AWS SNS Topic not encrypted by Key Management Service (KMS) using a Customer Managed Key (CMK)*
+|*AWS SNS Topic not encrypted by Customer Managed Key (CMK)*
 
 tt:[*24.3.2*]
 
 //RLP-133587
 
-|Identifies AWS SNS Topics that are not encrypted by Key Management Service (KMS) using a Customer Managed Key (CMK). It is a best practice to use customer managed KMS Keys to encrypt your SNS Topics. It gives you full control over the encrypted data by protecting the contents of topic messages.
+|Identifies AWS SNS Topics that are not encrypted by Customer Managed Key (CMK). AWS SNS Topics are used to send notifications to subscribers and might contain sensitive information. SNS Topics are encrypted by default by a AWS managed key but users can specify CMK to get enhanced security, control over the encryption key and also comply with any regulatory requirements. As a security best practice use of CMK to encrypt your SNS Topics is advisable as it gives you full control over the encrypted data.
 
-*Policy Severity—* Informational
+*Policy Severity—* Low
 
 *Policy Type—* Config
 
@@ -569,7 +588,7 @@ tt:[*24.3.2*]
 
 //RLP-131815
 
-|Identifies AWS Default VPCs that are being used. A default VPC is created for your AWS account when you create an AWS account. It includes a default security group and a default network access control list (NACL). Default VPCs have some limitations that might not be suitable for all use cases. As best practice, it is recommended to use a custom VPC configuration based on your security and networking requirements instead of using the default VPC, so that you can have full control over the VPC network.
+|Identifies AWS Default VPCs that are being used. AWS creates a default VPC automatically upon the creation of your AWS account with a default security group and network access control list (NACL). Using AWS default VPC can lead to limited customization and security concerns due to shared resources and potential misconfigurations, hindering scalability and optimal resource management. As a best practice, using a custom VPC with specific security and network configuration provides greater flexibility and control over your architecture.
 
 *Policy Severity—* Informational
 
@@ -585,7 +604,7 @@ tt:[*24.3.2*]
 
 //RLP-131577
 
-|Identifies AWS EKS clusters that does not have secrets encryption enabled. Using secrets encryption for your Amazon EKS cluster allows you to deploy a defense in depth strategy for Kubernetes applications by encrypting Kubernetes secrets with a AWS KMS key that you define and manage. It is recommended to  enable secrets encryption on your EKS clusters.
+|Identifies AWS EKS clusters that do not have secrets encryption enabled. AWS EKS cluster secrets are, by default, stored unencrypted in the API server's underlying data store (etcd). Anyone with direct access to etcd or with API access can retrieve or modify the secrets. Using secrets encryption for your Amazon EKS cluster allows you to protect sensitive information such as passwords and API keys using Kubernetes-native APIs. It is recommended to enable secrets encryption to ensure its security and reduce the risk of unauthorized access or data breaches.
 
 *Policy Severity—* Low
 
@@ -633,7 +652,7 @@ tt:[*24.3.2*]
 
 //RLP-131748
 
-|Identifies Postgres RDS clusters with query logging disabled. The queries executed on RDS must be logged for monitoring and troubleshooting. To obtain adequate logs, an RDS cluster should have a non-default parameter group and two parameters configured: log_statement and log_min_duration_statement.
+|Identifies RDS Postgres clusters with query logging disabled. In AWS RDS PostgreSQL, by default, the logging level captures login failures, fatal server errors, deadlocks, and query failures. To log data changes, we recommend enabling cluster logging for monitoring and troubleshooting. To obtain adequate logs, an RDS cluster should have log_statement and log_min_duration_statement parameters configured. It is a best practice to enable additional RDS cluster logging, which will help in data change monitoring and troubleshooting.
 
 *Policy Severity—* Informational
 
@@ -904,34 +923,8 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-stora
 
 *Impact—* Low. Existing alerts on buckets with the prevent public access feature enabled at the bucket level will be resolved. Alerts will be generated against the policy violations.
 
-
-2+|*Policy Updates—Metadata*
-
-|
-
-//tt:[*24.3.2*]
-
-//RLP-
-
-|
-//*Changes—* The policy name is updated.
-
-//*Current Policy Name—* 
-
-//*Updated Policy Name—* 
-
-//*Current Policy Description—* 
-
-//*Updated Policy Description—* 
-
-//*Severity—* 
-
-//*Policy Type—* 
-
-//*Impact—* No impact on alerts.
-
-
 |===
+
 
 [#new-compliance-benchmarks-and-updates]
 === New Compliance Benchmarks and Updates
