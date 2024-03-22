@@ -11,7 +11,7 @@ Learn what's new on Prisma® Cloud in March 2024.
 * <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
 //* <<changes-in-existing-behavior>>
-//* <<deprecation-notices>>
+* <<deprecation-notice>>
 
 [#announcement]
 === Announcement
@@ -77,20 +77,6 @@ tt:[24.3.2]
 
 image::gcp-workspace.png[]
 
-
-//*Support for Identifying Internet-exposed Kubernetes Services*
-//tt:[Secure the Infrastructure]
-//tt:[24.3.2]
-//CNS-9431
-//Prisma Cloud CNA engine correlates the data from the VPC configuration (overlay) with the data of the Kubernetes network configuration (underlay) to establish the full path from the internet to the exposed Kubernetes Service and the underlying deployment or endpoints associated with the exposed service.
-//This enables you to investigate:
-//* Internet exposed instances, interfaces, PaaS services, or workloads
-//* Overly permissive security groups attached to sensitive workloads 
-//* Sensitive database workloads exposed to the internet
-//* Object Storage buckets with sensitive data exposed through network connectivity to external cloud accounts or networks
-//* Kubernetes Services that are internet exposed and the underlying endpoints and associated deployments
-//<details & link to topic tba> 
-
 |*Save Widget Configurations as Saved Views*
 
 tt:[Secure the Infrastructure]
@@ -106,6 +92,28 @@ tt:[24.3.2]
 
 Create https://docs.prismacloud.io/en/enterprise-edition/content-collections/alerts/saved-views[Saved Views] to store select widget configurations for a customizable view of your security posture.
 
+
+|*Alert Notification Delay Support for Push Integration Methods*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.3.2]
+
+//RLP-127589
+
+|The https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/configure-external-integrations-on-prisma-cloud/integrations-feature-support[*Alert Notification Delay*] capability is now supported for all external integrations that use the *Push* Integration Method.
+
+|tt:[Update] *Advanced Settings Option in AWS Cloud Account Onboarding*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.3.2]
+
+//RLP-130605
+
+|A new *Use Tenant Specific External ID* option in now available under *Advanced Settings* during account configuration while onboarding https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-org#:~:text=Click%20Next.-,Configure%20Account.,-Enter%20Account%20ID[AWS Organization] or https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-account#:~:text=Click%20Next.-,Configure%20Account.,-Enter%20an%20Account[AWS Accounts] to Prisma Cloud. When you select *Use Tenant Specific External ID*, it enables you to have the single tenant level external ID for that particular AWS account once you download the CFT. 
+
+
 |*Prisma Cloud Code Security Scanner Extension Available for VS Code*
 
 tt:[Secure the Source]
@@ -117,6 +125,18 @@ tt:[24.3.2]
 |The Prisma Cloud Code Security scanner extension is now supported in https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/ides/connect-vscode[Visual Studio Code], offering convenient access to robust security scanning features directly within your coding environment, that allows you to detect and address security issues, including IaC misconfigurations, SCA vulnerabilities, secrets exposure, and license compliance. You can download the extension from the Visual Studio Code Marketplace or through the IDE extensions feature.
 
 |===
+
+//*Support for Identifying Internet-exposed Kubernetes Services* - PM informed it is still Beta & may GA in 4.1
+//tt:[Secure the Infrastructure]
+//tt:[24.3.2]
+//CNS-9431
+//Prisma Cloud CNA engine correlates the data from the VPC configuration (overlay) with the data of the Kubernetes network configuration (underlay) to establish the full path from the internet to the exposed Kubernetes Service and the underlying deployment or endpoints associated with the exposed service.
+//This enables you to investigate:
+//* Internet exposed instances, interfaces, PaaS services, or workloads
+//* Overly permissive security groups attached to sensitive workloads 
+//* Sensitive database workloads exposed to the internet
+//* Object Storage buckets with sensitive data exposed through network connectivity to external cloud accounts or networks
+//* Kubernetes Services that are internet exposed and the underlying endpoints and associated deployments
 
 
 [#api-ingestions]
@@ -446,13 +466,13 @@ tt:[*24.3.2*]
 config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-rds-describe-db-instances' as X; config from cloud.resource where api.name = 'aws-rds-describe-db-parameter-groups' AND json.rule = (((dbparameterGroupFamily starts with "postgres" or dbparameterGroupFamily contains "sqlserver") and (['parameters'].['rds.force_ssl'].['parameterValue'] does not equal 1 or ['parameters'].['rds.force_ssl'].['parameterValue'] does not exist)) or ((dbparameterGroupFamily starts with "mariadb" or dbparameterGroupFamily starts with "mysql") and (parameters.require_secure_transport.parameterValue does not equal 1 or parameters.require_secure_transport.parameterValue does not exist)) or (dbparameterGroupFamily contains "db2-ae" and (parameters.db2comm.parameterValue does not equal ignore case "SSL" or parameters.db2comm.parameterValue does not exist))) as Y; filter '$.X.dbparameterGroups[*].dbparameterGroupArn equals $.Y.dbparameterGroupArn' ; show X;
 ----
 
-|*AWS Cognito service role does not have Cognito identity pool verification*
+|*AWS Cognito service role does not have identity pool verification*
 
 tt:[*24.3.2*]
 
 //RLP-132945
 
-|Identifies an issue with the trust policy of the AWS Cognito service role, as it lacks a condition restricting access to the current identity pool. The 'aud' claim in user pool authentication contains the client_id requested by the user. The absence of the 'aud' claim in the service role's configuration allows users with Cognito-signed tokens to request access across user pools without restriction. This oversight increases the risk of unauthorized access, compromising access controls and elevating the potential for data breaches within the AWS environment. To address this concern and bolster security measures, it is advisable to implement proper validation of the 'aud' claim.
+|Identifies the AWS Cognito service role that does not have identity pool verification. AWS Cognito is an identity and access management service for web and mobile apps. AWS Cognito service roles define permissions for AWS services accessing resources. The 'aud' claim in a cognito service role is an identity pool token that specifies the intended audience for the token. If the aud claim is not enforced in the cognito service role trust policy, it could potentially allow tokens issued for one audience to be used to access resources intended for a different audience. This oversight increases the risk of unauthorized access, compromising access controls and elevating the potential for data breaches within the AWS environment. It is recommended to implement proper validation of the 'aud' claim by adding the 'aud' in the Cognito service role trust policy.
 
 *Policy Severity—* Low
 
@@ -468,7 +488,8 @@ tt:[*24.3.2*]
 
 //RLP-132112
 
-|Identifies the AWS Cognito service role has wide privileges and does not validate that the user is authenticated using the 'amr' field. This oversight allows anonymous users with valid tokens to assume the role, potentially exploiting its broad privileges and disrupting workflows. To mitigate this, it's crucial to limit the AWS policies to not have a '*' wildcard in the action and resource section of the policy statement and roles. Ensuring limiting privileges according to business requirements can help in restricting unauthorized access and misuse of resources.
+|Identifies the AWS Cognito service role that has wide privileges and does not validate user authentication. AWS Cognito is an identity and access management service for web and mobile apps. AWS Cognito service roles define permissions for AWS services accessing resources. The 'amr' field in the service role represents how the user was authenticated. if the user was authenticated using any of the supported providers, the 'amr' will contain 'authenticated' and the name of the provider. Not validating the 'amr' field can allow an unauthenticated user (guest access) with a valid token signed by the identity-pool to assume the Cognito role. If this Cognito role has a '*' wildcard in the action and resource, it could lead to lateral movement or unauthorized access. 
+Ensuring limiting privileges according to business requirements can help in restricting unauthorized access and misuse of resources. It is recommended to limit the Cognito service role used for guest access to not have a '*' wildcard in the action or resource.
 
 *Policy Severity—* Low
 
@@ -886,29 +907,29 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-stora
 
 2+|*Policy Updates—Metadata*
 
-|*AWS VM instance in running state that is internet reachable with unrestricted access (0.0.0.0/0)*
+|
 
-tt:[*24.3.2*]
+//tt:[*24.3.2*]
 
-//RLP-124917
-|*Changes—* The policy name is updated.
-//The Attack Path policy that has this CNA policy and needs to be updated is: Unauthorized access risk due to a publicly exposed and vulnerable AWS EC2 instance
+//RLP-
 
-*Current Policy Name—* AWS VM instance in running state that is internet reachable with unrestricted access (0.0.0.0/0)
+|
+//*Changes—* The policy name is updated.
 
-*Updated Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)
+//*Current Policy Name—* 
 
-*Current Policy Description—* .
+//*Updated Policy Name—* 
 
-*Updated Policy Description—* .
+//*Current Policy Description—* 
 
-*Severity—* Critical
+//*Updated Policy Description—* 
 
-*Policy Type—* Attack Path
+//*Severity—* 
 
-*Impact—* No impact on alerts.
+//*Policy Type—* 
 
-<details tba>
+//*Impact—* No impact on alerts.
+
 
 |===
 
@@ -961,17 +982,52 @@ tt:[*24.3.2*]
 |*Change*
 |*Description*
 
-|*Updates related to new features introduced in CDEM*
+|*Asset Explorer APIs*
 
 tt:[24.3.2]
 
-|Placeholder for RLP-132431
+//RLP-128520
 
-//tt:[Secure the Runtime]
+|The https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[Get Asset - POST /uai/v1/asset] endpoint now includes an array of IP addresses in the response.
 
-//RLP-134242, RLP-132431-features released in multiple versions. "RLP-133706-Bulk CSV download" and "RLP-133711-Vulnerability sidecar & Top Risks widget" are in 24.3.2.
-//Check with Abinaya on RLP-134242-Flowlog integration that was supposed to go in 24.2.2 and Custom DUNS & Domains while subscribing to CDEM in 24.2.1
-//Check with James D RLP-134236
+|*AWS Cloud Account APIs*
+
+tt:[24.3.2]
+
+//RLP-132146
+
+|The following parameters are added to https://pan.dev/prisma-cloud/api/cspm/add-aws-cloud-account/[Add Cloud Account (AWS)], https://pan.dev/prisma-cloud/api/cspm/update-aws-cloud-account/[Update Cloud Account (AWS)], and https://pan.dev/prisma-cloud/api/cspm/get-aws-cloud-account-status/[Get Cloud Account Status (AWS)]:
+
+* customMemberRoleNameEnabled
+* skipOverrideMemberRoleName
+* unifiedCftDisabled
+* memberRoleName
+* useTenantExternalId
+
+|*CDEM APIs*
+
+tt:[24.3.2]
+
+//RLP-133709, RLP-133706
+
+|The following CDEM endpoints are available to snooze, unsnooze, download your unmanaged assets, and get the traffic flow logs:
+
+* Snooze Unmanaged Assets - https://pan.dev/prisma-cloud/api/cspm/asset-snooze/[POST /asm/api/v1/asset/snooze]
+* Unsnooze Unmanaged Assets - https://pan.dev/prisma-cloud/api/cspm/asset-unsnooze/[POST /asm/api/v1/asset/reopen]
+* Download Unmanaged Assets - https://pan.dev/prisma-cloud/api/cspm/asset-download/[POST /asm/api/v1/asset/download]
+* Get Flow Logs of Unmanaged Assets - https://pan.dev/prisma-cloud/api/cspm/fetch-flowlog-relationships/[GET /asm/api/v1/asset/{assetId}/flowlog-relationships]
+
+|*GCP Cloud Account APIs*
+
+tt:[24.3.2]
+
+//RLP-132438
+
+|The following endpoints now support Google Workspace account type to onboard and update the onboarded Google Workspace account to Prisma Cloud:
+
+* https://pan.dev/prisma-cloud/api/cspm/add-gcp-cloud-account/[Add Cloud Account (GCP)]
+* https://pan.dev/prisma-cloud/api/cspm/update-gcp-cloud-account/[Update Cloud Account (GCP)]
+* https://pan.dev/prisma-cloud/api/cspm/get-gcp-cloud-account-status/[Get Cloud Account Status (GCP)]
 
 
 |*IAM APIs*
@@ -982,17 +1038,48 @@ tt:[24.3.2]
 
 |A new https://pan.dev/prisma-cloud/api/cspm/permission-search-v-4/[Get Permissions V4 - POST /iam/api/v4/search/permission] endpoint is now available to get the permissions grouped by certain fields.
 
-|*RBAC updated for two APIs for Widgets*
-//Placeholder text & description
+|*Widgets APIs*
 
 tt:[24.3.2]
 
 //RLP-128178
 
-|The following two APIs that were previously accessible only to System Admins are now accessible to roles that have the `Alerts_READ` permission:
+|The following Widget API endpoints are now accessible to roles with the `Alerts_READ` permission:
 
-* `/api/v1/metrics/alert-count-by-resolution-reason`
-* `/api/v1/metrics/alert-mean-resolution-time`
+* https://pan.dev/prisma-cloud/api/cspm/value-widgets-alert-metrics-resolution-reason/[`/api/v1/metrics/alert-count-by-resolution-reason`]
+* https://pan.dev/prisma-cloud/api/cspm/value-widgets-alert-metrics/[`/api/v1/metrics/alert-mean-resolution-time`]
+
+//tt:[Secure the Runtime]
+//RLP-134242, RLP-132431-features released in multiple versions. "RLP-133706-Bulk CSV download" and "RLP-133711-Vulnerability sidecar & Top Risks widget" are in 24.3.2.
+//Check with Abinaya on RLP-134242-Flowlog integration that was supposed to go in 24.2.2 and Custom DUNS & Domains while subscribing to CDEM in 24.2.1
+//Check with James D RLP-134236
+
+|===
+
+[#deprecation-notice]
+=== Deprecation Notice
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*Redundant V1 Errors Endpoints in Application Security*
+
+//RLP-126597
+
+tt:[24.3.2]
+ 
+|The following v1 errors endpoints in Application Security for which v2 endpoints were released previously are now deprecated:
+
+* https://pan.dev/prisma-cloud/api/code/get-errors-in-file/[List All Errors in File Path]
+* https://pan.dev/prisma-cloud/api/code/get-errors-files/[Lists Files with Errors]
+
+You must use the following APIs released previously that provide the same functionality:
+
+* https://pan.dev/prisma-cloud/api/code/get-periodic-findings/[Get Code Issues from Periodic Scans]
+* https://pan.dev/prisma-cloud/api/code/get-cicd-findings/[Get Code Issues from Pull Requests Scans and CICD Runs]
+
 
 
 |===
