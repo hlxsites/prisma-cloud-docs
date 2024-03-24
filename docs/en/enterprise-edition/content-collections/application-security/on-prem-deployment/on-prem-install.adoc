@@ -1,1 +1,140 @@
+[.task]
+
 == On-Premises Prisma Cloud Scan Installation
+
+This section describes how to install Prisma Cloud on-premises scanning capabilities. 
+
+*Best practice*: Create a dedicated folder to store all the files that will be downloaded during the installation process.
+
+[#on-prem-install]
+=== Install Prisma Cloud self-hosted scanner 
+
+[.procedure]
+
+. Fulfill the on-prem-requirements.adoc[prerequisites] for installing Prisma Cloud self-hosted scanning.
+
+. In *Application Security*, select *Settings* > *Advanced deployments* > *On-Prem Connection*.
++
+image::application-security/on-premim-install1.1.png[]
++
+The *Secure with an on-Prem Connection* step of the on-premises installation wizard (installation wizard) is displayed.
++
+image::application-security/on-prem-wizard-step1.png[]
+
+. Fill in the provided fields:
++
+* *On Prem Name*: An alias which serves as the unique name for the integration
+* *K8s Namespace*: A kubernetes namespace. If possible, create a new and unique namespace to facilitate integration with Prisma Cloud
+* *Access Key*: The Prisma Cloud Access key generated and copied when fulfilling the prerequisites
+* *Secret Key*: The Prisma Cloud Secret key generated and copied when fulfilling the prerequisites. Prisma Cloud does not store the Secret key  
+
+. *Select Next*.
++
+The *Deploy a Dedicated Image* step of the installation wizard is displayed.
++
+image::application-security/on-prem-wizard-step2.png[]
+
+. Deploy a dedicated image.
+
+.. The following fields are automatically filled through auto-detection. If they are not displayed, fill in the values manually:
++
+* *Operating System*: Select your machine Operating System
+* *CPU Architecture*: Select your machine CPU architecture 
+
+.. Download the CLI: Click the *Download the CLI* link. 
+
+.. Recommended: Validate compatibility with the system versions for K8s, Helm OpenSSL and other dependencies. run: `./cas-on-prem-cli versions`.
++
+image::application-security/on-prem-k8s-v-compat.png[]
+
+.. Copy the script from the CLI Initiation Command field and run it in the CLI.
++
+A *values.yaml* file is created and stored in the same current working directory where you executed the command, that is the same folder you initially created. 
++
+Example
++
+`cas-on-prem-cli init --alias "on-prem-local" --prismaId "[Prisma ID]" --namespace "cas-ns" --baseUrl "undefined" --accessKey "{ACCESS_KEY}" --secretKey "{SECRET_KEY}"`.
++
+NOTES
+
+* Recommended: Run all scripts in the folder that was initially created (see *Best Practice* above)
+* Values in the script are pre-populated
+* Before copying and running the *CLI Initiation Command* from the field in the CLI, ensure that the executable has the necessary permissions. For example, `chmod +x ./cas-on-prem-cli`
+
+.. Open the *values.yaml* file and customize the storage class, size, and additional parameters based on the specific requirements of the VCS repository size and developer activity.
++
+Recommended: Review all parameters specified in the values.yaml file.
+
+.. Install Prisma Cloud Helm on your Kubernetes cluster by executing the script provided in the Helm Command field. Ensure you run this script in the directory where the *values.yaml* file is located.
++
+NOTE: The token will expire within 12 hours after running the init command; therefore, it is crucial to run the  Helm command within this time period.
++
+Example
++
+`helm install cas-on-prem oci://469330042197.dkr.ecr.us-east-1.amazonaws.com/cas-external-on-prem-prod --values values.yaml --namespace "dfbgdfbg"`.
++
+Legend
++
+* `Cas-on-prem`: The release name for the Helm chart
+* `oci://469330042197.dkr.ecr.us-east-1.amazonaws.com/cas-external-on-prem-prod`: This is the AWS ECR (Elastic Container Registry) URL and the name of the Helm chart. In this case, it's using the Open Container Initiative (OCI) protocol. The URL points to the location of the Helm chart that will be installed
+* `-values values.yaml`: This flag specifies the YAML file (values.yaml) that contains configuration values for the Helm chart  
+* `--namespace "cas-ns"`: This flag sets the Kubernetes namespace for the deployment
+
+.. Optional: Monitor the installation process: Run: `kubectl get pods --namespace {the-chosen-namespace} -w`.
++
+image::application-security/on-prem-monitor.png[]
+
+.. Select *Done* in the 'Deploy a Dedicated Image' step of the wizard to complete the installation process.
+
+. Validate connectivity.
+
+.. Access the installation (see step *1* above) > select your installation > *the Secure with an on-Prem Connection* step of the installation wizard opens (see 'step 2' above).
+
+.. The health checks presented in the UI wizard are automatically conducted by Prisma Cloud. These checks validate the success of tests for the workload manager, ensuring successful connectivity and the establishment of a connection.
++
+NOTE: The validation process may require up to 20 minutes before obtaining a correct health check result. In the event of a health check failure, you can initiate a manual health check by clicking the refresh icon.
++
+image::application-security/on-prem-validate2.0.png[]
+
+.. Additional *Health* checks: For additional health checks, refer to xref: ../manage-network-tunnel/transporter-health-check.adoc[Health Checks for Transporter].
+
+
+[.task]
+
+[#integrate-on-prem-vcs]
+=== Integrate the on-prem installation with your VCS
+
+The next step after installing Prisma Cloud self-hosted scanning, is to integrate your VCS with Prisma Cloud. 
+
+[.procedure]
+
+. In *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers* > select your integrated self managed VCS instance (such as GitHub Server).
++
+The *Configure Domain* step of the installation wizard is displayed.
++
+image::application-security/on-prem-int-config-domain-wizard.png[]
+
+. Select *On-prem* from the 'Choose advanced deployment' field.
+
+. Select an alias from the *Alias* field.
++
+NOTE: Alias values available for selection are the on-prem names that were provided during ‘step 2’ of the installation process above.
+
+. Complete the integration process; refer to the xref:../get-started/connect-code-and-build-providers/code-repositories/code-repositories.adoc[documentation] specific to your self-managed VCS for instructions on how to proceed with the integration process.
+
+////
+NOTE: During the beta phase, when integrating your VCS, the URLs pre-populated in the Register OAuth App step of the installation wizard are Prisma server URLs. If you wish to configure the setup so that the VCS contacts the On-Prem deployment instead of the Prisma server, please contact our support team for assistance.
+////
+
+
+
+
+
+
+
+
+
+
+
+
+
