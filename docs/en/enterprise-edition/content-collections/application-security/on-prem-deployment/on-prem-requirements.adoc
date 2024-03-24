@@ -1,1 +1,82 @@
-=== On-Premises Scanning Deployment Requirements
+== On-Premises Scanning Deployment Requirements
+
+These requirements must be fulfilled in order to install the Prisma Cloud scanner on your on-premises environment. These requirements are provided as a recommended base point, which you should customize according to the specific needs and conditions of your environment.
+
+[cols="1,1,2", options="header"]
+
+|===
+
+2+|What you need| |Description
+
+.2+|Subscribe to and enable Prisma Cloud modules
+|Subscribe to Application Security on Prisma Cloud
+|Refer to xref:docs../get-started/enable-application-security.adoc[Enable Application Security]
+
+|
+|Enable Application Security modules
+|Subscribe to the modules that you require. *Supported modules include*:. For more information refer to xref:../get-started/application-security-license-types.adoc [Application Security License Types]
+
+|xref:../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key]
+|
+|The access key, which includes a Key ID and secret, enables access to Prisma Cloud +
+*Permissions*: *Administrator* permissions are required to create the access key
+
+|Software requirements
+.+5|Kubernetes cluster
+a|* Version 1.23 and above
+* The user must have full access to the namespace they select for the deployment
+
+|
+|kubectl
+a|. Install https://kubernetes.io/docs/tasks/tools/[kubectl] on your machine
+. Connect it to the Kubernetes cluster
+
+|
+|OpenSSL
+|Install https://www.openssl.org/source/[SSL] on your machine 
+
+|
+|Helm
+|Install https://helm.sh/docs/intro/install/[Helm] version 3.0 and above on your machine
+
+|
+|Operating System
+|
+*Mac OS* or *Linux* +
+NOTE: The above requirement pertains specifically to the machine responsible for the initial setup (the 'init' creation machine) and not to the Kubernetes cluster itself
+
+.+2|Hardware requirements  for the Kubernetes cluster as per load requirements
+|CPU and Memory requirements 
+|32 CPUs and 35 GB memory for all deployments
+
+|
+|Storage requirements
+a|* Persistent storage: 90 GB (2 * 30 GB + 3 * 10 GB): Two replica instances, each with 30 GB. Three replica instances specifically for logs, each with 10 GB
+* Ephemeral storage: 10 GB
+
+|Network access
+|
+a|Ensure network access from our Prisma Cloud deployment, which is running on your Kubernetes cluster, to the following destinations:
+* Prisma Cloud 
+** UI/API: xref:../../../../get-started/console-prerequisites.adoc[Whitelist the Prisma Cloud API] (Prisma server) in order to perform authentication and to send webhook events 
+** xref:manage-network-tunnel/manage-network-tunnel.adoc[Transporter Server]
+*Your VCS system
+* AWS ECR (Elastic Container Registry): To Access Prisma Cloud's AWS Elastic Container Registry (ECR), you must allow outgoing traffic. The IP range required for access is managed by AWS. For enhanced security, you can establish a more secure connection using AWS PrivateLink or alternative solutions
+
+|===
+
+=== On-Prem Connectivity Architecture
+
+The following example diagram describes on-prem connectivity.
+
+image::application-security/on-prem-connectivity.png[]
+
+
+
+
+
+
+
+
+|===
+
