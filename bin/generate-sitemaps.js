@@ -298,12 +298,16 @@ const getBookEntries = async (rawBooks) => {
         return;
       }
 
-      const entry = await getSitemapEntry({
-        dir,
-        adocPath,
-        topic,
-        data,
-      });
+      try {
+        const entry = await getSitemapEntry({
+          dir,
+          adocPath,
+          topic,
+          data,
+        });
+      } catch (e) {
+        console.warn(`failed to get sitemap entry for ${adocPath}: `, e);
+      }
       entries.push(entry);
     });
   }));
