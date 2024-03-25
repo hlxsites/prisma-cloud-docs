@@ -1,0 +1,535 @@
+[#ide22ea409-a7e8-48a2-914b-17e56f7915ed]
+== IAMセキュリティのアラートの修復
+
+// Manually remediate your IAM security misconfigurations by running CLI commands or automatically remediate overly permissive users with a custom python script.
+
+IAMセキュリティモジュールは、AWS、Azure、およびGCP環境全体で最小特権の原則を実施できるように、アラートを修正するための2つのオプションを提供します。AWSまたはAzure CLIコマンドをコピーしてクラウド環境で実行することで、手動でアラートを修正することもできますし、カスタムのPythonスクリプトを設定して修正手順を自動化することもできます。
+
+[NOTE]
+====
+IAM 自動修復は、Prisma Cloud の自動修復とは異なります。IAMモジュールは、自動修正を有効にするオプションをサポートしていません。代わりに、 xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[ランタイム チェックのアラート ルールを作成]し、カスタム python スクリプトの構成手順、または Azure IAM remediation スクリプトの構成と実行手順に従い、各 CSP 上のメッセージングキューイングサービスを使用してIAM 警告ルールの自動修正を管理します。
+====
+
+* IAM セキュリティ アラートを手動で修正する — AWS、Azure、または GCP 環境の CLI コマンドをコピーして貼り付け、それらを実行して余分なアクセス許可を手動で削除します。
+
+* *カスタムPythonスクリプト*-カスタムPythonスクリプトをコピー、貼り付け、設定して、CLIコマンドを実行する手順を自動化し、AWSまたはAzure環境で過剰なアクセス許可を修正できるようにします。
+
+** IAM AWSアラートの自動修正のセットアップ
+
+** IAM Azureアラートの自動修正のセットアップ
+
+** GCP IAM アラートの修復を設定する
++
+[NOTE]
+====
+GCP IAM アラートの自動修復はサポートされていません。
+====
+
+
+[.task]
+[#idddd91dfc-b4d5-43fe-96cf-4b3cc447451d]
+=== IAMセキュリティアラートの手動修復
+
+AWSでアラートの手動修復を行うには、以下の手順に従ってください。Azure と GCP で同様の手順を実行できます。
+
+[.procedure]
+. 既存のアラートを表示します。
++
+アラートをトリガーしたすべてのポリシーを表示するには、*Alert（アラート）> Overview（概要）*の順に選択します。
+
+. *Add Filter（フィルターの追加）*をクリックし、*Policy Type（ポリシータイプ）> IAM*の順に選択します。アラートのフィルタリングを行って、*アラート状態ーOpen（未解決）*かつ*RemediableーYes（修正可能）*なアラートのみを表示します。
++
+image::administration/iam-security-policy-type.png[]
+
+. 修復する違反ポリシーを選択します。
+
+. ポリシー違反を調査します。
++
+アラートを選択し、アクションメニューから *調査* をクリックします。ここでは、ポリシー違反を引き起こしたアセットを詳しく見ることができます。ポリシー違反が発生すると、SQSキューに送信されます。次の例では、AWS SQSキューが、実行されたアラートを示している。
++
+image::administration/send-and-receive-messages-1-alert.png[50%]
+
+. アラートの手動修復。
+
+.. アラートを選択し*Remediate（修復）*をクリックすると、CLIコマンドがポップアップウィンドウに表示されます。
+
+.. AWSアカウントでCLIコマンドを実行します。GCPアカウントの場合、CLIコマンドを実行する前に、GCP IAMアラートの修復を設定してください。
+
+CLIコマンドを実行すれば、修復プロセスは完了します。これで、SQSキューに0のメッセージが表示されるようになります。
+
+
+=== IAM AWSアラートの自動修正のセットアップ
+
+AWS SQSキューを介してアラートを受信し、アラートIDを抽出し、それを使用してIAM修正APIを呼び出し、API応答によって提供されるコマンドを実行するカスタムPythonスクリプトを使用して、修正手順を自動化します。Pythonスクリプトを正常に実行するに、次の前提条件を満たしている必要があります。これには、Prisma Cloud統合、API、およびPythonライブラリが含まれます。
+
+* xref:../../administration/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-amazon-sqs.adoc[Prisma CloudとAmazon SQSの統合]—これは、AWSとPrisma Cloudの間でメッセージを送信、保存、受信できるAWSサービスです。
+
+* xref:../..alerts/create-an-alert-rule-cloud-infrastructure.adoc[アラートルール]を作成し、Amazon SQSへのxref:../..alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラート通知]をセットアップします。選択したIAM ポリシーに対してトリガーされたすべてのアラートは、SQSキューに送信されます。
+
+
+[.task]
+[#id6591319e-c53c-4df5-826f-7fc1b09f0464]
+==== AWS IAM 修復スクリプトの設定と実行
+
+サードパーティライブラリをインストールしてAPIエンドポイントへのHTTPリクエストを作成し、カスタムPythonスクリプトを編集して環境変数の値を含めるようにし、アラートを自動的に修正できるようにします。
+
+[.procedure]
+. スクリプトをテキストエディタまたは統合開発環境（IDE）にコピー/貼り付けます。
++
+[userinput]
+----
+import json
+import os
+import subprocess
+import boto3
+import requests
+def log(s):
+    if os.environ['DEBUG']:
+        print(s)
+# Mapping of account number to AWS CLI profile.これは、適切なプロファイルを使用して各修復を実行するために使用されます
+account_number_to_profile = {
+}
+sqs = boto3.resource('sqs')
+queue = sqs.get_queue_by_name(QueueName=os.environ['SQS_QUEUE_NAME'])
+# Read all queue messages
+all_messages = []
+message_batch = queue.receive_messages(MaxNumberOfMessages=10)
+while len(message_batch) > 0:
+    all_messages.extend(message_batch)
+    message_batch = queue.receive_messages(MaxNumberOfMessages=10)
+for message in all_messages:
+    try:
+        alert_info = json.loads(message.body)
+        log(f'processing alert: \{alert_info}')
+    except json.JSONDecodeError as e:
+        print(f'Can\'t parse queue message: {e.msg}')
+        continue
+    alert_id = alert_info['alertId']
+    account_id = alert_info['account']['id']
+    log(f'alert id: \{alert_id}, account id: \{account_id}')
+    if 'remediable' in alert_info['metadata'] and alert_info['metadata']['remediable'] is False:
+        log(f'Remediation is not supported for the alert: \{alert_id}')
+        continue
+    try:
+        log(f'getting remediation steps for the alert')
+        r = requests.post(
+            verify=False,
+            url=f'{os.environ["API_ENDPOINT"]}/api/v1/permission/alert/remediation',
+            data=json.dumps({
+                "alerts": [
+                    alert_id
+                ]
+            }),
+            headers={
+                'x-redlock-auth': os.environ['AUTH_KEY'],
+                'Content-Type': 'application/json'
+            }
+        )
+    except requests.exceptions.RequestException as e:
+        print(f'Can\'t make request to the remediation api: {e.strerror}')
+        continue
+    if r.status_code != 200:
+        print(f'Error from the remediation API for the alert id: \{alert_id}')
+        continue
+    cli_commands = r.json()['alertIdVsCliScript'][alert_id]
+    log(f'cli commands: \{cli_commands}')
+    try:
+        log(f'running the CLI commands')
+        aws_cli = subprocess.Popen(
+            cli_commands,
+            env=dict(os.environ, AWS_PROFILE=account_number_to_profile.get(account_id)),
+            shell=True
+        )
+    except OSError as e:
+        print(f'Can\'t run cli commands: {e.strerror}')
+        continue
+    aws_cli.communicate()
+    if aws_cli.returncode != 0:
+        print(f'Can\'t run cli commands: \{cli_commands}')
+        continue
+    log("Deleting message")
+    message.delete()
+----
+
+. サードパーティのライブラリをインストールします。
++
+このスクリプトは合計5つのPythonライブラリを使用します。3つのライブラリ、`サブプロセス`、`ロギング`、および`json`は、Pythonコアの一部であり、Pythonをインストールした後にそれらをプログラムにインポートすることができます。他の2つのライブラリは、`requests`と`azure.servicebus`です。これらは、サードパーティのライブラリで、スクリプトを実行する前にインストールしなければなりません。Pythonには`pip`というデフォルトのパッケージダウンローダがあり、コマンドラインからサードパーティのライブラリやフレームワークをインストールできます。
+
+.. 要求をインストールします。
++
+コマンドライン（Windows）またはターミナル（Linux/macOS）から、以下のコマンドを入力します。
++
+`pip install requests`
++
+[NOTE]
+====
+要求は単純なHTTP要求を行うためのサードパーティライブラリです。
+====
+
+.. azure.servicebusをインストールします。
++
+コマンドライン（Windows）またはターミナル（Linux/macOS）から、以下のコマンドを入力します。
++
+`pip install azure.servicebus`
++
+[NOTE]
+====
+`azure.servicebus`は、Pythonがアプリケーションとサービス間で通信し、非同期メッセージングパターンを実装するためのクライアントライブラリです。
+====
+
+. 環境変数を編集します。
++
+設定をカスタマイズし、API の応答によって提供されるコマンドを実行するには、Python スクリプトでこれらの変数を指定する必要があります。以下の環境変数とその値を確認してください：
++
+* SQS_QUEUE_NAME - 手順1で作成したSQSキューの名前を表す文字列。例: `Queue2_Policy_UUID`。
+* API_ENDPOINT - お使いのPrisma Cloud APIサブドメイン。例えば、テナントが `\https://api.prismacloud.io`の場合、`API_ENDPOINT`は`api`になります。
+* `DEBUG\`- スクリプトのデバッグログを表示します。このログはデフォルトで有効になっています。
+* YOUR_ACCOUNT_NUMBER - AWS アカウントを独自に識別する12桁の番号（`123456789012`など）。ユーザーは、複数のアカウント番号を持つことができます。
+* AUTH_KEY - JWT認証トークン文字列（x-redlock-auth）。詳細については、https://pan.dev/prisma-cloud/api/cspm/[APIリファレンス]を参照してください。
++
+これらは、API応答によって提供されるコマンドを実行し、設定をカスタマイズするためにPythonスクリプトで指定する必須変数です。
++
+tt:[任意（mac/linuxのみーexportコマンドを使用して、環境変数を設定します。
++
+Pythonに慣れておらず、スクリプトを編集したくない場合は、`export`コマンドを使用して環境変数を設定できます。そのための構文は次のとおりです。
++
+* % export API_ENDPOINT=api_tenant
+* % export YOUR_ACCOUNT_NUMBER=123456789
+* % export SQS_QUEUE_NAME=your_sqs_queue_name 
+* % export YOUR_ACCOUNT_NUMBER=123456789
+* % export AUTH_KEY=your_jwt_token
+* % python script.py
++
+以下の命令は、Pythonがインストールされているどのオペレーティングシステムでも実行できます。例えば、Windows、macOS、Linuxなどです。
++
+.. `[DEBUG\]`。
++
+`DEBUG`はデフォルトで有効になっているか、`True`に設定されています。ログを無効にするには、次のようにコードスニペットを更新します。
++
+----
+if os.environ['DEBUG'] = False:
+----
+
+.. YOUR_ACCOUNT_NUMBERを編集します。
++
+`YOUR_ACCOUNT_NUMBER`を12桁のアカウントIDに置き換えます。変更するスクリプトの部分は次のとおりです。
++
+----
+account_number_to_profile = {    'YOUR_ACCOUNT_NUMBER_1': 'YOUR_ACCOUNT_NAME_1',    'YOUR_ACCOUNT_NUMBER_2': 'YOUR_ACCOUNT_NAME_2'}
+----
++
+有効な値の例:
++
+----
+account_number_to_profile = {'123456789123': 'default','512478725627': 'user1'}
+----
+
+.. API_ENDPOINTを編集します。
++
+`API_ENDPOINT`を、使用しているPrisma Cloudテナントのサブドメインに置き換えます。変更するスクリプトの部分は次のとおりです。
++
+----
+url=f'{os.environ["API_ENDPOINT"]}/api/v1/permission/alert/remediation'
+----
++
+例えば、`API_ENDPOINT`を`app`、`app2`、`app3`、または`app.gov`に置き換えます。
+
+.. `SQS_QUEUE_NAME`を編集します。
++
+ここには、キュー名の値が格納されます。変更するスクリプトの部分は次のとおりです。
++
+----
+queue = sqs.get_queue_by_name(QueueName=os.environ['SQS_QUEUE_NAME'])
+----
++
+`SQS_QUEUE_NAME`を実際のキューの名前に置き換えます。例えば、`Queue2_Policy_UUID`がキューの名前である場合、コードスニペットは次のように更新されます。
++
+----
+queue = sqs.get_queue_by_name(QueueName=os.environ['Queue2_Policy_UUID'])
+----
+
+.. AUTH_KEY を編集します。
++
+JWTトークンを生成し、Pythonスクリプトの`AUTH_KEY`の値を置き換えます。変更するスクリプトの部分は次のとおりです:
++
+----
+'x-redlock-auth': os.environ['AUTH_KEY']
+----
++
+`AUTH_KEY`を生成したJW トークンに置き換えます。
+
+. 修復結果を表示します。
++
+環境変数を使用してPythonスクリプトを設定したら、スクリプトを実行して修正結果を表示します。
+
+.. スクリプトを実行します。
++
+コマンドプロンプト（Windows）またはターミナル（Linux/macOS）を開き、以下のコマンドを入力します。
++
+python script.py
++
+[NOTE]
+====
+script.pyを実際のスクリプトの名前に置き換えます。
+====
+
+.. 結果を表示します。
++
+Pythonスクリプトを実行すると、修復に関連する詳細が出力に表示されます。
++
+[userinput]
+----
+アラート処理: {'alertStatus': 'open', 'reason':'SCHEDULED', 'metadata': {'remediable':True}, 'alertRuleName': 'auto-remediation-test', 'resource': {'resourceId':'ABCDEFGHIJKLMN', 'resourceTs':'1234567890', 'resourceName': 'test-resource'}, 
+'firstSeen':'1605104944614', 'lastSeen':'1617799423260', 'service':'Prisma Cloud', 'alertTs':'1234567890123', 'alertId':'I-1234567', 'region': 'global', 'account': 
+{'cloudType': 'aws', 'name': 'test-account', 'id':'1234567890'}, 'policy': {'severity': 'medium', 'policyType': 'iam', 'name':'AWS entities with risky permissions', 'policyTs':'123456789012', 'description':
+「このポリシーは、危険なAWS IAMアクセス許可を特定します。セキュリティ リスクを最小限に抑えるために、AWSアカウントにプロビジョニングされた AWSエンティティに危険なアクセス許可のセットがないことを確認してください。」’推奨事項’「ユーザーに対する救済措置：
+
+\n1.AWSコンソールにログインします
+\n2.IAMサービスへNtest-resourcegate 
+\n3.「ユーザー」をクリックします
+\n4.該当するユーザーを選択します
+\n5.’権限ポリシー’で、アラートの詳細に従って関連するポリシーを見つけ、危険なアクションを削除します
+ \n----------------------------------------\n
+ロールを引き受けるコンピューティング インスタンス/Okta ユーザーの修復:
+\n1.AWSコンソールにログインします
+\n2.Ntest-resourcegate コンピュートサービス (AWS EC2、AWS Lambda、AWS ECS など) するか、Okta コンソールにログインします。 
+\n3.コンピューティング インスタンス/Oktaユーザーによって使用されるロールを見つけます
+\n4.IAM サービスへ Ntest-resourcegate 
+\n5.ロールをクリックします
+\n6.関連するロールを選択します
+\n7.'権限ポリシー'で、アラートの詳細に従って関連するポリシーを見つけ、危険なアクションを削除します
+ \n----------------------------------------\n
+リソースベースのポリシーの修復: 
+\n1.AWSコンソールにログインします
+\n2.Ntest-resourcegateを関連するサービス (AWS S3 など) へ
+\n3.リソースのリソースベースのポリシーを検索します
+\n4.アラートの詳細に従って危険なアクションを削除してください", 'id': 'abcdefg9-1abc-47fc-c876-j123f4567', 'labels': '[]'}, 'alertRuleId':'1234abc-abc0-1234-ab1c-abc1234567'}
+
+alert id:I-1234567, account id:1234567890アラートの修復手順を取得します
+
+cli commands: aws iam create-policy --policy-name 'test-resource-prisma-restrictions-I-1234567-1' --policy-document '{"Version":"2012-10-17","Statement":[{"Resource":["arn:aws:iam::1234567890123:user/test-resource"],"Action":["iam:CreateAccessKey"],"Effect":"Deny"}]}' 
+and aws iam attach-user-policy --user-name 'test-resource' --policy-arn 'arn:aws:iam::123456789012:policy/test-resource-prisma-restrictions-I-1234567-1'
+
+CLIコマンドを実行します。
+
+{
+    "Policy": {
+        "PolicyName": "test-resource-prisma-I-1234567-1",
+        "PolicyId":"ABCDEFGHIJKLMNO",
+        "Arn": "arn:aws:iam::1234567890:policy/test-resource-prisma-restrictions-I-1234567-1",
+        "Path": "/",
+        "DefaultVersionId": "v1",
+        "AttachmentCount":0,
+        "PermissionsBoundaryUsageCount":0,
+        "IsAttachable": true,
+        "CreateDate":"2021-04-08T09:03:47+00:00",
+        "UpdateDate":"2021-04-08T09:03:47+00:00"
+    }
+}
+
+メッセージの削除
+----
++
+この出力は、varname:[test-resource]という名前のリソースのアラートを処理していることを示しています。このリソースは、*Alert（アラート）*を表示すると消えるはずです。修復手順を実行するためのCLIコマンドが出力に示されています。これらのコマンドは、Pythonスクリプトによって自動的に実行されます。AWSに新しいポリシーが作成され、ユーザーの余分な権限が削除されます。
+
+
+=== IAM Azureアラートの自動修正のセットアップ
+
+カスタムPythonスクリプトを使用して、IAM Azureアラートの修正手順を自動化します。スクリプトはAzureBusキューを読み取り、アラートを収集してから、AzureにアクセスしてCLI修正手順を実行します。Pythonスクリプトを正常に実行するに、次の前提条件を満たしている必要があります。これには、Prisma Cloud統合、API、およびPythonライブラリが含まれます。
+
+* Prisma CloudとAzure Serve Busの統合—これは、AzureとPrisma Cloudの間でメッセージを送信、保存、受信できるAzureサービスです。手順に従って、https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-azure-service-bus-queue[Prisma CloudをAzure Service Busと統合します]。
+
+* xref:../..alerts/create-an-alert-rule-cloud-infrastructure.adoc[アラートルール]を作成し、Azure Serve Busへのxref:../..alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラート通知]をセットアップします。選択したIAM ポリシーに対してトリガーされたすべてのアラートは、SQSキューに送信されます。
+
+[.task]
+[#idb32d1fc5-f705-438f-a798-e9d1a791d96e]
+==== Azure IAM 修復スクリプトを構成して実行する
+
+Pythonスクリプトを正常に実行するために必要なものすべてを設定できるように、次の前提条件を完了します。これには、Prisma Cloud統合、API、およびPythonライブラリが含まれます。
+
+[.procedure]
+. スクリプトをテキストエディタまたは統合開発環境（IDE）にコピー/貼り付けます。
++
+[userinput]
+----
+import subprocess
+import logging
+import json
+import requests
+import os
+from azure.servicebus import ServiceBusService, Message, Topic, Rule, DEFAULT_RULE_NAME
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+
+account_number_to_profile = {
+}
+
+
+def execute_command(command):
+    """
+    Execute the CLI command
+    :param command:
+    :return:Returns output on success and False on Failure
+    """
+    logging.info("Executing CLI command :- " + str(command))
+    try:
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        logging.info("Command execution passed with following output : {}".format(output))
+        return output
+    except subprocess.CalledProcessError as e:
+        logging.error("Command [{}] have failed with return code : {}".format(command, e.returncode))
+        logging.error("Error Output : {}".format(e.output))
+        return False
+
+
+def run_azure_cli_commands(cli_commands, account_id):
+    logging.info(f'Start run_azure_cli_commands cli commands: \{cli_commands}')
+    try:
+        azure_cli = subprocess.Popen(
+            "az cli_commands",
+            env=dict(os.environ, AWS_PROFILE=account_number_to_profile.get(account_id)),
+            shell=True
+        )
+    except OSError as e:
+        logging.error(f'Can\'t run cli commands: {e.strerror}')
+        return
+    azure_cli.communicate()
+    if azure_cli.returncode != 0:
+        logging.error(f'return code:{azure_cli.returncode}, Can\'t run cli commands,: \{cli_commands}')
+        return
+    logging.info(f'Finished run_azure_cli_commands cli commands: \{cli_commands}')
+
+
+def login_azure():
+    logging.info("Start login_azure")
+    execute_command("az login")
+    logging.info("Finished login_azure")
+
+
+def logout_azure():
+    logging.info("Start logout_azure")
+    execute_command("az logout")
+    logging.info("Finished logout_azure")
+
+
+def get_messages_from_queue():
+    logging.info("Start get_messages_from_queue")
+    queue_name = os.environ['SB_QUEUE_NAME']
+    logging.info(f'Using Azure alerts queue: \{queue_name}')
+    sb_key = os.environ['SB_QUEUE_KEY']
+    sb_key_name = os.environ['SB_QUEUE_KEY_NAME']
+    service_bus_name_space = os.environ['SB_QUEUE_NAME_SPACE']
+    bus_service = ServiceBusService(service_bus_name_space, shared_access_key_name=sb_key_name,
+                                    shared_access_key_value=sb_key)
+
+    queue = bus_service.get_queue(queue_name)
+    logging.info(f'queue.message_count: {queue.message_count}')
+
+    max_number_of_messages = 10
+    all_messages = []
+    messages_batch_index = 0
+    while messages_batch_index
+----
+
+. サードパーティのライブラリをインストールします。
++
+このスクリプトは合計5つのPythonライブラリを使用します。3つのライブラリ、`サブプロセス`、`ロギング`、および`json`は、Pythonコアの一部であり、Pythonをインストールした後にそれらをプログラムにインポートすることができます。他の2つのライブラリは、`requests`と`azure.servicebus`です。これらは、サードパーティのライブラリで、スクリプトを実行する前にインストールしなければなりません。Pythonには`pip`というデフォルトのパッケージダウンローダがあり、コマンドラインからサードパーティのライブラリやフレームワークをインストールできます。
+
+.. 要求をインストールします。
++
+コマンドライン（Windows）またはターミナル（Linux/macOS）から、以下のコマンドを入力します。
++
+`pip install requests`
++
+[NOTE]
+====
+要求は単純なHTTP要求を行うためのサードパーティライブラリです。
+====
+
+.. azure.servicebusをインストールします。
++
+コマンドライン（Windows）またはターミナル（Linux/macOS）から、以下のコマンドを入力します。
++
+`pip install azure.servicebus`
++
+[NOTE]
+====
+`azure.servicebus`は、Pythonがアプリケーションとサービス間で通信し、非同期メッセージングパターンを実装するためのクライアントライブラリです。
+====
+
+. 環境変数を編集します。
++
+設定をカスタマイズし、APIの応答によって提供されるコマンドを実行するには、Pythonスクリプトでこれらの変数を指定する必要があります。以下の環境変数とその値を確認してください：
++
+* SQS_QUEUE_NAME - 手順1で作成したSQSキューの名前を表す文字列。例: `Queue2_Policy_UUID`。
+* API_ENDPOINT - お使いのPrisma Cloud APIサブドメイン。例えば、テナントが `\https://api.prismacloud.io`の場合、API_ENDPOINTは`api`になります。
+* DEBUG\ - スクリプトのデバッグログを表示します。このログはデフォルトで有効になっています。
+* YOUR_ACCOUNT_NUMBER - AWS アカウントを独自に識別する12桁の番号（`123456789012`など）。ユーザーは、複数のアカウント番号を持つことができます。
+* AUTH_KEY - JWT認証トークン文字列（x-redlock-auth）。詳細については、https://pan.dev/prisma-cloud/api/cspm/[APIリファレンス]を参照してください。
++
+これらは、API応答によって提供されるコマンドを実行し、設定をカスタマイズするためにPythonスクリプトで指定する必須変数です。
++
+tt:[任意（mac/linuxのみーexportコマンドを使用して、環境変数を設定します。
++
+Pythonに慣れておらず、スクリプトを編集したくない場合は、 varname:[export]コマンドを使用して環境変数を設定できます。そのための構文は次のとおりです。
++
+* % export SB_QUEUE_KEY=your_sb_queue_key
+* % export SB_QUEUE_KEY_NAME=your_sb_queue_key_name
+* % export SB_QUEUE_NAME_SPACE=your_sb_queue_name_space
+* % export API_ENDPOINT=api_tenant
+* % export AUTH_KEY=your_jwt_token
++
+以下の命令は、Pythonがインストールされているどのオペレーティングシステムでも実行できます。例えば、Windows、macOS、Linuxなどです。
++
+. 修復結果を表示します。
++
+環境変数を使用してPythonスクリプトを設定したら、スクリプトを実行して修正結果を表示します。
+
+.. スクリプトを実行します。
++
+コマンドプロンプト（Windows）またはターミナル（Linux/macOS）を開き、以下のコマンドを入力します。
++
+python script.py
++
+[NOTE]
+====
+script.pyを実際のスクリプトの名前に置き換えます。
+====
+
+.. 結果を表示します。
++
+Python スクリプトを実行すると、修復に関連する詳細が出力に表示されます。
+
+
+[.task]
+=== GCP IAM アラートの修復を設定する
+
+Prisma Cloud は、GCP の https://cloud.google.com/iam/docs/deny-overview[拒否ポリシー]機能を利用してリスクのあるアクセス権限を修正し、修正されたリスクのあるアクセス許可を元に戻すことにした場合に備えて、安全なロールアウトを保証します。*拒否ポリシー*を使用するには、GCP 環境で必要な https://cloud.google.com/iam/docs/deny-access#before-you-begin[構成] がすべて完了していることを確認してください。
+
+[NOTE]
+====
+* GCP *拒否ポリシー* 機能はまだすべてのhttps://cloud.google.com/iam/docs/deny-permissions-support[権限] をサポートしていません。これは、一部のアラートが部分的に修正可能または修正不可能になる可能性があるためです。Prisma Cloud IAM セキュリティの権限のリストは、GCP での可用性に応じて更新されます。
+
+* *拒否ポリシー* は GCP のパブリック ベータ リリースであるため、 *修正* も Prisma Cloud のベータ リリースになります。
+====
+
+[.procedure]
+. *フィルタを追加* を選択し、*Policy Type（ポリシータイプ > IAM*と*Cloud Type（クラウド タイプ）> GCP*を選択します。
+
+. 修復する違反ポリシーを選択します。
+
+. ポリシー違反を調査します。
+
+. 修復手順を取得します。
++
+*OPTIONS（オプション）*列で、*Remediate（修復）* をクリックします。
++
+.. CLIコマンドをコピーします。
++
+*Remediate（修復）*をクリックすると、CLIコマンドがポップアップウィンドウに表示されます。
++
+image::administration/iam-security-gcp-remediate1.png[]
+
+.. GCP アカウントで CLI コマンドを実行します。CLI コマンドを実行する前に、https://cloud.google.com/iam/docs/deny-overview[拒否ポリシー]を参照してください。
++
+CLI コマンドを実行すると、修正プロセスが完了し、余分な権限が取り消されます。

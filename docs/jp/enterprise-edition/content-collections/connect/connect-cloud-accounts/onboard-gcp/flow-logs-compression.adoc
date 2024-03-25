@@ -1,0 +1,106 @@
+== GCP でのフローログの圧縮
+
+Prisma Cloudでは、Google Cloud Dataflowサービスを使って、フローログの圧縮を自動化することができます。
+
+[NOTE]
+====
+Prisma Cloud では、フロー ログの圧縮を有効にすることをお勧めします。このPrisma Cloudによる自動化機能により、GCPのフローログシンク設定で、ネイティブ圧縮がサポートされていない問題に対処することができます。Prisma Cloudに大量のログを転送する際の、発信コストを削減するために役立ちます。
+====
+
+Prisma Cloudでデータフロー圧縮を有効にすると、VPCフローログの送信先Google Cloud Storageバケットに関連している、同じGCPプロジェクト内に、データフローパイプラインリソースが作成されます。また、圧縮ログもCloud Storageバケットに保存されます。そのため、GCP Organizationをオンボードして、それへのデータフロー圧縮を有効にする場合、またはPrisma Cloudに追加されている既存のGCP Organizationのデータフロー圧縮を有効にする場合、Dataflowを有効にしたプロジェクトIDが、VPCフローログの送信先Google Cloud Storageバケットと同じであることを確認してください。
+
+[NOTE]
+====
+組織を担当するPrisma Cloudサービスユーザーが、フロー ログのストレージバケットが存在するプロジェクトとは異なるGCPプロジェクトで作成されている場合、データフロー圧縮をトリガーできるように、両方のプロジェクトでDataflow APIを有効にする必要があります。
+====
+
+データフロージョブを起動して、圧縮ファイルを作成、ステージングするには、次の権限が必要です:
+
+* dataflow.googleapi.com Dataflow API を有効にします。
+
+* サービスアカウントに次の権限を与えます：
+
+** ジョブの実行と調査：userinput:[Dataflow Adminデータフロー管理者）]ロール
+
+** サービスアカウントをデータフローリソースにhttps://cloud.google.com/iam/docs/service-accounts-actas[アタッチ]する：userinput:[iam.serviceAccounts.actAs] 権限
+
+** VPC内のネットワーク、サブネットワーク、およびファイアウォールルールの作成：userinput:[compute.networks.create] , userinput:[compute.subnetworks.create] , userinput:[compute.firewalls.create] , userinput:[compute.networks.updatepolicy] 
++
+DataflowパイプラインリソースとVPC内のログ圧縮を実施するComputeインスタンス間の接続を有効にするために、Prisma CloudはVPC内にネットワーク、サブネットワーク、およびファイアウォールルールを作成します。RQL userinput:[config where api.name='gcloud-compute-instances-list' AND json.rule = name starts with "prisma-compress"]で立ち上げられているComputeインスタンスを表示することができます 
+
+API の有効化の詳細については、 xref:prerequisites-to-onboard-gcp.adoc[サービス アカウントの権限] と xref:prerequisites-to-onboard-gcp.adoc[GCP API]をご覧ください。
+
+Prisma Cloudがクラウドアカウントのフローログ圧縮ジョブを検証できること、およびDataflow APIが有効になっていることを確認するために、GCPフローログ圧縮テストジョブが送信されます。Prisma Cloudは、圧縮ジョブを送信する前に、定期的にテストジョブを起動します。以下を行います。
+
+* GCPプロジェクトで圧縮が有効になっていることを確認します。
+
+* 少なくとも1つのDataflow対応の子プロジェクトが組織タイプのアカウントにあることを確認します。
+
+* 認証情報が空でないことを確認します。
+
+* プロジェクトIDが空でないことを確認します。
+
+* 保存場所からリージョンを確認します。
+
+* ネットワーク、サブネット、およびファイアウォールを確認します。
+
+上記の検証が行われた後、テストジョブが送信されます。送信が成功すると、APIは200のステータスコードを返します。これは、送信に必要なすべてのものがGCPプロジェクトレベルで利用可能であることを示します。テストジョブが失敗した場合、無視できます。
+
+送信中にエラーが発生した場合は、適切なエラーメッセージがログに記録されます。これらのエントリは、失敗の原因を示しています。
+
+また、Cloud Dataflowサービスは、短寿命のComputeインスタンスを立ち上げて、圧縮ジョブを処理します。サービスに関連するコストがかかる場合があります。Palo Alto Networksは、Dataflow（データフロー）サービスを有効にしたプロジェクトと同じプロジェクト内に、Cloud Storageバケットを保持することを推奨しています。Cloud Storageバケットの場所に基づいて、Prisma Cloudは次のリージョンにCloud Dataflowジョブを立ち上げます。
+
+[cols="50%a,50%a"]
+|===
+|ストレージバケットのリージョン
+|データフローを立ち上げるリージョン
+
+
+|us-central1
+
+us-east1
+
+us-west1
+
+europe-west1
+
+europe-west4
+
+asia-east1
+
+asia-northeast1
+|us-central1
+
+us-east1
+
+us-west1
+
+europe-west1
+
+europe-west4
+
+asia-east1
+
+asia-northeast1
+
+
+|eur4
+
+oreu
+|europe-west4
+
+
+|asia
+|asia-east1
+
+
+|us
+|us-central1
+
+orus-east1
+
+
+|その他のリージョン
+|us-central1
+
+|===

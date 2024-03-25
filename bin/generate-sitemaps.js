@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITEMAP_MAX_BYTES = 8 * 1000 * 1000; // 8MB
 const ORIGIN = process.env.ORIGIN || 'https://docs.prismacloud.io';
 const META_SOURCE = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.live/metadata.json';
-const LOCALES = ['en'];
+const LOCALES = ['en', 'jp'];
 const ROOT_PATH = '';
 const DESTINATION = (locale, index) => resolve(__dirname, `../docs/sitemaps/sitemap-${locale}-${index}.xml`);
 

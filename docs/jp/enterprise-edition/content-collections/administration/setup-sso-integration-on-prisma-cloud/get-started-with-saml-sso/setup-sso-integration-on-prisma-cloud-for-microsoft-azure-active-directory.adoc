@@ -1,0 +1,111 @@
+:topic_type: タスク
+[.task]
+[#idf6214d97-f3bd-4532-963a-7c34284b1d14]
+== Prisma CloudでのAzure AD SSOのセットアップ
+
+Prisma Cloudへの管理者アクセスを保護するために、Microsoft AADのサイトに移動して、シングルサインオンを設定し、次にPrisma CloudでSSOの設定を行います。
+
+Prisma Cloudで、Microsoft Azure Active Directory（AAD）を使って、シングルサインオン（SSO）を有効にすることができます。SSOを有効にするには、まずMicrosoft AADでセットアップを行う必要があります。次にPrisma CloudのSystem Admin（システム管理者）権限でログインし、SSOを設定してログインリクエストをIdPのログインページにリダイレクトします。そうすることで、Prisma Cloud管理ユーザーがSSOを使ってログインできるようになります。
+
+SSOを有効にしたら、Microsoft AADのポータルからPrisma Cloudコンソールにアクセスする必要があります。Prisma CloudはIdPが開始するSSOをサポートしており、そのSAMLエンドポイントはPOSTメソッドのみをサポートしています。
+
+[.procedure]
+. SSO用にMicrosoft AADをセットアップするには、Prisma Cloud用の外部アプリケーションを作成して、それにSSOを設定します。
+
+.. Microsoft AADを設定する前に、Prisma Cloudインスタンスにログインし、*Settings （設定） > Access Control（アクセス制御）*タブからSSO構成にアクセスして、Prisma CloudからオーディエンスURI（SPエンティティID）をコピーします。これは、アプリケーション作成後のSAML設定に必要になります。
+
+.. 外部アプリケーションを作成するには、管理者権限を持つ管理者として Microsoft Azureポータルにログインします。
+.. *All Services（すべてのサービス）*を選択して、*Azure Active Directory*をクリックします。
+
+.. *エンタープライズアプリケーション*を選択し、*+新規アプリケーション*をクリックして、*独自のアプリケーションを作成*します。
+
+.. *ギャラリーにない他のアプリケーション (ギャラリー以外) を統合する*を選択します。
+
+.. アプリケーションにわかりやすい名前を付けて、*作成* をクリックします。
+
+.. *Manage（管理）*で、*Single Sign-on（シングル サインオン）*を選択します。
+
+.. *Single Sign-on Mode（モード）*で、*SAML-based Sign-on（SAMLベースのサインオン）*を選択します。
+
+.. 基本SAML設定を編集し、*以前にコピーしたオーディエンスURIを識別子（エンティティID*）に入力します。
+
+.. ログインURLに表示されているテナントの場所に応じて、「app」を「api」に置き換え、末尾に /saml を追加して、Prisma CloudコンソールのURLをコピーして*返信URL*（アサーションコンシューマーサービスURL）フィールドに貼り付けます。例：https://api2.prismacloud.io/samlに対してhttps://app2.prismacloud.io/[https://app2.prismacloud.io/]
+
+.. ユーザー属性とクレームセクションを編集します。ユーザー属性は、姓名などの情報をキャプチャします。クレームは、ユーザーのメールアドレスなど、ユーザーオブジェクトに関連するキーと値のペアです。環境に応じて以下を確認してください。デフォルトでは、クレームはどの環境にも適用されます。
++
+新しい属性を追加し、名前を付けて、ソース属性（例えば user.jobtitle）にマッピングします。属性名は、Prisma Cloud JIT構成を設定するために使用されます。
++
+[NOTE] 
+====
+属性に名前空間が設定されている場合は、名前空間と属性の名前をPrisma Cloud JIT構成に追加する必要があります。
+====
+
+.. *証明書（Base64）*をダウンロードします。この証明書は、以下のステップ 4で設定を完了するために使用されます。
+
+.. 後で使用できるように、Azure AD識別子をAzure SSO構成にコピーしてください。
+
+.. (任意) Azure SSO設定のログアウトURLをコピーして、後で使用できるようにします。ブラウザセッションが終了すると、ユーザーはこちらのページにリダイレクトされます。
+
+.. *管理 - プロパティ*をクリックし、後で使用できるようにユーザーアクセスURLをコピーします。
+
+.. *Save（保存）*を選択します。
+
+. Azure Active Directoryから、ユーザーを新たに作成したアプリケーションに割り当てます。
+
+.. Microsoft Azureポータルに管理者としてログインします。
+
+.. *Manage（管理）*で、*User and groups（ユーザーとグループ）*を選択します。
+
+.. *+Add User（+ユーザーを追加）*をクリックして、ユーザーを選択、追加します。
+
+.. *割り当てます*。
+
+. 一部のユーザーに管理者アクセス権を与えたい場合は、Prisma Cloudにxref:../add-prisma-cloud-users.adoc#id2730a69c-eea8-4e00-a7f1-df3b046615bc[管理ユーザーを追加]する必要があります。
+
+. Prisma CloudでSSOを設定します。
+
+.. Prisma Cloudにログインし、*Settings（設定）> Access Control（アクセス制御）>SSO*を選択します。
+
+.. *Enable SSO（SSOを有効化）*します。
+
+.. *Audience URI（SP Entity ID）* は、テナントを一意に識別する読み取り専用フィールドで、形式はhttps://app.prismacloud.io?customer=<文字列>のようになります。IdP設定の設定SAML設定セクションで、この値を使用してください。
+
+.. *アイデンティティプロバイダ発行者（Identity Provider Issuer）*フィールドには、上記の手順で記載したAzure AD識別子のURLを入力します。
+
+.. 上記の手順で記載した *アイデンティティプロバイダログアウト(Identity Provider Logou) URL*を入力します。Prisma Cloudがタイムアウトすると、このURLにリダイレクトされます。
+
+.. IdPの*Certificate（証明書）*を、標準のX.509フォーマットで入力します。
+
+.. 先ほどコピーした*Prisma CloudアクセスSAML URL*を入力します。こちらはPrisma CloudアプリケーションにアクセスするためのURLです。
++
+このURL をクリックすると、IdPの認証を受けた後、Prisma Cloudにリダイレクトされます。電子メール、Slack、SQS、コンプライアンスレポートなどの通知に埋め込まれているすべてのリダイレクトリンクに、このリンクとRelay Stateパラメータが使用されます。
+
+.. Splunk、Slack、SQSなどのサードパーティアプリケーションからPrisma Cloudへシームレスに通知を転送するために、*Relay Stateパラメータ名*を指定します。Relay State Param name（Relay Stateパラメータ名）は、SAML固有のパラメータ名です。Relay Stateパラメータまたは値は、IDプロバイダ固有のものです。デフォルト値はuserinput:[RelayState]であり、この値を変更する必要はほとんどありません。たとえばAADの場合、この値はuserinput:[RelayState]になります。 
+
+.. *重要*:SSOを使用したログインに加えて、選択したユーザーが常に直接認証してコンソールにログインできるようにします。*ダイレクトユーザー認証*のため*Prisma Cloudで直接認証するユーザーの選択を許可*を有効にします。この手順は、Prisma Cloudコンソールからロックアウトされないようにするために非常に重要です。
++
+[IMPORTANT]
+====
+SSOを有効にする場合、Prisma Cloudのローカルに登録したメールアドレスとパスワードを使用して、一部のユーザーをPrisma Cloudにも 直接アクセスできるように選択し、SSOの設定を誤った場合やIdPの設定を変更する必要がある場合に、コンソールからロックアウトされないようにすることが非常に重要です。API経由でデータにアクセスする場合は、Prisma Cloudから直接認証を受ける必要があります。
+====
+
+... Prisma Cloudのローカル認証情報またはSSOを使って、Prisma Cloudにアクセスできる*Users（ユーザー）*を選択します。
+
+.. SSOを使って、アクセスできることを確認します。
++
+SSOが有効になっている管理ユーザーは、IDプロバイダのポータルからPrisma Cloudにアクセスする必要があります。たとえば、Prisma CloudとAzure AADを統合した場合、管理ユーザーはAzure ADにログインした後、Prisma Cloudアプリアイコンをクリックして、Prisma Cloudにアクセスする必要があります。
++
+[NOTE]
+====
+ジャストインタイム (JIT)プロビジョニングをSSOと併用すると、ユーザーのアカウント作成プロセスが自動化されます。JITは既定で無効になっています。
+====
+
+=== ログイン失敗を表示
+
+ユーザーがSSOログインに問題がある場合、失敗したログインの詳細を表示し、さらにトラブルシューティングを行うことができます。*View last SSO login failures（過去のSSOログイン失敗を表示）*を選択して、任意のユーザーのSSO認証の過去5回のログイン上の問題やエラーの詳細を参照することができます。
++
+[NOTE]
+====
+* Prisma Cloudのテナントごとに、すべてのクラウドアカウントに対して、1つのSAML設定のみを保有することができます。
+* すでにユーザー名/パスワードフローを使ってログインしているユーザーが、SAML SSO経由でのログインを試みると、ブラウザのローカルストレージにある最新のログイン情報でトークンが更新され、既存の認証トークンと置換されます。
+====

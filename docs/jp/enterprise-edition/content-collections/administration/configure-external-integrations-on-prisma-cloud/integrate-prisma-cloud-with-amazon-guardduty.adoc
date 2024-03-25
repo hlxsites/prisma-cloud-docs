@@ -1,0 +1,37 @@
+:topic_type: タスク
+[.task]
+[#id9b1ef9b8-51a6-40dc-8afc-ceb2b8251b67]
+== Prisma CloudとAmazon GuardDutyの統合
+
+Prisma® CloudとAmazon GuardDutyの統合方法を学習します。
+
+Amazon GuardDutyは、仮想プライベートクラウド（VPC）フローログとAWS CloudTrailイベントログを分析、処理する継続的なセキュリティ監視サービスです。GuardDutyは、セキュリティロジックとAWS使用状況統計技術を使って、予期しない/潜在的な不正行為や悪意のある行動を識別します。
+
+Prisma® CloudをGuardDutyと統合し、脅威の視覚化機能を拡張できます。Prisma CloudはGuardDutyデータの取り込みを開始して、それをPrisma Cloudがすでに収集している他の情報と相関付けて、Prisma Cloudアプリ経由で分かりやすく実用的な情報を表示します。
+
+[.procedure]
+. AWSインスタンスでAmazon GuardDutyを有効にします（https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_settingup.html[Amazonのドキュメント]を参照）。
+
+. IAMロールポリシーで、Amazon GuardDutyへの読み取りアクセス権を有効にします。
++
+AWSセットアップのオンボーディングに使用したPrisma Cloud IAMロールポリシーには、これらの権限を含める必要があります。
++
+screen:[ guardduty:List*, ]screen:[guardduty:Get*]AWSアカウントのオンボーディングにCFTテンプレートを使用した場合、Prisma Cloud IAMロールポリシーはすでにAmazon GuardDutyに必要な権限を保有しています。
+
+. Prisma CloudにAmazon GuardDuty検出事項へのアクセス権を与えたら、以下のRQLクエリを使用してAmazon GuardDutyが収集した情報を把握します。
++
+設定クエリ：
++
+screen:[config from cloud.resource where cloud.type = 'aws' AND finding.type = 'AWS GuardDuty Host' ]
++
+ネットワーククエリ：
++
+screen:[network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS GuardDuty Host' ) ] リソースをクリックすると、 *監査証跡*が表示されます。
++
+image::administration/guardduty-audit-trail.png[]
++
+*Findings（検出事項）*をクリックすると、脆弱性に関連する情報が表示されます。フィルタ内で*AWS GuardDuty Host*または*AWS GuardDuty IAM*を選択すると、AWS GuardDutyが検出した脆弱性が表示されます。
++
+image::administration/guardduty-host-findings.png[]
++
+screen:[config from cloud.resource where api.name = 'aws-iam-list-access-keys' AND finding.source = 'AWS GuardDuty']
