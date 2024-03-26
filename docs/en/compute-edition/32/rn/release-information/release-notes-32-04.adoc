@@ -1,0 +1,177 @@
+:toc: macro
+== 32.04 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|32.04.112
+|Code name
+|O'Neal - Update 4, 32.04
+
+|Release date
+|March 24th, 2024
+
+|Type
+|Maintenance Release
+
+|SHA-256
+|079a337e3cadfb888922403bd6859c399d2200982f1829e0dfd61d2dc9d9cd63
+
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtime, tools, and orchestrators.
+
+// You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+//[LINK]
+
+toc::[]
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defender Versions
+
+With the v32.xx release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported (n, n-1, and n-2) Defender versions] are v32.xx, v31.xx, and v30.xx. Defender versions below v30.xx such as v22.12 cannot connect to the current version.
+
+//To prepare for this update, upgrade your Defenders from version `v22.06` (Kepler) or earlier to a later version.
+
+==== Upcoming Defender Obsolescence
+
+With the upcoming v33.00 release, release v30.xx defenders will be obsolete. To prepare for this upcoming update, plan to upgrade defenders to release v31.xx or later.
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+With the v32.xx release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported (n, n-1, and n-2) Console versions] are v32.xx, v31.xx, and v30.xx.  For example: for the current (n) major release v32.xx, the supported n-1 and n-2 versions are v31.xx and v30.xx respectively.
+
+You can upgrade the Prisma Cloud Console from a major release to the next major release, but not to a major release that follows the next. So, to upgrade from the v30.xx release to the v32.xx release, you will have to first upgrade to  v31.xx and then upgrade to the v32.xx release.
+
+
+// [#cve-coverage-update]
+// === CVE Coverage Update
+
+[#enhancements]
+=== Enhancements
+[cols="40%a,60%a"]
+|===
+
+|FEATURE
+|DESCRIPTION
+
+|*Blobstore Scanning Defender Upgrade for Tanzu Customers*
+//CWP-56798
+|Enhanced the existing blobstore scanning feature for Tanzu customers. As a part of this enhancement, existing blobstore scanning defenders will now appear disconnected, and new defender instances will be automatically created to replace them. The disconnected blobstore will disappear after 24 hours as part of the retention process. This upgrade excludes Linux and Windows defenders (Full coverage defenders). If you have configured blobstore scanning and assigned it to a specific blobstore defender after the release of 32.04, you are required to manually edit the configurations and change it to a newly created blobstore defender scanner. This release will also introduce a new tile support - Jimmy for TAS.
+
+//CWP-56557
+|*Added Account ID information to the Defenders dashboard*
+|Added *Account ID* to the manage Defenders dashboard under *Manage > Defenders*.
+The *Account ID* is also included in the downloadable CSV file.
+
+//CWP-56782
+|*Enhanced the vulnerability assessment process*
+|Prisma Cloud now has an enhanced vulnerability assessment process for applications installed through the OS.
+If Prisma Cloud can't detect any vulnerabilities in the vendor feed, it automatically searches for third-party security data to ensure comprehensive security coverage.
+Go to *Monitor > Vulnerabilities > Vulnerability Explorer* for a comprehensive list of the detected vulnerabilities.
+
+//CWP-56294
+|*Added a new macro for webhook alerts*
+|Added the `incidentTime` macro for webhook alerts. The macro shows the time the incident occurred.
+For example, `Jan 21, 2018 UTC`.
+Go to https://docs.prismacloud.io/en/compute-edition/32/admin-guide/alerts/webhook[Alerts Webhook] to learn more about the macro.
+
+//CWP-56790
+//March 26: Removing the blurb. Moved to update 5. Comments in Jira ticket.
+// |*Added support of Go packages extraction on Windows*
+// |Defenders now support the extractions of Go packages on Windows.
+// This package extraction allows the Prisma Cloud Defenders to extract Go packages in zip, tar.gz, or tar.bz2 formats.
+
+//CWP-56791
+|*Exclude Go CVEs for Windows from the CVEs of Unix-based systems*
+|Prisma Cloud now excludes vulnerabilities found in Go packages that are specific to Windows from UNIX based operating systems in the *Vulnerability Explorer*.
+Go to *Monitor > Vulnerabilities > Vulnerability Explorer* for a comprehensive list of the detected vulnerabilities.
+
+|===
+
+[#api-changes]
+=== API Changes and New APIs
+[cols="40%a,60%a"]
+|===
+
+//CWP-56590 [Doc Ticket] CWP-49617 [Eng Ticket]
+|*Report vulnerabilities using Package URL (purl) format*
+|The following API responses include a new parameter, ‘purl’:
+
+* https://pan.dev/compute/api/get-images[Get Image Scan Results]
+* https://pan.dev/compute/api/get-registry/[Get Registry Scan Results]
+* https://pan.dev/compute/api/get-scans/[Get All CI Image Scan Results]
+* https://pan.dev/compute/api/get-hosts/[Get Host Scan Results]
+* https://pan.dev/compute/api/get-vms/[Get VM Image Scan Results]
+* https://pan.dev/compute/api/get-serverless/[Get All CI Image Scan Results]
+
+The ‘purl’ field identifies the absolute path for the packages.
+
+//CWP-56448 [Doc Ticket] CWP-46058 [Eng Ticket]
+|*API for sending console logs to remote syslog*
+| https://pan.dev/compute/api/post-settings-logging/[Add Logging Settings] API includes a new parameter ‘cert’ under ‘Syslog’ to configure a TLS certificate.
+|===
+
+// [#new-features-core]
+// === New Features in Core
+
+
+// [#new-features-host-security]
+// === New Features in Host Security
+
+// [#new-features-serverless]
+// === New Features in Serverless
+
+// [#new-features-waas]
+// === New Features in WAAS
+
+
+// [#breaking-api-changes]
+// === Breaking Changes in API
+// [cols="30%a,70%a"]
+
+[#addressed-issues]
+=== Addressed Issues
+[cols="40%a,60%a"]
+|===
+
+//CWP-56818
+//Only PCEE RN
+
+// CWP-56787
+// TODO: Pending approval. On March 26 have moved this ticket to update 5. 
+// |*Support to download Serverless Defender Bundle*
+// |Fixed the error that blocked downloading of the serverless defender bundle for Azure C# functions.
+
+//CWP-56697
+//Adding this blurb as per Manu's conversation with Orit.
+|*Unable to download serverless defender bundle for C# Azure*
+|Fixed the error that blocked downloading of the serverless defender bundle for Azure C# functions.
+
+//CWP-55870
+|*Twistcli Image Scanning*
+|Resolved the issue where container images scanned with twistcli did not appear on the *Runtime Security > Inventory > Assets *and the *Cloud Security > Inventory > Compute Workloads* pages.
+*Note:* Use the `--build` and `--job` flags to include the build number and the job name to help identify the image as a build image that will be presented in the above screens.
+
+|===
+
+// [#backward-compatibility]
+=== Backward Compatibility for New Features
+There is no backward compatibility for new features in this release.
+
+// [#change-in-behavior]
+=== Change in Behavior
+There are no changes in behavior for this release.
+
+// ==== Breaking fixes compare with SaaS RN
+
+// [#end-of-support]
+=== End of Support Notifications
+There are no End of Support notifications for this release.
