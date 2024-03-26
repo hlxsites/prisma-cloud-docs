@@ -1,0 +1,86 @@
+:topic_type: タスク
+[.task]
+[#idee726cec-b150-4834-b1f3-1c41e7ade8a8]
+== Alibabaアカウントの設定
+
+Alibabaアカウントの設定を行って、クラウドリソースを監視するための、Prisma Cloudによる設定ログの取得と分析を有効にします。
+
+Mainland China（中国大陸）およびInternational（インターナショナル）リージョンで、Alibaba Cloudを把握、監視するために、Prisma Cloudを利用することができます。Alibaba Cloud上のリソースの監視を開始する最初のステップは、自分のアカウントへのアクセスをPrisma Cloudに許可することです。そうするためには、ロールを作成して、アカウント内のデプロイされているアセットへのアクセスを許可するポリシーを、それに添付する必要があります。細かく権限を設定したカスタムポリシーを作成する、またはAlibaba Cloudシステムポリシーを使用して、*ReadOnlyAccess（読み取り専用アクセス）*を有効にすることができます。ロールを作成して権限を有効にしたら、Prisma CloudにAlibaba Cloud Resource Name（ARN）を追加して、Alibaba Cloudアカウントを監視するためのロールを利用できるようにします。
+
+
+[.procedure]
+. tt:[(細かくアクセス権限を設定したい場合に必要)] カスタムポリシーを作成します。
++
+カスタムポリシーを作成することにより、最小権限の原則を使用して、Prisma Cloudがアカウントを監視するために必要な、最低限の権限を有効にすることができます。これらの権限を定期的に更新したくない場合は、ステップ2*RAMロールを作成*に進んで、Alibaba Cloudシステムポリシーを使用し、すべてのaliyunサービスへの*ReadOnlyAccess（読み取り専用アクセス）*を有効にしてください。
++
+.. https://redlock-public.s3.amazonaws.com/alibaba_cloud/alibaba-ram-policy-readonly-document[Alibaba Chinaの権限]をダウンロードします。
++
+JSONファイルには、必要な権限が含まれています。
+
+.. China（中国）リージョンのAlibaba Cloudコンソールにログインします。
+
+.. *Resource Access Management（リソースアクセス管理）> Permissions（権限）> Policies（ポリシー）> Create Policy（ポリシーの作成）*を順に選択します。
+
+.. *JSON* タブを選択し、JSON ファイルの内容をフィールドに貼り付けます。
++
+image::connect/alibaba-json-permissions.png[]
+
+.. *[次へ] を選択して、ポリシー情報を編集します*。
+
+.. 新しい *ポリシー名*と *説明*を入力し、[*OK*]を選択します。
++
+image::connect/alibaba-cloud-account-custom-policy.png[]
+
+. RAMロールを作成します。
++
+Prisma CloudへのAPIアクセスを許可するために、RAMロールを作成して、ポリシーを添付する必要があります。細かく権限を設定した*カスタムポリシー*を選択する、またはAlibaba Cloud*システムポリシー*を使用して、*ReadOnlyAccess（読み取り専用アクセス）*権限を有効にすることができます。
++
+.. Alibaba Cloudコンソールで*Resource Access Management（リソースアクセス管理） > Identities（ID） > Roles（ロール）*を選択します。
+
+.. *Create Role（ロールの作成）*を選択します。
++
+image::connect/alibaba-cloud-account-create-ram-role.png[]
+
+.. 信頼するエンティティタイプとして、*Alibaba Cloud Account*を選択して、*Next（次へ）*を選択します。
+
+.. *RAM Role Name（RAMロール名）*を入力します。
+
+.. 信頼するAlibaba Cloudアカウントとして、Prisma CloudアカウントIDを入力します。
++
+Prisma Cloudインスタンスがhttps://app.prismacloud.cn,にある場合、Prisma CloudアカウントIDは*1306560418200997*になります。それ以外の場合、Prisma CloudアカウントIDは*5770382605230796*になります。
++
+*Select Trusted Alibaba Cloud Account（信頼するAlibaba Cloudアカウントの選択）> Other Alibaba Cloud Account（その他のAlibaba Cloudアカウント）*に適切なアカウントIDを入力して、*OK*を選択します。
++
+image::connect/alibaba-cloud-account-ram-account-id.png[]
+
+.. *Add Permissions to RAM Role（RAMロールへの権限の追加）*を選択します。
++
+//Changes based on RLP-83602
+*Authorized Scope を* Alibaba Cloud アカウントに設定し、カスタムポリシー (作成した場合) に関連付けられたアクセス許可を添付するか、システムポリシーを使用します。
++
+*** カスタムポリシー
++
+image::connect/alibaba-cloud-account-add-permissions-custom.png[]
+
+*** システムポリシー
++
+image::connect/alibaba-cloud-account-add-permissions-system.png[]
+
+.. [*OK*] 、[*Complete (完了)*] を順に選択します。
+
+. Alibaba Cloud Resource Name（ARN）をコピーします。
++
+Prisma CloudにAlibabaクラウドアカウントを追加するために、ARNが必要になります。
++
+.. *Roles（ロール）*を選択して、先ほど入力した名前を検索します。
++
+image::connect/alibaba-cloud-account-ram-role.png[]
+
+.. ARNを書き留めます。
++
+image::connect/alibaba-cloud-account-ram-role-arn.png[]
+
+. xref:add-alibaba-cloud-account-to-prisma-cloud.adoc[Prisma CloudでのAlibaba Cloudアカウントの追加]。
+
+
+

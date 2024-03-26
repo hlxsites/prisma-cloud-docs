@@ -1,0 +1,106 @@
+:topic_type: タスク
+[.task]
+[#id2990b78d-1bdc-4090-a716-d899e62db060]
+== Prisma CloudとOktaの統合
+
+// Learn how to integrate Okta with Prisma Cloud so that you can see the permissions of users across your cloud accounts and increase your visibility.
+
+Prisma Cloudは、Oktaとして知られるIDプロバイダ（IdP）サービス統合して、IAMセキュリティモジュールで有効な権限の計算のためにシングルサインオン（SSO）データを取り込みます。統合の後、IAMクエリを使用してクラウドアカウント全体でOktaユーザーの有効な権限を一覧表示し、クラウドリソースにアクセスするエンティティに対する可視性とガバナンスを向上できます。
+
+[NOTE]
+====
+* OKta統合は、IAMセキュリティモジュールのサブスクリプションでのみ使用できます。xref:enable-iam-security.adoc#id0561b362-921c-4e65-baaf-39a37c78e744[30日間の無料試用版を入手する方法について説明します。]
+
+* AWSの場合、Prisma CloudはOktaアプリとAWSアカウントとの1対1のマッピングをサポートしています。Prisma Cloudに複数のAWSアカウントをオンボーディングしている場合は、Oktaアプリの追加のインスタンスを作成し、シングルサインオン（SSO）データを取り込むAWSアカウントごとにAPIキーを生成する必要があります。
+====
+
+[.procedure]
+. Okta管理者パネルにログインします。
+
+.. Oktaテナントにアクセスします。
++
+一般的なURLは、サブドメインとしてのテナント名の後にuserinput:[okta.com]が続くものです。例: userinput:[companyname.okta.com] 。
+
+.. *ユーザー名*と*パスワード*を入力し、*Sign in（サインイン）*をクリックします。
+
+.. *Classic UI（クラシックUI）*ビューを表示していることを確認します。
++
+image::administration/okta-admin-panel.png[]
+
+. 管理者ロールを追加します。
+
+.. トップメニューから*Security（セキュリティ）> Administrators（管理者）*に移動します。
+
+.. *Add Administrator（管理者の追加）*をクリックします。
++
+image::administration/generate-api-token.png[]
+
+.. *Grant administrator role to（管理者ロールの付与）*フィールドでユーザーを選択します。
++
+image::administration/read-only-admin.png[]
+
+.. *Administrator roles（管理者ロール）*セクションの*Read Only Administrator（読み取り専用管理者）*を選択します。
+
+.. *Add Administrator（管理者の追加）*をクリックします。
+
+. APIトークンを生成します。
++
+APIトークンは、Okta APIへのリクエストを認証するために使用される一意の識別子で、Prisma CloudがSSOデータを取り込むことができるように、Prisma CloudアカウントをOktaに接続するために必要です。
+
+.. トップ メニューから*Security（セキュリティ）> API（セキュリティAPI）*に移動します。
+
+.. *Tokens（トークン）*を選択します。
+
+.. *Create Token（トークンの作成）*をクリックし、*Grant administrator role（管理者ロールの付与）*でユーザーを選択します。
+
+.. トークンの名前を入力し、*Create Token（トークンの作成）*をクリックします。
+
+.. 正常に完了すると、「*Tokenが正常に作成されました*」というメッセージが、現在のユーザーに関連付けられた生成されたトークンと共に表示されます。
++
+image::administration/create-token-sucessfully.png[]
+
+. Prisma CloudでOktaを設定します。
++
+APIトークンを生成したら、それを使用してPrisma CloudアカウントをOktaに接続できます。
+
+.. Prisma Cloudで*Settings（設定）> Integrations（統合）*に移動します。
+
+.. *+Add New（新規追加）*をクリックします。
+
+.. *Integration Type（統合タイプ）*をクリックし、*Okta*を選択します。
++
+image::administration/iam-security-add-integration.png[]
+
+.. *Description（説明）*を入力します。
+
+.. *Domain（ドメイン）*を入力します。
+
+.. *API Token（APIトークン）*を入力します。
+
+.. *Test（テスト）*をクリックして、統合が成功したことを確認します。
+
+.. *Save（保存）*をクリックします。
++
+image::administration/okta-integration-success.png[]
+
+. OktaのIAMクエリーを実行します。 +++<draft-comment>これは私たちのスタイルから少し逸脱していますが、Barと話し合った結果、私たち二人はこれが顧客の役に立つということに同意しました。</draft-comment>+++
++
+OktaがPrisma Cloudと統合されると、OKtaのIAMクエリの結果を確認し、クラウド環境の可視性とガバナンスを得ることができます。
+
+.. OktaのすべてのRQL属性を表示します。
++
+*Investigate（調査）*タブで、以下のRQLクエリを入力します。
++
+screen:[source.idpのiamからの設定]
++
+image::administration/iam-security-source-idp.png[]
+
+.. 自動完了を使用してidp RQLクエリを作成します。
++
+RQLクエリに追加する属性を選択します。例えば、userinput:[source.idp.username]を選択すると、結果はクラウド環境のすべてのOktaユーザーを返します。
+
+.. 結果を表示します。
++
+虫眼鏡アイコンをクリックして結果を表示します。
++
+image::administration/iam-security-okta-demo.png[]

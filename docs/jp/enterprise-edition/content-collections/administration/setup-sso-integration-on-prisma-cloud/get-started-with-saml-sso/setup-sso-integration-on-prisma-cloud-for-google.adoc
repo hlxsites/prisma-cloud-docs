@@ -1,0 +1,80 @@
+:topic_type: タスク
+[.task]
+[#id7e5e733b-7dc3-4b4a-bb9c-b73872acd9ce]
+== Prisma CloudでのGoogle SSOのセットアップ
+
+Prisma Cloud への管理者アクセスを保護するには、GoogleをIDプロバイダ（IdP）としてセットアップし、Prisma CloudをSSOのサービスプロバイダ（SP）として設定します。
+
+Prisma Cloudでは、Googleを使用してシングルサインオン（SSO）を有効にすることができます。SSOを有効にするには、まずGoogleでセットアップを行う必要があります。次にSystem Admin（システム管理者）権限でPrisma Cloudにログインし、SSOを設定してログインリクエストをGoogleのログインページにリダイレクトします。そうすることで、Prisma Cloud管理ユーザーがSSOを使ってログインできるようになります。
+
+[.procedure]
+. SSO 用のGoogleをセットアップします。
+
+.. Google設定のセットアップを開始する前に、Prisma Cloudインスタンスにログインし、*Settings（設定）> SSO*を選択して、オーディエンスURI（SPエンティティID）をコピーします。例:https://app.prismacloud.io/settings/sso[https://app.prismacloud.io/settings/sso]。
+
+.. スーパー管理者としてhttps://admin.google.com/[Googleワークスペース]にログインします。
++
+image::administration/sso-google-2.png[]
+
+.. 左側のナビゲーションメニューで、*Apps（アプリ）> Web and mobile Apps（Webとモバイル アプリ）*を選択します。
+
+.. *Add App（アプリケーションの追加）> Add custom SAML App（カスタムSAMLアプリの追加）*を選択します。
++
+image::administration/sso-google-3.png[]
+
+.. アプリケーションの*Name（名前）*を入力し（例：Prisma App1）、アイコンをアップロードして（任意）、*Continue（続行）*をクリックします。
++
+image::administration/sso-google-4.png[]
+
+.. SSO接続の詳細が表示されます。IdPメタデータ（オプション1）*ダウンロード*するか、次の情報（オプション2）を*コピー*して、*続行*します。
++
+* *SSO URL*
+* *Entity ID（エンティティ ID）*
+*  *Certificate(証明書）*
++
+image::administration/sso-google-5.png[]
+
+.. 次のPrisma Cloud（サービスプロバイダ）の詳細を入力し、*Continue（続行）*します。
++
+* *ACS URL（ACS URL）*-Prisma CloudのURLを入力しますが、アプリをapiに置き換え、最後にsamlを追加します。たとえば、https://app.prismacloud.io[https://app.prismacloud.io]からPrisma Cloudにアクセスする場合は、https://api.prismacloud.io/saml[https://api.prismacloud.io/saml]と入力します。
+* *Entity ID（エンティティID）*-上記の手順1でコピーしたオーディエンスURI（SPエンティティID）の値を入力します。
++
+image::administration/sso-google-6.png[]
+
+.. tt:[(任意)]SSOユーザー向けのJust in Time (JIT) Provisioning（ジャストインタイム（JIT）プロビジョニング）を有効にします。
++
+Googleの認証を受けたユーザーのローカルアカウントを作成する場合は、*Enable JIT Provisioning（JITプロビジョニングを有効にする）*。JITでは、ユーザーはGoogle上のユーザーのプロファイルにマップされた最初の5つのロールでプロビジョニングされます。
+
+.. *完了*して、IdPとしてのGoogl のセットアップを完了します。プリズムクラウドのセットアップが完了した後、SSO を検証するためにhttps://admin.google.com/[Googleワークスペース]ページを閉じないでください。
++
+image::administration/sso-google-7.png[]
+
+. Prisma CloudでSSOを設定します。
+
+.. Prisma Cloudにログインして、 *Settings（設定）> SSO*の順に選択します。
+
+.. *Enable SSO（SSOを有効化）*します。
+
+.. 上記の手順6でコピーした値を貼り付けます。
++
+image::administration/sso-google-1.png[]
++
+* *Identity Provider Issuer（IDプロバイダの発行者）*- *Entity ID（エンティティID）*の値を入力します。
+* *Certificate（証明書）*-*Certificate（証明書）*の値を標準のX.509形式で入力します。
+* tt:[(任意)]*Identity Provider Logout URL（IDプロバイダのログアウトURL）*-Prisma Cloudがタイムアウトしたとき、またはユーザーがログアウトしたときに、ユーザーがリダイレクトされる*SSO URL*値を入力します。
+
+.. 一部のユーザーを、Google IdP経由のログインに加えて、Prisma Cloudで登録したメールアドレスとパスワードを使って、Prisma Cloudに直接アクセスするように設定するには、*Allow select users to authenticate directly with Prisma Cloud（選択したユーザーのPrisma Cloudでの直接認証を許可）*を選択します。
++
+SSOを有効にする場合、Prisma Cloudでローカルに登録したメールアドレスとパスワードを使って、一部のユーザーをPrisma Cloudに直接アクセスできるように設定し、SSOの設定誤りでコンソールからロックアウトされ、IdP設定の変更が必要になるような状況を回避するようにしてください。API経由でデータにアクセスする場合は、Prisma Cloudから直接認証を受ける必要があります。
+
+.. Prisma Cloudのローカル認証情報またはSSOを使って、Prisma Cloudにアクセスできる*Users（ユーザー）*を選択します。
++
+許可リストに記載されているユーザーは、SSOを使って、またPrisma Cloudで作成したローカルアカウントのユーザー名とパスワードを使って、ログインすることができます。
++
+image::administration/sso-onelogin-8.png[]
+
+.. *Save（保存）* して、GoogleをIdPとして信頼するためのPrisma Cloudのセットアップを完了します。
+
+.. https://admin.google.com/[Googleワークスペース] ページで*Test SAML Login（SAMLログインのテスト）*をクリックして、SSOを使用してアクセスを確認します。ユーザーの詳細を求められたら、Prisma Cloudで既にプロビジョニングされているユーザーのメールを入力してください。
++
+image::administration/sso-google-8.png[]

@@ -1,0 +1,70 @@
+:topic_type: タスク
+[.task]
+[#idac613dca-de44-4ad3-b442-23d9264f3abc]
+== Oktaでのジャストインタイム（JIT）プロビジョニングの設定
+
+Oktaでのジャストインタイム (JIT) プロビジョニングで、SSOを設定します。
+
+ジャストインタイム（JIT）プロビジョニングでローカル管理者を正常にセットアップするには、Okta用のPrisma Cloudアプリを設定して、Prisma Cloudに認証されたSSOユーザーを追加するための、SAMLクレームまたはアサーションを提供する必要があります。次に、Prisma Cloud上でSSOユーザーが正しいアクセス権を保有するように、ユーザーにPrisma Cloudロールを割り当てる必要があります。このロールがPrisma Cloudのデフォルトロールでない場合、Oktaのユーザーにロールを割り当てる前に、このロールを定義する必要があります。このユースケースは、ユーザーをジャストインタイムにプロビジョニングする必要があるが、そのユーザーがPrisma Cloudに存在しない場合です。
+
+[.procedure]
+. Okta用Prisma Cloudアプリを作成します。
++
+Okta 上の Prisma Cloud 用の SAML アプリをまだ作成していない場合は、上記の手順に従って今すぐ作成してください。
+
+. ユーザーのJITプロビジョニングのために、Prisma Cloud Oktaアプリでカスタム属性を作成します。
++
+カスタム必須フィールドを追加する必要がある場合は、次の手順に従います。
+
+.. *Directory（ディレクトリ）> Profile Editor（プロファイルエディター）><apps>*へ移動します。
++
+image::administration/jit-okta-profile-editor.png[]
++
+*<apps>*カスタム属性を追加するPrisma Cloudアプリケーションに置き換えます。たとえば、*app.stage User*は、Prisma Cloudアプリです。
+
+.. Prisma Cloudアプリを見つけたら、*Profile（プロファイル）*を選択し、*Add Attribute（属性を追加）*を選択します。
++
+image::administration/jit-okta-add-attribute.png[]
+
+.. *データタイプ*を選択し、*表示名*、*変数名*、およびPrisma Cloud上のロール名に対応するのに十分な長さの*属性長*を入力します。
++
+[NOTE]
+====
+複数のロールがある場合は、*データ型 > 文字列配列*を選択して、Prisma Cloudでロール名を表す配列または文字列のグループを作成します。
+====
+
+.. 新しい属性を*保存します*。
+
+.. ロールが追加されたことを確認します。+
+新しい属性を保存した後、Okta UIに関連するデータを含むテーブルとして表示されます。この例では、*PrismaCloudRole*は新しい属性の表示名です。
++
+image::administration/sso-okta-add-attribute.png[]
+
+. [[id766be9d2-fec0-4fae-9bb7-583c24c4ccd7]]Prisma Cloud Oktaアプリで、*Attribute Statements（属性のステートメント）*を設定します。
++
+Prisma Cloudがローカルユーザーアカウントの作成に使用する、SAMLアサーションまたはクレームのユーザー属性を指定します。...*アプリケーション [applications] > アプリケーション [applications]*を選択します。
+
+.. Prisma Cloud*<app>* 、*General（一般）*を選択し、*SAML設定*の見出しの下にある*編集*をクリックして属性ステートメントを追加します。*<app>*は属性文を設定したいPrisma Cloudアプリの名前に置き換えてください。各ユーザーの*電子メール*、*ロール*、*名*、および*姓*を入力する必要があります。
++
+image::administration/jit-attributes-okta.png[]
++
+[NOTE]
+====
+属性ステートメント名は、*設定 > アクセス制御 > SSO > ジャストインタイム (JIT) プロビジョニング*の値にマッピングする必要があります。
+====
+
+. 各SSOユーザーにPrisma Cloudロールを割り当てます。
++
+Prisma Cloudへのアクセスを許可された各SSOユーザーには、1〜5個のPrisma Cloudロールを割り当てることができます。各ロールは、ユーザーがPrisma Cloud上でアクセスできる権限とアカウントグループを決定します。...*アプリケーション [applications] > アプリケーション [applications]*を選択します。
+
+.. Prisma Cloudアプリと割り当てを選択します。
++
+既存のユーザーの場合、鉛筆型アイコンをクリックして、ユーザーに与えるPrisma Cloudロールを追加します。たとえば、System Admin（システム管理者）を追加します。
++
+image::administration/jit-okta-users.png[]
++
+新しいユーザーの場合、*Assign（割り当て）> Assign to People（ユーザーへの割り当て）*の順に選択して、Prisma Cloudへのアクセス権を与えるユーザーの*Assign（割り当て）*をクリックして、そのユーザーに与えるPrisma Cloudロールを定義します。
++
+image::administration/jit-okta-edit-user-assignment.png[]
+
+. 続いて xref:setup-sso-integration-on-prisma-cloud-for-okta.adoc#id6c55ecf1-22ee-4acc-badd-cd1ac9172f45[Prisma クラウドで Okta SSO をセットアップしてください]。

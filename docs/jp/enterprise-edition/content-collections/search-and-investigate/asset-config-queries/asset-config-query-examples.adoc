@@ -1,0 +1,151 @@
+== アセット構成クエリー例
+
+AWS、Azure、GCP のアセット構成クエリの例をいくつか示します。
+
+以下のクラウドプラットフォームの問題を調査するための、xref:asset-config-query-attributes.adoc[設定クエリ属性]の使用方法の例を記載しています：
+
+* xref:event-query-examples-for-aws[AWSの設定クエリ例]
+* xref:event-query-examples-for-azure[Azureの設定クエリ例]
+* xref:event-query-examples-for-gcp[GCPの設定クエリ例]
+
+[#config-query-examples-for-aws]
+=== AWSの設定クエリ例
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+|アクセス鍵とパスワードの両方でコンソールアクセスを有効にしたユーザーを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'aws-iam-get-credential-report' AND json.rule = access_key_1_active is true or access_key_2_active is true and password_enabled is true
+----
+
+|MFAを有効にしていないルートアカウントを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'aws-iam-get-account-summary' AND json.rule='not AccountMFAEnabled equals 1'
+----
+
+|アクティブなアクセス鍵を表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'aws-iam-list-access-keys' AND json.rule = status equals Active
+----
+
+|バケットACLを介してパブリックにアクセスできるすべてのS3バケットを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name='aws-s3api-get-bucket-acl' AND json.rule="(acl.grants[?(@.grantee=='AllUsers')] size > 0)"
+----
+
+|バケットポリシーを介してパブリックにアクセスできるすべてのS3バケットを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' and json.rule = "policy.Statement exists and policy.Statement[?(@.Action=='s3:GetObject' && @.Effect=='Allow')].Principal contains *"
+----
+
+|複数のVPCがある場合にのみ、サブネットが関連付けられていないVPC数が表示されます。
+|[userinput]
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-vpcs' as X; config from cloud.resource where api.name = 'aws-ec2-describe-subnets' as Y; filter 'not $.X.vpcId equals $.Y.vpcId'; show X; count(X) > 2
+----
+
+|S3:GetObjectオペレーションを確認する。
+|S3バケットに関連するs3:PutObject、s3:*、s3:GetBucketAcl、s3:ListBucket、s3:ListAllMyBuckets、s3:PutObjectAcl、s3:GetObjectAcl、s3:GetObjectVersionなどの、他のオペレーションを使用することもできます。
+
+[userinput]
+----
+config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' and json.rule = "policy.Statement exists and policy.Statement[?(@.Action=='s3:GetObject' && @.Effect=='Allow' \|\| @.Action=='s3:ListBucket' && @.Effect=='Allow' \|\| @.Action=='s3:*' && @.Effect=='Allow' \|\| @.Action=='s3:GetBucketAcl' && @.Effect=='Allow' \|\| @.Action=='s3:PutObject' && @.Effect=='Allow' \|\| @.Action=='s3:GetObjectAcl' && @.Effect=='Allow' \|\| @.Action=='s3:GetObjectVersion' && @.Effect=='Allow')].Principal contains *"
+----
+
+|===
+
+
+[#config-query-examples-for-azure]
+=== Azureの設定クエリ例
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+
+|Azure内部リソースへのアクセスを許可する、SQL サーバーファイアウォールルールを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'azure-sql-server-list' AND json.rule = "firewallRules.[*] size > 0 and firewallRules.[*].['endIpAddress'] contains 0.0.0.0 and firewallRules.[*].['startIpAddress'] contains 0.0.0.0"
+----
+
+
+|セキュリティ連絡先メールアドレスを指定していない、Azure内のセキュリティセンターリソースグループを表示する。
+|[userinput]
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center' AND json.rule = 'name == default and (properties.securityContactConfiguration.securityContactEmails !isEmpty or properties.securityContactConfiguration exists)'
+----
+
+
+|暗号化が無効になっているSQL データベースを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'azure-sql-db-list' AND json.rule=’transparentDataEncryption is false’
+----
+
+
+|正常にピアリングされたAzure VNETを表示する。
+|[userinput]
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-vnet-list' AND json.rule = " ['properties.virtualNetworkPeerings'][*]. ['properties.provisioningState'] contains Succeeded "
+----
+
+
+|合計数が1未満の場合、Azure Activityログアラート数が表示されます。
+|[userinput]
+----
+config from cloud.resource where api.name = 'azure-activity-log-alerts' as X; count(X) < 1
+----
+
+
+|照会されたプライベートIPアドレスに一致するAzureホストを表示します。
+|[userinput]
+----
+config from cloud.resource where api.name = 'azure-vm-list' AND json.rule = ['properties.networkProfile'].networkInterfaces[*].privateIpAddress contains "1"
+----
+
+|===
+
+
+[#config-query-examples-for-gcp]
+=== GCPの設定クエリ例
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+|MongoDBポート（27017）経由のインターネットトラフィックを許可するファイアウォールルールを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name='gcloud-compute-firewall-rules-list' AND json.rule='sourceRanges[*] contains 0.0.0.0/0 and allowed[*].ports[*] == 27017'
+----
+
+|SSLが設定されていないSQLインスタンスを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name='gcloud-sql-instances-list' and json.rule = 'settings.ipConfiguration.requireSsl is true'
+----
+
+|先行終了が有効になっている仮想マシン（VM）インスタンスを表示する。
+|[userinput]
+----
+config from cloud.resource where api.name = 'gcloud-compute-instances-list' AND json.rule = 'scheduling.preemptible is true'
+----
+
+|パブリックにアクセス可能な、すべてのストレージバケットまたはオブジェクトを表示する。
+|[userinput]
+----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Google Cloud Storage' AND api.name = 'gcloud-storage-buckets-list' AND json.rule = 'acl[*].entity contains allUsers or acl[*].entity contains allAuthenticatedUsers'
+----
+
+|===

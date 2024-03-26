@@ -1,0 +1,52 @@
+:topic_type: タスク
+[.task]
+[#idb078f1dd-7c14-4890-be38-7237f2ea8534]
+== PrismaCloudロールによる共通のS3バケットへのアクセス許可
+
+AWS CloudTrailイベントログを保存する中央または共有のS3バケットを指定します。
+
+データセキュリティスキャンのためにPrisma Cloudにオンボーディングしているのと同じS3バケット内にAWS CloudTrailイベントログを保存したくないシナリオでは、AWS CloudTrailイベントログを保存する共通または共有S3バケットへのアクセス権をPrisma Cloudロールに提供できます。
+
+たとえば、監視対象アカウント1でS3バケットをスキャンするが、CloudTrailはログアカウントのS3バケットに書き込みたいとします。このようなシナリオでは、データセキュリティを使用するために別のCloudTrailバケットを作成する必要はありません。
+
+image::administration/aws-cloudtrail-common-bucket-example-1.png[]
+
+[.procedure]
+. Prisma Cloud Data Securityがログ記録アカウントのS3バケットにアクセスするには、CloudTrailバケットポリシーを更新して、監視対象アカウントのオンボードPrisma Cloudロールへのアクセスを許可します。+++<draft-comment>https://redlock.atlassian.net/wiki/spaces/RED/pages/2378302171/Common+Cloudtrail+Bucket+support によると、以下に提供されるソリューション1は非推奨です。新しいソリューション2「プラットフォームから共通のログアカウントを再利用」を追加する必要があります。Ashwiniがチケットを作成し、この変更を確認するためにVigneshに会う。バージョン 22.8.1/.2を修正</draft-comment>+++
++
+次のように、CloudTrailバケットポリシーを更新します。
++
+----
+{
+    "Sid": "PrismaCloudStorageStatement",
+    "Effect": "Allow",
+    "Principal": {
+         "AWS": "arn:aws:iam::123456789101:role/PrismaCloudReadOnlyRoleWithDLP"
+    },
+    "Action": [
+      "s3:GetBucketLocation",
+      "s3:GetObject"
+    ],
+    "Resource": [
+       "arn:aws:s3:::bucket-name",
+       "arn:aws:s3:::bucket-name/*"
+    ]
+}
+----
+
+. Prisma Cloudロールが監視対象アカウントのオブジェクトにアクセスするには、AWSマネジメントコンソールで次のタスクを実行します。
+
+.. ログ記録アカウントのCloudTrailバケットに移動します。
+
+.. *Permissions（権限）*タブを選択します。
+
+.. *Object Ownership（オブジェクトの所有権）*を*Bucket Owner Preferred（バケット所有者優先）*に設定します。
++
+image::administration/aws-cloudtrail-bucket-owner-1.png[]
++
+Bucket Owner Preferredに設定すると、バケット所有者はこのバケットに書き込まれた新しいオブジェクトの所有者となり、監視対象アカウントのPrisma Cloudロールは、この共通S3バケットにアクセスできるようになります。
++
+[NOTE]
+====
+暗号化されたCloudTrailバケットがある場合、Prisma Cloudロールは、そのCloudTrailバケットの暗号化に使用されたKMSキーにアクセスする必要があります。
+====

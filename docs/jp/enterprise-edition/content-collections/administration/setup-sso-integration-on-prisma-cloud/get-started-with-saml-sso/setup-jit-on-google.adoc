@@ -1,0 +1,70 @@
+:topic_type: タスク
+[.task]
+[#id96ef3f0e-6ca0-40c3-a03e-f4bb835d948e]
+== Googleでのジャストインタイム（JIT）プロビジョニング
+
+Googleでのジャストインタイム (JIT) プロビジョニングで、SSOを設定します。
+
+ジャストインタイム（JIT）プロビジョニングでローカル管理者を正常にセットアップするには、Google用のPrisma Cloudアプリを設定して、Prisma Cloudに認証されたSSOユーザーを追加するための、SAML応答を提供する必要があります。次に、Prisma Cloud上でSSOユーザーが正しいアクセス権を保有するように、ユーザーにPrisma Cloudロールを割り当てる必要があります。このロールでPrisma Cloudのデフォルトロールでない場合、Googleのユーザーにロールを割り当てる前に、このロールを定義する必要があります。
+
+[.procedure]
+. GoogleのJIT属性を作成します。
++
+Google で Prisma Cloud 用の SAML アプリをまだ作成していない場合は、「setup-sso-integration-on-prisma-cloud-for-google.xml[Prisma Cloud で Google SSO をセットアップする] を参照してください。
+
+. Prisma Cloudロールとして使用されるGoogleでカスタムロールを作成します。Prisma Cloudロールを各ユーザーが使用できるようにするには、このロール属性をGoogleワークスペースの登録ユーザーが使用できるようにする必要があります。
+
+.. スーパー管理者としてGoogle にログインし、*Directory（ディレクトリ） > Users（ユーザー）*を選択します。
+
+.. *More（詳細）> Manage Custom Attributes（カスタム属性の管理）*を選択します。
++
+image::administration/sso-google-jit-6.png[]
+
+.. *カスタム属性を追加します*。
++
+image::administration/sso-google-jit-8.png[]
+
+.. 次の詳細を入力します。
++
+* *Category（カテゴリ）* - カテゴリの名前を入力します（例： Prisma固有）。
+* *Custom fields - Name（カスタムフィールド-名前）*- 名前としてロールを入力し、情報タイプテキストを選択し、組織の要件に応じて、単一または複数の値を選択できます。Prisma Cloud は、1人のユーザーに対して複数のロールをサポートします。
++
+image::administration/sso-google-jit-7.png[]
+
+.. *Add（追加）*をクリックして、ロールをカスタム属性として追加します。
+
+. JIT属性をマップします。
+
+.. スーパー管理者としてGoogleにログインし、*Apps（アプリ）> Web and mobile apps（Webおよびモバイルアプリ）*を選択します。
+
+.. JITプロビジョニングを有効にするアプリケーションをクリックします。
++
+image::administration/sso-google-jit-9.png[]
+
+.. *SAML attribute mapping（SAML属性マッピング）*を展開し、*Add Mapping（マッピングの追加）*をクリックします。
+
+.. 電子メール、名、姓、およびロールの属性を入力し、*Save（保存）*をクリックします。
++
+image::administration/sso-google-jit-10.png[]
+
+.. 上記の手順でマップした属性名をコピーします。
+
+. JITを有効にします。
+
+.. Prisma Cloudにログインして、 *Settings（設定）> SSO*の順に選択します。
+
+.. Just in Time (JIT) Provisioning（ジャストインタイム（JIT）プロビジョニングで、*JIT プロビジョニングを有効にします*。
+
+.. 属性の値を入力します。上記の手順3の属性名を次に示します。
+
+.. *Save(保存）*して、ユーザーのJITを有効にします。
++
+image::administration/sso-onelogin-jit-10.png[]
+
+. JITを検証します。
+
+.. Googleワークスペースに属し、Prisma Cloudではまだプロビジョニングされていないユーザーとして Googleメールにログインします。Prisma固有のロールを含むすべての属性がこのユーザーに対して設定されていることを確認します。
+
+.. *Prisma <name>（Prisma <名前>）*（設定したSAMLカスタム アプリケーション） をクリックして、Prisma Cloudインスタンスに直接ログインします。
+
+.. 管理者としてPrisma Cloudにログインし、*Settings（設定）> Users（ユーザー）*を選択して、上記のユーザーがプロビジョニングされていることを検証します。

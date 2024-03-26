@@ -1,0 +1,64 @@
+== ネットワークフロークエリ例
+
+//Some examples for Network Flow Log Queries.
+
+RQLでxref:network-flow-query-attributes.adoc[ネットワークフロークエリ属性]でネットワークフローの問題を調べる方法をいくつかの例で紹介します。
+
+[cols="44%a,56%a"]
+|===
+|ユースケース
+|RQL
+
+
+|インターネットおよび不審なIPに端を発する、Database（データベース）ロールを持つリソース宛のトラフィックを表示する。
+|----
+network from vpc.flow_record where source.publicnetwork IN ( 'Suspicious IPs' , 'Internet IPs' ) and dest.resource IN ( resource where role IN ( 'AWS RDS' , 'Database' ) )
+----
+
+
+|保護されていないポートを使ってインターネット経由でアクセス可能なインスタンスを検索する。
+|----
+network from vpc.flow_record where source.publicnetwork IN ( 'Internet IPs' ) and protocol = 'TCP' AND dest.port IN ( 21,23,80)
+----
+
+
+|ネットワークトラフィックを受信している、MeltdownおよびSpectre脆弱性を持つホストを検索する。
+|----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type IN ( 'Host Vulnerability' ) AND finding.name IN ( 'CVE-2017-5754', 'CVE-2017-5753', 'CVE-2017-5715' ) )  and bytes > 0
+----
+
+
+|インターネットから直接アクセスできないクラウドアセットを狙って、インターネットIPや不審なIPから発信された、マルウェアのタイプがDDoS、HackingTool、またはWormと分類されているトラフィックを確認する。
+|----
+network from vpc.flow_record where src.publicnetwork IN ('Suspicious IPs','Internet IPs') AND dest.resource IN ( resource where role not in ( 'AWS NAT Gateway' , 'AWS ELB' ) ) and protocol not in ( 'ICMP' , 'ICMP6' ) AND threat.source = 'AF' AND threat.tag.group IN ( 'DDoS', 'HackingTool', 'Worm' )
+----
+
+
+|Webサーバー、NATゲートウェイ、またはELB外にある任意のインスタンスへのインターネットからのトラフィックを検索する。
+|----
+network from vpc.flow_record where src.publicnetwork IN ('Suspicious IPs','Internet IPs') AND dest.resource IN ( resource where role not in ( 'AWS NAT Gateway' , 'AWS ELB' ) ) and protocol not in ( 'ICMP' , 'ICMP6' )
+----
+
+
+|AWS ELBで10件を超える一意のピアIPアドレスと接続しているけれども、それらのピアIPがデータベース（Database）として機能しているエンドポイントではない、送信元エンティティを検索する。
+|----
+network from vpc.flow_record where src.resource IN (RESOURCE WHERE role = ('AWS ELB') AND source.outboundpeers > 10) AND dest.resource IN (RESOURCE WHERE role != ('Database'))
+----
+
+
+|インターネットにトラフィックを送信しているプライベートIPアドレス（CIDRフォーマットで指定されている）のすべてのインスタンスを識別する。
+|----
+network from vpc.flow_record where cloud.account=account_name AND source.ip IN(172.31.0.0/12,10.0.0.0/8) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
+----
+[NOTE]
+====
+CIDR形式のパブリックIPアドレスは、送信元IPアドレスまたは宛先IPアドレスとして、またはカンマ区切り値リストとしては設定できません。
+====
+
+
+|指定したIPアドレスのリストが、トラフィックをインターネットに送信しているかどうかを表示する。
+|----
+network from vpc.flow_record where cloud.account=account_name AND source.ip IN(52.31.0.0,10.0.8.0) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
+----
+
+|===

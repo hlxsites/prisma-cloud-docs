@@ -1,0 +1,74 @@
+:topic_type: タスク
+[.task]
+== GCP組織のフローログを有効にする
+GCP 組織のフローログをエクスポートするシンクを作成して構成します。
+
+Prisma Cloudは、GCP組織またはフォルダリソース階層のフローログ内のトラフィックデータを利用して、クリプトマイニング、データ抜き取り、ホストの不正利用などのネットワーク上の脅威を検出します。Prisma Cloudでフローログデータを分析するには、まずクラウドストレージバケットにフローログをエクスポートするための、シンクを作成する必要があります。GCP組織またはフォルダ全体のシンクを設定するには、gcloudコマンドラインツールを使用します。
+
+[NOTE]
+====
+フローログを有効にすると、外向きネットワークトラフィックのコストが高くなります。Prisma Cloudでは、Prisma Cloudインフラに非圧縮GCPログを送信することにより発生する外向きネットワークトラフィックのコストを大幅に減らすために、xref:flow-logs-compression.adoc[GCPでフローログの圧縮]を有効にすることを強くお勧めします。
+====
+
+[.procedure]
+. Prisma Cloudで監視する組織の各プロジェクト内の各VPCのフローログを有効にします。
++
+.. xref:enable-flow-logs-for-gcp-project.adoc[GCPでVPCネットワークのフローログを有効にします。]
+
+.. xref:enable-flow-logs-for-gcp-project.adoc[VPCフローログを収集しているバケットに追加の権限を追加します。]
+
+. https://console.cloud.google.com[GCPアカウント]から次の情報を収集してください。
++
+** クラウドストレージバケット名
+
+** Organization ID
+
+. https://cloud.google.com/sdk/docs/[Google Cloud SDK]をダウンロード、インストールします。
++
+SDKのインストール時には、GCPアカウントにログインする必要があります。このアカウントには、組織レベルで次の3種類の権限が必要になります。
++
+** Billing Account Administrator
+
+** Logging Administrator（ログ管理者）
+
+** Organization Administrator
+
+. クラウドストレージバケットのシンクを設定するために必要なサービスアカウントを作成するには、このコマンドを実行します。*Bucket-name*には、クラウドストレージのバケット名を、*Organization ID*にはご自分の組織IDを指定してください。
++
+または xref:enable-flow-logs-for-gcp-project.adoc[、「GCP プロジェクトのフローログを有効にする」のステップ 3]で説明されているように、GCP コンソールを使用してシンクを構成することもできます。
++
+[userinput]
+----
+$ gcloud logging sinks create <sink-name> storage.googleapis.com/<bucket-name> --include-children --organization=<organization-id> --log-filter="resource.type="gce_subnetwork" AND logName:"logs/compute.googleapis.com%2Fvpc_flows""
+----
++
+image::connect/gcp-gcloud-cli-organization-sink.png[]
++
+[NOTE]
+====
+GCPフォルダをオンボードする場合、https://cloud.google.com/iam/docs/understanding-roles#resource-manager-roles[Folder Viewer（フォルダ閲覧者）]ロールが必要です。userinput:[$ gcloud logging sinks create <sink-name> storage.googleapis.com/<bucket-name> --include-children --folder=<folder-id> --log-filter="resource.type="gce_subnetwork" AND logName:"logs/compute.googleapis.com%2Fvpc_flows""]コマンドを使用して、Cloud Storageバケット用シンクの設定に必要なサービスアカウントを作成できます。
+====
+
+. クラウドストレージバケットにアクセスするための、サービスアカウント権限を割り当てます。
++
+.. *Navigation menu（ナビゲーションメニュー）> Storage（ストレージ）*の順に選択して、クラウドストレージバケットを選択します。
+
+.. *Permissions（権限）> Add members（メンバーの追加）*の順に選択します。
+
+.. *Members（メンバー）*のサービスアカウントメールアドレスを追加して、*Storage（ストレージ）> Storage Admin（ストレージ管理者）*の順に選択して、*Add（追加）*をクリックします。
++
+image::connect/gcp-organization-storage-account-access.png[]
+
+. xref:onboard-gcp-org.adoc[GCP組織をオンボーディング]するとき、上記で作成したクラウドストレージバケットの名前を*フローログストレージバケット*に追加します。
+
+. (tt:[任意]) xref:flow-logs-compression.adoc[GCP でフロー ログ圧縮]を有効にします。
++
+Prisma Cloudでフローログ圧縮を有効にして、Google Cloud Dataflowサービスを使った、フローログの圧縮を自動化します。有効にすると、圧縮ログがフローログと同じストレージバケットに保管されます。Prisma Cloudインフラへの非圧縮GCPログの送信に関連するネットワーク発信コストを削減できます。
+
+. *Investigate（調査）*に移動して、名前をGCPクラウドアカウント名に変更して、以下のネットワーククエリを入力します。
++
+----
+network from vpc.flow_record where source.publicnetwork IN ('Internet IPs', 'Suspicious IPs') AND bytes > 0
+----
++
+このクエリは、インターネットまたは不審なIPアドレスから、クラウド環境にある任意のリソース上のネットワークインターフェイスに、0バイトを超えるデータを転送した、すべてのネットワークトラフィックを表示します。

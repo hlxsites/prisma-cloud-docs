@@ -1,0 +1,91 @@
+== Azure テナントを接続する 
+
+<<commercial>>, <<government>>, の方法また Prisma Cloud 上の<<china>> について学習する。*Azure テナント* をオンボーディングすると、アカウント、管理グループ、サブスクリプション、Active Directory を含むすべての Azure リソースが Prisma Cloud に接続されます。
+
+Prisma CloudをAzureクラウドアカウントに接続すると、トラフィックログの分析と監視、悪意のあるネットワーク活動やコンプライアンス違反の検出などの作業を行えます。組み込みのオンボーディング プロセスでは、Prisma CloudがAzure APIにアクセスすることを承認するために必要なAzureリソースを作成するために、次の3つの方法のいずれかを使用するオプションがあります。
+
+* xref:authorize-prisma-cloud.adoc#terraform[Terraform] (推奨)
+このワークフローは、Azure Active Directory 上で Prisma Cloud アプリケーションをセットアップするプロセスを自動化し、Azure サブスクリプションへの読み取り専用アクセスまたは読み取り/書き込みアクセスを可能にします。
++
+[NOTE]
+====
+Azure China ワークフローは、Terraform テンプレートの使用をサポートしていません。
+====
+* xref:authorize-prisma-cloud.adoc#json[カスタムロール JSONの使用]
+手動で作成したカスタムロールを使用すると、最小限のアクセス権でアクセスを制限するオプションもあります。これを実現するには、Active Directory で Prisma Cloud アプリケーションを手動でセットアップし、Azure API へのアクセスを承認するカスタム ロールを作成する必要があります。
+* xref:authorize-prisma-cloud.adoc#manual[Prisma Cloud の手動承認]
+組織が Terraform スクリプトの使用を制限している場合、Prisma Cloud が Azure API を呼び出すために必要な Azure リソースを手動で作成することを選択できます。
+
+[.task]
+[#commercial]
+=== Azure 商用テナントの接続
+
+オンボーディング プロセスを開始する前に、 xref:connect-azure-account.adoc#prerequisites[オンボーディングの前提条件] を必ず確認してください。以下の図は、アカウントをオンボーディングするために実行する手順の概要を視覚的に示しています。
+
+image::connect/az-tenant.gif[]
+
+[.procedure]
+. *始めましょう*
++
+.. *Settings （設定） > Providers（プロバイダー）*から、*Connect Provider >（プロバイダーの接続）> [クラウド アカウント]*を選択します。
+.. *Cloud to Secure（保護するクラウド）*として、*Azure*を選択します。
+.. [*スコープ*]で [*テナント*] を選択します。
+.. *展開タイプ*として *商用* を選択します。
+.. 次の *高度な* セキュリティ機能を有効にして、Prisma Cloud エクスペリエンスを最適化します。
++
+* xref:../../../runtime-security/agentless-scanning/agentless-scanning.adoc[エージェントレススキャンのスキャン] は、Defender をインストールすることなく、ホストとコンテナの脆弱性とコンプライアンス リスクをスキャンします。エージェントレススキャンのスキャンxref:../../../runtime-security/agentless-scanning/onboard-accounts/onboard-accounts.adoc[設定]を更新することもできます。
+
+* *サーバーレス機能スキャン* は、AWS Lambda、Azure、Google 関数などのクラウド プロバイダー関数をスキャンして、 xref:../../../runtime-security/vulnerability-management/scan-serverless-functions.adoc[脆弱性] と xref:../../../runtime-security/compliance/visibility/serverless.adoc[コンプライアンス]を調べます。サーバーレススキャンのスキャンxref:../../../runtime-security/agentless-scanning/onboard-accounts/onboard-accounts.adoc[設定]を更新することもできます
+
+* *Agent-Based Workload Protection* により、Defender の自動展開が可能になり、xref:../../../runtime-security/install/deploy-defender/host/auto-defend-host.adoc[VM]、xref:../../../runtime-security/install/deploy-defender/container/container.adoc[コンテナー]、xref:../../../runtime-security/install/deploy-defender/kubernetes/kubernetes.adoc[Kubernetes オーケストレーター]などのリソースを保護できます。レジストリスキャン、Kubernetes 監査、および防御側が必要とするその他の機能も有効になっています。
++
+NOTE: *エージェントレス ワークロード スキャン* と *サーバーレス機能スキャン*を選択すると、*組織スキャン* トグルが使用可能になります。*オンに* 切り替えると、テナントにリンクされたすべてのアカウントがスキャンされます。
+
+* ネットワークとユーザーの脅威を識別する*脅威検出*は、デフォルトで有効になっています。
++
+[NOTE] 
+====
+次の推奨機能はデフォルトで有効になっています。
+
+* *Misconfigurations（設定ミス）*(Foundational) は、クラウド リソースと取り込みメタデータの脆弱性をスキャンします。
+* *アイデンティティセキュリティ*(Foundational) は、ID の正味有効なアクセス許可を計算し、アクセスを管理します。
+* *脅威検出*(高度) は、ネットワークとユーザーの脅威を識別します。
+====
+//include::../../fragments/sec-caps-perms.adoc[]
+
+.. [*次へ*] をクリックして、オンボーディング フローに進みます。
+
+. *アカウントの設定*
++
+.. [*アカウントの構成*] ページで、 *ディレクトリ テナント ID* を含む *アカウントの詳細*を 入力し、 *アカウント名*を選択します。
+.. オプションで IaC (Infrastructure as Code) テンプレートから誤って構成されたリソースを修正する場合は、*修正*の チェックボックスをクリックします。この機能には追加の権限が必要です。
+.. 推奨される Terraform テンプレートを使用して必要なアカウントの詳細を提供している場合は、*Terraform スクリプトのダウンロード*をクリックし、スクリプトの出力からフォームの詳細を入力します。スクリプト出力から *アプリケーション（クライアント） ID*, *アプリケーションクライアント シークレット*、*エンタープライズアプリケーションオブジェクトID*のxref:authorize-prisma-cloud.adoc#terraform[詳細]を提供します。
+.. ネットワーク セキュリティ グループ (NSG) を介したイングレス/エグレス IP トラフィックに関する情報を表示する場合は、ネットワーク セキュリティ グループ (NSG) フロー ログの取り込みを有効にします。
+.. すべてのテナント メンバー アカウントをオンボーディングすることをお勧めしますが、これを無効にして、メンバー アカウントのサブセットを含めるか除外するかを選択できます。
+.. デフォルトのアカウント グループを選択するか、ドロップダウンのアカウント グループの 1 つから選択することもできます。
++
+Prisma Cloud 上の異なるアカウント グループにアカウントを選択的に割り当てる場合は、 xref:../../../administration/create-manage-account-groups.adoc[複数のクラウド アカウントを含めるようにアカウント グループを変更]できます。
+.. [次へ] をクリックします。
+
+. *レビューステータス*
++
+.. [*ステータスの確認*] ページで、選択したすべての *セキュリティ機能*に 緑色の [有効] ボタンが表示されていることを確認します。選択した関数の横に [*チェックが失敗した*] 場合が表示されます。失敗したチェックの横にあるドロップダウンをクリックし、リストされている不足している権限を追加します。
+.. [*保存して閉じる*] をクリックしてオンボーディングを完了するか、[*保存して別のアカウントを登録*] をクリックします。
+
+ 
+[#government]
+=== Azure 政府テナントを接続する
+
+Azure Government アカウントを追加するには、上記の Azure 商用で概説されている手順に従いますが、次の例外があります。
+
+* 開始手順を完了するときに、展開の種類として [*Government*] を選択します。
+* 構成ステップにおいて*修復*は、Azure Government アカウントでは使用できません。
+
+[#china]
+=== Azure China テナントの接続
+
+https://app.prismacloud.cn/[Prisma Cloud]でのアカウント オンボーディングは、現在 Azure China にデプロイされているクラウド リソースでのみ利用できます。上記の Azure テナントで概説されている手順に従って、Azure China アカウントをオンボードディングしますが、次の例外があります。
+
+* Azure China では、Terraform テンプレートを使用してクラウド アカウントをオンボードすることはサポートされていません。Azure China テナントの監視を開始するには、 xref:authorize-prisma-cloud.adoc#manual[手動のオンボーディング手順] を確認し、Azure China アカウントから必要な情報を収集します。
+* 構成ステップにおいて*修復*は、Azure China アカウントでは使用できません。
+* エージェントレス ワークロード スキャン、サーバーレス機能スキャン、エージェント ベースのワークロード保護などの高度なセキュリティ機能は、Azure China では利用できません。

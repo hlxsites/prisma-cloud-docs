@@ -1,0 +1,62 @@
+== OpenStack Security groups allow ingress from 0.0.0.0:0 to port 22 (tcp / udp)
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| fa01807e-61b1-4582-af35-840299eebc3e
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/openstack/SecurityGroupUnrestrictedIngress22.py[CKV_OPENSTACK_1]
+
+|Severity
+| LOW
+
+|Subtype
+| Build
+
+|Frameworks
+| Terraform, Terraform Plan
+
+|=== 
+
+
+
+=== Description 
+
+
+Allowing unrestricted ingress access on port 22 (SSH) in OpenStack security groups exposes instances to potential unauthorized access and brute force attacks. 
+SSH is a common target for attack due to its widespread use and access to shell on the instance. 
+Restricting access to known IP addresses or IP ranges helps mitigate this risk by limiting who can attempt to connect to instances via SSH. 
+This policy checks for OpenStack security groups that allow unrestricted ingress on port 22 and fails if any are found, encouraging the practice of least privilege access.
+
+
+=== Fix - Buildtime
+
+*Terraform*
+
+
+*Resource:* openstack_networking_secgroup_rule_v2
+
+Ensure that the security group rule for SSH (port 22) ingress does not allow access from '0.0.0.0/0' (all IP addresses).
+
+
+[source,go]
+----
+resource "openstack_compute_secgroup_v2" "secgroup_1" {
+  name        = "my_secgroup"
+  description = "my security group"
+
+  rule {
+    from_port   = 22
+    to_port     = 22
+    ip_protocol = "tcp"
++   cidr        = "192.168.0.0/16"
+  }
+}
+----
+
+By specifying a known IP range for SSH access, this configuration adheres to best practices for securing SSH access, reducing the risk of unauthorized access to instances.
