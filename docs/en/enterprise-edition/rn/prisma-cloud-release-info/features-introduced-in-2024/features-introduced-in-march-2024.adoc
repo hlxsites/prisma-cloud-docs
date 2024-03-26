@@ -7,11 +7,12 @@ Learn what's new on Prisma® Cloud in March 2024.
 * <<api-ingestions>>
 * <<new-policies>>
 * <<policy-updates>>
-//* <<update-ips-for-runtime>>
+* //<<policy-updates-iam>>
 * <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
 //* <<changes-in-existing-behavior>>
 * <<deprecation-notice>>
+
 
 [#announcement]
 === Announcement
@@ -32,6 +33,7 @@ Contact your Prisma Cloud Customer Success team for more details.
 
 |===
 
+
 [#new-features]
 === New Features
 
@@ -40,6 +42,32 @@ Contact your Prisma Cloud Customer Success team for more details.
 |*Feature*
 |*Description*
 
+
+//CWP-56798
+|*Blobstore Scanning Defender Upgrade for Tanzu Customers*
+|Enhanced the existing blobstore scanning feature for Tanzu customers. As a part of this enhancement, existing blobstore scanning defenders will now appear disconnected and new defender instances will be automatically created to replace them. The disconnected blobstore will disappear after 24 hours as part of the retention process. This upgrade excludes Linux and Windows defenders (Full coverage defenders). If you have configured blobstore scanning and assigned it to a specific blobstore defender after the release of 32.04, you are required to manually edit the configurations and change it to a newly created blobstore defender scanner. This release will also introduce a new tile support - Jimmy for TAS.
+
+//CWP-56557
+|*Added Account ID information to the Defenders dashboard*
+|Added *Account ID* to the manage Defenders dashboard under *Manage > Defenders*.
+The *Account ID* is also included in the downloadable CSV file.
+
+//CWP-56782
+|*Enhanced the vulnerability assessment process*
+|Prisma Cloud now has an enhanced vulnerability assessment process for applications installed through the OS.
+If Prisma Cloud can't detect any vulnerabilities in the vendor feed, it automatically searches for third-party security data to ensure comprehensive security coverage.
+Go to *Monitor > Vulnerabilities > Vulnerability Explorer* for a comprehensive list of the detected vulnerabilities.
+
+//CWP-56790
+//March 26: Blurb moved to update 5. Update in the Jira ticket.
+// |*Added support of Go packages extraction on Windows.*
+// |Defenders now support the extractions of Go packages on Windows.
+// This package extraction allows the Prisma Cloud Defenders to extract Go packages in zip, tar.gz or tar.bz2 formats.
+
+//CWP-56791
+|*Exclude Go CVEs for Windows from the CVEs of Unix-based systems*
+|Prisma Cloud now excludes vulnerabilities found in Go packages that are specific to Windows from UNIX based operating systems in the *Vulnerability Explorer*.
+Go to *Monitor > Vulnerabilities > Vulnerability Explorer* for a comprehensive list of the detected vulnerabilities.
 
 |*Cloud Discovery and Exposure Management Enhancements in Prisma Cloud*
 
@@ -158,6 +186,7 @@ tt:[24.3.2]
 //* Sensitive database workloads exposed to the internet
 //* Object Storage buckets with sensitive data exposed through network connectivity to external cloud accounts or networks
 //* Kubernetes Services that are internet exposed and the underlying endpoints and associated deployments
+
 
 
 [#api-ingestions]
@@ -927,6 +956,7 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-stora
 |===
 
 
+
 [#new-compliance-benchmarks-and-updates]
 === New Compliance Benchmarks and Updates
 
@@ -975,6 +1005,23 @@ tt:[*24.3.2*]
 |===
 |*Change*
 |*Description*
+
+//CWP-56590 [Doc Ticket] CWP-49617 [Eng Ticket]
+|*Report vulnerabilities using Package URL (purl) format*
+|The following API responses include a new parameter, ‘purl’:
+
+* https://pan.dev/compute/api/get-images[Get Image Scan Results]
+* https://pan.dev/compute/api/get-registry/[Get Registry Scan Results]
+* https://pan.dev/compute/api/get-scans/[Get All CI Image Scan Results]
+* https://pan.dev/compute/api/get-hosts/[Get Host Scan Results]
+* https://pan.dev/compute/api/get-vms/[Get VM Image Scan Results]
+* https://pan.dev/compute/api/get-serverless/[Get All CI Image Scan Results]
+
+The ‘purl’ field identifies the absolute path for the packages.
+
+//CWP-56448 [Doc Ticket] CWP-46058 [Eng Ticket]
+|*API for sending console logs to remote syslog*
+| https://pan.dev/compute/api/post-settings-logging/[Add Logging Settings] API includes a new parameter ‘cert’ under ‘Syslog’ to configure a TLS certificate.
 
 |*Asset Explorer APIs*
 
@@ -1073,7 +1120,5 @@ You must use the following APIs released previously that provide the same functi
 
 * https://pan.dev/prisma-cloud/api/code/get-periodic-findings/[Get Code Issues from Periodic Scans]
 * https://pan.dev/prisma-cloud/api/code/get-cicd-findings/[Get Code Issues from Pull Requests Scans and CICD Runs]
-
-
 
 |===
