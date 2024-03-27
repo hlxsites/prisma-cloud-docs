@@ -1,5 +1,6 @@
-Puts all containers into relearn mode.
+Puts all containers into learning mode.
 
+For more information, refer to [Learning mode](https://docs.prismacloud.io/en/classic/compute-admin-guide/runtime-defense/runtime-defense-containers#undefined) in Runtime Defense for Containers.
 
 ## cURL Request
 

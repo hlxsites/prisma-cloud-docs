@@ -50,6 +50,13 @@ class Endpoint:
   path: str
   method: str
 
+def add_server_details(spec):
+  #spec = load_spec_file(spec_file)
+  if "servers" not in spec:
+    spec["servers"] = []
+  server_object = {"url": "PATH_TO_CONSOLE"}
+  spec["servers"].append(server_object)
+
 
 def gen_spec(spec_file, config_file):
 
@@ -62,7 +69,7 @@ def gen_spec(spec_file, config_file):
   # Create a config object.
   config = Config(spec, inclusions, exclusions)
   
-
+  add_server_details(config.spec)
   # Apply tag to the spec according to the overrides in the config file.
   retag_spec(config)
 
