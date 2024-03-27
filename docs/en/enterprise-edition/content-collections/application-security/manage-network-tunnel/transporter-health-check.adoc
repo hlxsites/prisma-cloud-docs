@@ -1,15 +1,34 @@
 == Transporter Health Check
 
-The health check provides about the VCS integrations and the most recent connection establishment time. The Transporter runs health checks every hour, and you manually refresh the connection at any time through Prisma Cloud.
+The health check provides about the VCS integrations and the most recent connection establishment time. The Transporter runs health checks every hour. For manual health checks see <<#transporter-health-check,Health Checks>> below.
 
-Prisma Cloud scans every Transporter configuration for a secure connection. After authenticating the secure connection, you will be able to view the health check of the Transporter.
-
+Prisma Cloud scans every Transporter configuration for a secure connection. After authenticating the secure connection, you will be able to view the health check of the Transporter:
+. In *Application Security*, select *Settings* > *Network Tunnels*.
+. Select your Transporter from the *Transporter* field of the *Manage Integrations* step of the integration wizard.
++
+Your Transporter settings are displayed.
++
 image::application-security/transport-health-check1.1.png[]
+. Verify (under the Transporter field) that your Transporter is connected.
 
 NOTE: You must run at least three test checks before running the Docker image. Response options: *Pass*: `ok:true`, *Fail*: `ok:false`.
 
-=== Health Check Types
+[#transporter-health-check]
+=== Health Checks
 
+You can perform the following health checks to verify Transporter connectivity.
+
+* *Tunnel connectivity check from the Prisma Cloud platform*: Select the *refresh* icon to perform a connectivity check. The result is displayed in the UI.
++
+image::application-security/transporter-health-check-refresh1.1.png[]
+
+* *Browser Configuration Check and Transporter Testing from VCS Server*: Run: `curl -X GET https://transporter.customername.com:8000/healthz -k`.
+
+This check verifies browser access verification and performs a VCS Server Health Check. Ensure that the browser used for configuration has access to the Prisma Cloud portal, VCS UI using the domain name provided during Transporter setup, and the Transporter URL with its designated port (e.g., https://transporter.customername.com:8000/healthz).
+
+
+
+////
 Prisma cloud supports three types of client health checks: 'Transporter Client at VCS Domain', 'Transporter Client at Prisma Cloud Server' and 'Transporter Client in client environment and Transporter Client at Prisma Cloud environment'.
 
 === Transporter Client at VCS Domain
@@ -68,6 +87,5 @@ curl -X POST https://your-prisma-server-url/externalcheck/login \
 //+
 //Example: `curl -X GET \http://localhost:8080/healthz`.
 
-==== Browser Configuration Check and Transporter Testing from VCS Server
 
-This check verifies browser access verification and performs a VCS Server Health Check. Ensure that the browser used for configuration has access to the Prisma Cloud portal, VCS UI using the domain name provided during Transporter setup, and the Transporter URL with its designated port (e.g., https://transporter.customername.com:8000/healthz).
+////
