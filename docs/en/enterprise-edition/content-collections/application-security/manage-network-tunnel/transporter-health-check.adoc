@@ -14,11 +14,13 @@ Prisma cloud supports three types of client health checks: 'Transporter Client a
 
 === Transporter Client at VCS Domain
 
+The internal check route verifies connectivity with your VCS machine via Transporter. To perform this test, apply additional headers to a 'curl' command:
+
 *Route - /internalcheck*: Verifies connectivity with your VCS machine via Transporter.
 
 // Example: `curl -X GET \https://your-transporter-hostname/internalcheck`.
 
-Apply additional headers to a 'curl' command to specify the target VCS for the check:
+*Additional Headers*: Apply additional headers to a 'curl' command to specify the target VCS for the check:
 
 * *x-forwarded-host*: Specifies the VCS machine hostname for the check. 
 //+
@@ -31,6 +33,16 @@ Apply additional headers to a 'curl' command to specify the target VCS for the c
 * *x-forwarded-proto*: Specifies the protocol for checking connectivity, either HTTPS or HTTP. 
 //+
 //Example: `curl -H "x-forwarded-proto: <https_or_http>" 
+
+To conduct the test: 
+
+. Log into the VCS server.
+. Run tests back to the Transporter to confirm accessibility.
+. Use the transporter URL and designated port for testing. Example: `curl https://transporter.customername.com:8000/healthz -k`.
++
+A successful test result returns '{"ok":true}'.
++
+image::application-security/transporter-vcs-server-health-check.png[]
 
 === Transporter Client at Prisma Cloud Server
 
@@ -55,3 +67,7 @@ curl -X POST https://your-prisma-server-url/externalcheck/login \
 * */healthz*: Used for Docker `healthcheck` on the internal port `8080`. 
 //+
 //Example: `curl -X GET \http://localhost:8080/healthz`.
+
+==== Browser Configuration Check and Transporter Testing from VCS Server
+
+This check verifies browser access verification and performs a VCS Server Health Check. Ensure that the browser used for configuration has access to the Prisma Cloud portal, VCS UI using the domain name provided during Transporter setup, and the Transporter URL with its designated port (e.g., https://transporter.customername.com:8000/healthz).
