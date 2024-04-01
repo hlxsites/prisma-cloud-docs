@@ -1,0 +1,121 @@
+:topic_type: task
+
+[.task]
+== Connect AWS CodeCommit
+
+Integrate Prisma Cloud with your AWS CodeCommit version control system (VCS) to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up the AWS CodeCommit platform.
+This integration enables security scans to identify Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) vulnerabilities, exposed secrets, license mis-compliance and CI/CD pipeline risks in your AWS CodeCommit, allowing you to understand and fix issues as soon as they are detected, resulting in an enhanced security posture for your organization.
+
+===  Authorization Process Overview
+
+During integration, Prisma Cloud provides you with a CloudFormation (CFN) template for deploying your AWS account. Once deployed, the CFN template will establish the following components in your environment:
+
+* An IAM role configured with access to AWS CodeCommit
+* An SNS topic with an HTTP subscription to the Prisma Cloud webhook URL
+
+Subsequently, every CloudFormation event occurring in your account will trigger an SNS event sent to the Prisma Cloud AWS account, including 'Creation', 'Update' and 'Deletion'.
+
+image::application-security/aws-event-overview.png[]
+
+[.procedure]
+
+. Before you begin.
+.. Grant the Prisma Cloud user the necessary permissions for integrating Prisma Cloud with your AWS CodeCommit VCS, as specified in <<#user-permissions, User Permissions>> below.
+
+.. Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console.
+
+..  Due to CloudFormation's constraints, Simple Notification Service (SNS) events for creations, deletions and so on need to reside in the same region as the stack. To accommodate situations where a customer's Prisma Cloud account and stack are in different regions, an SNS topic must be generated for each accessible region.
++
+NOTE: In the context of AWS, a 'stack' refers to a collection of AWS resources that are created, updated, and deleted together as a single unit. This allows for the management of related resources as a cohesive unit, making it easier to provision and manage complex infrastructure deployments.
+
+. . On the Prisma Cloud Application Security console.
+.. Select *Settings* > *Connect Provider* > *Code & Build Providers*.
++
+image::application-security/connect-provider-menu.png[]
+
+.. Select *AWS CodeCommit* (under Code Repositories) in the catalog that is displayed.
++
+image::application-security/aws-catalog1.2.png[]
++
+The *Integrate AWS CodeCommit* step of the integration wizard is displayed.
++
+image::application-security/[]
+
+. On the AWS console.
+
+.. Open CloudFormation or copy xref:[this link to be provided] and send it to your administrator.
+
+.. Provide the stack name.
++
+NOTE: The following fields are pre-populated:
+* *Resource Name Prefix*. You can modify the default value
+* *ExternalID*: DO NOT change this ID
++
+The stack is created. 
+
+//TODO - check if you have to click a button to create etc)
+
+. Verify integration: 
+.. In *Application Security*, select *Home* > *Settings* > *Code & Build Providers* > *AWS CodeCommit*.
+.. Confirm that the integration is displayed.
++
+image::application-security/[]
+// this is the current aws-integration-list1.0.png
+// NOTE: It may take up to 3 minutes for the integration status to be updated.
+
+. Select the repositories to be scanned.
+
+.. Click *Select repositories* in the integration's *Actions* column.
++
+The *Add Repositories* step of the integration wizard is displayed. 
+image::application-security/[]
+// this is the current aws-int-wizard-repos1.0.png
+
+.. Select which repositories will be scanned: 
++
+* *Permit all existing repositories* 
+* *Permit all existing and future repositories*.  This is the recommended option to ensure complete coverage and successful operation of all features. 
+* *Choose from repository list* > Select repositories
+
+
+. Select *Done* to complete the integration.
+
+. Next step: Monitor and manage scan results.
++
+* View your selected AWS CodeCommit repositories on the *Repositories* page. The next AWS CodeCommit scan will include these repositories
+* To view scan results and resolve issues, in *Application Security* select *Home* > *Projects*. See xref:../../../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Monitor and Manage Code Build Issues] for more information  
+
+
+
+=== Manage integrations
+
+On *Code & Build Providers*, you can also manage the integration by reselection of repositories and deletion of the repository and the integration.
+
+* *Reselect repositories*: Enables you to access the list of repositories for a scan
+* *Delete integration*: Enables you to delete repositories for a scan from the account
+
+////
+* *Manage VCS user tokens*: Enables you to integrate one or more AWS CodeCommit accounts.
++
+NOTE: You cannot delete the integration from *Repositories* for an account integration that supports multiple user tokens.
+////
+[#user-permissions]
+=== User Permissions
+
+Authorize the user integrating Prisma Cloud with your AWS CodeCommit instance with the following permissions.
+
+* *codecommit:^**: AWS Codecommit - All permissions necessary for accessing and managing repositories
+* *iam:ListAccountAliases*: Permission to list the account alias, which may be required for user identification and verification
+* *iam:GetRole*: Permission to retrieve information about the created IAM role, which is necessary for authentication and access control purposes
+
+
+==== CI/CD Module Permissions
+
+For CI/CD module support, a phase that is not mandatory for creating a PAT (Personal Access Token) has been added. This token contains the following permissions relevant to the CI/CD module:
+
+
+[#subscribed-events]
+=== Subscribed Events
+
+Below is a comprehensive list of events to which Prisma Cloud is subscribed. These events encompass various actions and changes occurring within your AWS CodeCommit environment that trigger notifications and integrations with Prisma Cloud.
+
