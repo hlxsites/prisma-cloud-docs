@@ -117,6 +117,7 @@ helm install transporter \
     --set transporter.transporterAlias=<transporter_alias_provided_by_prisma_cloud> \
     --set transporter.transporterUrl=transporter.bridgecrew.cloud \
     --set transporter.tls.enabled=true \
+    --set transporter.logLevel=info \ 
     --set "ingress.hosts[0].host=transporter.bridgecrew.cloud" \
     --set "ingress.hosts[0].paths[0].path='\'" \
     --set tls.enabled=true \
@@ -142,7 +143,8 @@ helm install transporter \
     --set transporter.secretKey=<PRISMA_ACCESS_KEY> \
     --set transporter.serverUrl=wss://api0-transporter/wss/transporter \
     --set transporter.transporterAlias=transporter-alias \
-    --set "transporter.transporterUrl=transporter.bridgecrew.cloud" \
+    --set "transporter.transporterUrl=transporter.bridgecrew.cloud" \    
+    --set transporter.logLevel=info \ 
     --set ingress.enabled=true \
     --set "ingress.hosts[0].host=transporter.bridgecrew.cloud" \
     --set "ingress.hosts[0].paths[0].path='\'" \
@@ -186,7 +188,7 @@ image::application-security/transporter-logs1.png[]
 [.task]
 
 [#install-yml]
-=== Install Transporter through the `values.yaml` File
+=== Install Transporter through the `values.yaml` file
 
 [.procedure]
 . Execute *steps 1-8* of <<install-helm-cli,Install Transporter through Helm install command on CLI>> above.
@@ -264,3 +266,10 @@ image::application-security/transporter-verify-connectivity-ui1.1.png[]
 The health check provides about the VCS integrations and the most recent connection establishment time. The Transporter runs health checks every hour, and you manually refresh the connection at any time through Prisma Cloud.
 
 For more on health checks see xref:transporter-health-check.adoc[Transporter Health Check]. 
+
+=== Enable Logs
+
+Configure logging to capture and store system events, errors, and activities for analysis and troubleshooting purposes through both CLI commands and the `values.yaml` file. By default, the logging level is set to `info`. You can customize the logging level by adjusting the `logLevel` parameter. Example: `--set transporter.logLevel=debug`.
+
+* *CLI commands*: To enable logging through CLI commands, add this parameter: `--set transporter.logLevel=debug` in either *step 2* option #1 Deploy with TLS on the pod or option #2 Deploy with Ingress Enabled and TLS Configured on Ingress (Pod TLS Disabled) from the <<#install-helm-cli,Install Transporter using the Helm install command in the CLI>> section above   
+* *values.yaml* file: Logging values are pre-configured in the `values.yaml` chart file 
