@@ -26,8 +26,14 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|*API Rate Limits*
+|*Login Experience Enhancements*
+//RLP-135039
 
+|Starting with the 24.5.1 release, users can expect a change in their login experience on the Prisma Cloud console. Updates to the Prisma Cloud login pages will provide support for all available authentication options (excluding IdP-initiated SAML SSO). This update also addresses an issue related to redirection to Palo Alto Networks SSO for login and addresses a bug preventing traversal of deep links for some users.
+
+*Impact*— The SSO Login Page will be updated to more clearly identify OIDC SSO login and add support for Palo Alto Networks SSO login. Redirection to Palo Alto Networks SSO will no longer occur when accessing Prisma Cloud links without a valid session. Deep links will be supported in cases in which previously they were not persisted through login flows.
+
+|*API Rate Limits*
 //RLP-129569
 
 |Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.5.2 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced. 
@@ -105,6 +111,29 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-desc
 ----
 
 *Impact—* Low. Existing alerts will be resolved when the task scheduled gets completed and new alerts will be generated if there is event scheduled for the EC2.
+
+|*AWS EMR cluster is not enabled with data encryption in transit*
+//RLP-131880
+
+|*Changes—* The policy RQL will be updated to ensure the correct match is obtained when the RQL condition `$.X.securityConfiguration contains $.Y.name` is changed to `$.X.securityConfiguration equals $.Y.name`.
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration contains $.Y.name) and ($.Y.EncryptionConfiguration.EnableInTransitEncryption is false)' ; show X;
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration equals $.Y.name) and ($.Y.EncryptionConfiguration.EnableInTransitEncryption is false)' ; show X;
+----
+
+*Impact—* Low. Existing alerts will be resolved and new alerts will be generated when the AWS EMR cluster is not enabled with data encryption in transit. 
 
 
 |*Azure Function app configured with public network access*
@@ -308,6 +337,73 @@ In RQL, the key will not available in the `api.name` attribute auto-completion.
 |23.9.2
 |24.6.2
 |* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
+
+
+|The following endpoints are deprecated as the date filters—time object or time string in query parameters or the request body—used by these APIs will be removed in the updated API endpoints. The updated API endpoints will always return current data.
+
+tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
+
+//RLP-120514
+
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend/[get /compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend/[post /compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-standard/[get /compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-standard/[post /compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-requirement/[get /compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-requirement/[post /compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-standard/[get /compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-standard/[post /compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-requirement/[get /compliance/posture/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-requirement/[post /compliance/posture/{complianceId}/{requirementId}]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Explorer and Reports*]
+
+* https://pan.dev/prisma-cloud/api/cspm/save-report/[post /report]
+* https://pan.dev/prisma-cloud/api/cspm/get-resource-scan-info/[get /resource/scan_info]
+* https://pan.dev/prisma-cloud/api/cspm/post-resource-scan-info/[post /resource/scan_info]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
+
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-v-2/[get /v2/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-for-asset-inventory-v-2/[post /v2/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-2/[get /v2/inventory/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-2/[post /v2/inventory/trend]
+
+
+|23.10.1
+
+|24.4.1
+
+|tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
+
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-v-2/[get /v2/compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-v-2/[post /v2/compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-v-2/[get /v2/compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-v-2/[post /compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-standard-v-2/[get /v2/compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-standard-v-2/[post /v2/compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-requirement-v-2/[get /v2/compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-requirement-v-2/[post /v2/compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-standard-v-2/[get /v2/compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-standard-v-2/[post /v2/compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-requirement-v-2/[get /v2/compliance/posture/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-requirement-v-2/[post /v2/compliance/posture/{complianceId}/{requirementId}]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Explorer and Reports*]
+
+* https://pan.dev/prisma-cloud/api/cspm/save-report-v-2/[post /v2/report]
+* https://pan.dev/prisma-cloud/api/cspm/get-resource-scan-info-v-2/[get /v2/resource/scan_info]
+* https://pan.dev/prisma-cloud/api/cspm/post-resource-scan-info-v-2/[post /v2/resource/scan_info]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
+
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-v-3/[get /v3/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-for-asset-inventory-v-3/[post /v3/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-3/[get /v3/inventory/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-3/[post /v3/inventory/trend]
+
 
 
 |tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
