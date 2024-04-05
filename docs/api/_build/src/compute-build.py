@@ -53,7 +53,6 @@ def get_prev_release_no(pandev_location):
 #make changes for the current release.
 def copy_product_folders(pandev_location):
   previous_release_no = get_prev_release_no(pandev_location)
-  
   destination_folder = os.path.join(pandev_location, 'products','compute','api',previous_release_no) 
   parentDir = Path(destination_folder).parent
   
