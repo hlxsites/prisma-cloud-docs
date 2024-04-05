@@ -1,0 +1,1404 @@
+== Features Introduced in February 2024
+
+Learn what's new on Prisma® Cloud in February 2024.
+
+* <<announcement>>
+* <<new-features>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+* <<update-ips-for-runtime>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<rest-api-updates>>
+//* <<changes-in-existing-behavior>>
+//* <<deprecation-notices>>
+
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Prisma Cloud Darwin Release*
+//received the blurb on Slack from Matangi. No Jira ticket for this.
+ 
+|The *Prisma Cloud Darwin Release* is now available for Prisma Cloud environments on app.gov. With the Code to Cloud™ intelligence capabilities in this release, your security and development teams can work together to reduce application risks and prevent breaches.
+
+With this change, your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities]. 
+
+When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation].
+
+Contact your Prisma Cloud Customer Success team for more details.
+
+|===
+
+[#new-features]
+=== New Features
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+
+|*View Saved Filters as Saved Views*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.2]
+//RLP-128172
+
+|Saved Filters on Prisma Cloud are now available as *Saved Views* on the Alerts, Compliance, and Governance pages. Navigate to *Home > Alerts/Compliance/Governance > Overview* to find your filter combinations available as *Saved Views*. The following caveats apply:
+
+* Views are no longer limited to a maximum of 20.
+* Saved Views are enabled by default for the persona (Cloud/Runtime/Application Security) you created them in. If you use the Prisma Cloud switcher to try another persona, the view is disabled but you have the option to re-enable it.
+* All users, except those who were added after the migration to Saved Views will have access to previously saved filter configurations.
+
+You can also create new https://docs.prismacloud.io/en/enterprise-edition/content-collections/alerts/saved-views[Saved Views] to store select filter combinations and table configurations for a customizable look at your security posture. 
+
+image::saved-views.gif[]
+
+
+|*OAuth 2.0 support for ServiceNow Integration*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.2]
+//RLP-122296
+
+|Prisma Cloud has enhanced its https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow[ServiceNow integration] with OAuth 2.0 support, establishing a standardized and secure authentication framework for heightened security. This enhancement simplifies access token management, allowing Prisma Cloud to interact seamlessly with ServiceNow on your behalf, without exposing sensitive credentials. The result reduces the risk of unauthorized access while ensuring a more efficient and secure integration experience.
+
+
+|tt:[Update] *Enhancements*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.2]
+//CNS-9541
+
+|Prisma Cloud includes the following enhancements for `config from network` RQL searches and policies:
+
+* Significant performance improvement on the Investigate page, with search results now delivered faster on an average.
+* Support for asset exclusion based on asset name, VPC ID, and tags.
+
+The following enhancements are specific to AWS:
+
+* Support for NLB and ALB listener port analysis.
+* Network path analysis now considers security groups attached to NLB.
+* Better representation of network path for East-West traffic over a transit gateway.
+* Better representation of network path for East-West traffic within a single VPC.
+
+The following enhancement is specific to Azure:
+
+* Support for NLB and ALB listener port analysis.
+
+|*Support Amazon Linux 2023*
+
+tt:[Secure the Runtime]
+
+tt:[24.2.2]
+
+//CWP-53557 and CWP-55790 (Doc ticket)
+
+|Prisma Cloud now supports Amazon Linux 2023 OS scans and security feed integration for Amazon Linux 2023.
+
+|*Enhanced CSV Organization*
+
+tt:[Secure the Runtime]
+
+tt:[24.2.2]
+
+//CWP-55094
+
+|Segregating vulnerability and compliance findings based on Download Context.
+
+|*Enhanced Compliance Report*
+
+tt:[Secure the Runtime]
+
+tt:[24.2.2]
+
+//CWP-54524
+
+|Added a new *Result* column to the compliance report CSV file. To get the report, go to *Monitor > Compliance > Compliance Explorer* and select *Containers*, *Images*, or *Hosts*. The new column shows either  *pass* or *fail* for each resource and the corresponding compliance check ID.
+
+|*Support for Just in Time (JIT) Auto-Provisioning*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.1]
+//RLP-120194
+
+|Prisma Cloud offers System Administrators the ability to auto-provision users using the Open ID Connect (OIDC) Single Sign-On (SSO) configuration. Configure https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/setup-sso-integration-on-prisma-cloud/get-started-with-oidc-sso/get-started-with-oidc-jit[OIDC Just in Time (JIT)] provisioning to grant Prisma Cloud users limited real-time access when they log into their IdP with the appropriate credentials.  
+
+
+|*Support for New Region on GCP*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.2.1]
+//RLP-129451
+
+|Prisma Cloud now ingests data for resources deployed in the Johannesburg region on GCP.
+
+To review a list of supported regions, select *Inventory > Assets*, and choose https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/cloud-service-provider-regions-on-prisma-cloud[Cloud Region] from the filter drop-down.
+
+image::gcp-joberg-region.png[]
+
+|*Added non-default branch scanning*
+
+tt:[Secure the Source]
+
+tt:[24.2.1]
+//Ticket on JB
+
+|You can now scan branches other than the main or master, such as a feature branch or sprint branch, to obtain a comprehensive overview of the security issues in those branches before merging them into the main branch.
+For more information, under the Application Security documentation, select Get Started and navigate to https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/get-started/non-default-branch-scan[Non-Default Branch Scan].
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+|*Service*
+|*API Details*
+
+|*AWS Batch*
+
+tt:[*24.2.2*]
+
+//RLP-122581
+|*aws-batch-job-definition*
+
+Additional permission required:
+
+* `batch:DescribeJobDefinitions`
+
+The Security Audit role includes the permission.
+
+|*AWS CodeBuild*
+
+tt:[*24.2.2*]
+
+//RLP-118748
+
+|*aws-code-build-source-credential*
+
+Additional permission required:
+
+* `codebuild:ListSourceCredentials`
+
+You must manually add the above permission to the CFT template to enable it.
+
+
+|*AWS CodeCommit*
+
+tt:[*24.2.2*]
+
+//RLP-120750
+
+|*aws-code-commit-repository*
+
+Additional permissions required:
+
+* `codecommit:ListRepositories`
+* `codecommit:GetRepository`
+
+The Security Audit Policy role includes the permissions.
+
+
+|*AWS CodeCommit*
+
+tt:[*24.2.2*]
+
+//RLP-120755
+
+|*aws-code-commit-approval-rule-template*
+
+Additional permissions required:
+
+* `codecommit:ListApprovalRuleTemplates`
+* `codecommit:GetApprovalRuleTemplate`
+
+The Security Audit Policy role includes the permission for `codecommit:ListApprovalRuleTemplates`.
+
+
+|*Amazon CodePipeline*
+
+tt:[*24.2.2*]
+
+//RLP-120757
+
+|*aws-code-pipeline-webhook*
+
+Additional permission required:
+
+* `codepipeline:ListWebhooks`
+
+You must manually add the `codepipeline:ListWebhooks` permission to the CFT template to enable it.
+
+
+|*AWS Config*
+
+tt:[*24.2.2*]
+
+//RLP-122576
+|*aws-configservice-aggregator*
+
+Additional permission required:
+
+* `config:DescribeConfigurationAggregators`
+
+The Security Audit role includes the permission.
+
+|*AWS DataSync*
+
+tt:[*24.2.2*]
+
+//RLP-122550
+
+|*aws-datasync-agent*
+
+Additional permissions required:
+
+* `datasync:ListAgents`
+* `datasync:DescribeAgent`
+
+The Security Audit role includes the permissions.
+
+|*Amazon EC2*
+
+tt:[*24.2.2*]
+
+//RLP-120745
+
+|*aws-ec2-vpc-endpoint-service*
+
+Additional permission required:
+
+* `ec2:DescribeVpcEndpointServices`
+
+The Security Audit Policy role includes the permission. 
+
+
+|tt:[Update] *Amazon Elastic Container Registry (ECR)*
+//RLP-127456 
+
+|*aws-ecr-image*
+
+Prisma Cloud updated the `aws-ecr-image` API to exclude the `lastRecordedPullTime` field from the JSON because it changes frequently causing too many resource snapshots.
+
+|tt:[Update] *OCI APIs*
+
+tt:[*24.2.2*]
+
+//RLP-121579, RLP-124361
+
+|Prisma Cloud updated `oci-compute-instance`, `oci-cloudguard-security-zone`, and `oci-apimanagement-apigateway-deployment` APIs to prevent the ingestion of deleted resources from Oracle Cloud Service Provider.
+
+`oci-cloudguard-security-zone` will be enhanced to ingest resources from multiple compartments, extending beyond the home region.
+
+|*Amazon EC2 Image Builder*
+
+tt:[*24.2.1*]
+
+//RLP-123966
+
+|*aws-imagebuilder-component*
+
+Additional permissions required:
+
+* `imagebuilder:ListComponents`
+* `imagebuilder:GetComponent`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*Amazon EC2 Image Builder*
+
+tt:[*24.2.1*]
+
+//RLP-123953
+
+|*aws-imagebuilder-image-recipe*
+
+Additional permissions required:
+
+* `imagebuilder:ListImageRecipes`
+* `imagebuilder:GetImageRecipe`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*Amazon EC2 Image Builder*
+
+tt:[*24.2.1*]
+
+//RLP-123951
+
+|*aws-imagebuilder-image-pipeline*
+
+Additional permissions required:
+
+* `imagebuilder:ListImagePipelines`
+* `imagebuilder:GetImagePipeline`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*Amazon EC2 Image Builder*
+
+tt:[*24.2.1*]
+
+//RLP-123946
+
+|*aws-imagebuilder-infrastructure-configuration*
+
+Additional permissions required:
+
+* `imagebuilder:ListInfrastructureConfigurations`
+* `imagebuilder:GetInfrastructureConfiguration`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*AWS Elastic Disaster Recovery*
+
+tt:[*24.2.1*]
+
+//RLP-122569
+
+|*aws-drs-job*
+
+Additional permission required:
+
+* `drs:DescribeJobs`
+
+You must manually add the above permission to the CFT template to enable it.
+
+|*AWS Elastic Disaster Recovery*
+
+tt:[*24.2.1*]
+
+//RLP-118756
+
+|*aws-drs-replication-configuration*
+
+Additional permissions required:
+
+* `drs:DescribeSourceServers`
+* `drs:GetReplicationConfiguration`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+|*AWS Elastic Disaster Recovery*
+
+tt:[*24.2.1*]
+
+//RLP-118753
+
+|*aws-drs-source-server*
+
+Additional permission required:
+
+* `drs:DescribeSourceServers`
+
+You must manually add the above permission to the CFT template to enable it.
+
+|*Google Cloud VMware Engine*
+
+tt:[*24.2.1*]
+
+//RLP-121318
+
+|*gcloud-vmware-engine-network*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.vmwareEngineNetworks.list`
+
+The Viewer role includes the permissions.
+
+
+|*Google Cloud VMware Engine*
+
+tt:[*24.2.1*]
+
+//RLP-123964
+
+|*gcloud-vmware-engine-network-policy*
+
+Additional permissions required:
+
+* `vmwareengine.locations.list`
+* `vmwareengine.networkPolicies.list`
+
+The Viewer role includes the permissions.
+
+
+|*Google Vertex AI AIPlatform*
+
+tt:[*24.2.1*]
+
+//RLP-121320
+
+|*gcloud-vertex-ai-aiplatform-dataset*
+
+Additional permission required:
+
+* `aiplatform.datasets.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+
+tt:[*24.2.1*]
+
+//RLP-121319
+
+|*gcloud-vertex-ai-aiplatform-hyperparameter-tuning-job*
+
+Additional permission required:
+
+* `aiplatform.hyperparameterTuningJobs.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+
+tt:[*24.2.1*]
+
+//RLP-124015
+
+|*gcloud-vertex-ai-aiplatform-index*
+
+Additional permission required:
+
+* `aiplatform.indexes.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+
+tt:[*24.2.1*]
+
+//RLP-124014
+
+|*gcloud-vertex-ai-aiplatform-feature-store-entity-type*
+
+Additional permissions required:
+
+* `aiplatform.featurestores.list`
+* `aiplatform.entityTypes.list`
+* `aiplatform.entityTypes.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|tt:[Update] *Google Cloud Firestore*
+
+tt:[*24.2.1*]
+
+//RLP-127556
+
+|*gcloud-cloud-firestore-native-database*
+
+Prisma Cloud updated the `gcloud-cloud-firestore-native-database` API to exclude the `earliestVersionTime` field from the resource configuration because it changes frequently causing too many resource snapshots.
+
+|tt:[Update] *Google Compute Engine (GCE)*
+
+tt:[*24.2.1*]
+
+//RLP-126590
+
+|*gcloud-compute-autoscaler*
+
+Prisma Cloud updated the `gcloud-compute-autoscaler` API to exclude the `recommendedSize` field from the resource configuration because it changes frequently causing too many resource snapshots.
+
+
+|===
+
+
+[#new-policies]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+
+
+|*Azure Batch Account configured with overly permissive network access*
+
+tt:[*24.2.2*]
+
+//RLP-69482
+
+|This policy identifies Batch Accounts configured with overly permissive network access. By default, Batch accounts are accessible from the all networks. With an Account access IP firewall, you can restrict it further to only a set of IPv4 addresses or IPv4 address ranges. With Private access Virtual Networks, the network traffic path is secured on both ends. It is recommended to configure the Batch account with an IP firewall or by Virtual Network, so that the Batch account is accessible only to restricted entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-batch-account' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.networkProfile.accountAccess.defaultAction equal ignore case Allow and properties.publicNetworkAccess equal ignore case Enabled
+----
+
+
+|*Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible*
+
+tt:[*24.2.2*]
+
+//RLP-124737
+
+|This policy identifies Azure Storage Accounts storing Machine Learning workspace high business impact data that are publicly accessible. Azure Storage account stores machine learning artifacts such as job logs. By default, this storage account is used when you upload data to the workspace. The attacker could exploit publicly accessible storage account to get machine learning workspace high business impact data logs and could breach in to the system by leveraging data exposed. It is recommended to restrict storage account access to only to the machine learning services as per business requirement.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y;
+----
+
+
+|*AWS account security contact information is not set*
+
+tt:[*24.2.2*]
+
+//RLP-126209
+
+|This policy identifies the AWS account which has not set security contact information. Providing dedicated contact information for security specific, AWS can directly communicate security advisories to the team responsible for handling security-related issues. Failure to specify security contact info in AWS risks missing critical advisories, leading to delayed incident response and increased vulnerability exposure. It is recommended to set security contact information to receive notifications.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-account-management-alternate-contact' group by account as X; filter ' AlternateContactType is not member of ("SECURITY") ' ;
+----
+
+
+|*Azure Cognitive Services account configured with local authentication*
+
+tt:[*24.2.2*]
+
+//RLP-126234
+
+|This policy identifies Azure Cognitive Services accounts that are configured with local authentication methods instead of AD identity. Local authentication allows users to access the service using a local account and password, rather than an Azure Active Directory (Azure AD) account. Disabling local authentication methods improves security by ensuring that Cognitive Services accounts require Active Directory identities exclusively for authentication. It is recommended to disable local authentication methods on your Cognitive Services account, instead use Azure Active Directory identities.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cognitive-services-account' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.disableLocalAuth does not exist or properties.disableLocalAuth is false) 
+----
+
+
+|*Azure Machine learning workspace is not configured with private endpoint*
+
+tt:[*24.2.2*]
+
+//RLP-126235
+
+|This policy identifies Azure Machine learning workspaces that are not configured with private endpoint. Private endpoints in workspace resources allow clients on a virtual network to securely access data over Azure Private Link. Configuring a private endpoint enables access to traffic coming from only known networks and prevents access from malicious or unknown IP addresses which includes IP addresses within Azure. It is recommended to create private endpoint for secure communication for your Machine learning workspaces.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.privateEndpointConnections[*] does not exist or properties.privateEndpointConnections[*] is empty or (properties.privateEndpointConnections[*] exists and properties.privateEndpointConnections[*].properties.privateLinkServiceConnectionState.status does not equal ignore case Approved))
+----
+
+
+// |*Azure Kubernetes Service (AKS) container service that is internet reachable with unrestricted access (0.0.0.0/0)*
+
+// tt:[*24.2.2*]
+
+//RLP-126309 (removing per Slack comment from Giri)
+
+// |This policy identifies Azure Kubernetes Service (AKS) container services that are internet reachable with unrestricted access (0.0.0.0/0). Container services with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+// *Policy Severity—* High
+
+// *Policy Type—* NetworkConfig
+
+// ----
+// config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'AZURE' and effective.action = 'Allow'
+// ----
+
+
+// |*AWS EKS K8s service that is internet reachable with unrestricted access (0.0.0.0/0)*
+
+// tt:[*24.2.2*] (removing per Slack comment from Giri)
+
+//RLP-126545
+
+// |This policy identifies AWS EKS K8s service that are internet reachable with unrestricted access (0.0.0.0/0). Containers with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+// *Policy Severity—* High
+
+// *Policy Type—* Network
+
+// ----
+// config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'AWS' and effective.action = 'Allow'
+// ----
+
+
+// |*IBM Cloud Block Storage volume for VPC is not encrypted with BYOK*
+
+//tt:[*24.2.2*]
+
+//RLP-127891 (removing per comment from Giri on Slack)
+
+// |This policy identifies IBM Cloud Block storage volumes that are not encrypted with Bring Your Own keys(BYOK). As a best practice, it is recommended to use BYOK so that no one outside the organization has access to the root key and only authorized identities have access to maintain the lifecycle of the keys.
+
+// *Policy Severity—* Information
+
+// *Policy Type—* Config
+
+// ----
+// config from cloud.resource where api.name = 'ibm-vpc-block-storage-volume' as X; config from cloud.resource where api.name = 'ibm-key-protect-registration' as Y;filter 'not($.Y.resourceCrn equals $.X.crn)' ; show X;
+// ----
+
+
+|*AWS Systems Manager EC2 instance having NON_COMPLIANT patch compliance status*
+
+tt:[*24.2.2*]
+
+//RLP-129452
+
+|This policy identifies if the AWS Systems Manager patch compliance status is "NON_COMPLIANT" with critical or high severity for managed instances. Instances labeled non-compliant might lack essential patches for security, stability, or meeting standards. Non-compliant instances pose security risks because attackers often target unpatched systems to exploit known weaknesses. As a security best practice, it's recommended to apply any missing patches to the affected instances.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ssm-resource-compliance-summary' AND json.rule = Status equals "NON_COMPLIANT" and ComplianceType contains "Patch" and ResourceType contains "ManagedInstance" and (NonCompliantSummary.SeveritySummary.CriticalCount greater than 0 or NonCompliantSummary.SeveritySummary.HighCount greater than 0)
+----
+
+
+|*Azure Microsoft Defender for Cloud set to Off for Databases*
+
+tt:[*24.2.2*]
+
+//RLP-129459
+
+|This policy identifies Azure Microsoft Defender for Cloud which has defender setting for Databases set to Off. Enabling Azure Defender for Cloud provides advanced security capabilities like threat intelligence, anomaly detection, and behaviour analytics. Defender for Databases in Microsoft Defender for Cloud allows you to protect your entire database estate with attack detection and threat response for the most popular database types in Azure. It is highly recommended to enable Azure Defender for Databases.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any((name equals SqlServers and properties.pricingTier does not equal Standard) or (name equals CosmosDbs and properties.pricingTier does not equal Standard) or (name equals OpenSourceRelationalDatabases and properties.pricingTier does not equal Standard) or (name equals SqlServerVirtualMachines and properties.pricingTier does not equal Standard))] exists
+----
+
+
+|*Azure Microsoft Defender for Cloud set to Off for Open-Source Relational Databases*
+
+tt:[*24.2.2*]
+
+//RLP-129460
+
+|This policy identifies Azure Microsoft Defender for Cloud which has defender setting for Open-Source Relational Databases set to Off. Enabling Azure Defender for cloud provides advanced security capabilities like threat intelligence, anomaly detection, and behaviour analytics. Microsoft Defender for Cloud detects anomalous activities indicating unusual and potentially harmful attempts to access or exploit databases. It is highly recommended to enable Azure Defender for Open-Source Relational Databases.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals OpenSourceRelationalDatabases and properties.pricingTier does not equal Standard)] exists
+----
+
+
+|*Azure Microsoft Defender for Cloud set to Off for Cosmos DB*
+
+tt:[*24.2.2*]
+
+//RLP-129461
+
+|This policy identifies Azure Microsoft Defender for Cloud which has defender setting for Cosmos DB set to Off. Enabling Azure Defender for the cloud provides advanced security capabilities like threat intelligence, anomaly detection, and behaviour analytics. Microsoft Defender for Azure Cosmos DB detects potential SQL injections, known bad actors based on Microsoft Threat Intelligence, suspicious access patterns, and potential exploitation of your database through compromised identities, or malicious insiders. It is highly recommended to enable Azure Defender for Cosmos DB.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals CosmosDbs and properties.pricingTier does not equal Standard)] exists
+----
+
+| *New to Configuration Build Policies*
+
+tt:[*24.2.2*]
+
+//RLP-129123
+
+|Starting with 23.12.1 196 new *Config* policies of subtype *Build* are added in GA on Prisma Cloud platform. See https://docs.prismacloud.io/en/enterprise-edition/policy-reference[Application Security Policy Reference Guide] for more details.
+
+Here are the list of policies:
+
+*Open API Policies*
+
+The list of policies with *High* policy severity:
+
+* Operation object uses 'password' flow in OAuth2 authentication
+* Security definitions uses basic auth
+* Operation Objects Uses Basic Auth
+* Global schemes use 'httpa' protocol instead of 'https'
+* API keys transmitted over cleartext
+* The path scheme is supports unencrypted HTTP connections
+* API spec includes a 'password' flow in OAuth2 authentication
+* Operation object uses 'password' flow in OAuth2 authentication
+
+The list of policies with *Medium* policy severity:
+
+* Security definition uses the deprecated implicit flow on OAuth2
+* Operation Objects Uses 'Implicit' Flow
+* Operation objects for PUT, POST, and PATCH operations do not have a 'consumes' field defined
+* The global security scope is not defined in the securityDefinitions
+* Array does not have a maximum number of items
+* Security scopes of operations are not defined in securityDefinition
+
+The list of policies with *Low* policy severity:
+
+* Operation objects do not have the 'produces' field defined for GET operations
+
+*AWS General Policies*
+
+The list of policies with *High* policy severity:
+
+* Comprehend Entity Recognizer's model is not encrypted by KMS using a customer managed Key (CMK)
+* Comprehend Entity Recognizer's volume is not encrypted by KMS using a customer managed Key (CMK)
+* The Connect Instance S3 Storage Configuration utilizes Customer Managed Key
+* DynamoDB table replica does not use CMK KMS encryption
+* AWS Lambda function is not configured to validate code-signing
+* MemoryDB snapshot is not encrypted by KMS using a customer managed Key (CMK)
+* Neptune snapshot is not securely encrypted
+* Neptune snapshot is encrypted by KMS using a customer managed Key (CMK)
+* RedShift snapshot copy is not encrypted by KMS using a customer managed Key (CMK)
+* Redshift Serverless namespace is not encrypted by KMS using a customer managed key (CMK)
+* DocDB Global Cluster is not encrypted at rest
+* DataSync Location Object Storage exposes secrets
+* DMS endpoint is not using a Customer Managed Key (CMK)
+* EventBridge Scheduler Schedule is not using a Customer Managed Key (CMK)
+* The DMS S3 does not use a Customer Managed Key (CMK)
+* Secrets Manager secrets are not rotated within 90 days
+* API Gateway method setting is not set to encrypted caching
+* CodeBuild S3 logs are not encrypted
+* Elastic Beanstalk environments do not have enhanced health reporting enabled
+* EFS Access Points are not enforcing a root directory
+* ECS containers are not limited to read-only access to root filesystems
+* SSM parameters are not utilizing KMS CMK
+* Elastic Beanstalk managed platform updates are not enabled
+* Amazon Redshift clusters do not have automatic snapshots enabled
+* Network firewalls do not have deletion protection enabled
+* Network firewall encryption does not use a CMK
+* Network Firewall Policy does not define an encryption configuration that uses a CMK
+* Neptune is not encrypted with KMS using a customer managed Key (CMK)
+* Security configuration of the EMR Cluster does not ensure the encryption of EBS disks
+* RDS Performance Insights are not encrypted using KMS CMKs
+* Transfer server does not force secure protocols.
+
+The list of policies with *Medium* policy severity:
+
+* Connect Instance Kinesis Video Stream Storage Config is not using CMK for encryption
+* AWS database instances do not have deletion protection enabled
+* S3 lifecycle configuration does not set a period for aborting failed uploads
+* AWS RDS snapshots are accessible to public
+* AWS SSM documents are public
+* AWS CloudFront distributions does not have a default root object configured
+* CloudFront distributions do not have origin failover configured
+* EC2 Auto Scaling groups are not utilizing EC2 launch templates
+* AWS CodeBuild project environment privileged mode is enabled
+* Elasticsearch domains are not configured with a minimum of three dedicated master nodes
+* CloudWatch alarm actions are not enabled
+* Redshift clusters are not using the default database name
+* Redshift clusters are not using enhanced VPC routing
+* ElastiCache for Redis cache clusters do not have auto minor version upgrades enabled
+* RDS Aurora Clusters do not have backtracking enabled
+* User identity should be enforced by EFS access points
+* ECS Fargate services are not ensured to run on the latest Fargate platform version
+* AWS ECS task definition elevated privileges enabled
+* ECS task definitions have their own unique process namespace or share the host's process namespace
+* AWS Auto Scaling group launch configuration configured with Instance Metadata Service hop count greater than 1
+* Backup retention period for DocDB is inadequate
+* Neptune DB cluster does not have automated backups enabled with adequate retention
+* Runtime of Lambda is deprecated
+
+The list of policies with *Low* policy severity:
+
+*  AWS API Gateway endpoints without client certificate authentication
+* AWS API gateway request parameter is not validated
+* AWS Secret Manager Automatic Key Rotation is not enabled
+* AWS Elasticsearch domain has Dedicated master set to disabled
+* AWS Lambda Function resource-based policy is overly permissive
+* RDS cluster is not configured to copy tags to snapshots
+* AWS Transit Gateway auto accept vpc attachment is enabled
+* WAF rule does not have any actions
+* AWS EMR cluster is not enabled with local disk encryption
+* AWS EMR cluster is not enabled with data encryption in transit
+* Clusters of Neptune DB do not replicate tags to snapshots
+
+The list of policies with *Informational* policy severity:
+
+* AWS EMR cluster is not configured with security configuration
+* AWS Neptune cluster deletion protection is disabled
+* AWS RDS instance with copy tags to snapshots disabled
+* AWS CloudTrail logs are not encrypted using Customer Master Keys (CMKs)
+* AWS SageMaker notebook instance with root access enabled
+* AWS RDS DB cluster is encrypted using default KMS key instead of CMK
+
+*AWS IAM Policies*
+
+The list of policies with *High* policy severity:
+
+* The AWS Managed IAMFullAccess IAM policy should not be used
+* AWS AdministratorAccess policy is used by IAM roles, users, or groups
+* IAM policy uses the AWS AdministratorAccess policy
+* IAM Policy Document Allows All or Any AWS Principal Permissions to Resources
+* IAM policies allow privilege escalation
+* IAM policies allow exposure of credentials
+* IAM policies allow data exfiltration
+* IAM policies allow permissions management or resource exposure without constraints
+* IAM policies allow write access without constraints
+* AWS Access key enabled on root account
+* IAM policy document allows "*" as a resource for any action that can be restricted
+* Permissions delegated to AWS services for AWS Lambda functions are not limited by SourceArn or SourceAccount
+
+The list of policies with *Medium* policy severity:
+
+* AWS IAM policy allows full administrative privileges
+* A Policy is not Defined for KMS Key
+* Authorization type for API GatewayV2 routes is not specified
+* AWS IAM policy allows full administrative privileges
+
+The list of policies with *Low* policy severity:
+
+* AWS OpenSearch Fine-grained access control is disabled
+* Access is not controlled through Single Sign-On (SSO)
+* AWS Neptune Cluster not configured with IAM authentication
+
+*AWS Kubernetes Policies*
+
+The list of policies with *High* policy severity:
+
+* EKS clusters are not running on a supported Kubernetes version
+
+*AWS Logging Policies*
+
+The list of policies with *Medium* policy severity:
+
+* An S3 bucket must have a lifecycle configuration
+* Execution history logging is not enabled on the State Machine
+* Elasticsearch Domain Audit Logging is disabled
+* RDS Cluster log capture is disabled
+* CloudWatch log groups must retain logs for a minimum duration of one year
+
+The list of policies with *Low* policy severity:
+
+* Domain Name System (DNS) query logging is not enabled for Amazon Route 53 hosted zones
+* S3 buckets do not have event notifications enabled
+* Network Firewall Logging Configuration is not Defined
+* Data Trace is not enabled in the API Gateway Method Settings
+* State machine does not have X-ray tracing enabled
+* CodeBuild project environments do not have a logging configuration
+* RDS Cluster audit logging for MySQL engine is disabled
+* AWS ECS services have automatic public IP address assignment enabled
+* RDS instances have performance insights disabled
+
+*AWS Networking Policies*
+
+The list of policies with *High* policy severity:
+
+* Domain Name System Security Extensions (DNSSEC) signing is not enabled for Amazon Route 53 public hosted zones
+* MSK nodes are not private
+* ALB is not configured with the defensive or strictest desync mitigation mode
+* NACL ingress allows all ports
+
+The list of policies with *Medium* policy severity:
+
+* AWS CloudFront distribution is using insecure SSL protocols for HTTPS communication
+
+The list of policies with *Low* policy severity:
+
+* ElastiCache cluster is using the default subnet group
+
+The list of policies with *Informational* policy severity:
+
+* AWS SageMaker notebook instance is not placed in VPC
+
+*Azure General Policies*
+
+The list of policies with *High* policy severity:
+
+* Backend of the API management system does not utilize HTTPS
+* Event Hub Namespace not using TLS 1.2 or greater
+
+The list of policies with *Medium* policy severity:
+
+* Azure Automation account configured with overly permissive network access
+* Azure PostgreSQL database flexible server configured with overly permissive network access
+* Azure ACR HTTPS not enabled for webhook
+* Azure Storage account is not configured with private endpoint connection
+* Azure Application gateways listener that allow connection requests over HTTP
+
+The list of policies with *Low* policy severity:
+
+* Azure SQL database Transparent Data Encryption (TDE) encryption disabled
+* Azure Virtual Network subnet is not configured with a Network Security Group
+* Azure Key vault Private endpoint connection is not configured
+* Azure MariaDB database server not using latest TLS version
+* Azure Storage account soft delete is disabled
+* Azure Application Gateway is configured with SSL policy having TLS version 1.1 or lower
+
+The list of policies with *Informational* policy severity:
+
+* Azure AKS cluster Azure CNI networking not enabled
+* Azure Container Instance not configured with the managed identity
+
+*Azure IAM Policies*
+
+* Azure Storage account configured with Shared Key authorization
+* Azure Storage account not configured with SAS expiration policy
+
+The list of policies with *Informational* policy severity:
+
+* Azure Recovery Services vault is not configured with managed identity
+* Azure Automation account is not configured with managed identity
+
+*Azure Kubernets Policies*
+
+The list of policies with *High* policy severity:
+
+* AKS cluster not encrypting temp disks, caches, and data flows
+* Non-Critical System Pods Run on System Nodes
+
+The policy with *Medium* policy severity:
+
+* Operating system disks are not ephemeral disks
+
+*Azure Logging Policies*
+
+The policy with *Medium* policy severity:
+
+*  Ledger feature is disabled on the database
+
+*Azure Networking Policies*
+
+The list of policies with *High* policy severity:
+
+* DenyIntelMode for Azure Firewalls is not set to Deny
+* Firewall policy does not have IDPS mode set to deny
+
+The list of policies with *Medium* policy severity:
+
+* Azure Spring Cloud service is not configured with virtual network
+* Azure Firewall does not define a firewall policy
+
+The policy with *Low* policy severity:
+
+* Azure Virtual machine configured with public IP and serial console access
+
+The list of policies with *Informational* policy severity:
+
+* Azure SQL Server allow access to any Azure internal resources
+
+*Azure Storage Policies*
+
+The list of policies with *High* policy severity:
+
+* Azure SQL Database Namespace is not zone redundant
+* Standard Replication is not enabled
+
+The list of policies with *Medium* policy severity:
+
+* App Service Plan is not zone redundant
+* Azure Event Hub Namespace is not zone redundant
+* App Service Environment is not zone redundant
+
+*Docker Policies*
+
+The policy with *Medium* policy severity:
+
+* 'chpasswd' is used to set or remove passwords
+
+*Google Cloud General Policies*
+
+The list of policies with *High* policy severity:
+
+* Spanner Database does not have drop protection enabled
+* GCP Storage buckets has public access to all authenticated users
+
+The list of policies with *Medium* policy severity:
+
+* GCP Cloud Function is publicly accessible
+* Deletion protection for Spanner Database is disabled
+* BigQuery tables do not have deletion protection enabled
+* Big Table Instances do not have deletion protection enabled
+
+*Google Cloud IAM Policies*
+
+The list of policies with *High* policy severity:
+
+* KMS policy allows public access
+* IAM policy defines public access
+* Basic roles utilized at the organization level
+* Project level utilization of basic roles
+* IAM workload identity pool provider is not restricted
+
+The policy with *Medium* policy severity:
+
+* Basic roles used at the folder level
+
+*Google Cloud Kubernetes Policies*
+
+The policy with *Informational* policy severity:
+
+* GCP Kubernetes Engine Clusters have Alpha cluster feature enabled
+
+*Google Cloud Networking Policies*
+
+The policy with *Medium* policy severity:
+
+* Google Cloud Platform network is not ensured to define a firewall
+
+*Google Cloud Storage GCS Policies*
+
+The policy with *Low* policy severity:
+
+* Ensure MySQL DB instance has point-in-time recovery backup configured
+
+*Logging Policies*
+
+The policy with *Medium* policy severity:
+
+* SQL statements of GCP PostgreSQL are not logged
+
+The list of policies with *Low* policy severity:
+
+* PostgreSQL database flag 'log_duration' is not set to 'on'
+* PostgreSQL database flag 'log_executor_stats' is not set to 'off'
+* PostgreSQL database flag 'log_parser_stats' is not set to 'off'
+* PostgreSQL database flag 'log_planner_stats' is not set to 'off'
+* PostgreSQL database flag 'log_statement_stats' is not set to 'off'
+* Log levels of the GCP PostgreSQL database are not set to ERROR or lower
+* pgAudit is disabled for your GCP PostgreSQL database
+
+The policy with *Informational* policy severity:
+
+* GCP PostgreSQL instance database flag log_hostname is not set to off
+
+*OCI General Policies*
+
+The policy with *Medium* policy severity:
+
+* OCI File Storage File System access is not restricted to root users
+
+The list of policies with *Low* policy severity:
+
+* OCI Kubernetes Engine Cluster boot volume is not configured with in-transit data encryption
+* OCI Kubernetes Engine Cluster pod security policy not enforced
+
+*OCI IAM Policies*
+
+The policy with *Medium* policy severity:
+
+* OCI tenancy administrator users are associated with API keys
+
+*OCI Networking Policies*
+
+The list of policies with *Informational* policy severity:
+
+* OCI Network Security Group allows all traffic on RDP port (3389)
+* OCI Kubernetes Engine Cluster endpoint is not configured with Network Security Groups
+
+*Impact-* You will view policy violations for these policies on Prisma Cloud switcher  *Application Security > Projects* in *IaC Misconfigurations* code category. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings.
+You may enable additional subscriptions on *Application Security > Settings* to view violations and alerts for these policies.
+
+|*AWS Log metric filter and alarm does not exist for AWS Organization changes*
+
+tt:[*24.2.1*]
+
+//RLP-126231
+
+|Identifies the AWS regions that do not have a log metric filter and alarm for AWS Organizations changes. Monitoring changes to AWS Organizations will help to ensure any unwanted, accidental, or intentional modifications that may lead to unauthorized access or other security breaches within the AWS account. It is recommended that a metric filter and alarm be established for detecting changes to AWS Organization's configurations.
+
+NOTE: This policy will trigger an alert if you have at least one Cloudtrail with the multi trial enabled, Logs all management events in your account, and is not set with a specific log metric filter and alarm.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-logs-describe-metric-filters' as X; config from cloud.resource where api.name = 'aws-cloudwatch-describe-alarms' as Y; config from cloud.resource where api.name = 'aws-cloudtrail-describe-trails' as Z; filter '(($.Z.cloudWatchLogsLogGroupArn is not empty and $.Z.cloudWatchLogsLogGroupArn contains $.X.logGroupName and $.Z.isMultiRegionTrail is true and $.Z.includeGlobalServiceEvents is true) and (($.X.filterPattern contains "eventName=" or $.X.filterPattern contains "eventName =") and ($.X.filterPattern does not contain "eventName!=" and $.X.filterPattern does not contain "eventName !=") and ($.X.filterPattern contains "eventSource=" or $.X.filterPattern contains "eventSource =") and ($.X.filterPattern does not contain "eventSource!=" and $.X.filterPattern does not contain "eventSource !=") and $.X.filterPattern contains organizations.amazonaws.com and $.X.filterPattern contains AcceptHandshake and $.X.filterPattern contains AttachPolicy and $.X.filterPattern contains CreateAccount and $.X.filterPattern contains CreateOrganizationalUnit and $.X.filterPattern contains CreatePolicy and $.X.filterPattern contains DeclineHandshake and $.X.filterPattern contains DeleteOrganization and $.X.filterPattern contains DeleteOrganizationalUnit and $.X.filterPattern contains DeletePolicy and $.X.filterPattern contains DetachPolicy and $.X.filterPattern contains DisablePolicyType and $.X.filterPattern contains EnablePolicyType and $.X.filterPattern contains InviteAccountToOrganization and $.X.filterPattern contains LeaveOrganization and $.X.filterPattern contains MoveAccount and $.X.filterPattern contains RemoveAccountFromOrganization and $.X.filterPattern contains UpdatePolicy and $.X.filterPattern contains UpdateOrganizationalUnit) and ($.X.metricTransformations[*] contains $.Y.metricName))'; show X; count(X) less than 1
+----
+
+|*AWS Log metric filter and alarm does not exist for usage of root account*
+
+tt:[*24.2.1*]
+
+//RLP-126208
+
+|identifies the AWS regions that do not have a log metric filter and alarm for usage of a root account. Monitoring for root account logins will provide visibility into the use of a fully privileged account and an opportunity to reduce its use it. Failure to monitor root account logins may result in a lack of visibility into unauthorized use or attempts to access the root account, posing potential security risks to your AWS environment. It is recommended that a metric filter and alarm be established for detecting changes to CloudTrail's configurations.
+
+NOTE: This policy will trigger alert if you have at least one Cloudtrail with the multi trial is enabled, Logs all management events in your account and is not set with specific log metric filter and alarm.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-logs-describe-metric-filters' as X; config from cloud.resource where api.name = 'aws-cloudwatch-describe-alarms' as Y; config from cloud.resource where api.name = 'aws-cloudtrail-describe-trails' as Z; filter '(($.Z.cloudWatchLogsLogGroupArn is not empty and $.Z.cloudWatchLogsLogGroupArn contains $.X.logGroupName and $.Z.isMultiRegionTrail is true and $.Z.includeGlobalServiceEvents is true) and ($.X.filterPattern does not contain "userIdentity.type!=" or $.X.filterPattern does not contain "userIdentity.type !=") and ($.X.filterPattern contains "userIdentity.type =" or $.X.filterPattern contains "userIdentity.type=") and ($.X.filterPattern contains "userIdentity.invokedBy NOT EXISTS") and ($.X.filterPattern contains "eventType!=" or $.X.filterPattern contains "eventType !=") and ($.X.filterPattern contains root or $.X.filterPattern contains Root) and ($.X.filterPattern contains AwsServiceEvent) and ($.X.metricTransformations[*] contains $.Y.metricName))'; show X; count(X) less than 1
+----
+
+|*AWS IAM AWSCloudShellFullAccess policy is attached to IAM roles, users, or IAM groups*
+
+tt:[*24.2.1*]
+
+//RLP-126214
+
+|Identifies the AWSCloudShellFullAccess policy attached to IAM roles, users, or IAM groups. AWS CloudShell is a convenient way of running CLI commands against AWS services. The 'AWSCloudShellFullAccess' IAM policy, providing unrestricted CloudShell access, poses a risk of data exfiltration, allowing malicious admins to exploit file upload/download capabilities for unauthorized data transfer. As a security best practice, it is recommended to grant least privilege access like granting only the permissions required to perform a task, instead of providing excessive permissions.
+
+*Policy Severity—* Information
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and policyName contains AWSCloudShellFullAccess and (entities.policyRoles[*].roleName exists or entities.policyUsers[*].userName exists or entities.policyGroups[*].groupName exists)
+----
+
+|===
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*GCP Cloud Armor policy not configured with cve-canary rule*
+//RLP-127965
+
+|*Changes—* The policy RQL will be updated to exclude checking edge security type of policy as pre-built rules (such as cve-canary) cannot be applied to edge security policy.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-armor-security-policy' AND json.rule = type does not equal ignore case CLOUD_ARMOR_EDGE and (rules[*].match.expr.expression does not contain cve-canary or rules[?any(match.expr.expression contains cve-canary and action equals allow)] exists)
+----
+
+*Impact—* Low. Existing alerts will be resolved as `CLOUD_ARMOR_EDGE` type policies are excluded from the policy RQL.
+
+|*MWAA environment is publicly accessible*
+//RLP-129123
+
+|*Changes—* The policy is deleted from the Prisma Cloud platform.
+
+*Severity—* High
+
+*Policy Type—* Config Build
+
+*Impact—* You will no longer receive alerts.
+
+|===
+
+[#update-ips-for-runtime]
+=== IPs for Runtime Security
+//RLP-122832
+
+tt:[Update] *IP Addresses for Runtime Security*
+
+tt:[The change to add IPs was first announced in the 23.11.1 look ahead notice is no longer needed.]
+
+Prisma Cloud has determined that since the Runtime Security console will not be migrating to AWS, there is no need to include the following IP addresses in your allowlist. You can now safely remove any related IP addresses you have previously added to your allowlist. 
+
+[cols="40%a,30%a,30%a"]
+|===
+|*Prisma Cloud UI*
+|*Ingress IPs*
+|*Egress IPs*
+
+|app.prismacloud.io us-east-1 (N.Virginia)
+|3.232.212.150, 52.206.194.243, 54.205.93.245
+|34.232.99.40, 18.211.176.92, 54.243,170.105
+
+|app2.prismacloud.io us-east-2 (Ohio)
+|3.132.133.211, 3.134.159.143, 3.132.102.175
+|3.20.245.229, 18.117.2.10, 3.12.88.219
+
+|app3.prismacloud.io us-west-2 (Oregon)
+|54.71.138.233, 44.225.112.87, 100.22.20.223
+|34.212.152.80, 35.81.57.244, 35.164.11.119
+
+|app4.prismacloud.io us-west-1 (N.California)
+|52.8.150.142, 13.57.149.63, 52.53.102.128
+|52.8.254.103, 52.8.144.90, 52.52.105.247
+
+|app.anz.prismacloud.io ap-southeast-2 (Sydney)
+|54.66.57.155, 3.24.19.111, 3.105.89.234
+|13.54.220.198, 52.65.26.161, 3.106.34.89
+
+|app.ca.prismacloud.io ca-central-1 (Canada - Central)
+|35.182.172.138, 35.183.159.40, 15.157.80.131
+|15.156.171.28, 3.98.195.69, 52.60.214.101
+
+|app.ind.prismacloud.io ( ap-south-1 )
+|13.127.110.199, 35.154.181.205, 15.206.220.174
+|65.0.38.58, 43.205.12.179, 13.200.1.224
+
+|app.sg.prismacloud.io ap-southeast-1 (Singapore)
+|13.250.243.220, 54.251.192.140, 13.214.62.192
+|52.220.86.241, 18.139.216.124, 13.215.145.83
+
+|app.jp.prismacloud.io ap-northeast-1 (Tokyo)
+|52.192.243.41, 57.180.105.24, 52.195.58.106
+|54.178.53.44, 57.180.197.75, 35.79.153.213
+
+|app.eu.prismacloud.io eu-central-1 (Frankfurt)
+|3.68.165.169, 18.153.181.13, 3.126.32.183
+|18.192.34.49, 3.66.3.228, 18.153.176.170
+
+|app2.eu.prismacloud.io eu-west-1 (Ireland)
+|52.49.29.166, 52.18.47.237, 52.212.198.8
+|54.220.240.134, 34.247.157.43, 34.255.175.135
+
+|app.uk.prismacloud.io eu-west2 (London)
+|13.42.228.98, 18.135.233.1, 13.43.203.118
+|18.133.199.52, 3.10.115.247, 18.168.167.81
+
+|app.fr.prismacloud.io eu-west-3 (Paris)
+|13.36.213.67, 13.36.106.162, 13.39.97.70
+|15.237.224.167, 13.36.133.84, 13.36.226.57
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*New policy mappings for Azure CIS*
+
+tt:[*24.2.2*]
+
+//RLP-129952
+
+|The following compliance requirements in Azure CIS 1.5 Level 1, Azure CIS 1.5 Level 2 and Azure CIS v2.0.0 Level 2 are updated 
+with new mappings.
+
+* Azure CIS 1.5 Level 1 - Database Services, Microsoft Defender, Storage Accounts
+* Azure CIS 1.5 Level 2 - Database Services, Microsoft Defender
+* Azure CIS 2.0 Level 2 - Microsoft Defender, Storage Accounts
+
+*Impact-* As new mappings are introduced, compliance scoring might vary.
+
+|*Risk Management in Technology includes mappings to support GCP*
+
+tt:[*24.2.2*]
+
+//RLP-129793
+
+|Google Cloud Platform support is added for the Risk Management in Technology(RMiT) compliance standard.
+
+*Impact-* As new mappings are introduced, compliance scoring might vary.
+
+|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*New incident policies based on traffic observation*
+
+tt:[Secure the Runtime]
+
+tt:[24.2.2]
+
+//CWP-50513
+
+|This update adds two new policies that alert you to traffic that includes:
+
+* Sensitive data sent through an API endpoint that is exposed to the internet without authentication.
+* Sensitive data sent through an API endpoint that is exposed to the internet without encryption.
+
+|*Split Vulnerability and Compliance CSV*
+
+tt:[Secure the Runtime]
+
+tt:[24.2.2]
+
+// CWP-55094
+
+|The following APIs include a new parameter, `issueType`:
+
+* https://pan.dev/compute/api/get-hosts-download/[Download Host Scan Results]
+* https://pan.dev/compute/api/get-images-download/[Download Image Scan Results]
+* https://pan.dev/compute/api/get-registry-download/[Download Registry Scan Results]
+* https://pan.dev/compute/api/get-scans-download/[Download CI Image Scan Results]
+* https://pan.dev/compute/api/get-vms-download/[Download VM Image Scan Results]
+* https://pan.dev/compute/api/get-serverless-download/[Download Serverless Function Scan Results]
+
+The `issueType` parameter can be set to `vulnerabilities` or `compliance` for downloading vulnerability or compliance issues respectively. If either value is not provided, both vulnerability and compliance issues are downloaded.
+
+|*Just-In-Time (JIT) Support*
+
+tt:[*24.2.1*]
+
+//RLP-129168
+
+|The following Single Sign-On (SSO) endpoints now support Just-In-Time (JIT) user provisioning:
+
+* https://pan.dev/prisma-cloud/api/cspm/get-oauth-2-config/[Get OIDC Configuration]
+* https://pan.dev/prisma-cloud/api/cspm/update-oauth-2-config/[Update OIDC Configuration]
+* https://pan.dev/prisma-cloud/api/cspm/create-oauth-2-config/[Create an OIDC Configuration]
+* https://pan.dev/prisma-cloud/api/cspm/patch-oauth-2-config/[Update OIDC Configuration Partially]
+
+|*Enterprise Settings APIs*
+
+tt:[*24.2.1*]
+
+//RLP-126439
+|The following APIs have a new boolean field `autoEnableAttackPathAndModulePolicies` with `false` as default.
+
+* https://pan.dev/prisma-cloud/api/cspm/get-enterprise-settings/[GET Enterprise Settings]
+* https://pan.dev/prisma-cloud/api/cspm/update-enterprise-settings/[POST Enterprise settings]
+
+|*Unified Vulnerability Explorer*
+
+tt:[*24.2.1*]
+
+//RLP-126385, RLP-126386
+|The following new endpoints are now available to get details from the vulnerabilities dashboard:
+
+* `Get Vulnerability Overview V2` - https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-2/[GET uve/api/v2/dashboard/vulnerabilities/overview]
+* `Get Vulnerabilities Burndown` - https://pan.dev/prisma-cloud/api/cspm/get-burndown/[GET uve/api/v2/dashboard/vulnerabilities/burndown]
+
+|===
+
+

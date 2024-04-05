@@ -1,0 +1,149 @@
+:topic_type: タスク
+[.task]
+== AWSアカウントのオンボーディング
+
+AWSにデプロイされたアセットを監視および分析するために、AWSパブリックアカウント、AWS China アカウント、またはAWS GovCloudアカウントをPrisma Cloudにオンボーディングするには、次のワークフローを使用します。
+
+Prisma CloudでVPCフローログや、Amazon GuardDuty、Amazon S3、AWS Inspectorなどのその他の統合を取り込む場合は、AWS管理コンソールでそのサービスを有効にする必要があります。Cloud Formation テンプレート (CFT) は、設定データ、Amazon S3 フロー ログ、AWS CloudTrail ログ、および Amazon EventBridge (監査イベント) のみを取り込むことが可能です。アカウントのオンボーディング後に、VPC フロー ログと、Amazon GuardDuty や AWS Inspector などのその他の統合を構成できます。
+
+Prisma Cloudは共有VPCをサポートしていません。
+
+[.procedure]
+. AWSアカウントのオンボーディングを始める前に、Prisma Cloudの権限を認証するロールを作成する際に、自動プロセスと手動プロセスのどちらを使用するかを決めてください。
++
+オンボーディングフローは、Prisma Cloudロールの作成とAWSアカウントを保護するために必要な権限を追加するプロセスを自動化します。これらのロールを手動で作成する場合は、xref:manually-set-up-prisma-cloud-role-for-aws.adoc[AWS アカウントの Prisma Cloud ロールを手動でセットアップする]を参照してください。
+
+.. AWS コンソールにログインして CloudWatch ロググループを作成します。
++
+CloudWatchロググループは、ログストリームの記録場所を定義しています。
+
+... *Services（サービス）> CloudWatch > Logs（ログ）> Create log group（ロググループの作成）*を選択します。
+
+... ロググループの名前を入力して、*Create（作成）*をクリックします。
++
+image::connect/aws-onboarding-create-log-group.png[]
+
+.. フローログを有効にします。
++
+... *Services（サービス）> VPC > Your VPCs*の順に選択します。
+
+... フローログを有効にするVPCを選択し、*Actions（アクション）> Create flow log（フローログの作成）*の順に選択します。
+
+... *Filter（フィルタ）*に*Accept（受け付け）*または*All（すべて）*を設定します。
++
+フィルタを*All*に設定すると、Prisma Cloudはフローログから、承認/拒否されたトラフィックを取得できるようになります。フィルタを*Accept*に設定すると、承認されたトラフィックのみが取得されます。フィルタを*Reject（拒否）*に設定すると、Prisma Cloudはフローログデータを取得しません。
+
+... *Destination（宛先）*が、*Send to CloudWatch Logs（CloudWatchログに送信）*に設定されていることを確認します。
+
+... 先ほど作成した、*Destination log group（宛先ロググループ）*を選択します。
+
+... 新しいhttps://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user.html[IAMロール]を作成するか、既存のロールを使用してCloudWatchロググループにhttps://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-cwl.html[フローログを発行]します。
++
+[NOTE]
+====
+既存のIAMロールを使用してCloudWatchロググループにログを発行する場合は、IAMロールを編集して次の権限を含める必要があります。
+====
++
+[userinput]
+----
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Action":[
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:DescribeLogGroups",
+            "logs:DescribeLogStreams",
+            "logs:PutLogEvents"
+         ],
+         "Effect":"Allow",
+         "Resource":"*"
+      }
+   ]
+}
+----
++
+IAM ロールが CloudWatch Log グループにアクセスできるように 、xref:manually-set-up-prisma-cloud-role-for-aws.adoc[AWS アカウントの Prisma Cloud ロールを手動でセットアップ] する必要もあります。
+
+... *Create flow log（フローログの作成）*をクリックします。
++
+image::connect/aws-create-flow-log.png[]
+
+. *[Settings(設定)] > [Providers(プロバイダー)]* から*[Connect Provider(プロバイダーに接続)] > [Cloud Account(クラウドアカウント)]*を選択します。
+
+. オンボーディングするクラウドアカウントとして*Amazon Web Services*を選択し、*開始*をクリックします。
++
+image::connect/aws-add-account-1-1.png[]
+
+.. [*スコープ*]で[*アカウント*]を選択します。
+
+.. AWSアカウントで有効にしたい [*セキュリティ機能とアクセス許可*] を選択します。
++
+機能は*Foundational （基礎）*と*詳細*にグループ分けされています。Prisma Cloud は、選択内容に基づいて、Prisma Cloud ロールに関連付けられた権限を含む CFT を動的に生成します。
+
+* *Foundational （基礎）* (推奨) 機能はデフォルトで有効になっています。
++
+** *設定誤り*は、クラウドアセットのスキャンとメタデータの取り込みに必要な権限を付与します。
+** *Identity Security*は、IDの正味有効権限の計算とアクセスの管理に必要な権限を付与します。
+** xref:../../../runtime-security/agentless-scanning/agentless-scanning.adoc[エージェントレスワークロードスキャン]（デフォルトで選択されている）を有効にして追加すると、Defenderをインストールしなくてもホストとコンテナの脆弱性とコンプライアンスリスクをスキャンできます。エージェントレスワークロードスキャン機能を使いたくない場合は、このチェックボックスを選択解除できます。組織をオンボードすると、スキャンが自動的に開始されます。エージェントレススキャンのスキャンxref:../../../runtime-security/agentless-scanning/onboard-accounts/onboard-accounts.adoc[設定]を更新することもできます。
++
+* *詳細*(追加)機能は以下の通りです。
++
+** *脅威検知* (デフォルトで有効) は、DNS、ネットワーク、ID の脅威を検出するために必要な権限を付与します。
+** AWS Lambda、Azure、Googleなどのクラウドプロバイダの関数のxref:../../../runtime-security/vulnerability-management/scan-serverless-functions.adoc[脆弱性]とxref:../../../runtime-security/compliance/visibility/serverless.adoc[コンプライアンス]をスキャンするための*サーバーレスファンクションスキャン*を有効化し、権限を追加します。組織をオンボードすると、スキャンが自動的に開始されます。サーバーレススキャンのxref:../../../runtime-security/agentless-scanning/onboard-accounts/onboard-accounts.adoc[スキャン]設定を更新することもできます
+** *Agent-Based Workload Protection*に権限を追加し、安全なクラウドxref:../../../runtime-security/install/deploy-defender/host/auto-defend-host.adoc[VM]、xref:../../../runtime-security/install/deploy-defender/container/container.adoc[コンテナ]、およびxref:../../../runtime-security/install/deploy-defender/kubernetes/kubernetes.adoc[Kubernetesオーケストレーター]に保護するためのxref:../../../runtime-security/install/deploy-defender/defender-types.adoc[Defenderの自動デプロイ]を可能にします。防御側が必要とするレジストリ スキャン、Kubernetes 監査、およびその他の機能も有効になっています。
+** *データ セキュリティ* を有効にしてアセットをスキャンし、データの漏洩を防ぎます。この機能は、デフォルトでは有効になっていません。アカウントを登録したら、xref:../../../configure-data-security/subscribe-to-data-security/subscribe-to-data-security.adoc[データセキュリティに登録]にはさらに手順が必要です。
+
+.. *次へ*をクリックします。
+
+. *アカウントを設定します*。
++
+image::connect/aws-add-account-2.png[]
++
+.. *アカウント ID*と *クラウドアカウント名*を入力します。
++
+クラウドアカウント名は、Prisma Cloud上のAWSアカウントを一意に識別します。ロールの信頼ポリシーで信頼関係を有効にするために、一意のアカウント ID が使用されます。これは、後のオンボーディング プロセスで必要になります。
+
+.. *復旧活動*(オプション)を有効にすると、誤って設定されたアセットを是正する権限が付与されます。有効にすると、Prisma Cloud ロールは AWS 組織への読み取り/書き込みアクセス許可を取得して、修復コマンドを正常に実行できるようになります。
+
+.. ロールに AWS マネジメントコンソールにログインしてスタックを作成する権限がある場合のみ、*IAM ロールの作成*をクリックします。それ以外の場合は、*IAM ロールCFT のダウンロード*をクリックします。選択内容に応じて、それぞれの下にある [*ステップの表示*]をクリックして、手順に従って* IAM ロールARN*を生成します。
++
+信頼されており、AWSデプロイ環境でデータを取得するための権限を持つPrisma Cloudロールの作成処理を自動化するために、Prisma CloudはCFTを使用します。CFT は、設定データ、Amazon S3 フロー ログ、および AWS CloudTrail ログ (監査イベント) の取り込みのみを有効にし、AWS アカウントの VPC フロー ログを有効にする機能はサポートしていません。
++
+*IAM ロールの作成* をクリックする前に、AWS マネジメント コンソールにすでにログインしていることを確認してください。Prisma Cloud は、選択した*セキュリティ機能とアクセス許可* に基づいて、AWS マネジメント コンソールで [ *スタックのクイック作成*] ページを開く動的リンクを作成します。詳細は自動的にアップロードされるので、スタックを作成するために手動で入力する必要はありません。1 時間以内にオンボーディング プロセスを完了するようにしてください。そうしないと、リンクが期限切れになります。その場合、*IAM ロールの作成*を再度クリックする必要があります。ブラウザー プラグインをインストールし、ポップアップをブロックしている場合は、まずポップアップを許可してから、*IAM ロールの作成* をクリックしてプロセスを続行します。
++
+*IAM ロール CFT をダウンロード*すると、30 日間有効です。オンボーディングを完了する前にダイアログを閉じても、30日以内であれば、前回ダウンロードしたCFTで作成したのと同じアカウントIDとロールARNを使って再度オンボーディングを行うことができます。
+
+.. *IAM ロール ARN*を貼り付けます。
+
+.. 1つ以上のxref:../../../administration/create-manage-account-groups.adoc[アカウントグループ]を選択するか、*デフォルトアカウントグループ*を選択します。
++
+ポリシー違反発生時にアラートを生成するには、各クラウドアカウントをアカウントグループに割り当て、xref:../../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[Create an Alert Rule for Run-Time Checks（ランタイムチェックにアラートルールを作成）]して、そのアカウントグループに関連付ける必要があります。
+
+.. *次へ*をクリックします。
+
+. *レビューステータス*。
++
+image::connect/aws-add-account-3-updated.png[]
++
+AWSアカウントの*詳細*と、Prisma Cloudのアカウントオンボーディング時に選択した*セキュリティ機能*のステータスチェックを確認します。
+
+.. 選択したすべてのセキュリティ機能に、緑色の *Successful（成功）* または *Enabled（有効）*アイコンが表示されていることを確認します。
+
+.. 赤色の「*Checks Failed（チェック失敗）*」アイコンが表示されているセキュリティ機能については、対応するドロップダウンをクリックして、失敗の原因を確認します。この問題を解決するには、「xref:troubleshoot-aws-errors.adoc[AWS オンボーディングエラーのトラブルシューティング]」を参照してください。
+
+.. [*保存して閉じる*] をクリックしてオンボーディングを完了するか、[*保存して別のアカウントを登録*] をクリックします。
++
+Prisma Cloud で AWS アカウントのオンボーディングに成功すると、そのアカウントはランタイムセキュリティで自動的に利用可能になり、*ワークロード検出* と *サーバーレスファンクションスキャン*が有効になります。*エージェントレス スキャン*の場合、スキャンをトリガーするための構成を完了する必要があります。
++
+新しくオンボーディングされた AWS アカウントは、*クラウドアカウントページ*で確認できます。
++
+[NOTE]
+====
+* Prisma Cloudは、オンボードしたAWSクラウドアカウントに1つ以上のコンピュートワークロードがデプロイされている場合にのみ、ランタイムセキュリティ権限が有効になっているかどうかを確認します。クラウドのステータスが緑色からアンバーに変化するのは、コンピュートワークロードがデプロイされていて、追加の権限が修復のために有効になっていない場合です。
+
+* AWSアカウントで有効にしていないサービスがある場合、ステータス画面にその詳細情報が表示されます。
+
+* xref:configure-flow-logs.adoc[フロー ログの構成]VPCフローログデータの監視を有効にして、オンボードする必要のあるログ記録アカウントのS3バケットに発行できます。
+====

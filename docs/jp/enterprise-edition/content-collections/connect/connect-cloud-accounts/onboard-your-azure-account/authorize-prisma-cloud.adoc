@@ -1,0 +1,302 @@
+== Prisma Cloud に Azure API へのアクセスを許可する
+
+Prisma CloudをAzureクラウドアカウントに接続すると、トラフィックログの分析と監視、悪意のあるネットワーク活動やコンプライアンス違反の検出などの作業を行えます。組み込みのオンボーディング プロセスでは、Prisma CloudがAzure APIにアクセスすることを承認するために必要なAzureリソースを作成するために、次の3つの方法のいずれかを使用するオプションがあります。
+
+* <<terraform>> (推奨) 
+このワークフローは、Azure Active Directory 上で Prisma Cloud アプリケーションをセットアップするプロセスを自動化し、Azure サブスクリプションへの読み取り専用アクセスまたは読み取り/書き込みアクセスを可能にします。
+
+[NOTE]
+====
+Azure China ワークフローは、Terraform テンプレートの使用をサポートしていません。
+====
+* <<json>>
+手動で作成したカスタムロールを使用すると、最小限のアクセス権でアクセスを制限するオプションもあります。これを実現するには、Active Directory で Prisma Cloud アプリケーションを手動でセットアップし、Azure API へのアクセスを承認するカスタム ロールを作成する必要があります。
+* <<manual>>
+組織でTerraformスクリプトの使用を制限している場合、Prisma CloudがAzure APIを呼び出すために必要なAzureリソースを手動で作成することを選択できます。
+
+[.task]
+[#terraform]
+=== テナントワークフロー用の自動Terraformスクリプト
+
+以下の手順に従って、自動化された Terraform スクリプト メソッドを使用して、Prisma Cloudオンボーディング用のAzureテナントリソースを作成します。
+
+[.procedure]
+. 開始する前に、システムにTerraformがインストールされており、CLI経由でAzureに対しても認証されていることを確認してください。
+. Prisma Cloud Azure Onboarding User Interface または Azure Template Generation API を使用して、Terraform スクリプトをダウンロードします。
++
+[NOTE]
+====
+
+ダウンロードした Terraform テンプレートを格納するディレクトリを作成することをお勧めします。これにより、Prisma Cloudに新しいAzureリソースを追加したり、既存のロールを更新したりする際に、テンプレートをより適切に管理することができます。このディレクトリに一意の名前を付けます (例:_onboard-tenant-<tenant-name>_ )。
+====
+. コマンド *terraform init > terraform apply* を実行し、*Confirm（確認）*をクリックします。
+. これにより、次の値で出力が生成されます。
++
+image::connect/so-az-automate-tenant.png[] 
++
+これらのTerraformアウトプット値を、関連するUIフィールドに指示に従って入力します。
++
+* アプリケーション (クライアント) ID: b_application_id
+* アプリケーションクライアントシークレット: c_application_key
+* エンタープライズアプリケーションオブジェクト ID: e_service_principal_object_id
+
+. Azure portal を使用して、API アクセス許可に対する *管理者の同意を付与します* 。これにより、Prisma Cloud が Azure リソースにアクセスすることが承認されます。これは、サブスクリプションと管理グループに関連付けられた Azure リソースを取り込むために必要ですが、Azure アカウントの最初のオンボーディング時にのみ必要です。
+.. Azure ポータルで、*e_consent_link* をクリックすると、API アクセス許可セクションにリダイレクトされます。
+.. [*管理者の同意を与える*] をクリックし、*[はい]*を選択します。*同意の付与が成功*したことを示す成功メッセージが表示されます。
+.. ステータス列に緑色のチェックマークが付いていることを確認します。
++
+image::connect/so-az-authorize-permissions.png[] 
+
+[.task]
+=== サブスクリプションワークフロー用の自動Terraformスクリプト
+
+以下の手順に従って、自動化された Terraform スクリプト メソッドを使用して、Prisma Cloudオンボーディング用のAzureサブスクリプションリソースを作成します。
+
+[.procedure]
+. 開始する前に、システムにTerraformがインストールされており、CLI経由でAzureに対しても認証されていることを確認してください。
+. Prisma Cloud Azure Onboarding User Interface または Azure Template Generation API を使用して、Terraform スクリプトをダウンロードします。
++
+[NOTE]
+====
+ダウンロードした Terraform テンプレートを格納するディレクトリを作成することをお勧めします。これにより、Prisma Cloudに新しいAzureリソースを追加したり、既存のロールを更新したりする際に、テンプレートをより適切に管理することができます。このディレクトリに、その目的を示す一意の名前を付けます (例:_onboard-subscription-<subscription-name>_)。
+====
+. コマンド _terraform init > terraform apply_ を実行し、*Confirm（確認）*をクリックします。
+. これにより、以下に示すように、次の値で出力が生成されます。
++
+image::connect/so-az-automate-subscription.png[]
++
+以下のTerraformアウトプット値を、関連するUIフィールドに指示に従って入力します。
++
+* アプリケーション (クライアント) ID: c_application_id
+* アプリケーションクライアントシークレット: d_application_key
+* エンタープライズアプリケーションオブジェクト ID e__enterprise_application_object_id
+
+==== Active Directory ワークフローの Terraform
+
+上記のテナント フローに記載されている手順に従います。ステップ 2 では、Terraform テンプレートの保存に使用するディレクトリに、_onboard-active-directory-<tenant-name>_などの直感的な名前を付けることを忘れないでください。
+
+[.task]
+[#json]
+=== Prisma Cloud アクセスを承認するためのカスタム ロール
+
+Terraformの自動承認方法に加えて、カスタムロールを作成することで、最小アクセス権限の原則を実施し、ユーザーのアクセスを必要最小限に制限するオプションも用意されています。Azureでカスタムロールを作成するには、Azure Active Directory Premium 1またはPremium 2ライセンスプランが必要です。
+
+[.procedure]
+. Azure CLIを使って、カスタムロールを作成します。Azure PowerShell、Azure CLI、またはREST APIを使ってカスタムロールを作成できます。次の手順では、Azure CLI コマンド (PowerShell または DOS コマンド プロンプトで実行) を使用して、カスタム ロールを作成します。
+
+. https://docs.microsoft.com/en-us/cli/azure/install-azure-cli[Azure CLIをインストール]して、Azureにログインします。
+
+. 権限を含む JSON ファイルをダウンロードします。
++
+* https://redlock-public.s3.amazonaws.com/azure/azure_prisma_cloud_lp_read_only.json[商用]
+* https://redlock-public.s3.amazonaws.com/azure/azure_prisma_cloud_read_only_role_gov.json[政府]
+* https://redlock-public.s3.amazonaws.com/azure/azure_prisma_cloud_read_only_role_china.json[中国]
+
++
+[NOTE]
+====
+Microsoft では、ワイルドカードを使用して、JSON ファイルにリストされている NSG フロー ログのアクセス許可 (Microsoft.Network/networkWatchers/queryFlowLogStatus/*) を設定することをお勧めします。詳細については、 https://docs.microsoft.com/en-us/azure/network-watcher/required-rbac-permissions#nsg-flow-logs[Microsoft のドキュメント] を参照してください。
+====
+. テキスト エディター (メモ帳など) を開き、上記のリンクからカスタム ロールの JSON ファイルを JSON 形式で保存し、わかりやすい名前を付けます。
+. テナント ワークフローまたはサブスクリプション ワークフローのどちらのカスタム ロールを作成するかに応じて、次の手順を実行します。
+.. テナントのワークフロー:保存したカスタム ロールの JSON ファイルをテキスト エディターで編集し、AssignableScopes の値を以下の値で更新して、変更を保存します。
++
+[userinput]
+----
+AssignableScopes": [
+  "providers/Microsoft.Management/managementGroups/<tenant-id>"
+  ]
+----
++
+.. サブスクリプションのワークフロー:保存したカスタム ロールの JSON ファイルをテキスト エディターで編集し、AssignableScopes の値を以下の値で更新して、変更を保存します。
++
+[userinput]
+----
+AssignableScopes": [
+     "/subscriptions/<subscription-id>"
+  ]
+----
+. JSON ファイルが保存されたのと同じローカル システムから Azure portal にログインし、次の手順を実行します。
+.. PowerShell ウィンドウまたは DOS コマンド プロンプト ウィンドウを開きます。
+.. JSONファイルを保管したディレクトリに移動します。
+.. 次の Azure CLI コマンドを入力します (JSON ファイル名は、カスタム ロールの JSON ファイルの名前と一致するように置き換えます)。
+... 商用
++ 
+[userinput]
+----
+az role definition create --role-definition "azure_prisma_cloud_lp_read_only.json"
+----
+... 政府 
++
+[userinput]
+----
+az role definition create --role-definition "azure_prisma_cloud_read_only_role_gov.json"
+----
+... 中国 
++
+[userinput]
+----
+az role definition create --role-definition "azure_prisma_cloud_read_only_role_china.json"
+----
++
+このコマンドは、カスタムロールが正常に作成されたことを示す以下のサンプル出力を生成します。
++
+[%collapsible]
+[, json]
+----
+{"assignableScopes": [    "/subscriptions/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  ], 
+ "description":"Allows Reading Flow Logs Settings", 
+ "id": "/subscriptions/16dfdbcc-e407-4fbe-9096-e7a97ee23fb5/providers/Microsoft.Authorization/roleDefinitions/088c8f48-201c-4f8d-893f-7716a8d58fa1",  "name":"088c8f48-201c-4f8d-893f-7716a8d58fa1",  
+ "permissions": [{      "actions": [        "<a list of all actions>"],      "dataActions": [],      "notActions": [],      "notDataActions": []    }],  "roleName":"Flow Log Settings Reader",  "roleType":"CustomRole",  "type":"Microsoft.Authorization/roleDefinitions"]
+----
+ 
+
+[.task]
+==== カスタムロールの割り当て
+
+*カスタム ロールをアプリ登録に割り当て*、ロールの割り当てを追加し、フロー ログにアクセスするように構成するには、次の手順を実行します。
+
+[.procedure]
+. Microsoft Azure ポータルにログインします。
+. 選択したワークフローのナビゲーション パスに従います。
+.. テナントの範囲: *[すべてのサービス] > [管理グループ]*に移動します。*[テナント ルート グループ]*をクリックします。
+.. サブスクリプションの範囲: *[すべてのサービス] > [サブスクリプション]*に移動します
+. *アクセス制御 (IAM) >Add role assignment（ロール割り当ての追加）*の順に選択します。
+. [*ロール*] ドロップダウンに、新しく作成されたカスタム ロールが表示されることを確認します。
++
+image::connect/so-az-authorize-custom-role-tenant.png[]
+. カスタム ロールを Prisma Cloud アプリの登録に割り当てます。フロー ログのステータスを照会し、変更を保存する権限を有効にします。
+
+
+[#manual]
+=== Prisma Cloud を手動で承認する
+
+組織が Terraform テンプレートの使用を制限している場合、Azure でアプリ登録 (サービス プリンシパル) を作成することにより、Azure Active Directory (AD)、政府機関、または Azure China アカウントのリソースを Prisma Cloud に手動でオンボードするオプションもあります。以下は、選択したオンボーディング フローに基づいて必要な手順のプレビューです。
+
+==== *Azureテナント*
+
+* テナント レベルでカスタム ロールを作成します。
+* テナントのルートレベルでIAMロールを割り当てます。
+* テナントレベルでGraphAPI権限を割り当てます。
+* Azure AD Graph APIの管理者の同意を付与します。
+
+==== *Azureサブスクリプション*
+
+* サブスクリプション レベルでカスタム ロールを作成します。
+* サブスクリプション レベルで IAM ロールを割り当てます。
+
+==== *Azure Active Directory*
+* テナントレベルでGraphAPI権限を割り当てます。
+* Azure AD Graph APIの管理者の同意を付与します。
+
+
+==== 前提条件
+
+* クラウドアカウントをオンボーディングする権限を持つPrisma Cloudテナント。
+* アプリケーションを登録し、ロールを作成して割り当てる権限を持つhttps://portal.azure.com[Azure portal]にアクセスします。
+
+[.task]
+==== 手順
+
+[.procedure]
+. Azure portal でhttps://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin#elevate-access-for-a-global-administrator[グローバル管理者]のアクセス権を昇格します。これにより、Prisma Cloud は Azure サブスクリプションまたは管理グループにアクセスできます。これは、Azureアカウントの最初のオンボーディング中にのみ、サブスクリプションと管理グループに関連付けられたリソースを取り込むために必要です。オンボーディングが完了した後、これを無効にするオプションがあります。
+
+. 以下の手順に従って、 *新しいアプリケーションを登録*します。
++
+.. https://portal.azure.com[Azureポータル]にログインします。
+
+.. *Azure Active Directory > App registrations（アプリの登録）> + New registration（+新規登録）*を順に選択します。
+
+.. アプリケーション名を入力します。
+
+.. サポートされているアカウントタイプを選択します。
++
+単一テナント、マルチテナント、マルチテナント、個人のMicrosoftアカウント、または個人のMicrosoftアカウントのみを選択できます。
+
+.. tt:[任意]—リダイレクトURIを入力します。
++
+アプリの認証応答は、このURIに返されます。
+
+.. *Register（登録）*をクリックします。
+
+.. *アプリケーション（クライアント）ID*と*ディレクトリ（テナント）ID*をコンピューターの安全な場所にコピーします。後でこれらの詳細をPrisma Cloud UIに入力します。
+
+. クライアントシークレットを作成します。
++
+クライアントシークレットは、アプリケーションがトークンを要求するときに身元を証明するために使用するシークレット文字列です。
++
+.. *Certificates & secrets（証明書とシークレット）> + New client secret（+新しいクライアントシークレット）*を順に選択します。
+
+.. クライアントの*Description（説明）*を入力し、*Expires（有効期限）*を選択してクライアントシークレットの存続期間を設定し、*Add（追加）*を選択します。
+
+.. *Value（値）*を安全な場所にコピーします。*Secret ID（シークレットID）*ではなく、必ず*Value（値）*をコピーしてください。
+
+. オブジェクトIDを取得します。
++
+.. *Azure Active Directory> Enterprise applications（エンタープライズアプリケーション）*を選択し、検索ボックスで以前に作成したアプリを検索します。
++
+image::connect/azure-enterprise-applications-object-id.png[]
+
+.. *Object ID（オブジェクトID）*をコンピューター上の安全な場所にコピーします。Prisma Cloudアプリケーションの*Object ID（オブジェクトID）*は、Azureポータルの*App Registrations（アプリの登録）*からではなく、*Enterprise Applications（エンタープライズアプリケーション）> All applications（すべてのアプリケーション）*から取得してください。
+
+. ルートグループにロールを追加します。
++
+以下のロールをルートグループに追加する必要があります。
++
+** https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader[閲覧者]:設定ログとアクティビティログを取り込むのに必要です。
+
+** https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader-and-data-access[Reader and Data Access（閲覧者およびデータアクセス]:脆弱性を検出するためにフローログとストレージアカウント属性を取得する必要があります。
+
+** https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#network-contributor[ネットワーク共同作成者]:すべてのネットワークセキュリティグループ (NSG) のフローログ設定へのアクセスと読み取り、およびネットワーク関連のインシデントの自動修復に必要です。
+
+** https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-account-contributor[ストレージアカウント共同作成者]:オプションですが、ポリシー違反の自動修復を有効にする場合は必須です。
+
+** https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#key-vault-crypto-service-encryption-user[Key Vault 暗号化サービスの暗号化ユーザー]:エージェントベースのワークロード保護に必要です。
+
+** エージェントレス スキャンとサーバーレス スキャン用のカスタム ロールを作成します (これらの機能は Azure China ではサポートされていません)。
+
+. すべてのロールが追加されたことを確認します。
++
+.. *Role assignments（ロールの割り当て）*を選択します。
+
+.. 検索フォームにアプリの名前を入力し、追加されたロールを確認します。
++
+image::connect/azure-account-view-roles.png[]
+
+. 作成したロールを割り当てます。Azure Active Directory のオンボーディング フローに従っている場合は、この手順をスキップしてください。
+.. ロールの割り当てを追加するには、次の手順を実行します。
+... テナント ワークフローの場合:*Management groups（管理グループ）、Tenant Root Group（テナントルートグループ）＞Access control (IAM)（アクセス制御（IAM）＞Role assignments（役割の割り当て）＞+ Add（+追加）＞ Add role assignment（ロールの割り当てを追加）*を選択します。
+... サブスクリプション ワークフローの場合:*[すべてのサービス] > [サブスクリプション] > [アクセス制御 (IAM)] > [ロールの割り当て] > [+ 追加] > [ロールの割り当てを追加] *を選択します。
+... 検索ボックスに役割の名前 (たとえば、リーダー) を入力します。結果でロール名をクリックし、*Next（次へ）*をクリックします。
+... メンバーをロールに割り当て、*[メンバーの選択] > [アクセスの割り当て]*に移動します。*[アクセスの割り当て先]*で、*[ロールをユーザー、グループ、またはサービス プリンシパルに割り当てる] を*選択します。
+... *+Select members（+メンバーを選択）*をクリックし、検索ボックスに以前に作成したアプリの名前を入力して、アプリにロールを割り当てます。
+... *Select（選択）*をクリックして、*Next（次へ）*をクリックします。
+... *[確認と割り当て*] を選択して、ロールの割り当ての追加を完了します。
+... 新しく作成されたすべてのロールが追加されたことを確認します。
+
+. Microsoft Graph APIを追加します。
+.. 以前に登録したアプリに移動します。*Azure Active Directory> App registrations（アプリの登録）*を選択し、アプリを選択します。
+.. Microsoft Graphに移動します。*API permissions（API権限）> + Add a permission（+権限を追加）> Microsoft Graph> Application permission（アプリケーションの権限）*を順に選択します。
+.. 権限を追加します。*Select permissions（権限を選択）*に権限名を入力し、*Permission（権限）*から名前を選択します。次の許可を追加します。
+
+* User.Read.All
+* Policy.Read.All
+* Group.Read.All
+* GroupMember.Read.All
+* Reports.Read.All
+* Directory.Read.All
+* Domain.Read.All
+* Application.Read.All
++
+エージェントレス スキャンやワークロード保護などの追加機能を有効にしている場合は、追加のアクセス許可が必要になります。必要な権限については、 *役割とアクセス権限* のリストを確認してください。
+
+. デフォルトディレクトリに対する管理者の同意を付与します。
+.. *Grant admin consent for Default Directory（デフォルトディレクトリに管理者の同意を付与する）*からYes（はい）を選択します。
+.. 権限が付与されていることを確認します。
+.. [*ステータス*] 列の下に緑色のチェック マークが表示されていることを確認します。
+
+
+
+
+
+

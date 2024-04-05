@@ -32,6 +32,12 @@ This endpoint works hand-in-hand with the `/policies` endpoints.
 
 Each registry to scan is specified as an item in the `specifications` array.
 
+**Note**: Submitting a PUT request with the `specifications` array will first erase all the existing Registry entries, and then insert the new `specifications` array from the PUT request. 
+
+An empty body will also erase all the existing Registry entries. For more information, see [Remove a Registry](https://pan.dev/prisma-cloud/api/cwpp/put-settings-registry/#remove-a-registry).
+
+We recommend that you send a GET scan settings request via [Get Registry Settings](https://pan.dev/prisma-cloud/api/cwpp/get-settings-registry/) and save the JSON response before sending a PUT API request to update the Registry Settings.
+
 The critical fields for this endpoint are:
 
 * `registry` - String specifying the registry URL.

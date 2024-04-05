@@ -1,4 +1,4 @@
-== AWS S3 bucket is not configured with MFA Delete
+== S3 bucket policy allows lockout all but root user
 
 
 === Policy Details 
@@ -17,7 +17,6 @@
 
 |Subtype
 |Build
-//, Run
 
 |Frameworks
 |Terraform,TerraformPlan
@@ -25,32 +24,11 @@
 |=== 
 
 
-
 === Description 
 
 
-If a bucket's versioning configuration is MFA Delete: enabled, the bucket owner must include the x-amz-mfa request header to delete an object.
-Requests that include x-amz-mfa must use HTTPS.
-Configuring a bucket to enable MFA (multi-factor authentication) Delete requires additional authentication for either of the following operations:  (1) Change the versioning state of your bucket  (2) Permanently delete an object version.
-We recommend you configure S3 bucket with MFA Delete: enabled.
+This policy is designed to prevent configuration policies that could potentially lock out non-root users from accessing S3 buckets. This check is vital for maintaining access control in AWS environments and ensuring that bucket policies do not inadvertently create security risks by overly restrictive configurations.
 
-////
-=== Fix - Runtime
-
-
-* CLI Command* 
-
-
-
-
-[source,shell]
-----
-{
- "aws s3api put-bucket-versioning --profile my-root-profile --bucket my-bucket-name --versioning-configuration Status=Enabled,MFADelete=Enabled --mfa "arn:aws:iam::00000000:mfa/root-account-mfa-device 123456"",
-
-}
-----
-////
 
 === Fix - Buildtime
 
@@ -58,22 +36,33 @@ We recommend you configure S3 bucket with MFA Delete: enabled.
 *Terraform* 
 
 
-* *Resource:* aws_s3_bucket
-* *Argument:* mfa_delete - (Optional) Enable MFA delete for either Change the versioning state of your bucket or Permanently delete an object version.
+* *Resource:* aws_s3_bucket, aws_s3_bucket_policy
+* *Argument:* policy
 
-Default is false.
-This cannot be used to toggle this setting but is available to allow managed buckets to reflect the state in AWS
-
+Do not deny overly broad actions with a broad set of resources for all principals in an S3 policy.
 
 [source,go]
 ----
-resource "aws_s3_bucket" "b" {
-  bucket = "my-tf-test-bucket"
-  acl    = "private"
+resource "aws_s3_bucket" "example" {
+  bucket = "example"
+}
 
-  versioning {
-    enabled = true
-  +  mfa_delete = true
-  }
+resource "aws_s3_bucket_policy" "example" {
+  bucket = aws_s3_bucket.example.id
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Deny",
+-      "Principal": "*",
++      "Principal": { "AWS":"some_arn" },
+      "Action": "s3:*",
++      "Resource": ["arn:aws:s3:::example/*", "arn:aws:s3:::example"]
+    }
+  ]
+}
+POLICY
 }
 ----

@@ -1,0 +1,58 @@
+:topic_type: タスク
+[.task]
+
+== オンボーディングされたAWSアカウントの更新
+// Update the account groups and/or security capabilities that are secured with Prisma Cloud.
+
+Prisma Cloudにクラウドアカウントを追加した後、クラウドアカウントを監視して、良好なセキュリティ体制を維持するために、頻繁に追加される新しいポリシーに対する追加の権限を提供するために、Prisma Cloudスタックを更新しなければならないことがあります。CFTスタックを更新すると、Prisma Cloudはサポートされている新しいサービス上のデータを取り込めるようになります。これらのCFTは、Prisma Cloud管理コンソールから直接入手できます。
+
+新しいサービスのアクセス許可を有効にするために CFT スタックを更新することに加えて、このワークフローを使用して、Prisma Cloud で保護されているアカウントグループを更新したり、セキュリティ機能とアクセス許可を有効または無効にしたりできます。最初のオンボーディング中に有効にしなかったセキュリティ機能を有効にする場合、*IAM ロール CFT を再度ダウンロード*し、更新されたアクセス許可が Prisma Cloud に付与されるようにするために必要な手順を完了してください。
+
+AWS 組織を更新する手順については、 xref:update-aws-org.adoc[オンボードされた AWS 組織を更新する]を参照してください。
+
+[.procedure]
+. Prisma Cloud管理コンソールにログインします。
+
+. 変更するAWSクラウドアカウントを選択します。
++
+*Settings（設定）> Providers（プロバイダー）> Cloud Accounts（クラウドアカウント）*を選択して、クラウドアカウントのリストから、*Edit Cloud Account（クラウドアカウントの編集）*アイコンをクリックします。
++
+image::connect/edit-aws-account.png[]
+
+. *アカウント設定*から *IAMロールCFTをダウンロード*します。
++
+image::connect/edit-aws-account-1.png[]
+
+. tt:[(Prisma Cloud ロールの権限を変更するには)]上記の手順でダウンロードした CFT を使用して Prisma Cloud アプリを更新します。AWSコンソールまたはAWS CLIを使って、スタックを更新します。
+
+.. https://aws.amazon.com/[AWSコンソール]にログインします。
+
+.. *サービス > CloudFormation > スタック*の順に選択します。
+
+.. 更新する*PrismaCloudApp*スタックを選択して、*Update（更新）*を選択します。
++
+[*現在のテンプレートを置き換える*] を選択し、前にダウンロードした*テンプレート ファイルをアップロード* します。
++
+image::connect/add-aws-update-stack.png[]
++
+既存のスタックを更新する代わりに新しいスタックを作成する場合、CFT 出力からPrismaCloudRoleARNの値をコピーする必要があります。
+
+.. スタックオプションを設定します。
+
+.. *Next（次へ）*をクリックして、設定を検証します。
+
+.. ロールのCloudFormationテンプレートに対する*Preview your changes（変更内容をプレビュー）*して、更新されていることを確認します。
+
+.. CFTを*Update（更新）*します。
++
+新しいスタックを作成した場合は、Prisma Cloud 管理コンソールにログインし、*Settings（設定）> Cloud Accounts（クラウドアカウント）*を選択し、クラウドアカウントから、[*編集*] アイコンをクリックして [*アカウントの設定*]に移動し、*IAM Role ARNフィールド*にAWS CFT出力から*PrismaCloudRoleARN値*を入力する必要があります。
++
+[TIP]
+====
+https://aws.amazon.com/cli/[AWSコマンドラインインターフェイス]を使用し、更新されたPrisma Cloudアプリスタックをデプロイする場合
+AWS CLI ツールを使用して、次のコマンドを入力し、ダウンロードした CFT をデプロイします。
+
+`aws cloudformation deploy --template-file /tmp/prisma-cloud-aws-iam-role.template --stack-name <Stack Name> --parameter-overrides PrismaCloudRoleName=<Role ARN> --capabilities CAPABILITY_NAMED_IAM`
+====
+
+.. ステータスを参照して、Prisma Cloudがクラウドアセットの情報を正常に取得できていることを確認します。

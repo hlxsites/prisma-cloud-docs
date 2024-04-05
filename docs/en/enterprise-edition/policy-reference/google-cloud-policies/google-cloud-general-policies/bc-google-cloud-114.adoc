@@ -1,0 +1,57 @@
+== GCP Storage buckets are publicly accessible to all users
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 1530d5de-34de-4de9-bb0a-82444607fe66
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleStoragePublicAccessPrevention.py[CKV_GCP_114]
+
+|Severity
+|HIGH
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy reviews if a Google Cloud Storage bucket is safeguarded against public access. It essentially checks if measures to prevent public access are enforced on these storage buckets. If storage buckets are left publicly accessible, sensitive and private data stored within them could be exposed to unauthorized users. This potentially leads to data breaches, sabotage, or the unlawful use of this data. Therefore, this policy ensures these storage buckets are secured and not vulnerable to such risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_storage_bucket
+* *Arguments:* public_access_prevention
+
+To fix the identified issue, you should ensure the "public_access_prevention" setting is enabled for your Google Cloud Storage bucket. This would help to protect your bucket from unintentional or unauthenticated public access. 
+
+Here is an example:
+
+[source,hcl]
+----
+resource "google_storage_bucket" "example_bucket" {
+  name = "example_bucket"
+  location = "US"
+  uniform_bucket_level_access = true
+  bucket_policy_only = true
+  iam_configuration {
+    uniform_bucket_level_access {
+      enabled = true
+    }
+    public_access_prevention = "enforced"
+  }
+}
+----
+
+The above code sets 'public_access_prevention' to 'enforced' for the Google Cloud Storage bucket. This enables public access prevention, so the Google Cloud Storage bucket cannot be accessed publicly.
+

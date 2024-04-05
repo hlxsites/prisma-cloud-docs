@@ -1,0 +1,341 @@
+[#troubleshoot-data-security-errors]
+== Data Securityエラーのトラブルシューティング
+
+Prisma CloudでData Securityを使用する場合の一般的なエラーの解決方法については、このセクションを参照してください。
+
+* xref:#id8aaeabed-266f-4764-9cf7-b4c8dc402236[Azure サブスクリプションのトラブルシューティング]
+* xref:#ida16753bb-b91e-412d-b373-71ff3526d8e3[AWS アカウントのトラブルシューティング]
+
+
+[#id8aaeabed-266f-4764-9cf7-b4c8dc402236]
+=== Azure サブスクリプションのトラブルシューティング
+
+==== Azure の見積もりを有効にする
+
+* Prisma CloudはAzure Blob Inventoryを活用し、Azureで見積もり処理を行うためのインベントリポリシーを作成します。Prisma Cloud がインベントリ ポリシーを作成するために必要なアクセス許可を提供するには、次のことを行う必要があります。
+
+. 新しいアクセス許可で CFT を再デプロイし、AppID とシークレットを提供します。
+
+. 既存のアプリで次の権限を有効にします。
++
+userinput:["Microsoft.Storage/storageAccounts/inventoryPolicies/"]
+
+. 権限が与えられると、Prisma Cloudはデータ設定ページの頻度設定に基づき、レポートを生成するためのインベントリポリシーを作成します。
+
+* 頻度が [なし] に設定されている場合、Prisma Cloud は BLOB インベントリ ポリシーを作成しません。
+
+* 頻度がDailyまたはWeeklyに設定されている場合、Prisma Cloudは指定された頻度設定を使用して-prisma-cloud-data-security- という名前の BLOB インベントリ ポリシーを作成します。
+
+* ポリシーの一環として、選択した頻度に応じて、追加のフォルダーとファイルが毎日または毎週作成されます。コストを削減するには、次の方法を選択できます。
++
+** ストレージアカウントのライフサイクルポリシーを作成し、BLOBインベントリレポートをリサイクルし、古いレポートを削除します。
+** レポートの頻度が不要になった場合は、「なし」に変更します。レポートの頻度はグローバルな設定であり、変更した内容はデータセキュリティが有効なすべてのオンボードアカウントに適用されます。
+** 個々のストレージアカウントに移動し、-prisma-cloud-data-security-という名前の BLOBインベントリポリシーを無効にします。
+
+==== APP登録を手動で作成するために必要なアクセス権限
+
+* APP 登録を手動で作成する場合、Prisma Cloud には次の権限が必要です。
++
+** userinput:["Microsoft.Storage/storageAccounts/read"]
+** userinput:["Microsoft.Resources/subscriptions/resourceGroups/read"]
+** userinput:["Reader and Data Access（閲覧者およびデータアクセス）"]
+** userinput:["ストレージBlobデータ リーダー"]
+
+* オプションの権限は次のとおりです。
++
+** userinput:["Microsoft.EventGrid/eventSubscriptions/*"]
+** userinput:["Microsoft.Storage/storageAccounts/inventoryPolicies/*"]
+
+==== ストレージ アカウントにアクセスできません
+
+* Prisma Cloud APPの登録に以下の権限が付与されていることを確認します。
++
+** userinput:["Microsoft.Storage/storageAccounts/read"]
+** userinput:["Microsoft.Resources/subscriptions/read"]
+** userinput:["Microsoft.Resources/subscriptions/resourceGroups/read"]
+** userinput:["Microsoft.Management/managementGroups/subscriptions/read"]
+
+* リソース グループにアクセスをブロックするアクセス ポリシーがあるかどうかを確認します。
+
+==== Event Grid サブスクリプションが作成できない
+
+* Event Gridサブスクリプション許可はオプションですが、Prisma Cloudはこの許可がないとフォワードスキャンやストレージアカウントのサイズ推定ができないため、サブスクリプションやストレージアカウントの将来の変更を監視し続けることができます。
+
+* Prisma Cloud APP 登録に次のアクセス許可が付与されていることを確認します。
++
+userinput:["Microsoft.EventGrid/eventSubscriptions/*"]
+
+* サブスクリプションのリソース プロバイダーに *Microsoft.EventGrid* が登録されていることを確認します。
+
+* Event Grid サブスクリプションを手動で作成し、Event Grid サブスクリプションの作成をブロックするポリシーがあるかどうかを確認します。
+
+* 次のアクセス許可または Storage Blob Data Reader が Prisma Cloud APP 登録に付与されていることを確認してください。
++
+** userinput:["Microsoft.Storage/storageAccounts/blobServices/containers/read"]
+** userinput:["Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action"]
+** userinput:["Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read"]
+
+==== ネットワーク ACL によりアクセスがブロックされました
+
+* *Disabled*の場合、Prisma Cloud はデータにアクセスできません。
+
+* *選択した仮想ネットワークとIPアドレスから有効にする*を選択した場合、Prisma CloudのパブリックIPを許可リストに追加する必要があります。
++
+** Prisma Cloud によって生成された bash スクリプトをダウンロードし、Azure クラウド コンソールで実行します。
+** 各ストレージ アカウントで一度に 1 つずつ、Prisma Cloud によって提供される IP を構成します。
+
+アカウントが米国にある場合は、次の IP を追加します。
+
+*** 20.121.153.41
+*** 20.121.153.87
+*** 20.121.153.100
+*** 52.226.252.199
+*** 20.121.153.105
+*** 52.226.252.38
+*** 20.119.0.19
+*** 3.128.230.117
+*** 3.14.212.156
+*** 3.22.23.119
+
+アカウントが EU にある場合は、次の IP を追加します。
+
+*** 20.113.10.157
+*** 20.113.11.130
+*** 20.113.12.29
+*** 20.113.12.30
+*** 20.79.228.76
+*** 20.113.9.21
+*** 20.79.107.0
+*** 3.64.66.135
+*** 18.198.52.216
+*** 3.127.191.112
+
+==== Azure サブスクリプションの権限が見つかりません
+
+* Azure Subscription アカウントのデータ セキュリティを構成した後、Missing permissions Network ACLs エラー メッセージが表示された場合、選択したネットワークと IP アドレスからのストレージ アカウントへのアクセスが有効になっていることが原因です。この問題を解決するには、スクリプトをダウンロードしてクラウド シェルで実行するか、次の IP を各ストレージ アカウントのネットワーク ACL に手動で追加します。
+
+** アカウントが EU にある場合:
+
+*** 20.113.9.21
+*** 20.79.107.0
+*** 3.64.66.135
+*** 3.127.191.112 
+*** 18.198.52.216
+*** 20.79.228.76
+*** 20.113.10.157
+*** 20.113.11.130
+*** 20.113.12.29
+*** 20.113.12.30
+
+** アカウントが米国にある場合:
+
+*** 3.14.212.156
+*** 3.22.23.119
+*** 3.128.230.117
+*** 20.119.0.19
+*** 20.121.153.41
+*** 20.121.153.87
+*** 20.121.153.100
+*** 20.121.153.105
+*** 52.226.252.38
+*** 52.226.252.199
+
+[#ida16753bb-b91e-412d-b373-71ff3526d8e3]
+=== AWS アカウントのトラブルシューティング
+
+==== サイズ見積り権限がありません
+
+ストレージサイズを推定するには、Prisma Cloudにはインベントリ設定を設定するための権限が必要です。インベントリ設定には、Prisma Cloud Data Securityを使用してスキャンするS3バケット内の各オブジェクトに関連付けられたオブジェクトとメタデータが一覧表示されます。これらの権限がないと、データを取得できず、Configuration Status（設定ステータス）列に*Missing Permissions（権限が不足しています）*と表示されます。この問題を解決するには、まず Prisma Cloud ロールに次の権限を付与する必要があります。
+
+* s3:GetObject 
+* s3:ListObjects
+* S3:PutInventoryConfiguration 
+* s3:GetBucketAcl 
+* s3:GetBucketpolicy 
+* s3:GetBucketLocation 
+
+権限を付与した後、Prisma Cloudは6時間ごとに権限問題が発生したバケットの状態を確認し、正しい権限を見つけた時点で解決します。
+
+アカウント内のほとんどのバケットにアクセス権限がない場合は、xref:#aws-buckets-missing-permissions[AWS Buckets にアクセス権限がない]を参照してください。
+
+アカウント内の特定のバケットにアクセス権限がない場合は、バケットポリシーを確認してください。Prisma Cloud UI に s3: getBucketLocation と表示されている場合、すべての権限がありません。どちらの場合も、バケットポリシーを検証して、拒否ポリシーがPrisma Cloudのオブジェクトへのアクセスを妨げていないかどうかを確認します。
+
+s3: getObjectの権限が1つしかない場合は、オブジェクトがカスタマー管理キー (CMK) で暗号化されており、Prisma CloudがCMKにアクセスできないことが原因と考えられます。Prisma Cloud へのアクセスを CMK に提供するには、xref:#s3-get-object-missing-permission[s3: GetObject の権限がありません]を参照してください。
+
+[#aws-buckets-missing-permissions]
+==== AWSバケットに権限がありません
+
+AWSアカウントをオンボードした後、アカウント内のすべてのバケットが*スキャン設定*ページで*権限がありません*と表示された場合、AWSマスターアカウントにService Control Policy（SCP）が含まれており、us-east-1およびus-east-2リージョンへのアクセスができないことが原因である可能性が高いです。
+
+Prisma Cloud には以下へのアクセスが必要です。
+
+* us-east-1リージョンで、バケットのリージョンに関係なく全てのS3バケットをリストアップし（s3:ListBuckets）、かつ
+* us-east-2リージョンで、リージョンに関係なく全てのS3バケットでバケット位置の取得呼び出しを行う（s3:GetBucketLocation）。
+
+この問題を解決するには、組織内のメンバーアカウントのPrisma Cloud Data Securityロールへのアクセスを許可するようにSCPを変更します。以下のArnNotLike条件を使用して、必要なPrisma Cloud Data SecurityロールをDenyポリシーの対象から除外します。
+
++++<draft-comment>ソリューション 2 を、https://redlock.atlassian.net/wiki/spaces/RED/pages/3551495176/AWS+Onboarding+Permission+Issues+-+SCP+Many のソリューション 1 に置き換えました。</draft-comment >+++
+
+----
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "DenyAllOutsideEU",
+            "Effect": "Deny",
+            "NotAction": [
+                "a4b:*",
+                "acm:*",
+                "aws-marketplace-management:*",
+                "aws-marketplace:*",
+                "aws-portal:*",
+                "budgets:*",
+                "ce:*"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringNotEquals": {
+                    "aws:RequestedRegion": [
+                        "eu-central-1",
+                        "eu-west-1"
+                    ]
+                },
+                "ArnNotLike": {
+				"aws:PrincipalARN": [
+						"arn:aws:iam::*:role/PrismaCloudStorageMemberReadRole"
+					]
+				}
+            }
+        }
+    ]
+}
+----
+
+詳細については、https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_examples_general.html#example-scp-deny-region[リクエストされた AWS リージョンに基づいて AWS へのアクセスを拒否する]を参照してください。
+
+[#s3-get-object-missing-permission]
+==== s3: GetObject 権限がありません
+
+s3: getObjectの権限がないのは、S3バケット内のオブジェクトがカスタマー管理キー (CMK) で暗号化されており、Prisma CloudがCMKにアクセスできないことが原因と考えられます。この問題を解決するには、以下の手順に従ってPrisma Cloudへのアクセスを提供してください。
+
+[NOTE]
+====
+この手順は、CMKが同じAWSアカウント内にあるか、別のAWSアカウント内にあるかによって異なります。
+====
+
+* オンボーディングしているのと同じAWSアカウントにCMKがある場合、Prisma Cloudロールにはキーにアクセスするための追加のアクセス権限が必要です。Prisma Cloudロールに以下のステートメントを追加して、すべてのCMK ARNでリソース配列を更新します。
++
+[userinput]
+----
+{
+            "Sid":"AllowPrismaCloudToAccessKeys",
+            "効果":"許可",
+            "アクション": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "リソース": ["arn:aws:kms:ap-south-123456789101:key/3269f3d0-1820-407f-b67e-73acdd9243f4"]}
+----
+
+* オンボーディングしているアカウントとは異なるAWSアカウントにCMKがある場合、暗号化に使用するすべてのCMKに次のポリシーステートメントを最初に追加し、Prisma Cloud ARNで*Principal AWS*フィールドを更新する必要があります。
++
+[userinput]
+----
+{
+            "Sid":"キーの使用を許可",
+            "許可":"許可",
+            "原則": {
+                "AWS": "arn:aws:iam::726893731529:role/PrismaCloudReadOnlyRoleWithDLP"
+            },
+            "アクション": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "リソース": "*"
+}
+----
++
+PrismaCloudReadOnlyRoleWithDLPは、Prismaクラウドでデータセキュリティを有効にするために追加したPrismaクラウドロールARNを指します。このロールには、キーにアクセスするために追加権限が必要です。Prisma Cloudロールに以下のステートメントを追加して、すべてのCMK ARNでリソース配列を更新します。
++
+[userinput]
+----
+{
+            "Sid":"AllowPrismaCloudToAccessKeys",
+            "効果":"許可",
+            "アクション": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "リソース": ["arn:aws:kms:ap-south-123456789101:key/3269f3d0-1820-407f-b67e-73acdd9243f4"]}
+----
+
+[.task]
+==== 検証スクリプト失敗
+
+*順方向スキャンの設定時に*、*セットアップを検証*をクリックしてもスクリプトが失敗した場合は、AWS CloudTrail と SNS を手動で設定してこの問題を解決してください。
+
+[.procedure]
+. AWS CloudTrail＆SNSをセットアップします。
+
+.. 新しいCloudTrailを作成するか、既存のCloudTrailを使用します。
++
+データセキュリティスキャンのためにPrisma Cloudにオンボードしているのと同じアカウントのS3バケット内にAWS CloudTrailイベントログを保存できます。AWS CloudTrailイベントログを同じアカウントのS3バケット内に保存しない場合は、「xref:configure-data-security/subscribe-to-data-security/add-a-common-s3-bucket-for-aws-cloudtrail.adoc[Prisma Cloudロールに共通のS3バケットへのアクセスを提供する]」。
++
+[NOTE]
+====
+Prisma CloudはCloudTrailバケットを取り込みません。
+====
++
+image::administration/image47.png[]
+
+.. コストを節約するには、*書き込み専用*イベントを選択します。
++
+AWS KMSアクションのログを除外したり、AWS KMSイベントのログを*No*に設定したりすることもできます。これは、多数のイベントが生成され、Prisma Cloud Data Securityがこのイベントデータを使用しないためです。
++
+image::administration/image19.png[]
+
+.. *アカウント内のすべてのS3バケットを選択するか*、特定のバケットのみに*S3バケットを追加します*。
++
+[NOTE]
+====
+*Write events only（イベントのみを書き込む）*を選択します。
+
+image::administration/image55.png[]
+====
+
+.. S3バケットを追加します。
++
+新規作成または既存のS3バケットを使用します。
+
+.. *Advanced* [詳細]を選択します。
++
+image::administration/image6.png[]
+
+.. SNSの設定を選択します。
++
+*ログファイルの配信ごとにSNS通知を送信する-はい*。スタックを作成したときに以前に作成したSNSトピックを選択します。この例では、PrismaCloudSNSという名前でした。
++
+image::administration/image44.png[]
+
+.. *作成*をクリックします。
+
+.. CloudTrailバケットが作成されていることを確認します。
++
+image::administration/image32.png[]
+
+.. https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-s3-bucket-policy-for-cloudtrail.html[バケットポリシーを作成して]、Prisma CloudがCloudTrailバケットから読み取ることができるようにします。
++
+image::administration/image11.png[]
+
+.. *次へ*をクリックします。
+
+.. Prisma Cloudで、*セットアップを検証*をクリックしてステップ5に進み、AWSアカウントのData Securityを有効にします。

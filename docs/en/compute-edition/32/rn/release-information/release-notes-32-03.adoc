@@ -1,0 +1,201 @@
+:toc: macro
+== 32.03 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|32.03.125
+|Code name
+|O'Neal - Update 3, 32.03
+
+|Release date
+|February 26th, 2024
+
+|Type
+|Maintenance Release
+
+|SHA-256
+|a0eaa3d27aa3275de75fc720417a2de7f730bbd9a3ac60cc3db4af87415817e0
+
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtime, tools, and orchestrators.
+
+// You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+// LINK
+
+toc::[]
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defender Versions 22.12 and Earlier
+
+With the `v32.00` release, https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[Defender versions supported (n, n-1, and n-2)] are `v32.00`, `v31.00`, and `v30.00`.
+
+To prepare for this update, you must upgrade your Defenders from version `v22.12` (Lagrange) or earlier to a later version.
+Failure to upgrade Defenders will result in disconnection of any Defender version below `v30.00` such as `v22.12`.
+
+//
+==== Upcoming Defender Obsolescence
+
+With the upcoming `v33.00` release, release `v30.xx` defenders will be obsolete. To prepare for this coming update, plan for upgrading to release `v31.xx` or later at the earliest. 
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+With the `v32.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Console versions (n, n-1, and n-2)] are `v32.00`, `v31.00`, and `v30.00`.
+
+You can upgrade the Prisma Cloud console directly from any version for n-1 to n.
+With `v30.00` as n-1 and `v31.00` as n, you can for example go directly from `v30.01.153` to `v31.00.129`.
+
+You have to upgrade any version of `v22.00` to `v30.00` before upgrading to `v31.00`.
+For example, you can upgrade from `v22.12.693` to `v30.02.123` and then upgrade to `v32.00.159`.
+
+// [#cve-coverage-update]
+// === CVE Coverage Update
+
+[#enhancements]
+=== Enhancements
+[cols="40%a,60%a"]
+|===
+
+|FEATURE
+|DESCRIPTION
+
+//CWP-53557 and CWP-55790 (Doc ticket)
+|*Support Amazon Linux 2023*
+|Prisma Cloud now supports Amazon Linux 2023 OS scans and security feed integration for Amazon Linux 2023.
+
+// CWP-55094
+|*Enhanced CSV Organization*
+|Segregating vulnerability and compliance findings based on Download Context.
+
+//CWP-54524
+|*Enhanced Compliance Report*
+|Added a new *Result* column to the compliance report CSV file. To get the report, go to *Monitor > Compliance > Compliance Explorer* and select *Containers*, *Images*, or *Hosts*. The new column shows either  *pass* or *fail* for each resource and the corresponding compliance check ID.
+
+//CWP-42824
+|*Detect Go Stdlib Vulnerabilities at the Package Level*
+|In O’Neal Update 3, Prisma Cloud has enhanced its capability to detect vulnerabilities in Go libraries. Previously, a broad approach was used for Go stdlib libraries, categorizing CVEs as "Go" vulnerabilities rather than associating them with specific vulnerable standard libraries. This update offers a more precise classification, allowing for the identification of specific vulnerable symbols within libraries. Moreover, the latest agents can now detect both stdlib with symbols they utilize and the installed Go runtime. This comprehensive approach enables Prisma Cloud to conduct more accurate vulnerability assessments, leading to a significant reduction in false positives. If you have utilized the Go detection capabilities previously, you are likely to experience a noticeable reduction in the number of reported vulnerabilities due to this improvement.
+
+|===
+
+[#api-changes]
+=== API Changes and New APIs
+[cols="40%a,60%a"]
+|===
+
+// CWP-55094
+|*Split Vulnerability and Compliance CSV*
+
+|The following APIs include a new parameter, `issueType`:
+
+* https://pan.dev/compute/api/get-hosts-download/[Download Host Scan Results]
+* https://pan.dev/compute/api/get-images-download/[Download Image Scan Results]
+* https://pan.dev/compute/api/get-registry-download/[Download Registry Scan Results]
+* https://pan.dev/compute/api/get-scans-download/[Download CI Image Scan Results]
+* https://pan.dev/compute/api/get-vms-download/[Download VM Image Scan Results]
+* https://pan.dev/compute/api/get-serverless-download/[Download Serverless Function Scan Results]
+
+The `issueType` parameter can be set to `vulnerabilities` or `compliance` for downloading vulnerability or compliance issues respectively. If either value is not provided, both vulnerability and compliance issues are downloaded.
+
+// CWP-51234
+|*"Type" field is internal only - not returned in 'vulnerabilities' API json (scan results)*
+
+|The following APIs include a new parameter, `packageType`:
+
+https://pan.dev/compute/api/get-containers/[Get Container Scan Results]
+https://pan.dev/compute/api/get-hosts/[Get Host Scan Results]
+https://pan.dev/compute/api/post-hosts-evaluate/[Resolve Hosts]
+https://pan.dev/compute/api/get-images/[Get Image Scan Results]
+https://pan.dev/compute/api/post-images-evaluate/[Resolve Images]
+https://pan.dev/compute/api/get-scans/[Get All CI Image Scan Results]
+https://pan.dev/compute/api/post-scans/[Add CLI Scan Result]
+https://pan.dev/compute/api/get-serverless/[Get Serverless Function Scan Results]
+https://pan.dev/compute/api/post-serverless-evaluate/[Resolve Functions]
+https://pan.dev/compute/api/get-vms/[Get VM Image Scan Results]
+https://pan.dev/compute/api/post-coderepos-ci-evaluate/[Resolve Code Repos]
+https://pan.dev/compute/api/post-sandbox/[Add Sandbox Scan Result]
+https://pan.dev/compute/api/get-registry/[Get Registry Scan Results]
+
+The  ‘packageType’ field is added to the vulnerabilities schema responses.
+
+//CWP-50513
+|*New incident policies based on traffic observation*
+|This update adds two new policies that alert you to traffic that includes:
+
+* Sensitive data sent through an API endpoint that is exposed to the internet without authentication.
+* Sensitive data sent through an API endpoint that is exposed to the internet without encryption.
+
+|===
+
+// [#new-features-core]
+// === New Features in Core
+
+
+// [#new-features-host-security]
+// === New Features in Host Security
+
+// [#new-features-serverless]
+// === New Features in Serverless
+
+// [#new-features-waas]
+// === New Features in WAAS
+
+
+// [#breaking-api-changes]
+// === Breaking Changes in API
+// [cols="30%a,70%a"]
+
+
+// [#end-of-support]
+// === End of Support Notifications
+
+
+[#addressed-issues]
+=== Addressed Issues
+[cols="40%a,60%a"]
+|===
+
+// CWP-54770
+|*WAAS*
+|Improved accuracy of information leakage detection that resolves some false positives.
+
+//CWP-54842
+|*Tools*
+|Fixed twistcli tarball scan failing on hardlinks to symlinks without target files.
+
+// CWP-47873
+|*CVE Type Mapping Mismatch*
+|Fixed an issue with inconsistent CVE type and set the type to be “OS” and “Application”.
+
+// CWP-47595
+|*Vulnerability Management*
+|Fixed a filtering issue that excluded Ruby's app and OS vulnerabilities during evaluation.
+
+//CWP-47364
+|*Vulnerability Management*
+|Fixed an issue that resulted in duplicate CVE records because of inconsistencies in the CPE list that is included in the RHEL feeds.
+
+//CWP-44666
+|*Registry Scanning*
+|Fixed an issue that caused previous scan results of a failed registry scan to be removed.
+
+//CWP-55339
+|*Agentless Scanning*
+|The agentless scanner boot volume now enforces encryption by default.
+
+|===
+
+// [#backward-compatibility]
+// === Backward Compatibility for New Features
+
+// [#change-in-behavior]
+// === Change in Behavior
+
+// ==== Breaking fixes compare with SaaS RN

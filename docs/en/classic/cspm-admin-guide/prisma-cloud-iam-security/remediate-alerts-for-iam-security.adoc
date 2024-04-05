@@ -1,13 +1,13 @@
 [#ide22ea409-a7e8-48a2-914b-17e56f7915ed]
 == Remediate Alerts for IAM Security
 
-// Manually remediate your IAM security misconfigurations by running CLI commands or automatically remediate overly permissive users with a custom python script.
+//Manually remediate your IAM security misconfigurations by running CLI commands or automatically remediate overly permissive users with a custom python script.
 
 The IAM security module provides two options for remediating alerts so that you can enforce the principle of least privilege across your AWS, Azure, and GCP environments. You can manually remediate the alerts by copying the AWS, Azure, or GCP CLI commands and then run them in your cloud environment or you can configure a custom python script to automate the remediation steps.
 
 [NOTE]
 ====
-IAM automatic remediation is different from Prisma Cloud automatic remediation. The IAM module does not support the option to enable automatic remediation. Instead, xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[Create an Alert Rule for Run-Time Checks], follow the instructions for configuring a custom python script or configure and run Azure IAM remediation script to manage automatic remediation for IAM alert rules using the messaging queuing service on the respective CSP.
+IAM automatic remediation is different from Prisma Cloud automatic remediation. The IAM module does not support the option to enable automatic remediation. Instead, xref:../manage-prisma-cloud-alerts/create-an-alert-rule.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Run-Time Checks], follow the instructions for configuring a custom python script or configure and run Azure IAM remediation script to manage automatic remediation for IAM alert rules using the messaging queuing service on the respective CSP.
 ====
 //xref:#id6591319e-c53c-4df5-826f-7fc1b09f0464[Configure and Run AWS IAM Remediation Script] xref:#idb32d1fc5-f705-438f-a798-e9d1a791d96e[Configure and Run Azure IAM Remediation Script] xref:#idddd91dfc-b4d5-43fe-96cf-4b3cc447451d xref:#id2cbf5c9b-62aa-4a95-9340-eeaaf6f07bc4, xref:#ide69e3eac-d058-4804-8d58-8e648893a030, xref:#id54a76b5a-cc02-4394-b2d8-c0a64b17bc3e
 
@@ -36,66 +36,55 @@ The following steps shows how you can manually remediate alerts in AWS. You can 
 [.procedure]
 . View the existing alerts.
 +
-To view all of the policies that triggered an alert select menu:Alerts[Overview.]
+To view all of the policies that triggered an alert select *Alerts > Overview*.
 
-. Click *Add Filter* and select menu:Policy{sp}Type[IAM].
+. Click *Add Filter* and select *Policy Type > IAM*.
 +
-image::administration/iam-security-policy-type.png[]
+image::iam-security-policy-type.png[]
 
 . Select the violating policy that you want to remediate.
 +
 On Prisma Cloud, policies that you can remediate are indicated by the image:remediable-icon.png[] icon.
 +
-image::administration/iam-security-policy-alert.png[]
+image::iam-security-policy-alert.png[]
 
 . Investigate the policy violations.
 +
 In this example we see all the violating resources for this Okta user. Prisma Cloud provides us hints on why the alert was generated, which in this case was a result of an Okta user being able to create another IAM user—this could lead to a potential back door because even if the original Okta user is deleted, they can still log in through the second user. Prisma Cloud also provides recommended steps on how to resolve the policy violation.
 +
-image::administration/iam-security-alert-violating-policy.png[]
+image::iam-security-alert-violating-policy.png[]
 +
 After a policy violation is triggered, it is sent to the SQS queue.
 +
-image::administration/send-and-receive-messages-1-alert.png[]
+image::send-and-receive-messages-1-alert.png[]
 +
 In this example the SQS queue shows 1 message which is the alert that was triggered.
 
 . Get the remediation steps.
 +
 Under the *OPTIONS* column, click *Remediate*.
-+
-image::administration/iam-security-remediate-button.png[]
 
 .. Copy the CLI commands.
 +
 After you click *Remediate* the CLI commands appears in a popup window.
 +
-image::administration/iam-security-cli-commands.png[]
+image::iam-security-cli-commands.png[]
 
 .. Run the CLI commands on your AWS account. In case of your GCP account, before you run the CLI command, set up remediation for GCP IAM alerts.
 +
 After you executed the CLI commands you will have completed the remediation process and the excess privileges will be revoked. The SQS queue will now show 0 messages.
 +
-image::administration/send-and-receive-messages-2-remediation.png[]
+image::send-and-receive-messages-2-remediation.png[]
 
 
-[#id2cbf5c9b-62aa-4a95-9340-eeaaf6f07bc4]
+//[#id2cbf5c9b-62aa-4a95-9340-eeaaf6f07bc4]
 === Set up Automatic Remediation for AWS IAM Alerts
 
-Automate the remediation steps for your AWS IAM alerts with the help of a custom python script which receives an alert via the AWS SQS queue, extracts the alert ID and uses it to call the IAM remediation API, and runs the commands which are provided by the API response.
+Automate the remediation steps for your AWS IAM alerts with the help of a custom python script which receives an alert via the AWS SQS queue, extracts the alert ID and uses it to call the IAM remediation API, and runs the commands which are provided by the API response. Complete the following prerequisites to successfully run the python script. This includes the Prisma Cloud integrations, APIs, and python libraries.
 
-* xref:#id2cecf98a-db8f-4a61-9eaf-12171397bd4f[Review Prerequisites for AWS Remediation Script]
-* xref:#id6591319e-c53c-4df5-826f-7fc1b09f0464[Configure and Run AWS IAM Remediation Script]
+* xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-amazon-sqs.adoc[Integrate Prisma Cloud with Amazon SQS]—This is an AWS service that allows you to send, store, and receive messages between AWS and Prisma Cloud.
 
-
-[#id2cecf98a-db8f-4a61-9eaf-12171397bd4f]
-==== Review Prerequisites for AWS Remediation Script
-
-Complete the following prerequisites so that you can set up everything you need to successfully run the python script. This includes the Prisma Cloud integrations, APIs, and python libraries.
-
-* xref:../../administration/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-amazon-sqs.adoc[Integrate Prisma Cloud with Amazon SQS]—This is an AWS service that allows you to send, store, and receive messages between AWS and Prisma Cloud.
-
-* Create xref:../..alerts/create-an-alert-rule-cloud-infrastructure.adoc[alert rules] and set up xref:../..alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[alert notifications] to Amazon SQS. All alerts triggered for the IAM policy you selected will be sent to the SQS queue.
+* Create xref:../manage-prisma-cloud-alerts/create-an-alert-rule.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[alert rules] and set up xref:../manage-prisma-cloud-alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[alert notifications] to Amazon SQS. All alerts triggered for the IAM policy you selected will be sent to the SQS queue.
 
 
 [.task]
@@ -184,9 +173,9 @@ for message in all_messages:
 
 . Install the third party libraries.
 +
-This script uses a total of five python libraries. Three of the libraries: varname:[json], varname:[os], and varname:[subprocess] are part of the python core which allows you to import them into your programs after you install python. The other two libraries are varname:[boto3] and varname:[requests] which are third party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called varname:[pip], which can install 3rd party libraries and frameworks via the command line.
+This script uses a total of five python libraries. Three of the libraries:`json`, `os`, and `subprocess` are part of the python core which allows you to import them into your programs after you install python. The other two libraries are `boto3` and `requests` which are third party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called `pip`, which can install 3rd party libraries and frameworks via the command line.
 
-.. Install varname:[boto3].
+.. Install `boto3`.
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
@@ -197,7 +186,7 @@ pip install boto3
 This is the AWS SDK for python that allows you to create, configure, and manage AWS services such as SQS.
 ====
 
-.. Install varname:[requests].
+.. Install `requests`.
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
@@ -212,30 +201,30 @@ Requests is a third party library for making simple HTTP requests.
 +
 You will need to specify these variables in the python script to customize settings and run the commands provided by the API response. Review the environment variables and their values below:
 +
-* SQS_QUEUE_NAME - A string that represents the name of the SQS queue that you created in step 1. For example, varname:[Queue2_Policy_UUID].
-* API_ENDPOINT - Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the varname:[API_ENDPOINT] will be varname:[api].
-* tt:[varname:[DEBUG\]] - Displays the debug logs for your script which is enabled by default.
-* YOUR_ACCOUNT_NUMBER - The 12-digit number, such as varname:[123456789012], that uniquely identifies an AWS account. A user could have multiple account numbers.
+* SQS_QUEUE_NAME - A string that represents the name of the SQS queue that you created in step 1. For example, `Queue2_Policy_UUID`.
+* API_ENDPOINT - Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the `API_ENDPOINT` will be `api`.
+* `DEBUG\`- Displays the debug logs for your script which is enabled by default.
+* YOUR_ACCOUNT_NUMBER - The 12-digit number, such as `123456789012`, that uniquely identifies an AWS account. A user could have multiple account numbers.
 * AUTH_KEY - Your JWT authentication token string (x-redlock-auth). See the https://pan.dev/prisma-cloud/api/cspm/[API reference] for more details.
 +
 These are mandatory variables to specify in the python script to run the commands provided by the API response and to customize the settings.
 +
 tt:[Optional (mac/linux only)]—Use the export command to set your environment variables.
 +
-If you’re not familiar with python and don’t want to edit the script then you can use the varname:[export] command to set the environment variables. Here’s the syntax for doing so:
+If you’re not familiar with python and don’t want to edit the script then you can use the `export` command to set the environment variables. Here’s the syntax for doing so:
 +
-* screen:[% export API_ENDPOINT=api_tenant]
-* screen:[% export YOUR_ACCOUNT_NUMBER=123456789]
-* screen:[% export SQS_QUEUE_NAME=your_sqs_queue_name ]
-* screen:[% export YOUR_ACCOUNT_NUMBER=123456789]
-* screen:[% export AUTH_KEY=your_jwt_token]
-* screen:[% python script.py]
+* % export API_ENDPOINT=api_tenant
+* % export YOUR_ACCOUNT_NUMBER=123456789
+* % export SQS_QUEUE_NAME=your_sqs_queue_name 
+* % export YOUR_ACCOUNT_NUMBER=123456789
+* % export AUTH_KEY=your_jwt_token
+* % python script.py
 +
 The following instructions can be executed on any operating system that has python installed. For example, Windows, macOS, and Linux.
 +
-.. tt:[Edit varname:[DEBUG\]].
+.. `[DEBUG\]`.
 +
-varname:[DEBUG] is enabled or set to varname:[True] by default. To disable logs, update the code snippet as follow:
+`DEBUG` is enabled or set to `True` by default. To disable logs, update the code snippet as follow:
 +
 ----
 if os.environ['DEBUG'] = False:
@@ -243,7 +232,7 @@ if os.environ['DEBUG'] = False:
 
 .. Edit YOUR_ACCOUNT_NUMBER.
 +
-Replace varname:[YOUR_ACCOUNT_NUMBER] with the 12-digit account ID. The portion of the script to modify is:
+Replace `YOUR_ACCOUNT_NUMBER` with the 12-digit account ID. The portion of the script to modify is:
 +
 ----
 account_number_to_profile = {    'YOUR_ACCOUNT_NUMBER_1': 'YOUR_ACCOUNT_NAME_1',    'YOUR_ACCOUNT_NUMBER_2': 'YOUR_ACCOUNT_NAME_2'}
@@ -257,15 +246,15 @@ account_number_to_profile = {'123456789123': 'default','512478725627': 'user1'}
 
 .. Edit API_ENDPOINT.
 +
-Replace varname:[API_ENDPOINT] with the Prisma Cloud tenant sub domain that you’re using. The portion of the script to modify is:
+Replace `API_ENDPOINT` with the Prisma Cloud tenant sub domain that you’re using. The portion of the script to modify is:
 +
 ----
 url=f'{os.environ["API_ENDPOINT"]}/api/v1/permission/alert/remediation'
 ----
 +
-For example, replace varname:[API_ENDPOINT] with varname:[app,]  varname:[app2], varname:[app3], or varname:[app.gov].
+For example, replace `API_ENDPOINT` with `app`, `app2`, `app3`, or `app.gov`.
 
-.. Edit the varname:[SQS_QUEUE_NAME].
+.. Edit the `SQS_QUEUE_NAME`.
 +
 This stores the value of your queue name. The portion of the script to modify is:
 +
@@ -273,7 +262,7 @@ This stores the value of your queue name. The portion of the script to modify is
 queue = sqs.get_queue_by_name(QueueName=os.environ['SQS_QUEUE_NAME'])
 ----
 +
-Replace varname:[SQS_QUEUE_NAME] with the name of your actual queue—for example, if varname:[Queue2_Policy_UUID] is the name of your queue, then the code snippet will be updated as follow:
+Replace `SQS_QUEUE_NAME` with the name of your actual queue—for example, if `Queue2_Policy_UUID` is the name of your queue, then the code snippet will be updated as follow:
 +
 ----
 queue = sqs.get_queue_by_name(QueueName=os.environ['Queue2_Policy_UUID'])
@@ -281,13 +270,13 @@ queue = sqs.get_queue_by_name(QueueName=os.environ['Queue2_Policy_UUID'])
 
 .. Edit the AUTH_KEY.
 +
-Generate a JWT token and replace the value in varname:[AUTH_KEY] of the python script. The portion of the script to modify is as follows:
+Generate a JWT token and replace the value in `AUTH_KEY` of the python script. The portion of the script to modify is as follows:
 +
 ----
 'x-redlock-auth': os.environ['AUTH_KEY']
 ----
 +
-Replace varname:[AUTH_KEY] with the JWT token that you generated.
+Replace `AUTH_KEY` with the JWT token that you generated.
 
 . View the remediation results.
 +
@@ -361,22 +350,13 @@ running the CLI commands
 Deleting message
 ----
 +
-The output shows that we’re processing an alert for a resource named varname:[test-resource] which should now be gone when we view *Alerts*. The CLI commands for executing the remediation steps are shown in the output; these commands are automatically executed on your behalf by the python script. A new policy will be created in AWS that removes the excess permissions of the user.
+The output shows that we’re processing an alert for a resource named `test-resource` which should now be gone when we view *Alerts*. The CLI commands for executing the remediation steps are shown in the output; these commands are automatically executed on your behalf by the python script. A new policy will be created in AWS that removes the excess permissions of the user.
 
 
-[#ide69e3eac-d058-4804-8d58-8e648893a030]
+//[#ide69e3eac-d058-4804-8d58-8e648893a030]
 === Set up Automatic Remediation for Azure IAM Alerts
 
-Automate the remediation steps for your IAM Azure alerts with the help of a custom python script—the script reads in the Azure Bus queue, collects alerts, and then goes into Azure and executes the CLI remediation steps.
-
-* xref:#id9d092285-2b15-4fb4-acba-0f6e3defdeb8[Review Prerequisites for Azure Remediation Script]
-* xref:#idb32d1fc5-f705-438f-a798-e9d1a791d96e[Configure and Run Azure IAM Remediation Script]
-
-
-[#id9d092285-2b15-4fb4-acba-0f6e3defdeb8]
-==== Review Prerequisites for Azure Remediation Script
-
-Complete the following prerequisites so that you can set up everything you need to successfully run the python script. This includes the Prisma Cloud integrations, APIs, and python libraries.
+Automate the remediation steps for your IAM Azure alerts with the help of a custom python script—the script reads in the Azure Bus queue, collects alerts, and then goes into Azure and executes the CLI remediation steps. Complete the following prerequisites to successfully run the python script. This includes the Prisma Cloud integrations, APIs, and python libraries.
 
 * Integrate Prisma Cloud with Azure Serve Bus—This is an Azure service that allows you to send, store, and receive messages between Azure and Prisma Cloud. Follow the steps to https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-azure-service-bus-queue[Integrate Prisma Cloud with Azure Service Bus].
 
@@ -475,13 +455,13 @@ def get_messages_from_queue():
 
 . Install the third party libraries.
 +
-This script uses a total of five python libraries. Three of the libraries: varname:[subprocess], varname:[logging], and varname:[json] are part of the python core which allows you to import them into your programs after you install python. The other two libraries are varname:[requests] and varname:[azure.servicebus] which are third party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called varname:[pip], which can install third party libraries and frameworks through the command line.
+This script uses a total of five python libraries. Three of the libraries: `subprocess`, `logging`, and `json` are part of the python core which allows you to import them into your programs after you install python. The other two libraries are `requests` and `azure.servicebus` which are third party libraries—or—libraries that you have to install before running the script. Python has a default package downloader called `pip`, which can install third party libraries and frameworks through the command line.
 
 .. Install requests.
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
-userinput:[pip install requests] 
+`pip install requests` 
 +
 [NOTE]
 ====
@@ -492,34 +472,34 @@ Requests is a third party library for making simple HTTP requests
 +
 From the command line (Windows) or terminal (Linux/MacOS) type the following command:
 +
-userinput:[pip install azure.servicebus] 
+`pip install azure.servicebus` 
 +
 [NOTE]
 ====
-varname:[azure.servicebus] is a client library for python to communicate between applications and services and implement asynchronous messaging patterns.
+`azure.servicebus` is a client library for python to communicate between applications and services and implement asynchronous messaging patterns.
 ====
 
 . Edit the environment variables. 
 +
 You will need to specify these variables in the python script to customize settings and run the commands provided by the API response. Review the environment variables and their values below:
 +
-* SQS_QUEUE_NAME - A string that represents the name of the SQS queue that you created in step 1. For example, varname:[Queue2_Policy_UUID].
-* API_ENDPOINT - Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the varname:[API_ENDPOINT] will be varname:[api].
-* tt:[varname:[DEBUG\]] - Displays the debug logs for your script which is enabled by default.
-* YOUR_ACCOUNT_NUMBER - The 12-digit number, such as varname:[123456789012], that uniquely identifies an AWS account. A user could have multiple account numbers.
+* SQS_QUEUE_NAME - A string that represents the name of the SQS queue that you created in step 1. For example, `Queue2_Policy_UUID`.
+* API_ENDPOINT - Your Prisma Cloud API subdomain. For example, if your tenant is `\https://api.prismacloud.io` , then the API_ENDPOINT will be `api`.
+* DEBUG\ - Displays the debug logs for your script which is enabled by default.
+* YOUR_ACCOUNT_NUMBER - The 12-digit number, such as `123456789012`, that uniquely identifies an AWS account. A user could have multiple account numbers.
 * AUTH_KEY - Your JWT authentication token string (x-redlock-auth). See the https://pan.dev/prisma-cloud/api/cspm/[API reference] for more details.
 +
 These are mandatory variables to specify in the python script to run the commands provided by the API response and to customize the settings.
 +
 tt:[Optional (mac/linux only)]—Use the export command to set your environment variables.
 +
-If you’re not familiar with python and don’t want to edit the script then you can use the varname:[export] command to set the environment variables. Here’s the syntax for doing so:
+If you’re not familiar with python and don’t want to edit the script then you can use the `export` command to set the environment variables. Here’s the syntax for doing so:
 +
-* screen:[% export SB_QUEUE_KEY=your_sb_queue_key]
-* screen:[% export SB_QUEUE_KEY_NAME=your_sb_queue_key_name]
-* screen:[% export SB_QUEUE_NAME_SPACE=your_sb_queue_name_space]
-* screen:[% export API_ENDPOINT=api_tenant]
-* screen:[% export AUTH_KEY=your_jwt_token]
+* % export SB_QUEUE_KEY=your_sb_queue_key
+* % export SB_QUEUE_KEY_NAME=your_sb_queue_key_name
+* % export SB_QUEUE_NAME_SPACE=your_sb_queue_name_space
+* % export API_ENDPOINT=api_tenant
+* % export AUTH_KEY=your_jwt_token
 +
 The following instructions can be executed on any operating system that has python installed. For example, Windows, macOS, and Linux.
 +
@@ -557,7 +537,7 @@ Prisma Cloud leverages the https://cloud.google.com/iam/docs/deny-overview[Deny 
 ====
 
 [.procedure]
-. *Add Filter* and select menu:Policy{sp}Type[IAM] and menu:Cloud{sp}Type[GCP].
+. *Add Filter* and select *Policy Type > IAM* and *Cloud Type > GCP*.
 
 . Select the violating policy that you want to remediate.
 
@@ -571,7 +551,7 @@ Under the *OPTIONS* column, click *Remediate*.
 +
 After you click *Remediate* the CLI commands appears in a popup window.
 +
-image::administration/iam-security-gcp-remediate1.png[]
+image::iam-security-gcp-remediate1.png[]
 
 .. Run the CLI commands on your GCP account. Before you run the CLI command, see https://cloud.google.com/iam/docs/deny-overview[Deny Policies].
 +

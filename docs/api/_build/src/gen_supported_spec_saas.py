@@ -7,10 +7,13 @@ from dataclasses import dataclass
 import json
 import pathlib
 import re
-
+import subprocess
+import os.path
+from pathlib import Path
 
 # Constants
 COMMA = ","
+
 
 METHODS = [
   'get', 'head', 'post', 'put', 'delete',
@@ -23,14 +26,14 @@ METHODS = [
 class Config:
   spec: dict
   inclusions: list
-  exclusions: list
+  exclusions: list 
 
   def __post_init__(self):
     """Evaluate wildcards in the list of inclusions and exclusions"""
     version = self.spec['info']['version']
     major, minor, *other = version.split('.')
     v = f"{major}.{minor}"
-
+  
     self._replace_wildcard(self.inclusions, v)
     self._replace_wildcard(self.exclusions, v)
 
@@ -38,12 +41,21 @@ class Config:
     for ep in eps:
        ep.path = ep.path.replace('*', v)
 
+  
+
 
 # Endpoint read from supported.cfg
 @dataclass()
 class Endpoint:
   path: str
   method: str
+
+def add_server_details(spec):
+  #spec = load_spec_file(spec_file)
+  if "servers" not in spec:
+    spec["servers"] = []
+  server_object = {"url": "PATH_TO_CONSOLE"}
+  spec["servers"].append(server_object)
 
 
 def gen_spec(spec_file, config_file):
@@ -56,7 +68,8 @@ def gen_spec(spec_file, config_file):
 
   # Create a config object.
   config = Config(spec, inclusions, exclusions)
-
+  
+  add_server_details(config.spec)
   # Apply tag to the spec according to the overrides in the config file.
   retag_spec(config)
 
@@ -135,7 +148,7 @@ def process_config_entry(line):
       path, method = e
       path = path.strip()
       method = method.strip().lower()
-
+      
       if method in METHODS:
         ep = Endpoint(path, method)
 
@@ -180,40 +193,41 @@ def filter_spec(spec):
   spec['paths'] = copy.copy(supported_paths)
 
 
-def output_spec(spec):
+def output_spec(spec,outputFilename):
   """
   Write the spec dict to a file in JSON format.
   """
-  # Write spec to file.
-  with open("openapi_supported_saas.json", "w") as outfile:
+
+  with open(outputFilename, "w") as outfile:
     json.dump(spec, outfile, indent=2)
 
 
 def print_status(spec, details=False):
 
   if details:
-    print("Supported endpoints")
-    print("-------------------")
+    #print("Supported endpoints")
+    #print("-------------------")
     count = 0
     for path in spec['paths']:
       for method in spec['paths'][path]:
         print(f"{path}, {method}")
         count += 1
-    print(f"\nTotal endpoints: {count}")
-    print()
+    #print(f"\nTotal endpoints: {count}")
+    #print()
 
   # Print status to stdout.
-  print("Success!")
-  print("  Wrote file: openapi_supported_saas.json")
-  print("  Run the script with --details to get a list of endpoints in the new spec file")
+  #print("Success!")
+  #print("  Wrote file: openapi_supported_saas.json")
+  #print("  Run the script with --details to get a list of endpoints in the new spec file")
 
 
 def main():
   """
   Read an OpenAPI spec, identify all supported endpoints, and output a
   new spec that only contains supported endpoints to a file named
-  `openapi_supported_saas.json`.
+  `openapi_release_no_supported_saas.json`.
   """
+
   parser = argparse.ArgumentParser(description='Generates an OpenAPI spec with supported endpoints only')
   parser.add_argument('spec',
     help='Path to OpenAPI spec file')
@@ -221,12 +235,25 @@ def main():
     help='(Optional) Path to supported.cfg, which overrides which endpoints to include and exclude')
   parser.add_argument('--details', action="store_true",
     help='Print details about the transformation')
+  parser.add_argument('--panloc', help = 'pan.dev folder location on local system' )
   args = parser.parse_args()
 
-  s = gen_spec(args.spec, args.config)
+  outputFilename = Path(args.spec).stem + "_supported_saas.json"
+  specValue = gen_spec(args.spec, args.config)
+  output_spec(specValue,outputFilename)
 
-  output_spec(s)
-  print_status(s, args.details)
+  print_status(specValue, args.details)
+  #print(f"Supported spec for PCEE in progress...")
+  if(os.path.exists(outputFilename)):
+      if args.panloc:
+        value = "python3 src/enrich_spec_saas.py "+outputFilename+" "+ "../_topic_map.yml "+ "--panloc "+args.panloc
+        subprocess.call(value, shell=True)
+        #print(f"PCEE supported spec is complete")
+      else:
+        value = "python3 src/enrich_spec_saas.py "+outputFilename+" "+ "../_topic_map.yml "
+        subprocess.call(value, shell=True)
+  else:
+    print("File not found")
 
 
 if __name__ == '__main__':

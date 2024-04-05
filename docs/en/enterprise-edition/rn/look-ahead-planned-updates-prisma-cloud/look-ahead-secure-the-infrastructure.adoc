@@ -3,50 +3,52 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 23.12.1 CSPM Platform, Agentless container host, Agentless Host Security, CIEM, Data Security, and CDEM releases. The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+Read this section to learn about what is planned in the 24.4.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+
+The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
 [NOTE]
 ====
 The details and functionality listed below are a preview and the actual release date is subject to change.
 ====
 
-* <<announcement>>
-//* <<changes-in-existing-behavior>>
+* <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
-* <<iam-policy-update>>
+* <<policy-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
-
-[#announcement]
-=== Announcement
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
 
 [cols="50%a,50%a"]
 |===
-|FEATURE
-|DESCRIPTION
+|*Feature*
+|*Description*
 
-|*Prisma Cloud Darwin Release*
-//received the blurb on Slack from Matangi. No Jira ticket for this.
- 
-|The *Prisma Cloud Darwin Release* is here. With the  Code to Cloud™ intelligence capabilities in this release, your security and development teams can work together to reduce application risks and prevent breaches.
+|*Login Experience Enhancements*
+//RLP-135039
 
-image::darwin-release.gif[]
+|Starting with the 24.5.1 release, users can expect a change in their login experience on the Prisma Cloud console. Updates to the Prisma Cloud login pages will provide support for all available authentication options (excluding IdP-initiated SAML SSO). This update also addresses an issue related to redirection to Palo Alto Networks SSO for login and addresses a bug preventing traversal of deep links for some users.
 
-The rollout for existing customers will start on October 18, 2023 through early February 2024, and your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities] during this period. 
+*Impact*— The SSO Login Page will be updated to more clearly identify OIDC SSO login and add support for Palo Alto Networks SSO login. Redirection to Palo Alto Networks SSO will no longer occur when accessing Prisma Cloud links without a valid session. Deep links will be supported in cases in which previously they were not persisted through login flows.
 
-Here is the roll out schedule for all Prisma Cloud environments except app.gov. Please connect with your Customer Success team for more details.
+|*API Rate Limits*
+//RLP-129569
 
-//* 23.11.1 (Nov 1-9) - app.ind, app.ca, app.uk, app.fr
+|Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.5.2 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced. 
 
-* 23.12.1 (Nov 29-Dec 7) - app, app3, app.eu, app2.eu
 
-* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
+|*S3 Flow Logs with Hourly Partition*
 
-* 24.1.2 (Jan 29-Feb 6) - app.cn
+tt:[This change was first announced in the look ahead that was published with the 23.1.1 release.]
+//RLP-76433 - verify with PM moving blurb from LA to 24.3.1 RN
 
-When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
+|If you currently ingest AWS flow logs using S3 with the 24-hour partition, you need to change it to the hourly partition.
+
+To make this change, https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-aws/configure-flow-logs[Configure Flow Logs] to use the hourly partition and enable the required additional fields.
+
+*Impact*— VPC Flow logs with partitions set to *Every 24 hours (default)* was disabled on February 29th, 2024. As a result, you will no longer be able to monitor or receive alerts for these logs. If you have any questions, contact your Prisma Cloud Customer Success Representative immediately.
 
 |===
 
@@ -67,9 +69,9 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 
 . Select the branch for which you want to review policy updates.
 +
-The *Master* branch represents rrent Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
+The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-23.12.1
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.4.2.
 
 . Review the updates.
 +
@@ -77,204 +79,86 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 +
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
-
 [#policy-updates]
 === Policy Updates
 
-The following policies will be updated in Prisma Cloud:
-
 [cols="50%a,50%a"]
 |===
-|POLICY UPDATES
-|DESCRIPTION
+|*Policy Updates*
+|*Description*
 
+2+|*Policy Updates—RQL*
 
-|*AWS S3 bucket publicly readable*
-//RLP-104677
+|*AWS EC2 Instance Scheduled Events*
+//RLP-134897
 
-|*Changes to Policy RQL*— Policy RQL will be updated to check for Authenticated Users access. Policy remediation steps have been updated.
+|*Changes—* The RQL will be updated to consider the event day until the task is completed and checks for multiple events scheduled for an EC2.
 
-*Policy Severity*— High
+*Severity—* Informational
 
-*Policy Type*— Config
+*Policy Type—* Config
 
-*Impact*— New alerts may get opened if Authenticated users have read permissions.
+*Current RQL—*
 
-*Alert Impact*— Low
-
-|*Azure Storage account is not configured with private endpoint connection*
-//RLP-120048
-
-|*Updated RQL*:
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equals Succeeded and networkRuleSet.defaultAction equal ignore case Allow and properties.privateEndpointConnections[*] is empty
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances' AND json.rule = '(_DateTime.ageInDays($.statusEvents[*].notBefore) > -7)'
 ----
 
-*Policy Severity*— Medium
+*Updated RQL—*
 
-*Policy Type*— Config
-
-*Impact*— Low. Alerts that are not reported due to retained IPrule and VirtualNetworkRule will be opened. 
-
-|*GCP VM instance using a default service account with full access to all Cloud APIs*
-//RLP-120380
-
-|*Updated Policy Name*— GCP VM instance using a default service account with Cloud Platform access scope
-
-*Updated Policy Description*— This policy identifies the GCP VM instances that are using a default service account with cloud-platform access scope. To be compliant with the principle of least privileges and prevent potential privilege escalation, we recommend that instances not be assigned to default service account 'Compute Engine default service account' with scope 'cloud-platform'.
-
-*Policy Severity*— Medium
-
-*Policy Type*— Config
-
-*Impact*— No Impact
-
-|===
-
-[#iam-policy-update]
-=== IAM Policy Updates
-//RLP-120492
-
-The following IAM out-of-the-box (OOTB) policies will be updated in Prisma Cloud:
-
-[cols="30%a,35%a,35%a"]
-|===
-
-|POLICY NAME
-|Current RQL
-|Updated RQL
-
-|*Azure VM instance associated managed identity with Azure built-in roles of Contributor/Owner permissions*
-
-|*Changes—* The policy name will be updated.
-
-*Current Name—* Azure VM instance associated managed identity with Azure built-in roles of Contributor/Owner permissions
-
-*Updated Name—* Azure VM instance associated managed identity with Azure built-in roles of Owner permissions
-
-|NA
-
-
-
-|*AWS IAM policy allows Privilege escalation via PassRole & CodeBuild permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codebuild:CreateProject', 'codebuild:StartBuild', 'codebuild:StartBuildBatch') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codebuild:CreateProject', 'codebuild:StartBuild', 'codebuild:StartBuildBatch') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances' AND json.rule = 'statusEvents[?any(_DateTime.ageInDays(notBefore) > -7 and _DateTime.ageInDays(notBefore) < 0 and description exists and description does not contain "Completed")] exists'
 ----
 
-|*AWS IAM policy allows Privilege escalation via PassRole & CodeStar project permissions*
+*Impact—* Low. Existing alerts will be resolved when the task scheduled gets completed and new alerts will be generated if there is event scheduled for the EC2.
 
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codestar:CreateProject' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
+|*AWS EMR cluster is not enabled with data encryption in transit*
+//RLP-131880
 
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'codestar:CreateProject' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+|*Changes—* The policy RQL will be updated to ensure the correct match is obtained when the RQL condition `$.X.securityConfiguration contains $.Y.name` is changed to `$.X.securityConfiguration equals $.Y.name`.
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration contains $.Y.name) and ($.Y.EncryptionConfiguration.EnableInTransitEncryption is false)' ; show X;
 ----
 
-|*AWS IAM policy allows Privilege escalation via PassRole & Data Pipeline permissions*
+*Updated RQL—*
 
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'datapipeline:ActivatePipeline', 'datapipeline:CreatePipeline', 'datapipeline:PutPipelineDefinition') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'datapipeline:ActivatePipeline', 'datapipeline:CreatePipeline', 'datapipeline:PutPipelineDefinition') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration equals $.Y.name) and ($.Y.EncryptionConfiguration.EnableInTransitEncryption is false)' ; show X;
 ----
 
-|*AWS IAM policy allows Privilege escalation via PassRole & EC2 permissions*
+*Impact—* Low. Existing alerts will be resolved and new alerts will be generated when the AWS EMR cluster is not enabled with data encryption in transit. 
 
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'ec2:RunInstances' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
 
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'ec2:RunInstances' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+|*Azure Function app configured with public network access*
+
+//RLP-136115
+
+|*Changes—* The RQL will be updated to check for Function app configured with default network configuration
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled and config.ipSecurityRestrictions[?any(action equals Allow and ipAddress equals Any)] exists'
 ----
 
-|*AWS IAM policy allows Privilege escalation via PassRole & Glue create job permissions*
+*Updated RQL—*
 
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any(action equals Allow and ipAddress equals Any)] exists'
 ----
 
-|*AWS IAM policy allows Privilege escalation via PassRole & Glue development endpoint permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateDevEndpoint', 'glue:GetDevEndpoint') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:CreateDevEndpoint', 'glue:GetDevEndpoint') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Glue update job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:UpdateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'glue:UpdateJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create & invoke Function permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:InvokeFunction', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:InvokeFunction', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & Event source mapping permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:CreateEventSourceMapping', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:CreateEventSourceMapping', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & add permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:AddPermission', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'lambda:AddPermission', 'lambda:CreateFunction') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & SageMaker create processing job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateProcessingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateProcessingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
-
-|*AWS IAM policy allows Privilege escalation via PassRole & SageMaker create training job permissions*
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateTrainingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist 
----- 
-
-|----
-config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:CreateTrainingJob' ) AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist and source.cloud.resource.id DOES NOT END WITH ':root'
-----
+*Impact—* Medium. New Alerts will be generated when the `publicNetworkAccess` for function app is set with default networking configuration. 
 
 |===
 
@@ -283,116 +167,179 @@ config from iam where action.name CONTAINS ALL ( 'iam:PassRole', 'sagemaker:Crea
 
 [cols="50%a,50%a"]
 |===
-|SERVICE
-|API DETAILS
+|*Service*
+|*API Details*
 
-|*Amazon EMR*
-//RLP-118746
-|*aws-emr-instance*
+|tt:[Update] *Amazon API Gateway*
+//RLP-134216 
 
-Additional permissions required:
+|*aws-apigateway-method*
 
-* `elasticmapreduce:ListClusters`
-* `elasticmapreduce:ListInstances`
+Prisma Cloud will update the `aws-apigateway-method` API to exclude the `methodIntegration.cacheNamespace` field from the JSON because it changes frequently causing too many resource snapshots.
 
-The Security Audit role includes the permissions.
+|*Amazon Detective*
+//RLP-135760
 
-|*AWS Code Build*
-//RLP-118748
-|*aws-code-build-source-credential*
+|*aws-detective-datasource-package*
 
 Additional permissions required:
 
-* `codebuild:ListSourceCredentials`
+* `detective:ListGraphs`
+* `detective:ListDatasourcePackages`
 
-You must manually add the above permission to the CFT template to enable it.
+The Security Audit role includes the `detective:ListGraphs` permission.
+You must manually add the `detective:ListDatasourcePackages` permission to the CFT template to enable it.
 
+|*Amazon Polly*
+//RLP-135730
 
-|*AWS Elastic Disaster Recovery*
-//RLP-118756
-|*aws-drs-replication-configuration*
-
-Additional permissions required:
-
-* `drs:DescribeSourceServers`
-* `drs:GetReplicationConfiguration`
-
-You must manually add the above permissions to the CFT template to enable them.
-
-
-|*AWS Elastic Disaster Recovery*
-//RLP-118753
-|*aws-drs-source-server*
+|*aws-polly-speech-synthesis-task*
 
 Additional permission required:
 
-* `drs:DescribeSourceServers`
+* `polly:ListSpeechSynthesisTasks`
 
-You must manually add the above permission to the CFT template to enable it.
+You must manually add the permission to the CFT template to enable it.
 
-|*Azure Cache*
-//RLP-119062
-|*azure-cache-redis-diagnostic-settings*
+|*Amazon SES*
+//RLP-135742
 
-Additional permissions required:
-
-* `Microsoft.Cache/redis/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader Role that includes these permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-119360
-|*gcloud-vmware-engine-subnet*
+|*aws-ses-configuration-set*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.subnets.list`
+* `ses:ListConfigurationSets`
+* `ses:DescribeConfigurationSet`
 
-The Viewer Role that includes these permissions.
+The Security Audit role includes the permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-119359
-|*gcloud-vmware-engine-hcx-activation-key*
+|*AWS Batch*
+//RLP-135733
 
-Additional permissions required:
+|*aws-batch-job-queue*
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.hcxActivationKeys.list`
-* `vmwareengine.hcxActivationKeys.getIamPolicy`
+Additional permission required:
 
-The Viewer Role that includes these permissions.
+* `batch:DescribeJobQueues`
 
-|*Google Cloud VMware Engine*
-//RLP-119358
-|*gcloud-vmware-engine-cluster*
+You must manually add the permission to the CFT template to enable it.
+
+|*Azure CDN*
+//RLP-129305
+|*azure-frontdoor-standardpremium-routes*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.clusters.list`
-* `vmwareengine.clusters.getIamPolicy`
+* `Microsoft.Cdn/profiles/read`
+* `Microsoft.Cdn/profiles/afdendpoints/read`
+* `Microsoft.Cdn/profiles/afdendpoints/routes/read`
 
-The Viewer Role that includes these permissions.
+The Reader role includes the permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-119350
-|*gcloud-vmware-engine-private-cloud*
+|*Azure CDN*
+//RLP-129303
+|*azure-frontdoor-standardpremium-afd-custom-domains*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.privateClouds.getIamPolicy`
+* `Microsoft.Cdn/profiles/read`
+* `Microsoft.Cdn/profiles/customdomains/read`
 
-The Viewer Role that includes these permissions.
+The Reader role includes the permissions.
+
+|*Azure SQL Database*
+//RLP-133223
+|*azure-sql-managed-instance-vulnerability-assessments*
+
+Additional permissions required:
+
+* `Microsoft.Sql/managedInstances/read`
+* `Microsoft.Sql/managedInstances/vulnerabilityAssessments/Read`
+
+The Reader role includes the permissions.
+
+|*Azure SQL Database*
+//RLP-133221
+|*azure-sql-managed-instance-encryption-protectors*
+
+Additional permissions required:
+
+* `Microsoft.Sql/managedInstances/read`
+* `Microsoft.Sql/managedInstances/encryptionProtector/Read`
+
+The Reader role includes the permissions.
+
+|*Azure Synapse Analytics*
+//RLP-134911
+|*azure-synapse-workspace-sql-pools*
+
+Additional permissions required:
+
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Synapse/workspaces/sqlPools/read`
+
+The Reader role includes the permissions.
+
+
+|*Google Traffic Director*
+//RLP-135382
+
+|*gcloud-traffic-director-secure-web-proxy-url-list*
+
+Additional permission required:
+
+* `networksecurity.urlLists.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-135378
+
+|*gcloud-vertex-ai-aiplatform-notebook-runtime-template*
+
+Additional permissions required:
+
+* `aiplatform.notebookRuntimeTemplates.list`
+* `aiplatform.notebookRuntimeTemplates.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Vertex AI AIPlatform*
+//RLP-135379
+
+|*gcloud-vertex-ai-aiplatform-notebook-runtime*
+
+Additional permission required:
+
+* `aiplatform.notebookRuntimes.list`
+
+The Viewer role includes the permission.
+
+|*Google Traffic Director*
+//RLP-134189
+
+|*gcloud-traffic-director-gateway-security-policy*
+
+Additional permission required:
+
+* `networksecurity.gatewaySecurityPolicies.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Traffic Director*
+//RLP-131427
+
+|*gcloud-traffic-director-gateway-security-policy-rule*
+
+Additional permissions required:
+
+* `networksecurity.gatewaySecurityPolicies.list`
+* `networksecurity.gatewaySecurityPolicyRules.list`
+
+The Viewer role includes the permissions.
 
 |===
-
 
 [#deprecation-notices]
 === Deprecation Notices
@@ -405,9 +352,41 @@ The Viewer Role that includes these permissions.
 |*Sunset Release*
 |*Replacement Endpoints*
 
+|*End of support for Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services*
+
+//RLP-134902
+
+|NA
+|24.4.2
+|The following APIs are planned for deprecation at the end of April 2024 because Azure has announced the retirement of Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
+
+* azure-data-lake-analytics-account
+* azure-data-lake-analytics-diagnostic-settings
+* azure-data-lake-store-gen1-account
+* azure-data-lake-store-gen1-diagnostic-settings
+
+In RQL, the key will not available in the `api.name` attribute auto-completion.
+
+*Impact—* If you have a saved search or custom policies based on this API, you must delete them manually. The policy alerts will be resolved as Policy_Deleted.
+
+|tt:[*Resource Explorer API*]
+
+//RLP-131482
+
+* https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
+* https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
+* https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
+
+|23.9.2
+|24.6.2
+|* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
+
+
 |The following endpoints are deprecated as the date filters—time object or time string in query parameters or the request body—used by these APIs will be removed in the updated API endpoints. The updated API endpoints will always return current data.
 
 tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
+
+//RLP-120514
 
 * https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
 * https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
@@ -438,35 +417,49 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 
 |23.10.1
 
-|Will be announced
+|24.4.2
 
-|Will be announced
+|tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
+
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-v-2/[get /v2/compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-v-2/[post /v2/compliance/posture]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-v-2/[get /v2/compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-v-2/[post /compliance/posture/trend]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-standard-v-2/[get /v2/compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-standard-v-2/[post /v2/compliance/posture/trend/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-requirement-v-2/[get /v2/compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-requirement-v-2/[post /v2/compliance/posture/trend/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-standard-v-2/[get /v2/compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-standard-v-2/[post /v2/compliance/posture/{complianceId}]
+* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-for-requirement-v-2/[get /v2/compliance/posture/{complianceId}/{requirementId}]
+* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-for-requirement-v-2/[post /v2/compliance/posture/{complianceId}/{requirementId}]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Explorer and Reports*]
+
+* https://pan.dev/prisma-cloud/api/cspm/save-report-v-2/[post /v2/report]
+* https://pan.dev/prisma-cloud/api/cspm/get-resource-scan-info-v-2/[get /v2/resource/scan_info]
+* https://pan.dev/prisma-cloud/api/cspm/post-resource-scan-info-v-2/[post /v2/resource/scan_info]
+
+tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
+
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-v-3/[get /v3/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-for-asset-inventory-v-3/[post /v3/inventory]
+* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-3/[get /v3/inventory/trend]
+* https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-3/[post /v3/inventory/trend]
 
 
-|tt:[*Prisma Cloud CSPM REST API for Resources*]
-//RLP-114802
-
-* https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
-* https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
-* https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
-
-|23.9.2
-
-|24.1.1
-
-| https://pan.dev/prisma-cloud/api/cspm/asset-2/#get-asset[POST /uai/v1/asset]
-
-
-
-|tt:[*End of Life (EOL) for Prisma Cloud Microsegmentation in 24.1.2*]
-//RLP-115151
+|tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
+//RLP-126719, need to check if this notice can be moved to current features in 24.1.2
 | - 
-| 24.1.2
+| - 
+|To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
+The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
 
-|The Prisma Cloud Microsegmentation module was announced as End-of-Sale effective 31 August 2022. As of the 24.1.2 release planned in end January 2024, the subscription is going End of Life and will be no longer available for use. 
-
-In preparation for the EoL, make sure to uninstall all instances of the Enforcer, the Microsegmentation agent deployed in your environment, as these agents will no longer enforce any security policies on traffic on or across your hosts.
-
+|tt:[*Deprecation of End Timestamp in Config Search*]
+//RLP-126583, suset release TBD
+| - 
+| - 
+|The end timestamp in the date selector for Config Search will soon be deprecated after which it will be ignored for all existing RQLs. You will only need to choose a start timestamp without having to specify the end timestamp.
 
 |tt:[*Prisma Cloud CSPM REST API for Alerts*]
 //RLP-25031, RLP-25937
@@ -505,6 +498,3 @@ Response object property `risk.grade.options` is deprecated for the following re
 
 
 |===
-
-
-

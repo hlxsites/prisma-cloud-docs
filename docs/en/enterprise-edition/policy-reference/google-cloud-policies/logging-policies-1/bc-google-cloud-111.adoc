@@ -1,0 +1,59 @@
+
+== SQL statements of GCP PostgreSQL are not logged
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 8136a48f-75a2-4e92-a102-fcc578a83cfd
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleCloudPostgreSqlLogStatement.py[CKV_GCP_111]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy (CKV_GCP_111) pertains to logging practices in Google Cloud Platform's (GCP) PostgreSQL. It ensures that SQL statements are being logged. Logging SQL statements is beneficial because it helps tracks all the actions and queries performed on a database server. From a security viewpoint, logging SQL statements is critical to detect and investigate suspicious database activity, reduce risk of data loss, and gather forensic evidence in case of a data breach. If SQL statements are not logged, an organization may miss crucial data and alerts about potential security threats or operational issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+
+To fix this issue, you should enable the SQL logging for your GCP PostgreSQL database. Modify your `google_sql_database_instance` resource in the following way:
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "database"
+  region           = "us-central1"
+  database_version = "POSTGRES_11"
+
+  settings {
+    ...
+
+    database_flags {
+      name  = "log_statement"
+      value = "all"
+    }
+
+    ...
+  }
+}
+----
+
+The above code is secure because it sets the `log_statement` flag to `all` in the `google_sql_database_instance` settings, which means that all SQL statements sent to the server will be logged – a good tool for troubleshooting and auditing. It is inline with Google Cloud's best practices for secure and dependable applications.
+

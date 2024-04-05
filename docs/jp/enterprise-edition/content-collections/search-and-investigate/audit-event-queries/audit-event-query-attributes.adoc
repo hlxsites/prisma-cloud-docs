@@ -1,0 +1,116 @@
+== 監査イベントクエリ属性
+
+監査イベントクエリについて学習します。
+
+userinput:[event from cloud.audit_logs where]を使用する際は、オプションを確認してください。各属性を使って、検索基準を絞り込むことができます。これらの属性を使用する場合、自動提案機能が各属性に適した式や演算子を表示します。
+
+*  userinput:[alert.id] 
++
+*Investigate（調査）*タブでアラート詳細を表示するには、userinput:[alert.id]属性を使用します。
++
+たとえば、P-8444、P-8421、P-8420などの一連のアラートの詳細を可視化できます。
++
+screen:[event from cloud.audit_logs where alert.id IN (‘P-8444’, ‘P-8421’, ‘P-8420’)]
+
+*  userinput:[anomaly.type] 
++
+特定のアノマリポリシーの詳細を表示するには、userinput:[anomaly.type]を使用します。自動提案機能により、この属性でサポートされている各種アノマリポリシーが表示されます。
++
+screen:[event from cloud.audit_logs where anomaly.type = 'Excessive Login Failures' ]
+
+*  userinput:[cloud.account] 
++
+Prisma Cloudに接続している1つまたは複数のクラウドアカウントに、監査検索を限定するには、userinput:[cloud.account]属性を使用します。
++
+たとえば、特定のクラウドアカウントからセキュリティグループを削除したエンティティまたはユーザーを表示できます。
++
+screen:[event from cloud.audit_logs where cloud.account = 'Developer Sandbox' AND operation IN ( 'DeleteSecurityGroup' )]
+
+*  userinput:[cloud.account.group] 
++
+クラウドアカウントグループ内のクラウドアカウントに検索を限定するには、userinput:[cloud.account.group]属性を使用します。
++
+たとえば、すべてのAWSアカウント内でVirtual Private Cloud ( バーチャル プライベート クラウド - VPC)を削除したエンティティまたはユーザーを表示できます。
++
+screen:[event from cloud.audit_logs where operation = 'DeleteVpc' AND cloud.account.group = 'All my AWS accounts' ]screen:[event from cloud.audit_logs where cloud.account.group = 'All my AWS accounts' AND cloud.service = 'autoscaling.amazonaws.com' AND user = 'maxusertest__gahp1Tho'  ]
+
+*  userinput:[cloud.type] 
++
+検索を特定のクラウドプラットフォームに限定するには、userinput:[cloud.type]属性を使用します。オプションとして、AWS、Azure、およびGCPを利用できます。
++
+たとえば、S3バケット削除したすべてのユーザーを表示することができます。
++
+screen:[event from cloud.audit_logs where cloud.type = 'aws' AND cloud.service = 's3.amazonaws.com' AND operation = 'DeleteBucket']
+
+*  userinput:[cloud.region] 
++
+1つまたは複数のクラウド地域に監査検索を限定するには、userinput:[cloud.region]属性を使用します。
++
+たとえば、特定のクラウドアカウントからアクセス鍵を削除したエンティティまたはユーザーを表示できます。
++
+screen:[event from cloud.audit_logs where cloud.account = 'Developer Sandbox' AND cloud.region = 'AWS Canada' AND operation IN ( 'DeleteAccessKey' )]
+
+*  userinput:[cloud.service] 
++
+クラウドアカウント内の特定のサービス名を使って情報を検索するには、userinput:[cloud.service]属性を使用します。
++
+たとえば、クラウド証跡ログの削除、またはログ記録の無効化/中止などの操作を行ったユーザーの詳細を確認することができます。
++
+screen:[event from cloud.audit_logs where cloud.service = 'cloudtrail.amazonaws.com' AND operation IN ( 'DeleteTrail' , 'DisableLogging' , 'StopLogging' )]
+
+*  userinput:[crud] 
++
+作成、読み取り、更新、または削除操作を行ったユーザーやエンティティに関する情報を検索するには、userinput:[crud]属性を使用します。
++
+削除されたすべてのAzureリソースを表示できます。
++
+screen:[event from cloud.audit_logs where cloud.account in ( 'Azure - Microsoft Azure Sponsorship' ) and crud = 'delete']
+
+*  userinput:[has.anomaly] 
++
+アノマリを含むイベントの情報を検索するには、userinput:[has.anomaly]属性を使用します。
++
+たとえば、クラウドタイプに対して、指定したアノマリを持つすべてのイベントを表示することができます。
++
+screen:[event from cloud.audit_logs where cloud.type = 'azure' AND has.anomaly ]
+
+*  userinput:[operation] 
++
+operationは、クラウドアカウント内のリソースに対してユーザーが行った行動です。userinput:[operation]属性を使って目的の操作名の入力を開始すると、Prisma Cloudがその検索基準に適した操作のリストを自動表示します。
++
+たとえば、VPC、VPCエンドポイント、およびVPCピア接続の削除操作の詳細を表示できます。
++
+screen:[event from cloud.audit_logs where operation in ( 'DeleteVpc' , 'DeleteVpcEndpoints' 'DeleteVpcPeeringConnection' )]
+
+*  userinput:[Subject] 
++
+属性は、クラウドアカウントで特定のユーザーまたはインスタンスを実行したアクションを検索するために使用します。
++
+たとえば、Benが行ったコンソールログイン操作を表示できます。
++
+screen:[event from cloud.audit_logs where operation = 'ConsoleLogin' AND subject = 'ben']
+
+*  userinput:[role] 
++
+ロールで検索結果をフィルタリングする場合に、この属性を使用します。
++
+たとえば、Oktaロールが実施したイベントを検索することができます。
++
+screen:[event from cloud.audit_logs where role = ’OktaDevReadWriteRole’]
+
+*  userinput:[json.rule] 
++
+クラウドリソースに関連するJSON設定に含まれている、特定のエレメントをフィルタリングするにはこの属性を使用します。userinput:[json.rule]属性により、Prisma Cloudを使って監視しているクラウドアカウントに対して、JSONエンコード値の解析、JSONからのデータの取得、または任意の設定ポリシー内の値の検索など、特定の設定を探すことができます。
++
+userinput:[json.rule]で利用可能な値については、自動提案機能を使用してください。
++
+[NOTE]
+====
+自動提案機能には、演算子 userinput:[=] と userinput:[IN]を使用できます。配列オブジェクトには対応していません。
+
+検索結果を絞り込むには、userinput:[cloud.type]属性を使用します。
+====
++
+たとえば、コンソールのログイン失敗を確認できます。
++
+screen:[event from cloud.audit_logs where cloud.account = 'Sandbox' AND json.rule = $.responseElements.ConsoleLogin != 'Success']

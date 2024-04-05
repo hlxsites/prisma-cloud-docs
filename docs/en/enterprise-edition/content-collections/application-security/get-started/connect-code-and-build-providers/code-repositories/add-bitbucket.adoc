@@ -3,20 +3,21 @@
 [.task]
 == Connect Bitbucket
 
-Integrate Prisma Cloud with your Bitbucket version control system to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up the Bitbucket platform.
+Integrate Prisma Cloud with your Bitbucket version control system (VCS) to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up the Bitbucket platform.
 This integration enables security scans to identify Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) vulnerabilities, exposed secrets, license mis-compliance and CI/CD pipeline risks in your Bitbucket environment, allowing you to understand and fix issues as soon as they are detected, resulting in an enhanced security posture for your organization.
 
-The Bitbucket integration will create a webhook that will trigger periodic scans of your code. The scans will be run on all pull requests (PRs), and the results will be displayed in the PR comments and in reports.
+The Bitbucket integration creates a webhook that triggers periodic scans of your code. These scans run on all pull requests (PRs), and their results are displayed in both the PR comments and reports.
+
+NOTE: Refer to <<#subscribed-events,Subscribed Events>> below for a list of events to which the integration is subscribed.
 
 [.procedure]
 
 . Before you begin.
-
-.. Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started.console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console.
-
-.. Grant the Prisma user the _Administrator_ role in the relevant Bitbucket organization and _Write_ access to the relevant repositories. This will allow Prisma Cloud to copy files for scanning and access repository settings to subscribe to pull request (PR) webhooks to open fix PRs and comment on opened PRs.
+.. Grant the Prisma Cloud user the necessary permissions for integrating Prisma Cloud with your Bitbucket VCS, as specified in <<#user-permissions, User Permissions>> below.
 +
-NOTE: For Write access go to *Bitbucket* > *Repository Settings* and grant the user Write access to the relevant repositories.
+NOTE: For write access, go to *Bitbucket* > *Repository Settings* and grant the user write access to the relevant repositories.
+. Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console. 
+
 .. Log in to Bitbucket with the correct user credentials before integrating with Prisma Cloud, as Prisma Cloud uses OAuth for authorizing access.
 
 . On the Prisma Cloud Application Security console.
@@ -92,3 +93,83 @@ On *Code & Build Providers*, you can also manage the integration by reselection 
 * *Delete repository*: Enables you to delete repositories for a scan from the account.
 * *Delete entire integration*: Enables you to remove a Bitbucket integration from Prisma Cloud console.
 
+[#user-permissions]
+=== User Permissions
+
+Authorize the user integrating Prisma Cloud with your Bitbucket instance with the following permissions.
+
+* *project*: Provides access to view the project or projects. This scope implies the `repository` scope, giving read access to all the repositories in a project or projects. 
+
+* *Administrator repository permissions*: In order to scan pull requests (PRs), the user performing the integration must have administrative privileges for the repositories. This enables Prisma Cloud to set up subscription webhooks for the selected repositories 
+
+* *repository*: Provides read access to a repository or repositories. Note that this scope does not give access to a repository's pull requests. Includes 'access to the repo's source code', 'clone over HTTPS', 'access the file browsing API', 'download zip archives of the repo's contents', 'the ability to view and use the issue tracker on any repo (created issues, comment, vote, etc)', 'the ability to view and use the wiki on any repo (create/edit pages)'
+
+* *repository:write*: Provides write (not admin) access to a repository or repositories. No distinction is made between public and private repositories. This scope implicitly grants the `repository` scope, which does not need to be requested separately. This scope alone does not give access to the pull requests API. Includes 'push access over HTTPS' and 'fork repos'
+
+* *pullrequest*: Provides read access to pull requests. This scope implies the `repository` scope, giving read access to the pull request's destination repository. Includes 'see and list pull requests', 'create and resolve tasks' and 'comment on pull requests'
+
+* *pullrequest:write*: Implicitly grants the `pullrequest` scope and adds the ability to create, merge and decline pull requests. This scope also implicitly grants the `repository:write scope`, giving write access to the pull request's destination repository. This is necessary to allow merging. Includes 'merge pull requests', 'decline pull requests', 'create pull requests' and 'approve pull requests'
+
+* *issue*: The ability to interact with issue trackers the way non-repo members can. This scope doesn't implicitly grant any other scopes and doesn't give implicit access to the repository. Includes 'view, list and search issues', 'create new issues', 'comment on issues', 'watch issues' and 'vote for issues'
+
+* *issue:write*: This scope implicitly grants the issue scope and adds the ability to transition and delete issues. This scope doesn't implicitly grant any other scopes and doesn't give implicit access to the repository. Includes 'transition issues' and 'delete issues'
+
+* *webhook*: Gives access to webhooks. This scope is required for any webhook-related operation.
++
+This scope gives read access to existing webhook subscriptions on all resources the authorization mechanism can access, without needing further scopes. For example:
++
+A client can list all existing webhook subscriptions on a repository. The repository scope is not required.
+Existing webhook subscriptions for the issue tracker on a repo can be retrieved without the issue scope. All that is required is the webhook scope.
++
+To create webhooks, the client will need read access to the resource. Such as: for `issue:created`, the client will need to have both the webhook and the issue scope. Includes 'list webhook subscriptions on any accessible repository, user, team, or snippet' and 'create/update/delete webhook subscriptions'
+
+* *snippet*: Provides read access to snippets. No distinction is made between public and private snippets (public snippets are accessible without any form of authentication). Includes 'view any snippet' and 'create snippet comments'
+
+* *email*: Ability to see the user's primary email address. This should make it easier to use Bitbucket Cloud as a login provider for apps or external applications
+
+* *account*: When used for:
++
+** *user-related APIs*: Gives read-only access to the user's account information. Note that this doesn't include any ability to change any of the data. This scope allows you to view the user's: email addresses,language, location, website, full name, SSH keys, user groups
++
+** *workspace-related APIs*: Grants access to view the workspace's: users, user permissions, projects
+
+* *pipeline*: Gives read-only access to pipelines, steps, deployment environments and variables
+
+* *pipeline:write*: Gives write access to pipelines. This scope allows a user to: stop pipelines, rerun failed pipelines, resume halted pipelines and trigger manual pipelines
+
+For more information on Bitbucket permissions refer to the Bitbucket https://developer.atlassian.com/cloud/bitbucket/rest/intro/#authentication[Authentication methods] documentation.
+
+==== Permissions for CI/CD Modules
+
+The CI/CD module now includes a non-mandatory phase for creating a PAT (Personal Access Token). This token contains specific permissions relevant to the CI/CD module, providing *read* access and *administrative* capabilities
+
+[#subscribed-events]
+=== Subscribed Events
+
+Below is a comprehensive list of events to which Prisma Cloud is subscribed. These events encompass various actions and changes occurring within your Bitbucket environment that trigger notifications and integrations with Prisma Cloud.
+
+* *repo:push*: This event is triggered whenever a push operation occurs within a repository, indicating that new commits have been added or existing commits have been updated 
+
+* *repo:fork*: This event occurs when a repository is forked, creating a copy of the original repository within the same or a different workspace
+
+* *repo:updated*: This event is triggered when there are updates or changes made to the repository settings or configuration
+
+* *repo:commit_comment_created*: This event occurs when a new comment is created on a commit within the repository
+
+* *repo:commit_status_created*: This event is triggered when a new status or check is created for a commit within the repository
+
+* *repo:commit_status_updated*: This event occurs when the status or check of a commit within the repository is updated
+
+* *issue:created*: This event is triggered when a new issue is created within the repository
+
+* *issue:comment_created*: This event occurs when a new comment is added to an existing issue within the repository
+
+* *issue:updated*: This event is triggered when an existing issue within the repository is updated or modified
+
+* *pullrequest:created*: This event occurs when a new pull request is created within the repository
+
+* *pullrequest:updated*: This event is triggered when an existing pull request within the repository is updated or modified
+
+* *pullrequest:fulfilled*: This event occurs when a pull request is fulfilled or merged into the target branch
+
+* *pullrequest:rejected*: This event is triggered when a pull request is rejected or closed without being merged

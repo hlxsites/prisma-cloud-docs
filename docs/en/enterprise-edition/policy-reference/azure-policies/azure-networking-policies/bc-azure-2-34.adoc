@@ -1,0 +1,51 @@
+
+== Azure SQL Server allow access to any Azure internal resources
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 0faffeb6-dbcd-4715-be6e-f9cadc64cfeb
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureSQLserverNotOverlyPermissive.yaml[CKV2_AZURE_34]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy pertains to Azure SQL server firewall settings and it checks to ensure the firewall is not set in an overly permissive way. This means that the firewall settings should not allow unrestricted access from any IP address to your SQL server. Allowing such wide-reaching access is bad because it significantly increases the security risk by offering potential hackers numerous opportunities to exploit your system. Instead, access should be limited to specific, trusted IP addresses to maintain a robust security posture.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_sql_firewall_rule
+* *Arguments:* start_ip_address, end_ip_address
+
+To fix this policy issue, you should define firewall rules to restrict source IP ranges of Azure SQL server. The start and end IP address in the firewall rule should not be from 0.0.0.0 to 255.255.255.255 except when the access type is AzureServices.
+
+[source,hcl]
+----
+resource "azurerm_sql_firewall_rule" "example" {
+  name                = "firewall_rule"
+  resource_group_name = azurerm_resource_group.example.name
+  server_name         = azurerm_sql_server.example.name
+  start_ip_address    = "40.112.8.12"
+  end_ip_address      = "40.112.8.12"
+}
+----
+
+The provided code now follows security best practices by employing input validation for the IP range. It restricts the IP range to a single IP instead of allowing all, thus reducing the risk of unauthorized access. A smaller IP range minimizes the surface area for attacks and decreases the chance that traffic comes from undesirable locations.
+
