@@ -324,16 +324,30 @@ screen:[config from iam where dest.cloud.service.name = 's3' AND dest.cloud.reso
 
 Only the CONTAINS ALL operator is supported for this attribute. With this operator, you can run queries with AND logic in between values. For example, you would run the following query if you want to retrieve only roles that contain all actions X, Y and Z:
 
-screen:[config from iam where action.name CONTAINS ALL ( 'Microsoft.AgFoodPlatform/farmBeats/seasons/write', 'Microsoft.AgFoodPlatform/fields/delete' )]
+----
+config from iam where action.name CONTAINS ALL ( 'Microsoft.AgFoodPlatform/farmBeats/seasons/write', 'Microsoft.AgFoodPlatform/fields/delete' )
+----
 
 * *action.lastaccess.days*
 +
 Displays when a specific permission was actually last used. The following example lists all the effective permissions to get an object from an AWS S3 bucket that was not used more than 90 days ago.
 +
-screen:[config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90]
+`config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90]`
 +
 [NOTE]
 ====
-* Last access information is only logged for successful accesses. If the operation failed, for example due to lack of permissions, then the access information is not logged.
+* Last access information is only logged for successful access. If the operation failed, for example due to lack of permissions, then the access information is not logged.
 * The number of results displayed for last access destinations is limited to the latest 100 results for a permission.
 ====
+
+* *action.access.level*
++
+Displays the access level at which a resource was last accessed.
++
+`config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.access.level= `
+
+* *action.access.isAdministrative*
++
+Identifies if a resource was accessed with Administrative rights. 
++
+`config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.access.isAdministrative = True `
