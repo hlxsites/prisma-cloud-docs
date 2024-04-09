@@ -87,78 +87,6 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
-2+|*Policy Updates—RQL*
-
-|*AWS EC2 Instance Scheduled Events*
-//RLP-134897
-
-|*Changes—* The RQL will be updated to consider the event day until the task is completed and checks for multiple events scheduled for an EC2.
-
-*Severity—* Informational
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances' AND json.rule = '(_DateTime.ageInDays($.statusEvents[*].notBefore) > -7)'
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances' AND json.rule = 'statusEvents[?any(_DateTime.ageInDays(notBefore) > -7 and _DateTime.ageInDays(notBefore) < 0 and description exists and description does not contain "Completed")] exists'
-----
-
-*Impact—* Low. Existing alerts will be resolved when the task scheduled gets completed and new alerts will be generated if there is event scheduled for the EC2.
-
-|*AWS EMR cluster is not enabled with data encryption in transit*
-//RLP-131880
-
-|*Changes—* The policy RQL will be updated to ensure the correct match is obtained when the RQL condition `$.X.securityConfiguration contains $.Y.name` is changed to `$.X.securityConfiguration equals $.Y.name`.
-
-*Severity—* Low
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration contains $.Y.name) and ($.Y.EncryptionConfiguration.EnableInTransitEncryption is false)' ; show X;
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration equals $.Y.name) and ($.Y.EncryptionConfiguration.EnableInTransitEncryption is false)' ; show X;
-----
-
-*Impact—* Low. Existing alerts will be resolved and new alerts will be generated when the AWS EMR cluster is not enabled with data encryption in transit. 
-
-
-|*Azure Function app configured with public network access*
-
-//RLP-136115
-
-|*Changes—* The RQL will be updated to check for Function app configured with default network configuration
-
-*Severity—* Medium
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled and config.ipSecurityRestrictions[?any(action equals Allow and ipAddress equals Any)] exists'
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any(action equals Allow and ipAddress equals Any)] exists'
-----
-
-*Impact—* Medium. New Alerts will be generated when the `publicNetworkAccess` for function app is set with default networking configuration. 
 
 |===
 
@@ -170,142 +98,64 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 |*Service*
 |*API Details*
 
-|tt:[Update] *Amazon API Gateway*
-//RLP-134216 
+|*AWS Network Manager*
+//RLP-137198 
 
-|*aws-apigateway-method*
-
-Prisma Cloud will update the `aws-apigateway-method` API to exclude the `methodIntegration.cacheNamespace` field from the JSON because it changes frequently causing too many resource snapshots.
-
-|*Amazon Detective*
-//RLP-135760
-
-|*aws-detective-datasource-package*
-
-Additional permissions required:
-
-* `detective:ListGraphs`
-* `detective:ListDatasourcePackages`
-
-The Security Audit role includes the `detective:ListGraphs` permission.
-You must manually add the `detective:ListDatasourcePackages` permission to the CFT template to enable it.
-
-|*Amazon Polly*
-//RLP-135730
-
-|*aws-polly-speech-synthesis-task*
+|*aws-network-manager-ipam*
 
 Additional permission required:
 
-* `polly:ListSpeechSynthesisTasks`
+* `ec2:DescribeIpams`
 
-You must manually add the permission to the CFT template to enable it.
+The Security Audit role includes the permission.
 
-|*Amazon SES*
-//RLP-135742
+|*AWS Network Manager*
+//RLP-137195 
 
-|*aws-ses-configuration-set*
-
-Additional permissions required:
-
-* `ses:ListConfigurationSets`
-* `ses:DescribeConfigurationSet`
-
-The Security Audit role includes the permissions.
-
-|*AWS Batch*
-//RLP-135733
-
-|*aws-batch-job-queue*
+|*aws-network-manager-global-network*
 
 Additional permission required:
 
-* `batch:DescribeJobQueues`
+* `networkmanager:DescribeGlobalNetworks`
 
-You must manually add the permission to the CFT template to enable it.
+The Security Audit role includes the permission.
 
-|*Azure CDN*
-//RLP-129305
-|*azure-frontdoor-standardpremium-routes*
+|*AWS Network Manager*
+//RLP-137185 
 
-Additional permissions required:
-
-* `Microsoft.Cdn/profiles/read`
-* `Microsoft.Cdn/profiles/afdendpoints/read`
-* `Microsoft.Cdn/profiles/afdendpoints/routes/read`
-
-The Reader role includes the permissions.
-
-|*Azure CDN*
-//RLP-129303
-|*azure-frontdoor-standardpremium-afd-custom-domains*
-
-Additional permissions required:
-
-* `Microsoft.Cdn/profiles/read`
-* `Microsoft.Cdn/profiles/customdomains/read`
-
-The Reader role includes the permissions.
-
-|*Azure SQL Database*
-//RLP-133223
-|*azure-sql-managed-instance-vulnerability-assessments*
-
-Additional permissions required:
-
-* `Microsoft.Sql/managedInstances/read`
-* `Microsoft.Sql/managedInstances/vulnerabilityAssessments/Read`
-
-The Reader role includes the permissions.
-
-|*Azure SQL Database*
-//RLP-133221
-|*azure-sql-managed-instance-encryption-protectors*
-
-Additional permissions required:
-
-* `Microsoft.Sql/managedInstances/read`
-* `Microsoft.Sql/managedInstances/encryptionProtector/Read`
-
-The Reader role includes the permissions.
-
-|*Azure Synapse Analytics*
-//RLP-134911
-|*azure-synapse-workspace-sql-pools*
-
-Additional permissions required:
-
-* `Microsoft.Synapse/workspaces/read`
-* `Microsoft.Synapse/workspaces/sqlPools/read`
-
-The Reader role includes the permissions.
-
-
-|*Google Traffic Director*
-//RLP-135382
-
-|*gcloud-traffic-director-secure-web-proxy-url-list*
+|*aws-network-manager-core-network*
 
 Additional permission required:
 
-* `networksecurity.urlLists.list`
+* `networkmanager:GetCoreNetwork`
 
-The Viewer role includes the permission.
+The Security Audit role does not include the permission. You will need to add a new role/create a custom role for the permission. 
 
-|*Google Vertex AI AIPlatform*
-//RLP-135378
+|*Amazon SNS*
+//RLP-131263
 
-|*gcloud-vertex-ai-aiplatform-notebook-runtime-template*
+|*aws-sns-data-protection-policy*
 
 Additional permissions required:
 
-* `aiplatform.notebookRuntimeTemplates.list`
-* `aiplatform.notebookRuntimeTemplates.getIamPolicy`
+* `sns:ListTopics`
+* `sns:GetDataProtectionPolicy`
 
-The Viewer role includes the permissions.
+The Security Audit role includes the `sns:ListTopics` permission. The `sns:GetDataProtectionPolicy` permission is NOT Present in Security Audit role.
 
-|*Google Vertex AI AIPlatform*
-//RLP-135379
+|*Amazon FSx*
+//RLP-127615
+
+|*aws-fsx-backup*
+
+Additional permission required:
+
+* `fsx:DescribeBackups`
+
+The Security Audit role includes the permission. 
+
+|*Google Vertex AI Platform*
+//RLP-136571
 
 |*gcloud-vertex-ai-aiplatform-notebook-runtime*
 
@@ -313,31 +163,60 @@ Additional permission required:
 
 * `aiplatform.notebookRuntimes.list`
 
-The Viewer role includes the permission.
+The Viewer role includes the permission. 
 
-|*Google Traffic Director*
-//RLP-134189
+|*Google Workspace*
+//RLP-135384
 
-|*gcloud-traffic-director-gateway-security-policy*
+|*gcloud-domain-user-last-login-time*
 
-Additional permission required:
+No additional permissions are required.
 
-* `networksecurity.gatewaySecurityPolicies.list`
+|*Google Cloud VMware Engine*
+//RLP-135383
 
-The Viewer role includes the permission.
-
-
-|*Google Traffic Director*
-//RLP-131427
-
-|*gcloud-traffic-director-gateway-security-policy-rule*
+|*gcloud-vmware-engine-external-address*
 
 Additional permissions required:
 
-* `networksecurity.gatewaySecurityPolicies.list`
-* `networksecurity.gatewaySecurityPolicyRules.list`
+* `vmwareengine.locations.list`
+* `vmwareengine.privateClouds.list`
+* `vmwareengine.externalAddresses.list`
 
-The Viewer role includes the permissions.
+The Viewer role includes the permission.
+
+|*Google Vertex AI Platform*
+//RLP-135381
+
+|*gcloud-vertex-ai-aiplatform-feature-online-store*
+
+Additional permission required:
+
+* `aiplatform.featureOnlineStores.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI Platform*
+//RLP-135380
+
+|*gcloud-vertex-ai-aiplatform-feature-group*
+
+Additional permission required:
+
+* `aiplatform.featureGroups.list`
+
+The Viewer role includes the permission.
+
+|*Google Cloud Support*
+//RLP-131425
+
+|*gcloud-cloud-support-case*
+
+Additional permission required:
+
+* `cloudsupport.techCases.list`
+
+The Viewer role includes the permission.
 
 |===
 
