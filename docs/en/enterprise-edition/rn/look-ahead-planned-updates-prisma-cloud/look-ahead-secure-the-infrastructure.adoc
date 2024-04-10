@@ -87,6 +87,26 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
+//RLP-136748
+
+|*Changes*— We recommend using either non-FIPS security policy `ELBSecurityPolicy-TLS13-1-2-2021-06` or FIPS security policy `ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04` to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
+
+*Severity*— Low
+
+*Policy Type*— Config
+
+*Current RQL*— 
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and (sslPolicy does not contain ELBSecurityPolicy-TLS13-1-2-2021-06))] exists
+----
+
+*Proposed RQL*— 
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists
+----
+
+*Impact*: Low
 
 |===
 
