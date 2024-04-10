@@ -1,6 +1,212 @@
 
 == License Compliance in Software Composition Analysis (SCA)
 
+Open source software licenses define the terms under which open source software can be used, modified, and distributed. Therefore, when selecting an open source package, it's crucial to understand the types of licenses and the associated user restrictions to mitigate any potential compliance issues.
+
+In Prisma Cloud, licenses are scanned as part of the Software Composition Analysis (SCA) vulnerability scan for open source packages. License restrictions for each package are determined either at the root package (direct dependent package) or at the sub-dependent package level. 
+
+Prisma Cloud offers three types of default License policies out of the box, providing comprehensive coverage for managing license compliance within your environment. Following the SPDX license identifier standards, these policies ensure accurate identification and management of various software licenses.
+
+* *Weak Copyleft Licenses* policies (*Medium* severity): Identifies software packages distributed under weak copyleft licenses. These licenses permit combining code with other licenses, including proprietary licenses, without mandating the entire derivative work to be released under the same copyleft license
+
+* *Strong Copyleft Licenses* policies (*High* severity): Identifies software packages distributed under strong copyleft licenses, such as the GNU General Public License (GPL). These licenses require derivative works to be distributed under the same copyleft license terms as the original work. This ensures broader access and modification rights
+
+* *Non Permissive Licenses* policies (*High* severity): Identifies software packages distributed under non-permissive or restrictive licenses. These licenses restrict how you can use, modify, and distribute the software. They might limit your ability to integrate the software into certain projects or require you to purchase a commercial license for specific uses
+
+In addition, you can create custom license policies to suit your organization's requirements. See <<#custom-policies,Create Custom License Policies>> below for more information.
+
+=== Permissions
+
+For permissions required to view, create, modify policies, and more, refer to xref:../../../administration/prisma-cloud-admin-permissions.adoc[Prisma Cloud Administrator Permissions].
+
+[#view-license-policies]
+=== View License Policies
+
+To view both default and custom license policies in the Prisma Cloud console, follow these steps:
+
+. Navigate to the *Governance* tab on the Prisma Cloud console.
+
+. Filter by *Policy Label*: Select *Add Filter* > *Policy Label*.
+
+. *Pre-defined Policies*: Filter using the following values:
++
+* (License Policy, Weak Copyleft)
++
+* (License Policy, Strong Copyleft)
++
+* (License Policy, Non-permissive).
+
+. *Custom Policies*: Select a custom policy label that you assigned during creation. Refer to *step 2* of <<#custom-policies,Create Custom License Policies>> process below.
++
+NOTE: This procedure offers one method for locating License policies. Alternatively, you can filter by 'Policy Type' and 'Policy Subtype', 'Compliance Requirement', and more. Additionally, utilize the search bar to quickly locate specific policies.
+
+////
+Actionable Steps:
+Navigate to Governance Tab: Go to the Prisma Cloud console and click on the "Governance" tab.
+Filter by Policy Label: Add a filter for "Policy Label" to view both default and custom license policies.
+Select Pre-defined Policies: Filter using provided values for common license types such as Weak Copyleft, Strong Copyleft, and Non-permissive.
+Explore Custom Policies: If applicable, select custom policy labels assigned during creation.
+////
+
+=== Manage License Policies
+
+You can manage license policies to suit your organizations requirements. To begin, access License policies - see <<#view-license-policies],View License Policies>> above.
+
+==== Enable/Disable License Policies
+
+Enable/disable individual license policies based on my organization's specific needs to maintain flexibility in compliance management: 
+. Select the button in the Status column ON/OFF to Enable/Disable a policy.
++ 
+image::application-security/[]
+
+==== Modify License Policy Severity Level 
+
+Modify the severity level of a policy to effectively prioritize and address compliance violations.
+
+// Need to add procedure and image
+
+==== Enforcement
+
+Enforce license violations by severity and policy labels, ensuring developers are promptly notified during pull requests if they introduce a package with an unapproved license. For further details on Enforcement rules, refer to xref:monitor-and-manage-code-build/enforcement.adoc[Enforcement].
+
+[.task]
+
+[#custom-policies]
+=== Create Custom License Policies
+Create custom license policies to align compliance measures with your organization's unique requirements.
+
+[.procedure]
+
+. On Prisma Cloud console, select *Governance* > *Add Policy* > *Config*.
++
+image::application-security/licenses-add-policy.png[]
++
+The *Add Details* step of the 'Create New Config Policy' wizard (wizard) is displayed.
++
+image::application-security/licenses-add-details-wiz.png[]
+
+. Fill in the provided fields.
++
+* *Policy Name* (Required): The name of the custom license policy
+* *Description* (Optional): A description of the custom policy
+* *Policy Subtype*: Select *Build* to enable scanning code repositories 
+* *Severity* (Required): The policy severity level. Values: 'Critical', 'High', 'Medium', 'Low', 'Informational'
+* *Labels* (Optional): Assigning a label to a policy is recommended as it enables you to efficiently filter and find the policy
+
+. Select *Next*.
++
+The *Create Query* step of the wizard is displayed.
++
+image::application-security/[]
+// add image
+
+. Create a custom License query.
+.. Select *License Policy* from the menu.
+.. Select a license/ multiple licenses from the menu in the *License Type* field.
+.. Click *Next*.
++
+The *Compliance Standards* step of the wizard is displayed.
++
+image::application-security/[]
+// add image
+
+. Configure a *Compliance* standard.
+.. Select the required compliance *Standard*, *Requirement*, and *Section* values from their respective fields.
+.. Click *(+)v to add additional standards as required.
+.. Select *Next*.
++
+The *Remediation* step of the wizard is displayed.
++
+image::application-security/[]
+// add image
+. Provide steps to remediate the license violation (optional) > Submit.
++
+The custom license is created and can be viewed on the *Governance* page.
+
+[.task]
+
+[#view-remediate-license-issues]
+=== View and Remediate Non-Compliant License Findings
+
+View and mitigate non-compliance license findings through the *Projects* page.
+
+[.procedure]
+
+. In *Application Security*, select *Home* > *Projects* > *Licenses* tab.
++
+Image::[]
+
+. Filter by License type.
+
+.. Create a *License* filter: Select  *Add Filter* > *License* type.
+.. Select a license policy. 
++
+NOTE: Both predefined and custom policies are supported. You can select multiple policies.
++
+All non-compliance license findings are displayed in the table.
+
+. Select a package from the list in the table containing a non-compliant license.
+
+. Select the *Details* and *Issues* tab in the sidecar that is displayed to view details about the license and non-compliance issues.
+
+[.task]
+
+[#suppress-license-issues]
+=== Suppress License Violations
+
+[.procedure]
+
+To address a license policy violation, the remediation method is through suppression. This is performed from the *Projects* section of the console. Suppression effectively exempts the violation from detection during subsequent scans. By employing suppression effectively, you can tailor your response to license policy violations identified in SCA scans, ensuring compliance with relevant licensing requirements.
+
+NOTE: When creating a suppression rule, it is imperative to provide a clear and definitive explanation as to why the violation is considered non-critical. This explanation is crucial for ensuring compliance and understanding the rationale behind the suppression.
+
+Within each suppression rule, outline both the Suppression Type and the relevant License Type, as it impacts the rule's effectiveness.
+
+[.task]
+
+==== Suppression Types
+
+* *License Types*: Absolves the violation based on the specific license associated with the resource
+* *Package*: Suppresses any license violations tied to a specified package
+
+[.procedure]
+
+. Select a non-compliant license - see <<#view-remediate-license-issues,View and Remediate Non-Compliant License Findings>> above.
+. In the *Issues* tab, select *Suppress*.
+
+. Add a justification as a definitive explanation for suppressing the specific vulnerability.
+
+. Optionally, add an *Expiration Date* for the suppression and then select *Apply*.
+
+. Select *Suppression Type*.
+
+. Select *License types*.
+
+. Select *Save*.
++
+For more information on Suppression, refer to the xref:suppress-code-issues.adoc [Suppress Code Issues] documentation.
+
+
+=== License scans in Checkov CLI
+
+License scans are supported in Checkov CLI. for more information on Ckeckov CLI scans, refer to the https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[Checkov CLI] documentation.
+
+=== License scans in IDE
+
+License scans are supported in IDEs. For more information on License scans through IDEs, refer to the xref:../../../ides/ides.adoc[IDE] documentation.
+
+=== Integrations
+
+You can view license compliance scan results for packages in your VCS repositories
+//to be checked
+
+
+=== Pull Request Comment Support for License Policies
+
+Prisma Cloud supports Pull Request (PR) comment notifications for license policy violations. These violations are detected during scans of pull requests. If violations are found, the system generates comments on the pull request to notify the developer about the detected issues.
+
+
+////
 Open source software licenses define how you can use, modify and distribute the open source software. Thus, when selecting an open source package to merge to your code it is imperative to understand the types of licenses and the user restrictions the package falls under, which helps you mitigate any compliance issues.
 On Prisma Cloud, licenses are scanned in parallel to the vulnerability scan for open source packages to understand usage restrictions. For every package license restrictions are defined either at the root package (direct dependent package) or sub-dependent package.
 In addition, Prisma Cloud supports an OOTB (Out-Of-The-Box) license policy (for example, BC_LIC_1) where all https://spdx.org/licenses/[SPDX] licenses with http://opensource.org/licenses/alphabetical[OSI] approval are considered compliant during the scan. If a violation occurs with an unknown license, private license or the license is not a part of the approved list, then a different policy is created to monitor it (for example, BC_LIC_2).
@@ -33,9 +239,11 @@ In this example, you see the scan result of a license violation with contextuali
 +
 image::application-security/sca-22.png[]
 ////
+////
 In this example, you see the scan result of a license sub-dependent violation with contextualized information in *Resource Explorer > Details* where you can also see the list of direct dependencies.
 +
 image::application-security/sca-23.png[]
+////
 ////
 
 [.task]
@@ -82,3 +290,4 @@ In this example, you see the package has one license `LGPLV2.1`.
 image::application-security/sca-30.png[]
 
 . Select *Save* to save the suppression rule.
+////
