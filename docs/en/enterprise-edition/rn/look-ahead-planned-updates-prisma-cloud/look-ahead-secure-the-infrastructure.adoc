@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.4.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.5.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -104,6 +104,27 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-de
 *Proposed RQL*— 
 ----
 config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists
+----
+
+*Impact*: Low
+
+|*Azure Microsoft Defender for Cloud set to Off for DNS*
+//RLP-137209
+
+|*Changes*— RQL has been updated to check if the legacy DNS plan is deprecated.
+
+*Severity*— Low
+
+*Policy Type*— Config
+
+*Current RQL*— 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+----
+
+*Proposed RQL*— 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.deprecated is false and properties.pricingTier does not equal Standard)] exists
 ----
 
 *Impact*: Low
