@@ -19,25 +19,44 @@ In addition, you can create custom license policies to suit your organization's 
 
 For permissions required to view, create, modify policies, and more, refer to xref:../../../../administration/prisma-cloud-admin-permissions.adoc[Prisma Cloud Administrator Permissions].
 
+[.task]
+=== GRBAC for License Policy Permissions
+
+GRBAC (Granular Role-Based Access Control) is used to manage permissions for License policies, as well as all Build policies. You can define the policy permissions as required for each Permission Group.
+
+[.procedure]
+
+. In *Application Security*, select *Settings* > *Access Control* in the left side-bar menu.
++
+The *Permission Groups* tab is selected by default.
++
+image::[]
+
+. Create or edit a Permission Group according to requirements.
++
+Refer to the xref:../../../administration/create-custom-permission-groups.adoc[Create Custom Permission Groups] for more information.
+
+. Select the required permissions in the *Policies* menu under the *Assign Permission* step > complete the Group Permission setup.
++
+image:[]
+
+
 [#view-license-policies]
 === View License Policies
 
-To view both default and custom license policies in the Prisma Cloud console, follow these steps:
+View both default out-of-the-box and custom license policies through *Governance*.
 
-. Navigate to the *Governance* tab on the Prisma Cloud console.
 
-. Filter by *Policy Label*: Select *Add Filter* > *Policy Label*.
+. On the Prisma Cloud console, select *Governance*.
 
-. *Pre-defined Policies*: Filter using the following values:
-+
-* (License Policy, Weak Copyleft)
-+
-* (License Policy, Strong Copyleft)
-+
-* (License Policy, Non-permissive).
+. Filter by *Policy Label*.
 
-. *Custom Policies*: Select a custom policy label that you assigned during creation. Refer to *step 2* of <<#custom-policies,Create Custom License Policies>> process below.
-+
+.. Create a *Policy Label* filter: Select *Add Filter* > *Policy Label*.
+
+.. Filter *Predefined Policies* using these values: (License Policy, Weak Copyleft), (License Policy, Strong Copyleft),  (License Policy, Non-permissive).
+
+.. *Custom Policies*: Select a custom policy label that you assigned when creating a custom policy. Refer to *step 2* of <<#custom-policies,Create Custom License Policies>> process below.
+
 NOTE: This procedure offers one method for locating License policies. Alternatively, you can filter by 'Policy Type' and 'Policy Subtype', 'Compliance Requirement', and more. Additionally, utilize the search bar to quickly locate specific policies.
 
 ////
@@ -67,7 +86,8 @@ Modify the severity level of a policy to effectively prioritize and address comp
 
 ==== Enforcement
 
-Enforce license violations by severity and policy labels, ensuring developers are promptly notified during pull requests if they introduce a package with an unapproved license. For further details on Enforcement rules, refer to xref:../../../monitor-and-manage-code-build/enforcement.adoc[Enforcement].
+Enforce license violations by severity and policy labels, ensuring developers are promptly notified during pull requests if they introduce a package with an unapproved license. For further details on Enforcement rules, refer to xref:../../risk-management/monitor-and-manage-code-build/enforcement.adoc[Enforcement].
+
 
 [.task]
 
@@ -136,18 +156,18 @@ View and mitigate non-compliance license findings through the *Projects* page.
 +
 Image::[]
 
-. Filter by License type.
+. Filter by *License type*.
 
-.. Create a *License* filter: Select  *Add Filter* > *License* type.
-.. Select a license policy. 
+.. Create a *License* filter: Select  *Add Filter* > *License type*.
+.. Select a license policy, including both default and custom policies. 
 +
-NOTE: Both predefined and custom policies are supported. You can select multiple policies.
+NOTE: You can select multiple policies.
 +
-All non-compliance license findings are displayed in the table.
+All filtered non-compliance license findings are displayed in the table.
 
 . Select a package from the list in the table containing a non-compliant license.
 
-. Select the *Details* and *Issues* tab in the sidecar that is displayed to view details about the license and non-compliance issues.
+. Select the *Details* and *Issues* tab in the sidecar that is displayed to view additional details about the license and non-compliance issues.
 
 [.task]
 
@@ -156,35 +176,26 @@ All non-compliance license findings are displayed in the table.
 
 [.procedure]
 
-To address a license policy violation, the remediation method is through suppression. This is performed from the *Projects* section of the console. Suppression effectively exempts the violation from detection during subsequent scans. By employing suppression effectively, you can tailor your response to license policy violations identified in SCA scans, ensuring compliance with relevant licensing requirements.
+You can suppress license violations to exclude the license from the scope of future scans on a global scale.  All license compliance issues associated with this package and version will no longer be considered in future scans across your entire environment.
 
-NOTE: When creating a suppression rule, it is imperative to provide a clear and definitive explanation as to why the violation is considered non-critical. This explanation is crucial for ensuring compliance and understanding the rationale behind the suppression.
-
-Within each suppression rule, outline both the Suppression Type and the relevant License Type, as it impacts the rule's effectiveness.
-
-[.task]
-
+////
 ==== Suppression Types
 
 * *License Types*: Absolves the violation based on the specific license associated with the resource
 * *Package*: Suppresses any license violations tied to a specified package
+////
 
 [.procedure]
 
-. Select a non-compliant license - see <<#view-remediate-license-issues,View and Remediate Non-Compliant License Findings>> above.
+. Select a non-compliant license
++
+Refer to <<#view-remediate-license-issues,View and Remediate Non-Compliant License Findings>> above for more information.
+
 . In the *Issues* tab, select *Suppress*.
 
-. Add a justification as a definitive explanation for suppressing the specific vulnerability.
+. Create a *Suppression* rule in the popup that is displayed > *Save*.
 
-. Optionally, add an *Expiration Date* for the suppression and then select *Apply*.
-
-. Select *Suppression Type*.
-
-. Select *License types*.
-
-. Select *Save*.
-+
-For more information on Suppression, refer to the xref:xref:../../../monitor-and-manage-code-build/suppress-code-issues.adoc [Suppress Code Issues] documentation.
+For more information on Suppression, refer to the xref:../../../monitor-and-manage-code-build/suppress-code-issues.adoc [Suppress Code Issues] documentation.
 
 
 === License scans in Checkov CLI
@@ -197,13 +208,13 @@ License scans are supported in IDEs. For more information on License scans throu
 
 === Integrations
 
-You can view license compliance scan results for packages in your VCS repositories
+You can view License non-compliance scan results for packages in your VCS repositories
 //to be checked
 
 
 === Pull Request Comment Support for License Policies
 
-Prisma Cloud supports Pull Request (PR) comment notifications for license policy violations. These violations are detected during scans of pull requests. If violations are found, the system generates comments on the pull request to notify the developer about the detected issues.
+Prisma Cloud supports Pull Request (PR) comment notifications for license policy violations. These violations are detected during scans of PRs. If violations are found, the system generates comments on the PR to notify the developer about the detected issues.
 
 
 ////
