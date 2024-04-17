@@ -8,6 +8,8 @@ import yaml
 from yaml.representer import Representer
 import subprocess
 import time
+import errno
+import sys
 
 FIXUPS = (
   ("A P I", "API"),
