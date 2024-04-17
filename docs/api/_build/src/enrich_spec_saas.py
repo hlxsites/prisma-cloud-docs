@@ -214,7 +214,6 @@ def fixup(desc):
 
 
 def lookup_summary(topic_map, route, method):
-  print(route, method)
   """
   In the OpenAPI spec file, route has the following format: /api/v1/resource/subresource.
   In the topic map, routes are shorter, and keyed as follows:
@@ -228,7 +227,6 @@ def lookup_summary(topic_map, route, method):
     route_key2 = None
 
     parts = route.split('/')
-    print(route, parts)
     if len(parts) >= 4:
       route_key1 = '/'
       route_key1 += parts[3]
@@ -250,11 +248,9 @@ def lookup_summary(topic_map, route, method):
     if route_key1 and route_key2:
       if route_key1 in topic_map:
         if route_key2 in topic_map[route_key1]:
-          print("SMITA111", route_key2, route_key1)
           if method in topic_map[route_key1][route_key2]:
             if 'summary' in topic_map[route_key1][route_key2][method]:
               return topic_map[route_key1][route_key2][method]["summary"]
-    print("smita")
     return None
   except yaml.YAMLError as e:
       print(f'Error loading {f}: Invalid YAML. {e}')
