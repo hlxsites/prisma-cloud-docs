@@ -2,7 +2,7 @@
 
 Learn about permissions query attributes.
 
-Review your options when using `config from iam where`. Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion feature shows the available expressions and the operators that are applicable for each attribute.
+Review your options when using userinput:[config from iam where]. Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion feature shows the available expressions and the operators that are applicable for each attribute.
 
 * *Source*—an identity that takes action on other cloud resources. A source can be any resource with permissions such as an IAM user, Azure Active Directory user, EC2 instance, Lambda function, and Azure virtual machine.
 
@@ -18,46 +18,39 @@ You can use the following attributes in the permissions query:
 +
 Narrows down the effective permissions search to one-or-more cloud accounts that you have connected to Prisma Cloud. The following example lists all the effective permissions for all users in your AWS account, Azure tenant, or GCP account. 
 +
-[screen]
 ----
-config from iam where source.cloud.account = 'Production' AND source.cloud.resource.type = 'user'
+config from iam where source.cloud.account = 'Production' AND source.cloud.resource.type = 'user']
 ----
 +
-You can find cross-account connection with the following syntax: 
+Use the following to find cross-account connection: 
 +
-[screen]
 ----
-config from iam where source.cloud.account != dest.cloud.account
+config from iam where source.cloud.account != dest.cloud.account]
 ----
 
 * *source.cloud.accountgroup*
 +
 Narrows down the permissions to the cloud accounts in your cloud account group. The following example list permissions of all EC2 instances in any of your AWS accounts:
 +
-[screen]
 ----
-config from iam where source.cloud.accountgroup = 'All my AWS accounts' AND source.cloud.service.name = 'ec2' AND source.cloud.resource.type = 'instance'
+config from iam where source.cloud.accountgroup = 'All my AWS accounts' AND source.cloud.service.name = 'ec2' AND source.cloud.resource.type = 'instance']
 ----
-+
 Lists permissions of all Azure virtual machine instances in any of your Azure subscriptions:
 +
-[screen]
 ----
-config from iam where source.cloud.accountgroup = 'All my Azure accounts' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'virtualMachines' 
+config from iam where source.cloud.accountgroup = 'All my Azure accounts' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'virtualMachines'
 ----
 
 * *source.cloud.type*
 +
 Narrows down your search option to specific clouds. The following example lists all effective permissions where the sources are in your AWS cloud accounts:
 +
-[screen]
 ----
 config from iam where source.cloud.type = 'AWS'
 ----
 +
 Lists all effective permissions where the sources are in your Azure subscriptions:
 +
-[screen]
 ----
 config from iam where source.cloud.type = 'AZURE'
 ----
@@ -66,7 +59,6 @@ config from iam where source.cloud.type = 'AZURE'
 +
 Narrows down your effective permissions search where the sources are in one or more cloud regions. The following example lists all AWS Lambda permissions for your AWS account in the Virginia region:
 +
-[screen]
 ----
 config from iam where source.cloud.region = 'AWS Virginia' AND source.cloud.service.name = 'lambda' AND source.cloud.resource.type = 'function' 
 ----
@@ -75,7 +67,6 @@ config from iam where source.cloud.region = 'AWS Virginia' AND source.cloud.serv
 +
 Lists the effective permissions for a cloud resource with a specific tag. 
 +
-[screen]
 ----
 config from iam where source.cloud.resource.tag ( 'string' ) exists
 ----
@@ -84,25 +75,21 @@ config from iam where source.cloud.resource.tag ( 'string' ) exists
 +
 Queries permissions where the policy statement contain and or doesn't contain conditions.
 +
-[screen]
 ----
 config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') exists
 ----
 
 * *source.cloud.service.name*
 +
-Queries permissions of a specific cloud service such as: IAM, S3, EC2, `Microsoft.Compute` , or `Microsoft.Storage`.
+Queries permissions of a specific cloud service such as: IAM, S3, EC2, userinput:[Microsoft.Compute] , or userinput:[Microsoft.Storage] .
 +
 The following example lists all EC2 permissions in your AWS cloud accounts:
 +
-[screen]
 ----
 config from iam where source.cloud.service.name = 'EC2'
 ----
+The following example lists all userinput:[Microsoft.Compute] permissions in your Azure cloud accounts:
 +
-The following example lists all `Microsoft.Compute` permissions in your Azure cloud accounts:
-+
-[screen]
 ----
 config from iam where source.cloud.service.name = 'Microsoft.Compute'
 ----
@@ -111,14 +98,12 @@ config from iam where source.cloud.service.name = 'Microsoft.Compute'
 +
 Queries specific cloud resources by its id, such as AWS Lambda function ARN, AWS IAM user ARN, AWS EC2 instance ARN, any Azure resource ID, GCP user account or service. The following example lists all AWS Lambda function permissions:
 +
-[screen]
 ----
 config from iam where source.cloud.resource.id = 'arn:aws:lambda:us-east-2:123456789012:function:my-function'
 ----
 +
-The following lists permissions of a specific Azure virtual machine:
+The following lists permissions of a specific Azure virtual machine :
 +
-[screen]
 ----
 config from iam where source.cloud.resource.id = '/subscriptions/aaaaa-bbb-ccc-ddd-eeeee/resourceGroups/resource-group/providers/Microsoft.Compute/virtualMachines/my-machine'
 ----
@@ -129,37 +114,32 @@ Lists permissions permissions of a specific cloud service such as: IAM, S3, EC2,
 +
 Lists all EC2 permissions in your AWS cloud accounts:
 +
-[screen]
 ----
 config from iam where source.cloud.service.name = 'EC2'
 ----
 +
 Lists all Microsoft.Compute permissions in your Azure cloud accounts:
 +
-[screen]
 ----
 config from iam where source.cloud.service.name = 'Microsoft.Compute'
 ----
 +
 Lists GCP compute instances permissions:
 +
-[screen]
 ----
 config from iam where source.cloud.service.name = 'compute' and dest.cloud.type = 'GCP'
 ----
 
 * *source.cloud.resource.type*
 +
-Queries permissions of a specific cloud type such as an IAM user, S3 bucket, EC2 instance, Azure AD user, `Microsoft.Storage` storage account,`Microsoft.compute` virtual machine, GCP Workspace user. The following example lists all AWS Lambda function permissions:
+Queries permissions of a specific cloud type such as an IAM user, S3 bucket, EC2 instance, Azure AD user, `Microsoft.Storage` storage account, `Microsoft.compute` virtual machine, GCP Workspace user. The following example lists all AWS Lambda function permissions:
 +
-[screen]
 ----
 config from iam where source.cloud.service.name = 'lambda' AND source.cloud.resource.type = 'function'
 ----
 +
 The following example lists all Azure function permissions:
 +
-[screen]
 ----
 config from iam where source.cloud.service.name = 'Microsoft.Compute' and source.cloud.resource.type = 'function'
 ----
@@ -168,7 +148,6 @@ config from iam where source.cloud.service.name = 'Microsoft.Compute' and source
 +
 Queries permissions of a user by its email address. The following example lists all effective permissions of my@email.com:
 +
-[screen]
 ----
 config from iam where source.email = 'my@email.com'
 ----
@@ -182,7 +161,6 @@ This feature requires IdP integration.
 +
 Narrows down the effective permissions search where the sources are in an IdP service, such as Okta. The following example lists all effective permissions of Okta users:
 +
-[screen]
 ----
 config from iam where source.idp.service = 'Okta'
 ----
@@ -194,16 +172,14 @@ This feature requires IdP integration.
 +
 The following example lists all effective permissions of Azure AD users:
 +
-[screen]
 ----
 config from iam where source.idp.service = 'Azure Active Directory' 
 ----
 
 * *source.idp.email*
 +
-Narrows down effective permissions search where the source is an IdP user by its email address. The following example lists all effective permissions of Okta users with the email, my@email.com:
+Narrows down effective permissions search where the source is an IdP user by its email address. The following example lists all effective permissions of Okta users with the email, my@email.com: 
 +
-[screen]
 ----
 config from iam where source.idp.email = 'my@email.com'
 ----
@@ -217,7 +193,6 @@ This feature requires IdP integration.
 +
 Narrows down the effective permissions search where the source is a group defined within the IdP:
 +
-[screen]
 ----
 config from iam where source.idp.group = 'my-group' 
 ----
@@ -231,7 +206,6 @@ This feature requires IdP integration.
 +
 List the effective permissions for a specific user within a source IdP:
 +
-[screen]
 ----
 config from iam where source.idp.username = 'my-username'
 ----
@@ -243,9 +217,8 @@ This feature requires IdP integration.
 
 * *source.idp.domain*
 +
-Narrows down the effective permissions search where the source is an IdP user in a specific domain, such as my-domain.okta.com. 
+Narrows down the effective permissions search where the source is an IdP user in a specific domain, such as my-domain.okta.com.
 +
-[screen]
 ----
 config from iam where source.idp.domain = 'my-domain.okta.com'
 ----
@@ -257,9 +230,8 @@ This feature requires IdP integration.
 
 * *source.public*
 +
-Queries all S3 buckets that are publicly accessible. All GCP public resources–with `allUsers` and/or `allAuthenticatedUsers` Principals.
+Queries all S3 buckets that are publicly accessible. All GCP public resources–with `allUsersuserinput` and/or `allAuthenticatedUsers` Principals.
 +
-[screen]
 ----
 config from iam where source.public = true AND dest.cloud.service.name = 'S3' AND dest.cloud.resource.type = 'bucket'
 ----
@@ -268,14 +240,12 @@ config from iam where source.public = true AND dest.cloud.service.name = 'S3' AN
 +
 Narrows down your search option to specific clouds. The following example lists effective permissions where the granter such as group, role, or policy is in your AWS cloud accounts:
 +
-[screen]
 ----
 config from iam where grantedby.cloud.type = 'AWS'
 ----
 +
 The following lists effective permissions in your Azure cloud accounts:
 +
-[screen]
 ----
 config from iam where grantedby.cloud.type = 'AZURE'
 ----
@@ -284,16 +254,14 @@ config from iam where grantedby.cloud.type = 'AZURE'
 +
 Queries permissions that have been granted by a specific policy by its id, such as AWS Managed Policy ARN, AWS Custom Policy, or GCP role ID. The following example lists effective permissions that have been granted by the AWS Managed Policy `AdministratorAccess`: 
 +
-[screen]
 ----
 config from iam where grantedby.cloud.policy.id = 'arn:aws:iam::aws:policy/AdministratorAccess'
 ----
 
 * *grantedby.cloud.policy.name*
 +
-Queries permissions that have been granted by a specific policy such as AWS Managed Policy, AWS Inline Policy, or GCP role name. The following example lists all effective permissions that have been granted by the AWS Managed Policy AdministratorAccess: 
+Queries permissions that have been granted by a specific policy such as AWS Managed Policy, AWS Inline Policy, or GCP role name. The following example lists all effective permissions that have been granted by the AWS Managed Policy `AdministratorAccess`: 
 +
-[screen]
 ----
 config from iam where grantedby.cloud.policy.name = 'AdministratorAccess'
 ----
@@ -304,23 +272,20 @@ Queries permissions that have been granted by a specific policy type, such as AW
 +
 The following example lists all effective permissions that have been granted to a user by any AWS Inline Policy:
 +
-[screen]
 ----
 config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.policy.type = 'Inline Policy'
 ----
 +
 The following example lists all effective permissions that have been granted to a user by any Azure built-in role:
 +
-[screen]
 ----
 config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.policy.type = 'Built-in Role'
 ----
 
 * *grantedby.cloud.entity.id*
 +
-Queries permissions that have been granted by a specific entity by its id, such as AWS IAM group ARN, AWS IAM role ARN, GCP group ID, or GCP service account ID. The following example lists all effective permissions that have been granted by the AWS IAM group, `my-group`: 
+Queries permissions that have been granted by a specific entity by its id, such as AWS IAM group ARN, AWS IAM role ARN, GCP group ID, or GCP service account ID. The following example lists all effective permissions that have been granted by the AWS IAM group, my-group: 
 +
-[screen]
 ----
 config from iam where grantedby.cloud.entity.id = 'arn:aws:iam::123456789012:group/my-group'
 ----
@@ -329,16 +294,14 @@ config from iam where grantedby.cloud.entity.id = 'arn:aws:iam::123456789012:gro
 +
 Queries permissions that have been granted by a specific entity, such as AWS IAM group, AWS IAM role, GCP group name, or GCP service account name. The following example lists all effective permissions that have been granted by the AWS IAM group, my-group: 
 +
-[screen]
 ----
 config from iam where grantedby.cloud.entity.name = 'my-group'
 ----
 
 * *grantedby.cloud.entity.type*
 +
-Queries permissions that have been granted by a specific entity type, such as AWS IAM group, AWS IAM role, GCP group, or GCP service account. The following example lists all effective permissions that have been granted to a user by any AWS IAM group: 
+Queries permissions that have been granted by a specific entity type, such as AWS IAM group, AWS IAM role, GCP group, or GCP service account. The following example lists all effective permissions that have been granted to a user by any AWS IAM group:
 +
-[screen]
 ----
 config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.entity.type = 'group'
 ----
@@ -359,7 +322,6 @@ Queries permissions granted by a specific policy level type. For instance, roles
 +
 Queries permissions granted by a specific policy such as AWS Managed or Inline policy, or GCP role name with a specific tag. The following example lists all effective permissions that have been granted by the AWS policies, with the tag Severity equals High:
 +
-[screen]
 ----
 config from iam where grantedby.cloud.policy.tag ( 'Severity' ) = 'High'
 ----
@@ -368,13 +330,13 @@ config from iam where grantedby.cloud.policy.tag ( 'Severity' ) = 'High'
 +
 Queries permissions granted by a specific entity, such as AWS IAM group or role, GCP group or service account name with a specific tag. For example, the following example lists all the effective permissions granted by AWS entities, with the tag Severity equals High.
 +
-[screen]
 ----
 config from iam where grantedby.cloud.entity.tag ( 'Severity' ) = 'High'
 ----
 
 * *grantedby.level.id*:
 Identifies permissions granted by specific level ID. For example:
+
 ** Azure: Groups with access to Azure management group/Subscriptions/Resources.
 ** GCP: Users with access to GCP organization/Folder/Project/Service.
 
@@ -385,6 +347,7 @@ Identifies permissions granted by specific level name. For example:
 
 * *grantedby.level.type*:
 Queries permissions granted to a specific level type. For example:
+
 ** Azure: Groups with access to Azure management group/Subscriptions/Resources.
 ** GCP: Users with access to GCP organization/Folder/Project/Service.
 
@@ -392,46 +355,39 @@ Queries permissions granted to a specific level type. For example:
 +
 Narrows down your effective permissions search to one or more cloud accounts that you have connected to Prisma Cloud. The following example lists all effective permissions to all buckets in your AWS Production account:
 +
-[screen]
 ----
 config from iam where dest.cloud.account = 'Production' AND dest.cloud.resouce.type = 'bucket'
 ----
 +
-You can find cross-account connection with the following syntax: 
+Used the following to find cross-account connection: 
 +
-[screen]
 ----
-config from iam where dest.cloud.account != source.cloud.account
+config from iam where dest.cloud.account != source.cloud.account]
 ----
 +
 The following example uses the `LIKE` operator to display results where IAM permissions have been granted on the cloud service provider using the wildcard (*) character to authorize access:
 +
-[screen]
 ----
 config from iam where dest.cloud.account LIKE 'account-dev-3'
 ----
 +
-The LIKE operator finds permissions granted for all ( `*` ) cloud accounts and the cloud account named `account-dev-3`.
-+
 [NOTE]
 ====
-If you use the `=` operator in the RQL query above, instead of the LIKE operator, you will view results for only cloud account named `account-dev-3`.
+If you use the `=` operator in the RQL query above, instead of the LIKE operator, you will view results for only cloud account named `account-dev-3` .
 ====
 
 * *dest.cloud.accountgroup*
 +
 Narrows down the permissions to the cloud accounts in your cloud account group. The following example lists permissions to all EC2 instances in any of your AWS accounts:
 +
-[screen]
 ----
-config from iam where dest.cloud.accountgroup = 'All my AWS accounts' AND dest.cloud.service.name = 'ec2' AND dest.cloud.resource.type = 'instance'
+config from iam where dest.cloud.accountgroup = 'All my AWS accounts' AND dest.cloud.service.name = 'ec2' AND dest.cloud.resource.type = 'instance' 
 ----
 
 * *dest.cloud.type*
 +
 Narrows down your search option to specific clouds. The following example lists all effective permissions where the destinations are in your AWS cloud accounts:
 +
-[screen]
 ----
 config from iam where dest.cloud.type = 'AWS'
 ----
@@ -440,7 +396,6 @@ config from iam where dest.cloud.type = 'AWS'
 +
 Narrows down effective permissions search where the destinations are in one or more cloud regions. The following example lists all effective permissions to AWS Lambda in your AWS account in the Virginia region: 
 +
-[screen]
 ----
 config from iam where dest.cloud.region = 'AWS Virginia' AND dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function'  
 ----
@@ -449,7 +404,6 @@ config from iam where dest.cloud.region = 'AWS Virginia' AND dest.cloud.service.
 +
 Queries permissions to a specific cloud service such as IAM, S3, or EC2. The following example lists permissions to all EC2 instances in any of your AWS accounts: 
 +
-[screen]
 ----
 config from iam where dest.cloud.service.name = 'EC2'
 ----
@@ -458,7 +412,6 @@ config from iam where dest.cloud.service.name = 'EC2'
 +
 Queries permissions to a specific cloud service such as AWS Lambda function, AWS IAM user, and AWS EC2 instance. The following example lists all effective permissions to the AWS Lambda function:
 +
-[screen]
 ----
 config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function' AND dest.cloud.resource.name = 'my-function'
 ----
@@ -467,7 +420,6 @@ config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource
 +
 Queries permissions to a specific cloud resource by its ID, such as AWS Lambda function ARN, AWS IAM user ARN, and AWS EC2 instance ARN. The following example lists all effective permissions to the AWS Lambda function:
 +
-[screen]
 ----
 config from iam where dest.cloud.resource.id = 'arn:aws:lambda:us-east-2:123456789012:function:my-function'
 ----
@@ -476,7 +428,6 @@ config from iam where dest.cloud.resource.id = 'arn:aws:lambda:us-east-2:1234567
 +
 Queries permissions to a specific cloud type such as an IAM user, S3 bucket, or EC2 instance. The following example lists all effective permissions to the AWS Lambda functions:
 +
-[screen]
 ----
 config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function'
 ----
@@ -485,7 +436,6 @@ config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource
 +
 Lists the effective permissions for a cloud resource destination with a specific resource tag.
 +
-[screen]
 ----
 config from iam where dest.cloud.resource.tag ( 'string' ) exists
 ----
@@ -494,7 +444,6 @@ config from iam where dest.cloud.resource.tag ( 'string' ) exists
 +
 Queries all non-specific resources that include wildcards for example, resources that equal or include “*”.
 +
-[screen]
 ----
 config from iam where action.name CONTAINS ALL ( 'ec2:RunInstances', 'ec2:DescribeInstances', 'lambda:InvokeFunction' ) and dest.cloud.wildcardscope = true
 ----
@@ -503,29 +452,50 @@ config from iam where action.name CONTAINS ALL ( 'ec2:RunInstances', 'ec2:Descri
 +
 Narrows down the effective permissions search to one or more action names. The following example lists all the effective permissions to get an object from an AWS S3 Bucket:
 +
-[screen]
 ----
 config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject'
 ----
 +
-Only the CONTAINS ALL operator is supported for this attribute. With this operator, you can run queries with AND logic in between values. For example, run the following query if you want to retrieve only roles that contain all X, Y, and Z actions:
+Only the CONTAINS ALL operator is supported for this attribute. With this operator, you can run queries with AND logic in between values. For example, you would run the following query if you want to retrieve only roles that contain all actions X, Y and Z:
 +
-[screen]
 ----
 config from iam where action.name CONTAINS ALL ( 'Microsoft.AgFoodPlatform/farmBeats/seasons/write', 'Microsoft.AgFoodPlatform/fields/delete' )
 ----
 
 * *action.lastaccess.days*
 +
-Displays when a specific permission was last used. The following example lists all the effective permissions to get an object from an AWS S3 bucket that was not used more than 90 days ago.
+Displays when a specific permission was actually last used. The following example lists all the effective permissions to get an object from an AWS S3 bucket that was not used more than 90 days ago.
 +
-[screen]
 ----
-config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90
+config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90]`
 ----
 +
 [NOTE]
 ====
-* Last access information is only logged for successful accesses. If the operation failed, for example due to lack of permissions, then the access information is not logged.
+* Last access information is only logged for successful access. If the operation failed, for example due to lack of permissions, then the access information is not logged.
 * The number of results displayed for last access destinations is limited to the latest 100 results for a permission.
 ====
+
+* *action.access.level*
++
+Displays the access level at which a resource was last accessed. Access level values are limited to the following:
+
+* Data Write
+* Data Read
+* Metadata Write
+* Metadata Read
+
+Sample RQL:
++
+----
+config from iam where source.cloud.type = 'AWS' and source.cloud.resource.type = 'user' and action.access.level = 'Data Read' and dest.cloud.service.name = 's3' 
+----
+
+* *action.access.isAdministrative*
++
+Identifies if a resource was accessed with Administrative rights. 
++
+Sample RQL:
+----
+config from iam where source.cloud.type = 'AWS' and source.cloud.resource.type = 'user' and action.access.isadministrative = true
+----
