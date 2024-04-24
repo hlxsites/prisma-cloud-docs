@@ -4,13 +4,13 @@ This guide provides an overview of Prisma Cloud's on-premises architecture.
 
 === On-Prem System Infrastructure
 
-The following services run in the client’s Kubernetes (K8s) cluster. Connectivity between the client and Prisma Cloud is facilitated through Transporter, allowing Prisma Cloud to send requests to the client to initiate tasks. All the images mentioned above are pulled from the Prisma Cloud AWS Elastic Container registry (ECR).
+The following services are deployed and run in the client's Kubernetes (K8s) cluster. Connectivity between the client and Prisma Cloud is facilitated through Transporter, allowing Prisma Cloud to send requests to the client to initiate tasks. All the images mentioned below are pulled from the Prisma Cloud AWS Elastic Container registry (ECR).
 
 image::application-security/on-prem-sys-infra1.1.png[]
 
 === Transporter Client
 
-The Transporter Client, installed via Helm Chart, runs in a pod in the client K8s environment. For more on Transporter, refer to xref:../manage-network-tunnel/manage-network-tunnel.adoc[Manage Transporter].
+The Transporter Client, installed via the Helm Chart, runs in a pod in the client K8s environment. For more on Transporter, refer to xref:../manage-network-tunnel/manage-network-tunnel.adoc[Manage Transporter].
 
 === Workload Manager 
 
@@ -22,17 +22,17 @@ image::application-security/on-prem-workload-mgr.png[]
 
 === File Server - SeaweedFS
 
-SeaweedFS is used for persistent file storage in the client environment. It is an open source project available at https://github.com/seaweedfs/seaweedfs. You can view the SeaweedFS entities including 'Filer', 'Master' and 'Volume' in the screenshot above to understand how they run in the client K8s cluster. For more information about these components, refer to the SeaweedFS documentation.
+SeaweedFS is used to store repositories and their content, and functions as a persistent file storage solution in the client environment. It is an open source project available at https://github.com/seaweedfs/seaweedfs. You can view the SeaweedFS entities including 'Filer', 'Master' and 'Volume' in the screenshot above to understand how they run in the client K8s cluster. For more information about these components, refer to the SeaweedFS documentation.
 
 === Image Pull Secret
 
-The customer's K8s pulls images from the Prisma Cloud ECR using the 'Pull Image Secret', a token that is refreshed every 12 hours.
+The customer's K8s pulls images from the Prisma Cloud ECR using the 'Pull Image Secret', a token that is refreshed automatically every 12 hours.
 
 === CAS Image Registry Sync Scheduler CronJob
 
 image::application-security/on-prem-cronjob-sync.png[]
 
-A CronJob automatically runs at scheduled intervals to update image pull secrets for Kubernetes deployments managed by Prisma Cloud. These images are stored in a private Prisma Cloud ECR Repository. To access these images, Kubernetes requires a secret, which has an expiration time (typically 12 hours). The CronJob ensures these secrets are kept up-to-date to avoid any interruption in image access for running deployments. 
+A CronJob automatically runs at scheduled intervals to update image pull secrets for Kubernetes deployments managed by Prisma Cloud. These images are stored in a private Prisma Cloud ECR Registry. To access these images, Kubernetes requires a secret, which has an expiration time (typically 12 hours). The CronJob ensures these secrets are kept up-to-date to avoid any interruption in image access for running deployments. 
 
 If the CronJob fails to run for any reason, for example, due to a cluster outage, it can lead to problems when the cluster restarts. Pods using these deployments might not be able to pull the required images and end up in an 'ImagePullBackOff' state, indicating a failed image pull attempt. This can cause disruptions or delays in application functionality.
 
@@ -55,7 +55,7 @@ These components are used for opening a Fix Pull Request.
 
 Prisma Cloud uses Vector, an open source project, (https://opensource.datadoghq.com/projects/vector/ ), for collecting, processing, and forwarding logs and metrics from the images to Prisma Cloud. Vector includes persistent storage for logs and  transfers data through the Prisma Cloud API.
  
-image::application-security/on-prem-vector.png[]
+image::application-security/on-prem-vector1.1.png[]
 
 NOTE: The data gathered pertains solely to Prisma Cloud services deployed within the cluster and does not include customer information. It allows Prisma Cloud to gather information from the services and to perform an assessment of the current service health.
 
@@ -138,7 +138,8 @@ NOTE: When you fix an issue directly through the Prisma Cloud console, the fix d
 
 There are two main ways to connect your version control system (VCS) to Prisma Cloud for automated scanning:
 
-* *Ingress in the Cluster*: This option leverages the existing Ingress functionality within your Kubernetes cluster. Ingress acts as a single entry point for routing external traffic to services within your cluster. In this scenario, the Prisma Cloud Transporter receives traffic from the VCS via the Ingress controller. For more information on configuring Ingress within your cluster, refer to xref:on-prem-install.adoc#ingress-cluster[Connect with Ingress on the Cluster].
+* *Ingress in the Cluster*: This option leverages the existing Ingress functionality within your Kubernetes cluster. Ingress acts as a single entry point for routing external traffic to services within your cluster. In this scenario, the Prisma Cloud Transporter receives traffic from the VCS via the Ingress controller. For more information on configuring Ingress within your cluster, refer to xref:on-prem-install.adoc#ingress-cluster[Connect with Ingress on the Cluster]
 
 * *Direct Connection*: Alternatively, you can establish a direct connection from the VCS to the Prisma Cloud Transporter Server. This method bypasses your cluster's Ingress entirely and creates a dedicated communication channel between the VCS and Prisma Cloud.
 
+NOTE: These methods focus solely on establishing the connection between your VCS and Prisma Cloud. Other Prisma Cloud components are not directly involved in the VCS to Prisma Cloud Server communication channel itself.
