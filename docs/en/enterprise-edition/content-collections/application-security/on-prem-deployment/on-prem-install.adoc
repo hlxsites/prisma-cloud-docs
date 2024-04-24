@@ -118,7 +118,7 @@ image::application-security/on-prem-int-config-domain-wizard.png[]
 
 . Select an alias from the *Alias* field.
 +
-NOTE: Alias values available for selection are the on-prem names that were provided during ‘step 2’ of the installation process above.
+NOTE: Alias values available for selection are the on-prem names that were provided during step 2' of the installation process above.
 
 . Complete the integration process; refer to the xref:../get-started/connect-code-and-build-providers/code-repositories/code-repositories.adoc[documentation] specific to your self-managed VCS for instructions on how to proceed with the integration process.
 
@@ -126,6 +126,55 @@ NOTE: Alias values available for selection are the on-prem names that were provi
 NOTE: During the beta phase, when integrating your VCS, the URLs pre-populated in the Register OAuth App step of the installation wizard are Prisma server URLs. If you wish to configure the setup so that the VCS contacts the On-Prem deployment instead of the Prisma server, please contact our support team for assistance.
 ////
 
+=== Enable TLS for Secure Configuration
+
+To secure communication, you can enable TLS within your Helm chart. 
+
+. Add the following configuration to your *values.yaml* file:
+
+[source,yaml]
+----
+transporter:
+  transporter:  
+    tls:
+      enabled: true
+      secretName: "server-tls-secret" # use a pre-defined secret of type "kubernetes.io/tls"
+      certificate: "server.crt" # certificate key name in tls secret
+      key: "server.key" # private key name in tls @secrets-mgmt-alerts-info 
+----
+
+[#ingress-cluster]
+=== Connect with Ingress on the Cluster
+
+You can connect directly from the VCS to the Prisma Cloud Transporter Server, or via Ingress in the cluster.
+
+The following image describes a webhook workflow with Ingress on the cluster.
+
+image::application-security/on-prem-webhook-flow2.0.png[]
+
+[.task]
+
+=== Configuring Ingress on the Cluster through the Console.
+
+[.procedure]
+
+. Select *Application Security* > *Settings* > *Advanced Deployments* > *On-Prem Connection*.
++
+The *Properties* step of the *Manage On-Prem Deployment* wizard is displayed.
++
+// todoimage::application-security/[]
+
+. Check the *Use Transporter Client for VCS integrations* box.
+
+. Add your *Domain* name in the Domain field.
+
+. Add your *port* number in the Port field.
++
+NOTE: During integrating your VCS, you must enter the same Domain and port number you provided when installing on-prem as displayed above 
+
+. Select *Next*.+
++
+This integration cannot be modified. To make changes, you'll need to delete this integration and create a new one.
 
 
 
