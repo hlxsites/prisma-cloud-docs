@@ -1,4 +1,4 @@
-== AWS IAM policy allows full administrative privileges
+== Data source IAM policy document allows all resources with restricted actions
 
 === Policy Details
 
@@ -6,16 +6,16 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| d9b86448-11a2-f9d4-74a5-f6fc590caeef
+| e6549da7-fe94-44b8-9957-84770f3e790b
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/data/aws/ResourcePolicyDocument.py[CKV_AWS_356]
 
 |Severity
-|MEDIUM
+|HIGH
 
 |Subtype
-|Run,Build
+|Build
 
 |Frameworks
 |Terraform,TerraformPlan
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy is checking to ensure that no IAM (Identity and Access Management) policy documents allow "*" as a statement's resource for actions that can be restricted. If "*", which stands for all resources, is used, it means the statement grants permissions to all AWS resources which is potentially unsafe. This is poor practice because it broadens the scope of access controls and increases the risk of unauthorized access. It's important to define granular permissions to each user access, as unrestricted access can lead to unwanted manipulations or data breaches. Therefore, it's recommended to specify restrictions and assign minimum necessary access rights.
+This policy is checking to ensure that no IAM (Identity and Access Management) policy documents allow "\*" as a statement's resource for actions that should be restricted, listed https://cloudsplaining.readthedocs.io/en/latest/glossary/resource-exposure/[here]. If "\*", which stands for all resources, is used, it means the statement grants permissions to all AWS resources which is potentially unsafe. This is poor practice because it broadens the scope of access controls and increases the risk of unauthorized access. It's important to define granular permissions to each user access, as unrestricted access can lead to unwanted manipulations or data breaches. Therefore, it's recommended to specify restrictions and assign minimum necessary access rights.
 
 For more info, visit https://cloudsplaining.readthedocs.io/en/latest/glossary/resource-exposure/[cloudsplaning documentation].
 
@@ -35,37 +35,31 @@ For more info, visit https://cloudsplaining.readthedocs.io/en/latest/glossary/re
 * *Resource:* aws_iam_policy
 * *Arguments:* policy
 
-You should not use a wildcard (*) as a statement's resource as it grants excessively broad permissions.
+You should not use a wildcard (*) as a statement's resource with a restricted action as it grants excessively broad permissions.
 
 Here's an example of a secure piece of Terraform code:
 
 [source,go]
 ----
-resource "aws_iam_policy" "policy" {
-  name   = "my_policy"
-  path   = "/"
-  description = "An inline IAM policy for my user"
-  policy = <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Action": [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject"
-        ],
-        "Effect": "Allow",
-        "Resource": [
-          "arn:aws:s3:::my_bucket/my_object",
-          "arn:aws:s3:::my_bucket/my_other_object"
-        ]
-      }
+data "aws_iam_policy_document" "example" {
+  statement {
+    sid = "samplePassRole"
+
+    effect = "Allow"
+
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject"
+    ]
+
+    resources = [
+-      "*",
++      "arn:aws:s3:::my_bucket/my_object"
     ]
   }
-EOF
 }
 ----
 
-In the above Terraform script, the actions `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` are allowed, but they are limited to the resources specified - "arn:aws:s3:::my_bucket/my_object" and "arn:aws:s3:::my_bucket/my_other_object". This is much more secure as it clearly defines what resources the IAM policy's actions can access, rather than opening up all resources by using a wildcard (*).
+In the above Terraform, the actions `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` are allowed, but they are limited to the resources specified - "arn:aws:s3:::my_bucket/my_object". This is much more secure as it clearly defines what resources the IAM policy's actions can access, rather than opening up all resources by using a wildcard (*).
 
