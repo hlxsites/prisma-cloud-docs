@@ -4,9 +4,15 @@ This guide provides an overview of Prisma Cloud's on-premises architecture.
 
 === On-Prem System Infrastructure
 
-The following services are deployed and run in the client's Kubernetes (K8s) cluster. Connectivity between the client and Prisma Cloud is facilitated through Transporter, allowing Prisma Cloud to send requests to the client to initiate tasks. All the images mentioned below are pulled from the Prisma Cloud AWS Elastic Container registry (ECR).
+=== Secure Communication Channels
 
-image::application-security/on-prem-sys-infra1.1.png[]
+Prisma Cloud uses Transporter, a dedicated service deployed in the client's cluster, to establish secure communication channels. This allows Prisma Cloud to send requests to the client, initiating tasks such as scans. Client-initiated communication with Prisma Cloud happens directly, bypassing the Transporter.  
+
+=== Image Source
+
+The following services are deployed and run in the client’s Kubernetes (K8s) cluster. All the images mentioned below are pulled from the Prisma Cloud AWS Elastic Container registry (ECR). This ensures secure storage, access control, and streamlined deployment within the Prisma Cloud ecosystem.
+
+image::application-security/on-prem-sys-infra2.1.png[]
 
 === Transporter Client
 
@@ -16,9 +22,9 @@ The Transporter Client, installed via the Helm Chart, runs in a pod in the clien
 
 The Workload Manager is a Prisma Cloud deployment that runs in the client’s cluster. Its primary function is to initiate various tasks in the client’s environment, including launching scans jobs within the client's K8s environment, as well as other tasks. The Prisma Cloud Transporter Client communicates with the Workload Manager, instructing it to start these scan jobs at scheduled intervals or upon specific events.
 
-The following screenshot displays the Workload Manager run status.
+The following screenshot displays the Workload Manager's functionality as part of the run status of pods within the Kubernetes cluster. This includes the Workload Manager pods themselves, as well as the status of workloads they manage.
 
-image::application-security/on-prem-workload-mgr.png[]
+image::application-security/on-prem-workload-mgr2.0.png[]
 
 === File Server - SeaweedFS
 
@@ -26,13 +32,13 @@ SeaweedFS is used to store repositories and their content, and functions as a pe
 
 === Image Pull Secret
 
-The customer's K8s pulls images from the Prisma Cloud ECR using the 'Pull Image Secret', a token that is refreshed automatically every 12 hours.
+The customer's K8s pulls images from the Prisma Cloud ECR using 'Image Pull Secrets', a token that is refreshed automatically every 12 hours.
 
 === CAS Image Registry Sync Scheduler CronJob
 
 image::application-security/on-prem-cronjob-sync.png[]
 
-A CronJob automatically runs at scheduled intervals to update image pull secrets for Kubernetes deployments managed by Prisma Cloud. These images are stored in a private Prisma Cloud ECR Registry. To access these images, Kubernetes requires a secret, which has an expiration time (typically 12 hours). The CronJob ensures these secrets are kept up-to-date to avoid any interruption in image access for running deployments. 
+A CronJob automatically runs at scheduled intervals to update image pull secrets for Kubernetes deployments managed by Prisma Cloud. These images are stored in a private Prisma Cloud ECR Registry. To access these images, Kubernetes requires a secret, which has an expiration time of 12 hours. The CronJob ensures these secrets are kept up-to-date to avoid any interruption in image access for running deployments. 
 
 If the CronJob fails to run for any reason, for example, due to a cluster outage, it can lead to problems when the cluster restarts. Pods using these deployments might not be able to pull the required images and end up in an 'ImagePullBackOff' state, indicating a failed image pull attempt. This can cause disruptions or delays in application functionality.
 
@@ -40,10 +46,20 @@ If the CronJob fails to run for any reason, for example, due to a cluster outage
 
 If the CronJob fails to pull secrets, causing the images not to run, you can troubleshoot it: 
 . Access the on-prem integration on the Prisma Cloud console and navigate to the *Deploy a Dedicated Image* step of the integration wizard.
+
 . Select *Download the CLI* link.
+
+. Run the following command to update the pull-secret values: 
+`chmod a+x cas-on-prem-cli && ./cas-on-prem-cli pull-secret --namespace "{NAMESPACE}" --baseUrl "{BASE_URL}" --accessKey "{ACCESS_KEY}" --secretKey "{SECRET_KEY}"`.
++
+NOTE: Replace `{NAMESPACE}` and `{BASE_URL}` with the values obtained from the initiation command when clicking the Download the CLI link. For `{ACCESS_KEY}` and `{SECRET_KEY}`, if you have them stored, use the actual values. Otherwise, you can fetch them from your Kubernetes cluster using the command: helm get values cas-on-prem --namespace {NAMESPACE}. Search for the "username" and "password" fields in the output, and use those values as placeholders for `{ACCESS_KEY}` and `{SECRET_KEY}`.
+
+////
 . Update the following pull-secret values in the file: 'namespace', 'baseUrl', 'accessKey, 'secretKey.
 +
 NOTE: You can view the initial values in the *CLI Initiation Command* field of the *Deploy a Dedicated Image* wizard.
+////
+
 
 // todo image::application-security/on-prem-cronjob-sync.png[]
 
@@ -73,35 +89,38 @@ Prisma Cloud offers two main scan flows to identify vulnerabilities and misconfi
 
 === Periodic Flows
 
-The Periodic flow runs automatic scans twice daily on the default branch of your code repository. It currently supports infrastructure as code (IaC) misconfigurations and Secrets management scans.
+The Periodic flow runs automatic scans twice daily on the default or selected branch of your code repository. It currently supports infrastructure as code (IaC) misconfigurations and Secrets management scans.
 
-image::application-security/on-prem-periodic-flow.png[]
+image::application-security/on-prem-periodic-flow2.1.png[]
 
 [.task]
 
-==== Periodic Scan Process
+==== Periodic Scan Workflow
 
 [.procedure]
 
 . *Initiation*: The scan is managed by the Prisma Cloud Transporter Server, which informs the client's K8s cluster through the Transporter Client that Prisma Cloud must start a scan. 
 
-. *Code Retrieval*: The clone job retrieves the default branch of the code to be scanned from the client's VCS, storing it in the SeaweedFS persistent file storage on the cluster.
+. *Code Retrieval*: The clone job retrieves the default/selected branch of the code to be scanned from the client's VCS, storing it in the SeaweedFS persistent file storage on the cluster.
 
-. *Scanning*: The IaC and Code scanner jobs are then executed, with full results stored in the persistent file storage.
+. *Scanning*: The IaC and Secrets scanner jobs are then executed, with full results stored in the persistent file storage.
 
-. *Result Transmission*: Results that do not include code or sensitive information are transmitted directly via API from the scanner services on the cluster (not via the Transporter Client) to the Prisma Cloud Server. These results can be viewed on the Prisma Cloud console.
+. *Result Transmission*: Results that do not include code or sensitive information are transmitted directly via API from the scanner services on the cluster (not via the Transporter Client) to the Prisma Cloud Server. These results can then be viewed on the Prisma Cloud console.
 
 . *Fix Storage*: Code fixes generated during periodic scans are only stored in the cluster's persistent file storage. Therefore, if a fix is performed through the UI, the code fix itself will not be available there. A request will be sent to the ‘PR Fixes’ service in the client’s cluster, which will open a pull request opposite the client’s VCS. The suggested code fix can then be viewed on the VCS.
+
+. *Fix Workflow*: Refer to <<#fix-workflow,Fix Workflow>> below for more information on fixing issues detected in a periodic scan.
+
 
 === Webhook Flows
 
 Pull Request scans are triggered by activity in your version control system (VCS), such as opening a pull request (PR) or adding a new commit to an existing PR.  
 
-image::application-security/on-prem-webhook-flow2.0.png[]
+image::application-security/on-prem-webhook-flow3.1.png[]
 
 [.task]
 
-==== Webhook Scan Workflow
+==== PR Scan Workflow
 
 [.procedure]
 
@@ -110,29 +129,39 @@ Ingress Routing: The Ingress routes the notification to the Transporter Client, 
 
 . *Scan Initiation*: The Transporter Client transmits the request to initiate a scan to Prisma Cloud (Transporter Server).
 
-. *Clone*: During a Pull Request scan, the clone service retrieves only the specific branch associated with the PR or commit. This differs from periodic scans, which clone the entire default branch. 
+. *Clone*: During a Pull Request scan, the clone service retrieves only the specific branch associated with the PR or commit. This differs from periodic scans, which clone the entire default/selected branch. 
 
 . *Storage*: The code is stored on the cluster in the SeaweedFS persistent file storage.
 
 . *Scanning*: The scan is performed on the specific branch that the pull request relates to, not the entire code base.
 
-. *PR Comments*: After scanning is complete, the PR Comments job runs for every finding, and writes a comment directly on the PR in the VCS for every finding detected. These findings can also be viewed on the Prisma Cloud console. 
+. *PR Comments*: After scanning is complete, the PR Comments job processes all identified findings within the pull request (PR) and writes a dedicated comment on the PR in the VCS for each finding. These findings can also be viewed on the Prisma Cloud console. 
 
-. *Enforcement rules*: Enforcement rules apply to PR comments. These rules define actions that can be taken automatically based on scan findings, such as blocking a pull request with critical vulnerabilities. Refer to xref:../risk-management/monitor-and-manage-code-build/enforcement.adoc[Enforcement] for more information about enforcement rules.
+. *Enforcement rules*: Enforcement rules apply to PR scan findings. These rules define the actions that can be taken automatically based on scan findings, such as blocking a pull request with critical vulnerabilities from being merged. Refer to xref:../risk-management/monitor-and-manage-code-build/enforcement.adoc[Enforcement] for more information about enforcement rules.
 
 . *Fix Submission*: When you confirm the fix through the console, the details are sent to the Prisma Cloud Transporter Client within your cluster.
 +
 NOTE: When you fix an issue directly through the Prisma Cloud console, the fix details are  stored in the cluster in the persistent file storage and cannot be viewed on the console. The console will notify you that a fix is available.
 
-. *Fix Workflow*: When you fix an issue directly through the Prisma Cloud console, the fix details are stored in the cluster's persistent file storage and cannot be viewed directly. However, the console will notify you that a fix is available and trigger an automated workflow to create a pull request in your VCS containing the suggested fix.
+. *Fix Workflow*: Refer to <<#fix-workflow,Fix Workflow>> below for more information on fixing issues detected in a PR scan.
 
-.. *Fix Submission*: The fix request is submitted through the Prisma Cloud console and transmitted to the Prisma Cloud Transporter Client within your cluster.
+[task]
+[#fix-workflow]
+=== Fix Workflow
 
-.. *Transporter Communication*: Upon receiving the fix details, the Transporter Client initiates communication with the PR Fixes service.
+When you fix an issue directly through the Prisma Cloud console, the fix details are stored in the cluster's persistent file storage and cannot be viewed directly. However, the console will notify you that a fix is available and trigger an automated workflow to create a pull request in your VCS containing the suggested fix.
 
-.. *PR Creation Request*: The Transporter Client communicates with the PR Fixes,  a web server deployment that runs when a fix is requested, requesting it to open a pull request (PR) in your version control system (VCS) containing the suggested fix.
+NOTE: In the fix workflow, the difference between the Periodic and PR scan flows is as follows: if you are using the Periodic flow, a new pull request with the fix is opened. If you are using the PR scan flow, a commit with the fix is added to the existing PR.
 
-.. *VCS Integration*: The PR Fixes service automatically updates the existing PR in your VCS with the suggested fix. This update includes comments containing the details of the suggested fix.
+[.procedure]
+
+. *Fix Submission*: The fix request is submitted through the Prisma Cloud console and transmitted to the Prisma Cloud Transporter Client within your cluster.
+
+. *Transporter Communication*: Upon receiving the fix details, the Transporter Client initiates communication with the PR Fixes service.
+
+. *PR Creation Request*: The Transporter Client communicates with the PR Fixes,  a web server deployment that runs when a fix is requested, requesting it to open a pull request (PR) in your version control system (VCS) containing the suggested fix.
+
+. *VCS Integration*: The PR Fixes service automatically updates the existing PR in your VCS with the suggested fix. This update includes comments containing the details of the suggested fix.
 
 === Connecting to Prisma Cloud.
 
@@ -140,6 +169,6 @@ There are two main ways to connect your version control system (VCS) to Prisma C
 
 * *Ingress in the Cluster*: This option leverages the existing Ingress functionality within your Kubernetes cluster. Ingress acts as a single entry point for routing external traffic to services within your cluster. In this scenario, the Prisma Cloud Transporter receives traffic from the VCS via the Ingress controller. For more information on configuring Ingress within your cluster, refer to xref:on-prem-install.adoc#ingress-cluster[Connect with Ingress on the Cluster]
 
-* *Direct Connection*: Alternatively, you can establish a direct connection from the VCS to the Prisma Cloud Transporter Server. This method bypasses your cluster's Ingress entirely and creates a dedicated communication channel between the VCS and Prisma Cloud.
+* *Direct Connection*: Alternatively, you can establish a direct connection from the VCS to the Prisma Cloud Transporter Server. This direct connection is to the Prisma Cloud API. Transporter Server is not involved in the process.
 
-NOTE: These methods focus solely on establishing the connection between your VCS and Prisma Cloud. Other Prisma Cloud components are not directly involved in the VCS to Prisma Cloud Server communication channel itself.
+NOTE: Typically, only the Transporter client communicates with the Transporter Server. Other calls to Prisma Cloud go directly to the Prisma Cloud API without involving the Transporter Server.
