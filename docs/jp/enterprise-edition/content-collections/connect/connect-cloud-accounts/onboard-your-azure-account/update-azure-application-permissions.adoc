@@ -1,0 +1,78 @@
+== Azureアプリケーションの権限の更新
+
+オンボーディングが完了した後でも、Prisma Cloud セキュリティ機能を追加または削除するオプションがあります。オンボーディング後に Azure サブスクリプションまたはテナントに追加の機能と必要な関連するアクセス許可を追加する方法について説明します。権限が不足していないかどうかを確認するには、Prisma Cloudに認証し、*Settings（設定）> Cloud Accounts（クラウドアカウント）*を選択して、*Status（ステータス）*列を表示します。
+
+=== Azure カスタム ロールのアクセス許可を更新する
+
+新しいセキュリティ機能を追加する前に、まずオンボーディングプロセスで作成された既存のカスタムロールに付与された権限を更新する必要があります。このワークフローは、Azure テナントおよびサブスクリプションのオンボーディングでのみ使用できます。さらに、Azure ChinaではTerraformテンプレートの使用はサポートされていません。
+
+[.task]
+==== Terraform スクリプトの使用 (推奨)
+
+以下の手順に従って、カスタム ロールのアクセス許可を更新し、既存の Prisma Cloud セキュリティ機能を追加または変更します。
+
+[.procedure]
+. Azure CLI を使用して認証します。
+
+. オンボーディング プロセス中に作成したディレクトリに移動して、Terraform ファイルを保存します。ディレクトリ名の例には _、 onboard-tenant-<tenant-name>_ または _onboard–subscription-<subscription-name>_が含まれます。ディレクトリに、*terraform apply* ステップで作成された _terraform.tfstate ファイルが_ 含まれていることを確認します。
+
+. [*はじめに* ] ダイアログの [*セキュリティ機能とアクセス許可*] セクションで、必要な機能を選択します。
+
+. [*クラウド アカウントの編集*] > [アカウントの構成] > [Terraform スクリプトのダウンロード] ボタンを順にクリックして、Terraform を再度ダウンロードします 。新しくダウンロードされた Terraform ファイルには、更新されたアクセス許可が含まれています。
+
+. コマンド *terraform init > terraform apply* を実行し、*Confirm（確認）*をクリックします。
+
+. Terraform の実行が完了すると、既存のカスタム ロールが新しい権限で更新されるようになりました。
++
+[NOTE]
+====
+_terraform.tfstate_ ファイルがディレクトリに存在しない場合、Terraform スクリプトが実行されると、新しいアプリが登録され、新しいカスタム ロールが作成されます。
+====
+
+[.task]
+==== カスタム ロールを手動で更新する 
+	 	 	 		
+組織が Terraform スクリプトの使用を制限している場合は、新しいアクセス許可を既存のカスタム ロールに手動で追加することを選択できます。
+
+[.procedure]
+. https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-your-azure-account/update-azure-application-permissions[Azureポータル]に認証します。
+
+. テナント オンボーディングの場合:*[すべてのサービス] > [管理グループ]*に移動します。サブスクリプション オンボーディングのテナント ルート グループをクリックします。*[すべてのサービス] > [サブスクリプション]*に移動します。
+	
+. [アクセス制御 (IAM)] > [ロール] を選択します。
+	
+. オンボーディング中に作成されたカスタム ロールを [*検索*] ボックスで検索し、[*編集*] ボタンをクリックします。
+
+. カスタム ロール ページを更新し、[JSON] をクリックします。アクション リストの下のアクセス許可を使用して、既存のカスタム ロールの JSON を表示できます。
+
+. [*編集*] ボタンをクリックし、カンマ区切りの新しいアクセス許可をアクション リストに追加します。*[保存] > [レビューと更新]*をクリックします。
+
+. *ロース名 とアクセス許可*を確認します。[*更新*]をクリックします。カスタム ロールが更新されるまで数分待ちます。
+
+
+[.task]
+==== Microsoft Graph API アクセス許可を追加する
+
+以下の手順に従って、テナントレベルでグラフAPIアクセス許可を割り当てます。
+
+[.procedure]
+. 必要な権限を追加します。
+.. 以前に登録したアプリに移動します。*Azure > Active > Directory > App registrations（アプリの登録）*を選択し、アプリを選択します。
+.. Microsoft Graphに移動します。*API > permissions（権限）> Add a permission（権限を追加）> Microsoft Graph > Application permission（アプリケーションの権限）*を順に選択します。
+.. 権限を追加します。*Select permissions（権限を選択）*に権限名を入力し、*Permission（権限）*から名前を選択します。次の許可を追加します。
+
+* User.Read.All
+* Policy.Read.All
+* Group.Read.All
+* GroupMember.Read.All
+* Reports.Read.All
+* Directory.Read.All
+* Domain.Read.All
+* Application.Read.All
++
+エージェントレス スキャンやワークロード保護などの追加機能を有効にしている場合は、追加のアクセス許可が必要になります。必要な権限については、 *役割とアクセス権限* のリストを確認してください。
+
+. デフォルトディレクトリに対する管理者の同意を付与します。
+.. *Grant admin consent for Default Directory（デフォルトディレクトリに管理者の同意を付与する） > Yes（はい）*を選択します。
+.. 権限が付与されていることを確認します。
+.. [*ステータス*] 列の下に緑色のチェック マークが表示されていることを確認します。

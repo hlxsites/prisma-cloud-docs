@@ -1,0 +1,165 @@
+:topic_type: タスク
+[.task]
+[#id6c55ecf1-22ee-4acc-badd-cd1ac9172f45]
+== Prisma CloudでのOkta SSOの設定
+
+Prisma Cloudへの管理者アクセスを保護するために、Oktaのサイトに移動して、シングルサインオンを設定し、次にPrisma CloudでSSOの設定を行います。
+
+Prisma Cloudでは、Oktaを使用してシングルサインオン（SSO）を有効にすることができます。SSOを有効にするには、まずOktaでセットアップを行う必要があります。次にSystem Admin（システム管理者）権限でPrisma Cloudにログインし、SSOを設定してログインリクエストをOktaのログインページにリダイレクトします。そうすることで、Prisma Cloud管理ユーザーがSSOを使ってログインできるようになります。
+
+Prisma Cloudにログインする必要がある管理ユーザー用にSSOを設定したくないが、IAMセキュリティモジュールで効果的な権限を計算するためにSSOデータを取り込むための手順が必要な場合は、xref:../../administration/configure-iam-security/integrate-prisma-cloud-with-okta.adoc[Prisma Cloud と Oktaの統合]を参照してください。
+
+[CAUTION]
+====
+アカウントのロックアウトを防ぐには、数名の管理ユーザーがPrisma Cloudのローカル認証資格情報とSSOアクセスの両方を使用できるようにする必要があります。各管理者が、「Welcome to Palo Alto Networks Support」電子メールを使って各自のPalo Alto Networksカスタマーサポートポータル（CSP）アカウントをアクティブ化して、ポータルにアクセスするためのパスワードを設定していることを確認してください。
+====
+
+[.procedure]
+. SSO用にOktaを設定します。
++
+.. Okta設定を開始する前に、Prisma Cloudインスタンスにログインして、Prisma CloudからAudience URI (SP Entity ID) をコピーします。例:https://app.prismacloud.io/settings/sso[https://app.prismacloud.io/settings/sso]。
+
+.. Oktaに管理者としてログインし、*Admin（管理）*をクリックします。
++
+image::administration/sso-okta-admin.png[]
+
+.. *Add Applications（アプリケーションの追加）*をクリックします。
++
+image::administration/sso-okta-add-application.png[]
+
+.. *+Add Apps（アプリを追加）*を選択して新しいアプリを作成します。
++
+image::administration/sso-okta-create-new-app.png[]
+
+.. *Create a New Application Integration（新しいアプリケーション統合の作成）*で、*Platform（プラットフォーム）*では*Web*を、*Sign on method（サインオン方法）*では*SAML 2.0*を選択します。
++
+image::administration/sso-okta-saml-web.png[]
+
+.. *Create（作成）*をクリックします。
+
+.. *General Settings（全般設定）*で、これらの値を使用してから、*Next（次へ）*をクリックします。
++
+*App Name（アプリ名）* - Prisma Cloud SSOアプリ
++
+*App Logo（アプリのロゴ）* - Prisma Cloudロゴを使用
++
+*App Visibility（アプリの可視性）* - これらのオプションは選択しないでください
++
+image::administration/sso-okta-general-settings.png[]
+
+.. *Configure SAML（SAMLの設定）*では、*Sign On URL（サインオンURL）*を指定します。
++
+サインオンURLのフォーマットは、Prisma CloudのURLを使用しますが、appをapiに置換して、最後にsamlを追加する必要があります。たとえば、Prisma Cloudの、https://app2.prismacloud.io,にアクセスしている場合、サインオンURLはuserinput:[\https://api2.prismacloud.io/saml]になり、https://app.eu.prismacloud.io,の場合はuserinput:[\https://api.eu.prismacloud.io/saml]を使用します。
+
+.. *Audience URI*の場合、最初のステップでコピーした、Prisma Cloud *Settings（設定）> Access Control（アクセス制御）> SSO*に表示される値を使用します。
+
+.. *Name ID format（名前IDフォーマット）*を*Persistent（永続的）*に、*Application username（アプリケーションユーザー名）*を*Okta username（Oktaユーザー名）*に設定します。
++
+IdPが特定のユーザーからのすべてのSAML要求でNameID要素に対して同じ一意の値を送信するように、名前ID形式の値を永続的に設定する必要があります。他の設定を行うと、セッションごとに異なるsaml:sub値が設定され、セキュリティで保護されません。
++
+image::administration/sso-okta-create-saml-integration.png[]
+
+.. *Update application username（アプリケーションユーザー名の更新）*を*Create and update（作成と更新）*に設定します。
+
+.. *Advanced Section（高度なセクション）*で、*Response（応答）*を*Unsigned（未署名）*に、*Assertion Signature（アサーション署名）*を*Signed（署名）*に、*Assertion Encryption（アサーション暗号化）*を*UnEncrypted（非暗号化）*に設定します。
++
+これらのオプションにより、SAML認証メッセージがIDPによってデジタル署名され、署名された証明書を持つブラウザーからのみSAMLアプリへのログインが制限されます。
+
+.. tt:[(Prisma Cloudでローカルユーザーアカウントの自動JITプロビジョニングを行う場合にのみ必要)]SAMLアサーションで送信する属性を指定します。
++
+詳細については、xref:set-up-jit-on-okta.adoc[Okta でジャストインタイム プロビジョニングを設定する]を参照してください。グループを割り当てる場合は、すべてのグループに一致するように、値 = (.*) を持つ正規表現に一致するフィルターを定義する必要があります。
++
+image::administration/sso-okta-attribute-statements.png[]
+
+.. アプリの作成を完了します。
++
+SAML統合向けのアプリケーションが正常に作成されました。アプリケーションには、SSO統合を完了するために、Prisma Cloudで追加する必要がある*IdP URL*と*Certificate（証明書）*の詳細があります。
+
+.. Prisma Cloud SSOアプリを使って、Prisma Cloudにログインできるユーザーを割り当てます。
++
+*Assign（割り当て）> Assign to People（ユーザーに割り当て）*を選択して、個々のユーザーを追加します。
++
+image::administration/sso-okta-assign-users.png[]
++
+*Assign to People（ユーザーに割り当て）*を行い、割り当てられているグループを指定するために、グループに割り当てることもできます。グループはトップダウンで評価されるため、ユーザーは順序の最初のグループに割り当てられます。
++
+image::administration/sso-okta-assign-groups.png[]
+
+.. tt:[(Prisma Cloudでローカルユーザーアカウントの自動JITプロビジョニングを行う場合にのみ必要）] ユーザープロファイルに、Prisma Cloudで作成したロールを割り当てます。
+
+. [[id3e639e18-3f16-4f90-b8e7-e3a4b35a743b]]Prisma CloudでSSOを設定します。
+
+.. Prisma Cloudにログインし、*Settings（設定）> Access Control（アクセス制御）>SSO*を選択します。
+
+.. *Enable SSO（SSOを有効化）*します。
+
+.. *Identity Provider Issuer（IDプロバイダ発行者）*の値を入力します。
++
+これは、Google、Salesforce、Okta、またはPingなどの、認証フロー内でIdPとしての役割を果たす、信頼できるプロバイダのURLです。例えば、Oktaの場合、IDプロバイダ発行者URLは、*Applications（アプリケーション）> Sign On（サインオン）> View Setup Instructions（セットアップの説明を表示）*にあります。
++
+image::administration/sso-get-idp-for-prisma-cloud.png[]
++
+セットアップの説明に、IDプロバイダ発行者およびPrisma Cloud Access SAMLのURLが記載されています。
+
+.. Prisma Cloudのタイムアウトまたはユーザーのログアウト時の、ユーザーのリダイレクト先となる*Identity Provider Logout URL（IDプロバイダログアウトURL）*を入力します。
+
+.. IdPの*Certificate（証明書）*を、標準のX.509フォーマットで入力します。
++
+ご自分のIdPからコピーして貼り付ける必要があります。
++
+image::administration/sso-okta-certificate.png[]
+
+.. IdP設定に指定されている、*Prisma Cloud Access SAML URL*を入力します。
++
+たとえばOktaの場合、これはIDプロバイダのシングル サインオンURLになります。このURL をクリックすると、IdPの認証を受けた後、Prisma Cloudにリダイレクトされます。メール、Slack、SQS、コンプライアンスレポートなどの通知に埋め込まれているすべてのリダイレクトリンクに、このリンクとRelay Stateパラメータが使用されます。
+
+.. *Relay State Param name（Relay Stateパラメータ名）*は、SAML固有のRelay Stateパラメータ名です。このパラメータとPrisma Cloud Access SAML URLを指定すると、Splunk、Slack、SQS、メール、およびレポートなどにあるすべての通知リンクを直接Prisma Cloudアプリケーションにリンクさせることができます。Relay Stateパラメータまたは値は、IDプロバイダ固有のものです。たとえばOktaの場合、この値はuserinput:[RelayState]になります。
++
+[NOTE]
+====
+RelayState機能を使用する場合、IDプロバイダのシングル サインオンURLに対応するPrisma Cloud Access SAML URLが「/sso/saml」で終了していることを確認してください。
+====
+
+.. tt:[(任意）]*Enforce DNS Resolution for Prisma Cloud Access SAML URL（Prisma CloudアクセスSAML URLのDNS解決を適用する）*の選択を解除します。
++
+デフォルトでPrisma Cloudは、DNSルックアップを行って、先ほど入力したPrisma Cloud SAML Access URLを解決します。IdPが内部ネットワーク上にあり、DNSルックアップを行う必要がない場合は、このオプションの選択を解除してDNSルックアップを省略することができます。
+
+.. tt:[(任意）]SSOユーザー向けのジャストインタイム プロビジョニングを有効にします。
++
+IdPの認証を受けたユーザーのローカルアカウントを作成する場合は、*Enable JIT Provisioning（JITプロビジョニングを有効にする）*を選択します。JITでは、ユーザーはIdP上のユーザーのプロファイルにマップされた最初の5つのロールでプロビジョニングされます。
+
+.. Prisma Cloudがローカルユーザーアカウントの作成に使用する、SAMLアサーションまたはクレームのユーザー属性を指定します。
++
+各ユーザーのメールアドレス、ロール、姓名を指定する必要があります。タイムゾーンは任意です。
++
+image::administration/sso-okta-prisma-cloud-attribute-statements.png[]
++
+[NOTE]
+====
+IdPでユーザーのプロファイルに指定するロールは、ステップ1でPrisma Cloudを使って作成したものと一致している必要があります。
+====
+
+.. 一部のユーザーを、SSOプロバイダ経由のログインに加えて、Prisma Cloudで登録したメールアドレスとパスワードを使って、Prisma Cloudに直接アクセスするように設定するには、*Allow select users to authenticate directly with Prisma Cloud（選択したユーザーのPrisma Cloudでの直接認証を許可）*を選択します。
++
+SSOを有効にする場合、Prisma Cloudでローカルに登録したメールアドレスとパスワードを使って、一部のユーザーをPrisma Cloudに直接アクセスできるように設定し、SSOの設定誤りでコンソールからロックアウトされ、IdP設定の変更が必要になるような状況を回避するようにしてください。API経由でデータにアクセスする場合は、Prisma Cloudから直接認証を受ける必要があります。
+
+.. Prisma Cloudのローカル認証情報またはSSOを使って、Prisma Cloudにアクセスできる*Users（ユーザー）*を選択します。
++
+許可リストに記載されているユーザーは、SSOを使って、またPrisma Cloudで作成したローカルアカウントのユーザー名とパスワードを使って、ログインすることができます。
++
+image::administration/sso-users-excluded.png[]
+
+.. 変更を*Save（保存）*します。
+
+.. SSOを使って、アクセスできることを確認します。
++
+SSOが有効になっている管理ユーザーは、IDプロバイダのポータルからPrisma Cloudにアクセスする必要があります。たとえば、Prisma CloudとOktaを統合した場合、管理ユーザーはOktaにログインした後、Prisma Cloudアプリアイコンをクリックして、Prisma Cloudにログインする必要があります。
+
+.. *View last SSO login failures（過去のSSOログイン失敗を表示）*を使って、任意のユーザーのSSO認証の過去5回のログイン上の問題やエラーの詳細を参照することができます。
++
+image::administration/sso-last-five-errors-1.png[]
++
+[NOTE]
+====
+すでにユーザー名とパスワードでログインしているユーザーが、SSOを使ってログインすると、ブラウザのローカルストレージにある認証トークンは、新しいトークンに置換されます。
+====

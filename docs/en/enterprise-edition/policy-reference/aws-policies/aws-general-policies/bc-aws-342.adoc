@@ -1,0 +1,76 @@
+
+== WAF rule does not have any actions
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4ee02b8b-632f-4db6-bebd-4e605859d1fa
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/WAFRuleHasAnyActions.py[CKV_AWS_342]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy ensures that the Web Application Firewall (WAF) rule has any actions set. The absence of actions in a WAF rule could lead to potential security vulnerabilities. WAF rules are intended to block, allow, or monitor (count) web requests based on conditions that you define. If a WAF rule has no actions set, it wouldn't be able to perform its function, leaving the application exposed to potential security threats. Therefore, this policy checks that there are actions defined in the WAF rule, enhancing the application's security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'aws_waf_web_acl', 'aws_wafregional_web_acl', 'aws_wafv2_web_acl', 'aws_wafv2_rule_group', 'aws_wafregional_rule_group', 'aws_waf_rule_group'
+* *Arguments:* rule
+
+To fix the issue, You need to specify an action block in your WAF rule. This specifies what to do if the criteria in the rule statement are met.
+
+[source,hcl]
+```
+resource "aws_wafv2_rule_group" "example" {
+  name        = "example"
+  description = "Example of a managed rule."
+  scope       = "REGIONAL"
+
+  rule {
+    name     = "rule1"
+    priority = 1
+
+    action {
+      block {}
+    }
+
+    statement {
+      geo_match_statement {
+        country_codes = ["US"]
+      }
+    }
+    
+    visibility_config {
+      cloudwatch_metrics_enabled = false
+      metric_name                = "friendly-metric-name"
+      sampled_requests_enabled   = false
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = false
+    metric_name                = "friendly-metric-name"
+    sampled_requests_enabled   = false
+  }
+}
+```
+
+This is secure because it configures the WAF rule to take action when a request matches the rule's criteria. It specifies to block the request, making sure to protect your AWS resources from harmful or unwanted traffic.
+

@@ -1,9 +1,11 @@
 == Look Ahead—Planned Updates to Secure the Runtime
 
-//Review any changes planned in the next Prisma Cloud release to ensure the security of your runtime.
+Review any changes planned in the next Prisma Cloud release to ensure the security of your runtime.
 
+//(Edited in the month of Feb 20 as per Manu's suggestion)There are no previews or look ahead announcements for the upcoming `32.03` release. Details on the updates included in the `32.03` release will be shared in the release notes that accompany the release.
 
-//Read this section to learn about what is planned in the upcoming `32.01` release on the Runtime Security tab of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security. 
+//The following text is a revert to the old content.
+Read this section to learn about what is planned in the upcoming `32.05` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
 
 The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
 
@@ -11,116 +13,146 @@ The Look Ahead announcements are for an upcoming or next release and it is not a
 
 [NOTE]
 ====
-The details and functionality listed below are a preview of what is planned for the `v32.01` release; the changes listed herein and the actual release date, are subject to change.
+The details and functionality listed below are a preview of what is planned for the `v32.05` release; the changes listed herein and the actual release date, are subject to change.
 ====
 
 
-// <<defender-upgrade>>
+// * <<defender-upgrade>>
+// * <<new-ips-for-runtime>>
 * <<enhancements>>
-* <<deprecation-notices>>
-//* <<eos-notices>>
+// * <<api-changes>>
+// * <<deprecation-notices>>
+// * <<eos-notices>>
 * <<addressed-issues>>
+
+
+// [#new-ips-for-runtime]
+// === New IPs for Runtime Security
+
+
+// [cols="40%a,30%a,30%a"]
+// |===
+
+// |===
 
 [#enhancements]
 === Enhancements
 
-The following enhancements are planned; the details will be available at release:
+The following enhancements are planned. The details will be available at release:
 
 [cols="30%a,70%a"]
 |===
 
-//CWP-46475
-|Agentless Scanning
-|Added agentless scanning support of encrypted volumes in Azure for the  hub account mode.
+//CWP-56841[Doc Ticket]CWP-48564[Eng Ticket]
+//Moved from Update 4
+| *Enhanced Vulnerability Assessment*
 
-//CWP-41206
-|Agentless Scanning
-|Added agentless scanning hub account mode for Azure.
+|To enhance the accuracy of vulnerability assessments, Prisma Cloud has incorporated support for the 'Running On/With' configuration as outlined by NVD. This configuration, which integrates nodes based on both vulnerable and non-vulnerable criteria, requires specific conditions to be met, such as relevant packages or operating systems, for a vulnerability to be applicable. This enhancement allows Prisma Cloud to consider 'Running On/With' configurations that were not previously assessed. However, it is important to note that the impact of this enhancement is contingent on whether the CVE is assessed through NVD, as vulnerability information from the vendor feed is prioritized.
 
-//CWP-52656
-|Vulnerability Management
-|Added support for Bullseye, Buster and bookworm Security feed  and support vulnerability scan.
+//CWP-56785
+|*Serverless Defender support for Java 17 and 21*
+|Added support for deploying Serverless Defender on Java 17 and Java 21 runtimes.
 
-//CWP-53787
-|Operating System Support
-|Added support for OpenShift 4.14.
+//CWP-56791 & CWP-56790 & CWP-56030
+// |*Exclude Windows vulnerabilities found in Go packages from UNIX OS*
+// |Prisma Cloud now excludes vulnerabilities found in Go packages that are specific to Windows from UNIX based operating systems in the Vulnerability Explorer. Select *Monitor > Vulnerabilities > Vulnerability Explorer* for a comprehensive list of the detected vulnerabilities.
 
-//CWP-53162
-|Cloud Service Providers
-|Added  a new filter in the cloud accounts page in Runtime Security, which filters accounts that are not yet migrated to the Prisma platform account management under the cloud service providers tab.
-In the future, you can import and manage such accounts fully on the platform cloud service providers page. The goal is to simplify the management of cloud service providers accounts by decommissioning the cloud account management page in Runtime Security.
+//CWP-57947
+//TODO:Approval Pending -- Kamesh
+|*Support for Google registry scanning*
 
-//CWP-34450
-|Vulnerability Management
-|Added support to detect IBM Java version 1.8 and earlier.
-IBM Java version 1.9 and later are partially supported.
-The detection depends on the `jdk/release` file being found.
+|When onboarding GCP cloud accounts, Prisma Cloud now supports scanning of Google Container Registry (GCR) and Google Artifact Registry (GAR).
+
+//CWP-56790 & CWP-56030
+//TODO:Approval Pending -- Kamesh
+|*OS-specific Evaluation for Go Packages*
+
+|Prisma Cloud now evaluates operating system (OS) data for vulnerabilities detected in Go packages. This enhancement ensures that vulnerabilities are reported only if they meet the OS-specific criteria. For example, if vulnerabilities are detected in Go packages that are specific to Windows, they are reported only for Windows-based systems. They are not flagged for UNIX-based systems.
+
+To view a detailed list of identified vulnerabilities, go to Monitor > Vulnerabilities > Vulnerability Explorer.
+
+//CWP-56788
+//TODO:Approval Pending -- Kamesh
+|*New Console Environment Variable for system load management*
+
+|A new Console environment variable, REFRESH_INTERVAL_SECONDS, has been added to prevent system overload issues when using the TAS applications with Defender.
+
+Previously, Defender checked the state of TAS applications and containers every 10 seconds through an API call to the BBS server. However, frequent changes or restarts in applications within this duration could lead to system overload as Defender scanned all the apps that were impacted by the changes.
+
+By setting a higher value for REFRESH_INTERVAL_SECONDS, users can now reduce system load by decreasing the scanning frequency. For example, if REFRESH_INTERVAL_SECONDS is set to 600 seconds, Defender checks for changes every 600 seconds, leading to a decrease in system load.
+
+NOTE: Restart Defender for the REFRESH_INTERVAL_SECONDS environment variable to take effect.
 
 |===
 
 
-[#deprecation-notices]
-=== Deprecation Notices 
-[cols="30%a,70%a"]
-|===
-//CWP-40710
-|Alerts
-|Deprecated the `AccountID` macro for webhook alerts.
+// [#deprecation-notices]
+// === Deprecation Notices
+// [cols="30%a,70%a"]
+// |===
 
-|===
+// |===
 
-//[#eos-notices]
-//=== End of Support Notices 
+[#api-changes]
+// === API Changes
+
+// [cols="30%a,70%a"]
+// |===
+
+
+// |===
+
+// [#eos-notices]
+// === End of Support Notices
+// |===
+
+// |===
 
 
 [#addressed-issues]
 === Addressed Issues
+
 [cols="30%a,70%a"]
 |===
 
-//CWP-46557
-|Container Support
-|Bump `github.com/containers/storage` to v1.42.0 (or later).
+// CWP-56591
+// IMPORTANT: Not part of Update 5!!
+// |*Enhanced CVE Detection for Older JAR Versions*
+// |Fixed an issue where incorrect parsing of older JAR file versions resulted in missing CVE entries.
 
-//CWP-46051
-|Documentation
-|Updated the inconsistent icons in the documentation of the trusted images compliance under *Monitor > Compliance > Trusted images*.
+//CWP-56784
+//TODO: Reviewd by Shlomi
+|*Improved Handling of Rejected and Disputed CVEs*
+|With the transition to the CVE 5.0 dataset, NVD has updated the format of rejected CVE descriptions.
+Prisma Cloud now seamlessly identifies 'Rejected' and 'Disputed' statuses of CVEs. In NVD the status is *now* labeled as 'Rejected reason', while CVEs tagged as 'Disputed' are identified using cve.org data source, ensuring accurate vulnerability assessment.
 
-//CWP-42711
-|Serverless
-|Fixed confusion around the serverless function defended status.
+//CWP-56554
+//TODO: Pending Approval -- Perhaps incorrect
+// |*Fixed Containerized Scan Failure*
 
-//CWP-50500
-|Operating System Support
-|Fixed false positives caused by CVE-2016-9063 in hosts running RHEL.
+// |Resolved issue causing containerized scans to fail due to long JSON, particularly when encountering large Java dependency lists. You can now conduct scans without encountering this issue.
 
-//CWP-48649
-|Operating System Support
-|Improve parsing of Debian feed for CVEs with status open to include only the vulnerable versions.
+//CWP-56788
+//TODO: Approval Pending -- Kamesh
+|*Defender fails to re-scan TAS applications after changes*
 
-//CWP-50312
-|Package Support
-|Fixed an issue where Nuget vulnerabilities of the same package with different paths appear with the same path.
+|Previously, if modifications were done to a TAS application (such as renaming it), Defender would fail to re-scan the application and update the results in the Console. This issue has been resolved, and Defender now re-scans the TAS applications whenever changes are made to them.
 
-//CWP-50923
-|Cloud Service Providers - Azure
-|Fixed an issue where the cluster name of Azure AKS clusters was incorrectly resolved by Defenders as vanilla Kubernetes cluster instead of AKS cluster, if the resource group name of the cluster contained the suffix `_group`.
+//CWP-56786
+//TODO:Approval Pending -- Kamesh
+|*Alpine Linux zlib not affected by CVE-2023-6992*
 
-//CWP-53655
-|Image Scanning
-|Fixed an issue where system administrators could see all the clusters in the Image Vulnerability scan reports.
+|CVE-2023-6992 impacts the Cloudflare version of the zlib library. However, the zlib library included in Alpine Linux is not affected by this vulnerability. We have submitted a https://gitlab.alpinelinux.org/alpine/aports/-/issues/15970[request] with Alpine Linux to add the CVE as a non-vulnerability for their zlib version.
 
-//CWP-51321
-|User Interface
-|Fixed an issue where adding a collection via API with missing `labels:["*"]` caused the operation to go through but caused the UI to freeze.
+//CWP-58081
+//TODO:Approval Pending -- Kamesh
+|*Fix for Parsing Issues in Vulnerable Package Versions*
 
-//CWP-49926
-|Logging
-|Fixed an issue causing errors in logs after upgrading from v30.00.140 to v31.00.129.
+|The fix resolves the following issues related to detection of vulnerable package versions: 
 
-//CWP-51425
-|Registry Scanning
-|Fixed an issue that caused a scanning failure for Google artifactory registry using credentials imported from the Prisma Cloud platform.
+* Correct parsing of vulnerable package versions.
+* Parsing of version ranges with different prefixes.
+* Handling of conditions for multiple versions to ensure they are added to the Intelligence feed. This resolves both false negative and false positive alerts.
+
 
 |===
-

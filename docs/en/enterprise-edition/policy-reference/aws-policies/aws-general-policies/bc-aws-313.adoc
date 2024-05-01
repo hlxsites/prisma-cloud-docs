@@ -1,0 +1,57 @@
+
+== RDS cluster is not configured to copy tags to snapshots
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2822a8b2-2d68-45cf-a81c-429a37c15807
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSClusterCopyTags.py[CKV_AWS_313]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that an AWS RDS (Relational Database Service) cluster is configured to copy tags to snapshots. Tags are important in AWS as they allow users to categorize AWS resources in different ways, such as by purpose, owner, or environment. 
+
+If the RDS cluster is not configured to copy tags to snapshots, it could result in operational confusion and challenges in understanding the nature of the snapshot, its purpose and its owner or the entity it belongs to. Moreover, some organizations also use resource tags to track billing or manage costs. Hence, not having these tags on snapshots could impact these processes. Therefore, it's not ideal if the RDS cluster isn't configured to do so.
+
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_rds_cluster
+* *Arguments:* copy_tags_to_snapshot
+
+Include the `copy_tags_to_snapshot` parameter in your AWS RDS instance configuration and set it to `true`. This is to ensure that all tags on the RDS instance are copied over to any snapshots created from the instance.
+
+[source,hcl]
+----
+resource "aws_db_instance" "default" {
+  allocated_storage    = 10
+  engine               = "mysql"
+  engine_version       = "5.7"
+  instance_class       = "db.t2.micro"
+  name                 = "mydb"
+  username             = "foo"
+  password             = "foobarbaz"
+  parameter_group_name = "default.mysql5.7"
+  skip_final_snapshot  = true
++ copy_tags_to_snapshot = true
+}
+----
+

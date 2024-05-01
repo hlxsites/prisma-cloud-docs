@@ -1,0 +1,61 @@
+
+== Operation objects do not have the 'produces' field defined for GET operations
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 18509e95-b2ab-458b-9e45-89dfe13ed6f6
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/OperationObjectProducesUndefined.py[CKV_OPENAPI_16]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy checks to ensure that for every GET operation in an OpenAPI (version 2.0) file, there is a 'produces' field defined. The 'produces' field specifies the MIME type of the responses an operation can produce. If it is not defined, it may lead to ambiguity or incorrect handling of the response by the client. This could potentially create issues regarding the security and functionality of the API.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you need to define the 'produces' field for GET operations in your OpenAPI v2.0 files.
+
+[source,yaml]
+----
+paths:
+  '/pet':
+    get:
+      summary: Info for a specific pet
+      operationId: showPetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          type: string
+      produces:    # adding the produces field here
+        - application/json
+      responses:
+        '200':
+          description: Expected response to a valid request
+          schema:
+            $ref: '#/definitions/pets'
+----
+
+The fix involves including the 'produces' field in the GET operation object definition. In OpenAPI v2.0, the 'produces' field determines the MIME type of the responses. It's an array that lists different types of MIME that your API can produce. For instance, 'application/json' is a common MIME type for APIs. Including the 'produces' field helps improve the predictability and understandability of your API's behavior.
+

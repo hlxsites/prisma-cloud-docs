@@ -1,0 +1,59 @@
+:topic_type: タスク
+[.task]
+[#id7ea08e7b-5ceb-47b4-ba4e-2f164aca8f4a]
+== Prisma CloudでのIAMインシデントの調査
+
+//Use the IAM query to investigate entities in your cloud environment for excess permissions and review the data in a graph or tabular view.
+
+Prisma Cloudは、AWS、Azure、GCPの各種サービスや関連するユーザーデータを取り込み、クラウド環境内のエンティティ間の関係や、クラウド アセットへのアクセスを許可する権限を調査するために活用することができます。*調査*ビューを使用することでxref:../../search-and-investigate/permissions-queries/permissions-queries.adoc[権限クエリ]を使用して相互接続を追跡し、権限がどのように付与されているかを可視化し、どのようなアクションが許可されているか、いつ権限が使用されたかを知ることができるため、過剰権限のアカウントを発見し、マルチクラウド展開におけるアクセスリスクを評価することが可能です。クエリの結果は、グラフ ビューまたはテーブル ビューで表示できます。
+
+グラフィカルビューには、クラウドIDに付与されるさまざまなアクセス権限またはアクセス範囲の概要が表示され、ソース、付与者、および宛先の関係が表示されます。このビューを使用して、RQLクエリを修正し、誰が、何に対して、どのようにアクセス権を付与または継承しているかについての回答を見つけることができます。
+
+権限（IAM）クエリーを絞り込むと、表形式でより詳細な情報が表示され、アイデンティティとアクセスの課題を追跡し解決するのに役立ちます。
+
+[.procedure]
+. *Investigate（調査） > Search（検索）*を順に選びます。
+
+. *クエリタイプ*のドロップダウンから *Permissions(権限)*を選択し、権限クエリを入力します。
++
+たとえば、source.public = true AND dest.cloud.service.name = 'S3' AND dest.cloud.resource.type = 'bucket' の iam から構成をクエリすると、インターネットからアクセス可能なS3バケットをアカウントからチェックするものです。
+
+. *Table(テーブル)* (デフォルト) ビューを選択します。
++
+image::administration/investigate-iam.png[]
++
+** *SOURCE（ソース）*-IAMユーザー、IDPユーザー、EC2インスタンス、Microsoft Compute仮想マシン、Lambda関数などの権限を持つアセット。
+
+** *GRANTED BY（権限付与者）*-宛先と対話するためのアクセス許可を送信元に付与するグループ、ロール、またはポリシー。
+
+** *CLOUD ACCOUNTS(S)（クラウドアカウント）*-IAMエンティティに関連付けられたAWSアカウントとリージョン。
+
+** *操作*— 付与されたアクセス許可に基づいて、エンティティが実行できる操作。
+
+** *DESTINATION（宛先）*—アクションが発生した、またはアクションのターゲットとなったクラウドアセット。
+//+
+//When you click the link for the resource, you can see the actions and access information for the same resource —*Permission as Source* or the *Permission as Destination*.
+//+
+//image::iam-security-permissions-as-destination.png[]
+
+** *最終アクセス*—これは、2 つのステップで計算される独自のアルゴリズムです。ステップ1では、ユーザー、サービスアカウント、グループ、ロール、バインディングなど様々なクラウドエンティティからのサービスを組み合わせて、クラウドタイプの正味有効権限を計算します。ステップ2では、実際の使用状況（最終アクセス）と照合し、権限が実際に使用された時点を示します。
+
+** *アクション*— クエリに関連付けられた JSON。JSON は、IAM ユーザーが使用できるアクセス許可のリストを表示します。これは、クラウド サービスで定義されているアセット構成のスニペットです。
++
+各結果について、*アクション*列の下にあるアイコンを選択し、アセット構成から JSON スニペットとして*権限詳細表示*を選択します。
++
+image::administration/iam-security-raw-permission.png[]
++
+オフラインで分析する場合は、*Download（ダウンロード）*をクリックして、CSV形式で権限の詳細をダウンロードしてください。
+
+. *グラフ*として表示することもできます。
+//+
+//For example, the query is `config from iam where dest.cloud.type = 'AWS' AND grantedby.cloud.type = 'AWS' AND grantedby.cloud.policy.type = 'Resource-based Policy'` .
+//+
+//The default view is the table view. 
+//+
+//mage::iam-graph-view-basic-rql.png[]
+
+. *クエリ*を保存します。
++
+インシデントを調査するために作成した検索を *保存した検索* に保存し、クエリを使用してカスタム ポリシーを作成することを選択できます。

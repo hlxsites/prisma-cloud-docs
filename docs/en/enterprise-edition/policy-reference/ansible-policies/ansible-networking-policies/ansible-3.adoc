@@ -1,0 +1,56 @@
+== SSL certificate validation disabled in Ansible Yum Tasks
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| cec8654a-8b01-4530-b589-fa7b739cb07e
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/task/builtin/YumValidateCerts.py[CKV_ANSIBLE_3]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether Ansible yum tasks enforce SSL certificate validation to confirm the authenticity of the SSL certificates being used during package installation and updates. Disabling certificate validation with Ansible yum can lead to serious security risks, such as exposure to man-in-the-middle attacks.
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* ansible.builtin.yum or yum
+* *Attribute:* validate_certs
+
+To mitigate this risk, ensure the `validate_certs` attribute in your yum tasks remains enabled (set to 'true'). Enabling validate_certs is crucial for verifying SSL certificates, thereby enhancing the security of your system during package installations or updates.
+
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: Example
+      ansible.builtin.yum:
+        name: nginx
+        state: latest
+-       validate_certs: false
++       validate_certs: true
+----
+
+In this example, by setting `validate_certs` to true, SSL certificates are validated, and the security of yum transactions is ensured.
+

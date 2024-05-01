@@ -1,0 +1,52 @@
+
+== Azure AKS cluster Azure CNI networking not enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| ac313c08-1f79-4e55-96e4-49c20064bff0
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureAKSclusterAzureCNIEnabled.yaml[CKV2_AZURE_29]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that an Azure Kubernetes Service (AKS) cluster has Azure Container Network Interface (CNI) networking enabled. If not enabled, it presents a security risk. Azure CNI is a networking interface for connecting containers managed by Kubernetes. It allows them to have an IP address that is safe and secure from the Azure network, allowing the pods to directly access services over the Azure Virtual Network infrastructure. This reduces the risk of network intrusion and simplifies the network management within the cluster, thereby improving overall security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* network_profile.network_plugin
+
+To fix this issue, you need to specify `azure` as the value of `network_plugin` in the `network_profile` block under `azurerm_kubernetes_cluster` resource.
+
+[source,go]
+----
+resource "azurerm_kubernetes_cluster" "aks_example" {
+  // other configuration
+
+  network_profile {
+    network_plugin = "azure"
+    // other configuration
+  }
+}
+----
+
+The above code is secure because it uses Azure Container Networking Interface (CNI) for networking which provides VNET networking capabilities to Pods in Azure Kubernetes Service(AKS). This grants pods with their own IP addresses from a subnet and full network access to other network resources. This can be essential for running security-sensitive workloads or workloads requiring network policies.
+

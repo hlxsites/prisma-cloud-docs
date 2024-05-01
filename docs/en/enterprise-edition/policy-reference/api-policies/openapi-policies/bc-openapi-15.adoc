@@ -1,0 +1,49 @@
+
+== Operation Objects Uses Basic Auth
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| e7544d68-6d83-4dbd-a8f2-b569041fb455
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/OperationObjectBasicAuth.py[CKV_OPENAPI_15]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy is checking for operation objects in OpenAPI version 2.0 files that are using basic authentication. Basic authentication is a simple authentication scheme built into the HTTP protocol, and involves sending user credentials (username and password) in the headers of a request. It's generally considered insecure for several reasons. Firstly, user credentials are sent as plaintext with basic encoding, making it easy for eavesdroppers to possibly intercept and see the credentials, especially if the request is sent over an unencrypted (i.e., non-HTTPS) connection. Secondly, basic authentication makes your application vulnerable to brute force attacks, as it doesn't incorporate any functionality for limiting login attempts. Overall, using a more secure authentication method, such as token-based or OAuth 2.0 authentication, is recommended.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+A given OpenAPI specification file must not use a Basic Authentication scheme. This ensures that our APIs are not using a less secure authentication method such as Basic Authentication.
+
+To fix the issue, use a more secure authentication method rather than Basic Authentication. One secure alternative is using Bearer Authentication with a JWT token. This requires providing the bearer token for authorization.
+
+[source,yaml]
+----
+components:
+  securitySchemes:
+    BearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # arbitrary string for documentation purposes
+----
+
+In the example above, a JWT token is provided for authorization via the bearer authentication method. The bearerFormat is mentioned for documentation purposes. This setup allows the server to verify a user's authenticity using a self-contained JWT token without using the less secure basic authentication scheme.
+

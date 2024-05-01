@@ -1,0 +1,53 @@
+
+== Azure Recovery Services vault is not configured with managed identity
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| aa72a7b0-65f3-4e15-8b62-fb3b6886f67a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureRecoveryServicesvaultConfigManagedIdentity.yaml[CKV2_AZURE_35]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks to verify if the Azure Recovery Services Vault is configured with a managed identity. A managed identity in Azure is a secure and scalable solution for app authentication, and can be auto-managed by Azure, helping developers avoid the process of managing authentication by themselves. Therefore, if the Azure Recovery Services Vault is not configured with a managed identity, it could lead to improper access control and poorly managed authentication credentials, which may expose your app to security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_recovery_services_vault
+* *Arguments:* identity.type
+
+To fix this issue, you need to configure the Azure Recovery Services vault with a managed identity. This is done by setting the property "identity" and "type" in the terraform configuration.
+
+[source,hcl]
+----
+resource "azurerm_recovery_services_vault" "example" {
+  name                = "example-recovery-vault"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  soft_delete_enabled = false
+  identity {
+    type = "SystemAssigned"
+  }
+}
+----
+
+The code is secure because it assigns the Azure Recovery Services vault a managed identity. Managed identities provide an identity for applications to use when connecting to resources that support Azure Active Directory (Azure AD) authentication. They eliminate the need for developers to manage credentials, making the connection more secure.
+

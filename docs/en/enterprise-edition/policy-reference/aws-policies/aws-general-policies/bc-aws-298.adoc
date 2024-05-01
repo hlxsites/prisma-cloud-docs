@@ -1,0 +1,47 @@
+== The DMS S3 does not use a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 26a99f76-1559-4581-8817-668d04e20724
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/DMSS3UsesCMK.py[CKV_AWS_298]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the AWS Database Migration Service (DMS) S3 is utilizing a Customer Managed Key (CMK) for encryption. If this policy is not adhered to, it could potentially create a security risk as AWS managed keys may not provide the same level of control and access restrictions that a CMK would. This could leave sensitive data exposed or vulnerable to unauthorized access or breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_dms_s3_endpoint
+* *Arguments:* kms_key_arn
+
+To fix this issue, you need to set the "kms_key_arn" attribute in your DMS S3 configuration block.
+
+[source,hcl]
+----
+resource "aws_dms_s3_endpoint" "test_dms_endpoint_s3" {
++ kms_key_arn     = "arn:aws:kms:us-west-2:111122223333:key/abcd1234-a123-456a-a12b-a123b4cd56ef"
+  ...
+}
+----
+
+The above Terraform code is secure because by adding kms_key_arn parameter with the value of the ARN of the Customer Managed Key, you ensure that a Customer Managed Key is used with DMS S3. This allows you to have more granular control over data encryption and decryption.
+

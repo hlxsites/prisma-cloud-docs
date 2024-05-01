@@ -1,0 +1,51 @@
+
+== OpenStack hard coded password, token, or application_credential_secret exists in provider
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://docs.prismacloud.io/en/enterprise-edition/policy-reference/openstack-policies/openstack-secrets-policies/bc-openstack-1[CKV_OPENSTACK_1]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to flag any instances where OpenStack passwords, tokens, or application_credential_secrets are hardcoded directly into the provider. The primary concern here is a matter of security. When sensitive credentials such as passwords or tokens are hardcoded, they can potentially be exposed to unauthorized users. If this occurs, the unauthorized user can have access to sensitive data in the OpenStack environment. Therefore, this policy helps to prevent security breaches by ensuring that credentials are not hardcoded and are instead managed securely.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* TBD
+* *Arguments:* TBD
+
+To fix the issue, remove any hard-coded secrets, tokens, or application_credential_secrets in your OpenStack provider. Instead, use environment variables or supply these credentials through a secure mechanism.
+
+[source,hcl]
+----
+provider "openstack" {
+  user_name   = "admin"
+  tenant_name = "admin"
+  password    = var.password  // Set your password as a variable
+  auth_url    = "https://my-openstack.org:5000/v3/"
+  region      = "RegionOne"
+}
+----
+
+The above code is secure because no sensitive data (like a password) is hard-coded into the OpenStack Provider configuration. Instead, the password is referenced as a variable `var.password`, which would typically be set using an environment variable or secure vault storage, limiting exposure of sensitive data.
+

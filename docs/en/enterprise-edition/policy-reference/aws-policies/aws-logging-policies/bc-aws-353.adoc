@@ -1,0 +1,53 @@
+
+== RDS instances have performance insights disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 3d08fe94-01cc-4a5e-92b4-68d1a7c15231
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSInstancePerformanceInsights.py[CKV_AWS_353]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to verify if RDS instances have performance insights enabled. Performance insights allow for an advanced database monitoring feature that makes it easy to diagnose and solve performance issues on Amazon RDS databases. If this feature is not enabled, the user may struggle to identify the cause of issues impacting the performance of their RDS instances. Inadequate monitoring could lead to extended downtime, inefficient use of resources and potential loss of data, all of which may have significant impacts on a business's operations and profitability. Therefore, it's a bad practice not to enable performance insights on RDS instances.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'aws_rds_cluster_instance', 'aws_db_instance'
+* *Arguments:* performance_insights_enabled
+
+To fix the issue, you should enable Performance Insights for your RDS instance in your terraform file. Here is how you can do it:
+
+[source,hcl]
+----
+resource "aws_db_instance" "default" {
+  allocated_storage    = 10
+  engine               = "mysql"
+  engine_version       = "5.7"
+  instance_class       = "db.t2.micro"
+  name                 = "mydb"
+  username             = "foo"
+  password             = "foobarbaz"
+  parameter_group_name = "default.mysql5.7"
++ performance_insights_enabled = true
+}
+----
+

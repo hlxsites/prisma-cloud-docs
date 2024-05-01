@@ -177,19 +177,21 @@ class FranklinConverter implements AdocTypes.Converter {
         const closer = this.sectionDepth > 0 ? '</div>' : '';
         this.sectionDepth += 1;
 
+        // only apply section meta anchors on sections, and when an id is explicitly authored
+        const sectionMeta = !id.startsWith('_') && this.sectionDepth > 1
+          ? `\n${this.makeBlock('section-metadata', `<div><div>id</div><div>${id}</div></div>`)}`
+          : '';
+
         const content = `
+          ${sectionMeta}
           ${title ? `<${tag}${!id.startsWith('_') ? ` id="${id}"` : ''}>${title}</${tag}>` : ''}
           ${blocks.map((block) => this.convert(block)).join('\n')}`;
 
         const wrapper = `${closer}<div>${content}${closer ? '' : '</div>'}`;
 
-        // only apply section meta anchors on sections, and when an id is explicitly authored
-        const sectionMeta = !id.startsWith('_') && this.sectionDepth > 1
-          ? `\n${this.makeBlock('section-metadata', `<div><div>id</div><div>${id}</div></div>`)}`
-          : '';
         this.sectionDepth -= 1;
 
-        return wrapper + sectionMeta;
+        return wrapper;
       },
       literal: (node) => {
         const content = node.getContent();
@@ -298,7 +300,7 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       inline_image: (node) => this.templates.image(node as AdocTypes.AbstractBlock),
       image: (node) => {
-        const src = node.getAttribute('target') as string | undefined;
+        const src = node.getImageUri(node.getAttribute('target', '') as string);
         if (!src) {
           return '';
         }

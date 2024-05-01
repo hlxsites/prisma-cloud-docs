@@ -1,0 +1,62 @@
+
+== Elasticsearch Domain Audit Logging is disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| c61a0cdc-c20c-4e7f-bd40-bca8a9d5614e
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ElasticsearchDomainAuditLogging.py[CKV_AWS_317]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking for the activation of audit logging on an Elasticsearch Domain. It ensures that all the changes and alterations made within the domain are being tracked and recorded for future analysis. If this feature is not enabled, it can pose serious security risks as malicious activities or unauthorized changes could go undetected. It can also make troubleshooting difficult in case of an unforeseen issue. Hence, enabling audit logging not only enhances security but also aids system management and optimization.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* "aws_elasticsearch_domain", "aws_opensearch_domain"
+* *Arguments:* log_publishing_options
+
+To fix this issue, you need to enable the audit logs for the Elasticsearch Domain. This can be done by setting `log_publishing_options` in your AWS Elasticsearch resource configuration, then defining `audit_logs` with `enabled = true`.
+
+[source,hcl]
+----
+resource "aws_elasticsearch_domain" "example" {
+  domain_name = "example"
+
+  ... // other configurations
+
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.example.arn
+    log_type                 = "AUDIT_LOGS"
+
+    audit_logs {
+      enabled = true
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "example" {
+  name = "example"
+}
+----
+
+In the above secure code, `log_publishing_options` are activated where `log_type` is set to `AUDIT_LOGS` and `enabled = true`. This ensures that audit logging is enabled for the Elasticsearch domain which provides valuable insights on security and access patterns. Note that the logging destination is a CloudWatch log group which is specified by `cloudwatch_log_group_arn`.
+

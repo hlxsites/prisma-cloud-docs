@@ -1,0 +1,53 @@
+
+== Deletion protection for Spanner Database is disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 00475a66-aff3-4853-8960-6e97cd73332b
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/SpannerDatabaseDeletionProtection.py[CKV_GCP_119]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is examining Google Cloud Platform's Spanner Databases to ensure that deletion protection is enabled. Deletion protection is a safeguard that prevents accidental deletion of the database, which could lead to data loss or disruption of services. Without this protective measure, valuable or sensitive information could be accidentally destroyed, significantly impacting a business or operation. Therefore, activating deletion protection is considered a best practice in terms of security and data management.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_spanner_database
+* *Arguments:* deletion_protection
+
+To fix this issue, you should enable the deletion protection in your Spanner Database configuration. 
+
+[source,hcl]
+----
+resource "google_spanner_database" "database" {
+   instance = "your-spanner-instance"
+   name     = "your-database-name"
+
+   ddl = [
+     "CREATE TABLE t1 (t1 INT64 NOT NULL,) PRIMARY KEY(t1)",
+   ]
+   
+   deletion_protection = true
+}
+----
+The above code is secure because it enables the 'deletion_protection' property of the Spanner Database. This setting avoids accidental deletion of databases, providing an extra layer of security for your data.
+

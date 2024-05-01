@@ -1,0 +1,72 @@
+:topic_type: タスク
+[.task]
+[#idfee80488-cdaa-4170-a183-8ca84389e545]
+== Prisma CloudでのAD FS SSOのセットアップ
+
+Prisma Cloudへの管理者アクセスを保護するために、ADFSに移動して、シングルサインオンを設定し、次にSSO用にPrisma Cloudの設定を行います。
+
+Active Directory Federation Services（AD FS）は、既存のActive Directory（AD）認証情報を使用してWebログインを提供するWindows Serverの標準のロールとしてMicrosoftによって提供されるサービスです。
+
+[CAUTION]
+====
+アカウントのロックアウトを防ぐには、数名の管理ユーザーがPrisma Cloudのローカル認証資格情報とSSOアクセスの両方を使用できるようにする必要があります。各管理者が、「Welcome to Palo Alto Networks Support」電子メールを使って各自のPalo Alto Networksカスタマーサポートポータル（CSP）アカウントをアクティブ化して、ポータルにアクセスするためのパスワードを設定していることを確認してください。
+====
+
+[.procedure]
+. まずPrisma Cloudで管理ユーザーを追加するか、またはPrisma CloudでADFS SSOの設定時にJITプロビジョニングを使ってユーザーをその場で追加するかを決定してください。
++
+ユーザーに対するJIT プロビジョニングを有効にする場合は、次の手順に進む前にPrisma Cloud ロールを作成します。AD FSでSSOを設定する場合、ユーザーが適切な権限を持ち、Prisma Cloud上で割り当てられたクラウドアカウントを監視できるように、このロールをユーザーのプロファイルに添付する必要があります。
+
+. ユーザーがAD FSからアクセスする必要がある、Prisma Cloud用のAudience URIをコピーします。
++
+.. Prisma Cloudにログインして、 *Settings（設定）> SSO*の順に選択します。
+
+.. *Audience URI (SP Entity ID)*の値をコピーします。これは、https://app.prismacloud.io?customer=<文字列>のような形式の読み取り専用フィールドで、Prisma Cloudのインスタンスを一意に識別するものです。AD FSでSAMLを設定する際に、この値が必要になります。
++
+image::administration/adfs-sso-pc-1.png[]
+
+. SSO用にAD FSをセットアップします。
++
+.. AD FS設定のセットアップを開始する前に、Prisma Cloudアカウントにログインし、手順2の説明に従って、Prisma Cloudから*Audience URI (SP Entity ID)（オーディエンスURI（SPエンティティID））*をコピーします。
+
+.. 管理者としてAD FSにログインし、https://docs.microsoft.com/en-us/powerapps/maker/portals/configure/configure-saml2-settings[SAML SSO Prisma Cloudアプリケーションを作成します]。
+
+.. *Identifiers（ID）*タブで、証明書利用者のURLを入力します、例：https://app.prismacloud.io/[https://app.prismacloud.io/]
++
+ログインURLに表示されるテナントの場所に応じて、「app」を「app2」または「app.eu」に置き換えます、例：https://app.eu.prismacloud.io/[https://app.eu.prismacloud.io/]
++
+URLの最後にスラッシュを入力することを忘れないでください。
++
+image::administration/adfs-sso-setup-3.png[]
+
+.. *Endpoints（エンドポイント）*タブで、Assertion Consumer Service（ACS）のURLを入力します、例：https://api.prismacloud.io/saml[https://api.prismacloud.io/saml]
++
+ログインURLに表示されるテナントの場所に応じて、「api」を「api2」または「api.eu」に置き換えます、例：https://api.eu.prismacloud.io/saml[https://api.eu.prismacloud.io/saml]
++
+ログアウトエンドポイントを追加することもできます。
++
+image::administration/adfs-sso-setup-1.png[]
+
+.. 変換ルールを使用して、電子メールアドレスをNameID属性として渡し、*OK*をクリックします。
++
+image::administration/adfs-sso-setup-2.png[]
+
+. Prisma CloudでADFSを設定します。
++
+.. Prisma Cloudにログインして、 *Settings（設定）> SSO*の順に選択します。
+
+.. *Enable SSO（SSOを有効化）*します。
+
+.. AD FS発行者の値を入力します。
++
+発行者URLは、アサーションの一部です、例：https://adfs.domain.com/adfs/services/trust[https://adfs.domain.com/adfs/services/trust]
+
+.. *IDプロバイダのログアウトURLを入力します*。
++
+Prisma Cloudがタイムアウトしたとき、またはユーザーがログアウトしたときに、ユーザーはこのURLにリダイレクトされます。
+
+.. AD FS*Certificate(証明書）*をPEM形式で入力します。
++
+証明書は、アサーションが正しく署名されていることを確認するために使用されます。
+
+.. AD FS設定に指定されている、 *Prisma Cloud Access SAML URL*を入力します、例：https://adfs.domain.com/adfs/ls/idpinitiatedsignon.aspx?logintorp=https://app.prismacloud.io[https://adfs.domain.com/adfs/ls/idpinitiatedsignon.aspx?logintorp=https://app.prismacloud.io]

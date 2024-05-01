@@ -1,0 +1,69 @@
+
+== IAM policies allow privilege escalation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 6abcb8b7-f34a-4d8d-8228-486f9e284cda
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMPrivilegeEscalation.py[CKV_AWS_286]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+Privilege escalation is when a user obtains rights or permissions beyond what they ought to have. If an IAM policy enables privilege escalation, it means that a user or service with lower levels of access could potentially gain higher-level privileges. 
+
+For instance, a user with read-only access could exploit vulnerabilities to get administrative access. This is bad because it increases the risk of unintended or malicious activities, potentially leading to data loss, corruption, or unauthorized access. Therefore, it's critical that IAM policies are designed not to allow privilege escalation, thus reducing the possibility of such breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_policy
+* *Arguments:* policy
+
+To fix this issue, you need to specify the actions which the IAM policy allows explicitly, and avoid using wildcards (*) which may grant more permissions than necessary. 
+
+Also, avoid granting permissions to IAM actions that can change the permissions of IAM roles, as it results in privilege escalation. IAM actions that can cause privilege escalation include: iam:AddUserToGroup, iam:AttachUserPolicy, iam:AttachRolePolicy, iam:AttachGroupPolicy, iam:PutUserPolicy, iam:PutRolePolicy, iam:PutGroupPolicy, etc.
+
+[source,go]
+----
+resource "aws_iam_policy" "example" {
+  name        = "example"
+  path        = "/"
+  description = "A test policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketLocation"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::*"
+    }
+  ]
+}
+EOF
+}
+----
+
+In this secure Terraform code, the IAM policy explicitly allows only "s3:ListAllMyBuckets" and "s3:GetBucketLocation" actions. It doesn't include IAM actions that could lead to privilege escalation. The resource is also specified, thereby limiting the scope of resources this policy has access to. In addition, there are no wildcards used in the `Action` block, that could potentially allow other undesired permissions. As such, it significantly reduces the risk of privilege escalation and restricts the permissions to only what is necessary.
+
