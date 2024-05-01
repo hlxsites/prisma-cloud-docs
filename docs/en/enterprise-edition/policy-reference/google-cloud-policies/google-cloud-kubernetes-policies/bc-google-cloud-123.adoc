@@ -1,0 +1,81 @@
+
+== GKE container cluster configuration of NodePools is at the cluster level
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GKEDontUseNodePools.py[CKV_GCP_123]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is designed to identify the use of NodePools within the configuration of a Google Kubernetes Engine (GKE) cluster. The rationale behind this check is that utilizing NodePools in the cluster configuration may unnecessarily complicate the management of the cluster.
+
+When NodePools are employed at the cluster level, modifications to the node configuration will result in the creation of a new NodePool, which can increase operational complexity. Moreover, this could lead to excess resource consumption if older NodePools are not properly deleted after the creation of new ones. Therefore, it's advisable to manage node configurations outside of the cluster configuration to prevent such issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_container_cluster
+* *Arguments:* node_pool
+
+To fix the issue, you need to separate the node pool configuration from your cluster configuration. 
+
+[source,go]
+----
+resource "google_container_cluster" "my_cluster" {
+  name               = "my-cluster"
+  location           = "us-central1"
+  initial_node_count = 1
+
+  master_auth {
+    username = ""
+    password = ""
+
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
+}
+
+
+resource "google_container_node_pool" "my_nodes" {
+  name       = "my-nodes"
+  location   = "us-central1"
+  cluster    = google_container_cluster.my_cluster.name
+  node_count = 1
+
+  node_config {
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+    ]
+
+    labels = {
+      my-label = "my-label-value"
+    }
+
+    tags = ["my-tag"]
+  }
+}
+----
+
+By separating the node pool configuration from the cluster configuration, it allows you to manage and scale your node pools independently from the cluster. This makes it easier to manage resources and to make changes to your cluster without affecting your applications. It also prevents the reuse of the default node pool which could lead to unintended consequences.
+
