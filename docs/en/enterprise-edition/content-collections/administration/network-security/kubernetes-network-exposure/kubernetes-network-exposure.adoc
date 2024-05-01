@@ -1,0 +1,39 @@
+== Kubernetes Network Exposure
+
+Cloud Network Analyzer (CNA) correlates multiple data points, including routing paths and security policy configurations using graph-based modeling and then runs a complex calculation to evaluate the net effective action (ALLOW or DENY) for an IP packet from Source-A to Destination-B. The true network exposure evaluation is based on parsing the configuration of the resource(s) to determine all possible network paths. Prisma Cloud does not send actual traffic or read network logs for performing this network path analysis.
+
+With the addition of Kubernetes services, CNA correlates the data from the VPC configuration (overlay) with the data of the Kubernetes network configuration (underlay) to establish the full path from the internet to the Kubernetes service exposed and the underlying deployment or endpoints associated with the exposed Kubernetes service.
+
+Once Prisma Cloud ingests the assets from both the Kubernetes clusters and cloud accounts, CNA can find the full path from the internet to the service or pod and determine the inbound exposure by using the following high-level workflow:
+
+* Identify all Kubernetes services in a given cluster.
+
+* Extract the Kubernetes service configuration.
+
+* Map the associated deployment, endpoint, or network security policy with each Kubernetes service.
+
+* Extract the deployment or endpoint configuration.
+
+* Map the Kubernetes cluster and nodes with each Kubernetes service.
+
+* Find the associated load balancer and VPC configuration.
+
+* Calculate if the nodes are internet exposed through the configured protocol and port of the service.
+
+* Attach the underlay configuration (VPC level) with the overlay configuration (Kubernetes level) to determine the end-to-end exposure.
+
+CNA supports only inbound calculation. The data refresh or ingestion occurs once every 24 hours and alerts are near real time. Prisma Cloud does not support the following for Container Exposure:
+
+* Red Hat Openshift clusters
+
+* Non-Kubernetes based orchestration platforms (AWS ECS, Azure WebApp/Container Instances, GCP Cloud Run)
+
+* Clusters not-onboarded on Prisma Cloud
+
+* On-premises Kubernetes clusters
+
+* Ingress controllers
+
+* Cilium Network Policies
+
+* AWS Classic load balancers

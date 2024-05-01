@@ -1,0 +1,86 @@
+:topic_type: task
+[.task]
+== Satellite Deployment
+
+Prisma Cloud Satellite is a lightweight and non-intrusive Kubernetes operator, which enables you to manage other Prisma Cloud applications lifecycle. Satellite automatically deploys the Discovery application, which is used by Prisma Cloud to ingest Kubernetes artifacts for analysis by CNA.
+
+For the container exposure use case, Prisma Cloud correlates the Kubernetes configuration with the VPC network information to determine which Kubernetes services are internet exposed, the deployments and endpoints behind each service, and then builds a network graph to display the network path.
+
+=== Pre-requisites
+
+Make sure to fulfill the following requirements in order to successfully install Satellite. 
+
+*Connectivity* 
+
+Satellite should have outgoing access to the following Prisma Cloud domains and subdomains:
+
+* prismacloud.io 
+* amazonaws.com 
+* gcr.io 
+
+If you have firewalls blocking the traffic, add the following values to their allow lists: 
+
+* *.prismacloud.io 
+* gcr.io 
+* *.amazonaws.com
+
+*Node*
+
+At a minimum, Satellite requires a Kubernetes Node with 256MB RAM and 900mCPU. 
+
+
+=== Supported Platforms
+
+Satellite is supported on the following platforms and versions: 
+
+[cols="50%a,50%a"]
+|===
+|*Platform*
+|*Versions*
+
+|AWS EKS
+|1.25, 1.26, 1.27
+
+|Azure AKS
+|1.25, 1.26, 1.27
+
+|Google Cloud GKE
+|1.25, 1.26, 1.27
+
+|===
+
+You can deploy Satellite manually or automated through the UI or API:
+
+[.procedure]
+
+. Select *Settings > Providers*
+
+. Click Connect Provider and select *K8s Satellite*.
+
+. Enter the Cluster *Name* or Resource *ID* in the *K8s Cluster ID* dropdown.
+
+. (Optional) Enter *Username* and *Password*.
+
+. Click *Next*.
++
+You can search the cluster by its name or the unique cluster asset ID by referencing the Cluster Asset ID field in the Prisma Cloud Asset Inventory page.
++
+image::administration/k8s-deploy-satellite-1.png[]
+
+. *Review* the Cluster details and click *Next*.
++
+image::administration/k8s-deploy-satellite-2.png[]
+
+. Copy the *Helm* upgrade/install command and execute it in your selected cluster.
++
+NOTE: A unique identifier is created each time a Helm chart is generated and it acts as a cluster identifier, therefore you cannot reuse the helm chart across different clusters.
++
+image::administration/k8s-deploy-satellite-3.png[]
+
+. As soons as the Helm chart is generated, your cluster will be in *Pending* state, until the Satellite gets deployed and starts reporting to Prisma Cloud. 
++
+After the deployment is complete, the cluster state will change to *Active*. 
++
+Once a cluster is in the Active state, it sends keep-alives to Prisma Cloud every 30 minutes. If there is a communication issue or if the Satellite gets removed, the object will move into an Offline state until the communication is re-established or the object is deleted on the Prisma Cloud console.
++
+image::administration/k8s-deploy-satellite-4.png[]
