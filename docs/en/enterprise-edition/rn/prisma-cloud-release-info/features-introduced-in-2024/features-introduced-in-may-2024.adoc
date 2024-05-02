@@ -1,0 +1,667 @@
+== Features Introduced in May 2024
+
+Learn what's new on Prisma® Cloud in May 2024.
+
+* <<new-features>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<rest-api-updates>>
+//* <<changes-in-existing-behavior>>
+//* <<deprecation-notices>>
+
+
+[#new-features]
+=== New Features
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Integration with Amazon Security Lake*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Infrastructure]
+//RLP-136988
+
+|Integrate Prisma Cloud with https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-amazon-security-lake[Amazon Security Lake] to help your security analysts protect their cloud workloads, applications, and data with greater visibility and context into cloud security issues.
+
+|*Top Risks From Unmanaged Assets Widget Enhancement*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Infrastructure]
+//RLP-132742
+
+|The https://docs.prismacloud.io/en/enterprise-edition/content-collections/dashboards/dashboards-discovery-exposure-management#cdem-widget-3[Top Risks From Unmanaged Assets] widget in the *Discovery and Exposure Management Dashboard* is enhanced to display the top risks based on various categories that affect your security posture due to public exposure of assets on the internet. The risks are categorized as *Critical*, *Exploited*, *Patchable*, *Vulnerable*, and *Exposed*. Links offer additional context and options to convert and inspect affected assets, helping you to quickly assess and address potential threats.
+
+image::top-risks-widget-risks.png[]
+
+|*Vulnerabilities Tab*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Infrastructure]
+//RLP-132742
+
+|Explore the new https://docs.prismacloud.io/en/enterprise-edition/content-collections/cloud-and-software-inventory/cdem-unmanaged-assets-inventory[Vulnerabilities tab] in the side panel while inspecting internet-exposed assets. You can now see Common Vulnerabilities and Exposures (CVE) discovered on the exposed asset. The severity levels of the CVEs are categorized based on the Common Vulnerability Scoring System (CVSS) scores, helping you to make informed decisions and take appropriate actions to secure the internet-exposed asset.
+
+image::cdem-rn.gif[]
+
+
+
+|*Login Experience Enhancements*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Infrastructure]
+//RLP-135039
+
+|Updates to the Prisma Cloud login experience, provide support for all available authentication options (excluding IdP-initiated SAML SSO). Enhancements include:
+
+* SSO Login page update to clearly identify OIDC SSO login and add provide support Palo Alto Networks SSO login.
+
+* Fixed an issue with deep link resolution. Accessing Prisma Cloud deep links without a valid browser session now redirects to the Prisma Cloud login page.
+
+image::login-5-1.png[]
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+|*Service*
+|*API Details*
+
+|*Amazon EC2*
+
+tt:[*24.5.1*]
+//RLP-137198
+
+|*aws-ec2-vpc-ipam*
+
+Additional permission required:
+
+* `ec2:DescribeIpams`
+
+The Security Audit role includes the permission.
+
+|*Amazon FSx*
+
+tt:[*24.5.1*]
+//RLP-127615
+|*aws-fsx-backup*
+
+Additional permission required:
+
+* `fsx:DescribeBackups`
+
+The Security Audit role includes the permission.
+
+
+|*AWS Network Manager*
+
+tt:[*24.5.1*]
+//RLP-137195
+|*aws-network-manager-global-network*
+
+Additional permission required:
+
+* `networkmanager:DescribeGlobalNetworks`
+
+The Security Audit role includes the permission.
+
+|*AWS Network Manager*
+
+tt:[*24.5.1*]
+//RLP-137185
+|*aws-network-manager-core-network*
+
+Additional permissions required:
+
+* `networkmanager:GetCoreNetwork`
+* `networkmanager:ListCoreNetworks`
+
+You must manually add the above permissions to the CFT template to enable them.
+
+
+|*Amazon SNS*
+
+tt:[*24.5.1*]
+//RLP-131263
+|*aws-sns-data-protection-policy*
+
+Additional permissions required:
+
+* `sns:ListTopics`
+* `sns:GetDataProtectionPolicy`
+
+The Security Audit role includes the `sns:ListTopics` permission.
+You must manually add the `sns:GetDataProtectionPolicy` permission to the CFT template to enable it.
+
+|*Azure Cognitive Services*
+
+tt:[*24.5.1*]
+//RLP-136434
+|*azure-cognitive-services-account-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.CognitiveServices/accounts/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions.
+
+|*Azure Express Route*
+
+tt:[*24.5.1*]
+//RLP-136427
+
+|*azure-express-route-circuit-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.Network/expressRouteCircuits/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions.
+
+|*Azure Relay*
+
+tt:[*24.5.1*]
+//RLP-134918
+
+|*azure-relay-namespaces*
+
+Additional permission required:
+
+* `Microsoft.Relay/Namespaces/read`
+
+The Reader role includes the permission.
+
+|*Azure Synapse Analytics*
+
+tt:[*24.5.1*]
+//RLP-134913
+
+|*azure-synapse-workspace-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions.
+
+|tt:[Update] *Azure Cognitive Services*
+
+tt:[*24.5.1*]
+//RLP-137805
+
+|The *Asset Type* for `azure-cognitive-search-service-diagnostic-settings` API resources in the *Inventory > Inventory Assets > Azure* page is updated as follows:
+
+* Previous name— *Azure Cognitive Services Account Diagnostic Settings*
+* New name— *Azure Cognitive Search Service Diagnostic Settings*
+
+|tt:[Update] *Google AlloyDB for PostgreSQL Permissions*
+
+tt:[*24.5.1*]
+//RLP-138180
+//RLP-138179
+//RLP-138178
+//RLP-138177
+
+|Prisma Cloud no longer needs access to `alloydb.locations.list` permission for the following APIs:
+
+* `gcloud-alloydb-cluster`
+* `gcloud-alloydb-cluster-instance`
+* `gcloud-alloydb-cluster-user`
+* `gcloud-alloydb-backup`
+
+|tt:[Update] *Google Dataplex Permissions*
+
+tt:[*24.5.1*]
+//RLP-138176, RLP-138175, RLP-138174, RLP-138173, RLP-135806, RLP-135798, RLP-135797, RLP-135796, RLP-135794, RLP-135793
+
+|Prisma Cloud no longer needs access to `dataplex.locations.list` permission for the following APIs:
+
+* `gcloud-dataplex-lake-zone-entity`
+* `gcloud-dataplex-lake-zone-asset-action`
+* `gcloud-dataplex-lake-zone-asset`
+* `gcloud-dataplex-lake-zone-action`
+* `gcloud-dataplex-lake-environment`
+* `gcloud-dataplex-lake-zone`
+* `gcloud-dataplex-lake-task`
+* `gcloud-dataplex-lake-contentitem`
+* `gcloud-dataplex-lake-action`
+* `gcloud-dataplex-lake`
+
+|===
+
+
+[#new-policies]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+
+|*AWS DocumentDB clusters have backup retention period less than 7 days*
+
+tt:[*24.5.1*]
+//RLP-138075
+
+|This policy identifies Amazon DocumentDB (DocDB) clusters lacking sufficient backup retention periods.
+
+The backup retention period denotes the duration for storing automated backups of the DocumentDB cluster. Inadequate retention periods heighten the risk of data loss, compliance issues, and hinder effective recovery in security breaches or system failures.
+
+The best practice is to ensure that there is a substantial backup retention period for DocDB clusters retaining at least 7 days of backups or according to your business and compliance requirements.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-docdb-db-cluster' AND json.rule = Status equals available and ( BackupRetentionPeriod does not exist or BackupRetentionPeriod less than 7 )
+----
+
+|*AWS DMS replication instance auto minor version upgrade is not enabled*
+
+tt:[*24.5.1*]
+//RLP-138074
+
+|This policy identifies the AWS DMS(Database Migration Service) replication instance does not enable auto minor version upgrade.
+
+A replication instance in DMS is a compute resource used to replicate data between a source and target database during the migration or ongoing replication process. Failure to enable automatic minor upgrades in AWS DMS can leave your database instances vulnerable to security risks stemming from outdated software.
+
+It is recommended to enable automatic minor version upgrades on DMS replication instances for instances that receive timely patches and updates, reducing the risk of security vulnerabilities and improving overall performance and stability.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-dms-replication-instance' AND json.rule = replicationInstanceStatus equals "available" and autoMinorVersionUpgrade is false
+----
+
+|*AWS DynamoDB table deletion protection is disabled*
+
+tt:[*24.5.1*]
+//RLP-137902
+
+|This policy identifies AWS DynamoDB tables with deletion protection disabled. 
+
+DynamoDB is a fully managed NoSQL database that provides a highly reliable, scalable, low-latency database solution for applications that require consistent, single-digit millisecond latency at any scale. Deletion protection feature allows authorised administrators to prevent accidental deletion of DynamoDB tables. Enabling deletion protection helps reduce the risk of data loss, maintain data integrity, ensure compliance, and protect DynamoDB tables across different environments. 
+
+It is recommended to enable deletion protection on DynamoDB tables to prevent unintended data loss.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-dynamodb-describe-table' AND json.rule = tableStatus equal ignore case ACTIVE and deletionProtectionEnabled is false
+----
+
+|*AWS DynamoDB table Auto Scaling not enabled*
+
+tt:[*24.5.1*]
+//RLP-135128
+
+|This policy identifies AWS DynamoDB tables with auto-scaling disabled.
+
+DynamoDB is a fully managed NoSQL database that provides a highly reliable, scalable, low-latency database solution for applications that require consistent, single-digit millisecond latency at any scale. Auto-scaling functionality allows you to dynamically alter the allocated throughput capacity for your DynamoDB tables based on current traffic patterns. This feature employs the Application Auto Scaling service to automatically boost provisioned read and write capacity to manage unexpected traffic increases and reduce throughput when the workload falls in order to avoid paying for wasted supplied capacity.
+
+It is recommended to enable auto-scaling for the DynamoDB table to ensure efficient resource utilisation, cost optimisation, improved performance, simplified management, and scalability.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where Resource.status = Active AND api.name = 'aws-application-autoscaling-scaling-policy' as Y; config from cloud.resource where api.name = 'aws-dynamodb-describe-table' AND json.rule = tableStatus equal ignore case ACTIVE AND billingModeSummary.billingMode does not equal PAY_PER_REQUEST as X; filter 'not($.Y.ResourceName equals $.X.tableName)'; show X;
+----
+
+|*AWS Network ACL is not in use*
+
+tt:[*24.5.1*]
+//RLP-137823
+
+|This policy identifies AWS Network ACLs that are not in use. 
+
+AWS Network Access Control Lists (NACLs) serve as a firewall mechanism to regulate traffic flow within and outside VPC subnets. A recommended practice is to assign NACLs to specific subnets to effectively manage network traffic. Unassigned NACLs with inadequate rules might inadvertently get linked to subnets, posing a security risk by potentially allowing unauthorized access.
+
+It is recommended to regularly review and remove unused and inadequate NACLs to improve security, network performance, and resource management.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-network-acls' AND json.rule = associations[*] size less than 1
+----
+
+|*AWS AppSync has field-level logging disabled*
+
+tt:[*24.5.1*]
+//RLP-137822
+
+|This policy identifies an AWS AppSync GraphQL API not configured with field-level logging.
+
+AWS AppSync is a managed GraphQL service that simplifies the development of scalable APIs. "field-level" security offers a fine-grained approach to defining permissions and access control for individual fields within a GraphQL schema. It allows precisely regulate which users or clients can read or modify specific fields in an API. This level of control ensures that sensitive data is protected and that access is restricted only to those with appropriate authorization.
+
+Without field-level security, control over specific fields within the schema is lost, causing the risk of sensitive data exposure. Additionally, the absence of this feature limits the implementation of fine-grained access control policies based on user roles or contextual information, thereby undermining the overall security of the application.
+
+It is recommended to enable field-level security to mitigate the risks by enforcing access control at a granular level, ensuring that only authorized users can access or modify specific fields based on your defined policies and requirements.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-appsync-graphql-api' AND json.rule = logConfig.fieldLogLevel is not member of ('ERROR','ALL')
+----
+
+|*AWS Elastic Beanstalk environment logging not configured*
+
+tt:[*24.5.1*]
+//RLP-137508
+
+|This policy identifies the Elastic Beanstalk environments not configured to send logs to CloudWatch Logs.
+
+An Elastic Beanstalk environment is a configuration of AWS resources where you can deploy your application. The environment logs refer to the logs generated by various components of your application, which can provide valuable insights into any errors or issues that may arise during operation. Failing to enable logging in an Elastic Beanstalk environment reduces visibility, hinders incident detection and response, and increases vulnerability to security breaches.
+
+It is recommended to configure AWS Elastic Beanstalk environments to send logs to CloudWatch to ensure security and meet compliance requirements.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-elasticbeanstalk-environment' AND json.rule = status does not equal "Terminated" as X; config from cloud.resource where api.name = 'aws-elasticbeanstalk-configuration-settings' AND json.rule = configurationSettings[*].optionSettings[?any( optionName equals "StreamLogs" and value equals "false" )] exists as Y; filter ' $.X.environmentName equals $.Y.configurationSettings[*].environmentName and $.X.applicationName equals $.Y.configurationSettings[*].applicationName'; show X;
+----
+
+|*AWS Certificate Manager (ACM) RSA certificate key length less than 2048*
+
+tt:[*24.5.1*]
+//RLP-137507
+
+|This policy identifies the RSA certificates managed by AWS Certificate Manager with a key length of less than 2048 bits. 
+
+AWS Certificate Manager (ACM) is a service for managing SSL/TLS certificates. RSA certificates are cryptographic keys used for securing communications over networks. Shorter key lengths may be susceptible to attacks such as brute force or factorization, where an attacker could potentially decrypt the encrypted data by finding the prime factors of the key.
+
+It is recommended that the RSA certificates imported on ACM utilise a minimum key length of 2048 bits or greater to ensure a sufficient level of security.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-acm-describe-certificate' AND json.rule = status equals "ISSUED" and keyAlgorithm starts with "RSA-" and keyAlgorithm equals RSA-1024
+----
+
+|*AWS Macie is not enabled*
+
+tt:[*24.5.1*]
+//RLP-137506
+
+|This policy identifies the AWS Macie that is not enabled in specific regions. 
+
+AWS Macie is a data security service that automatically discovers, classifies, and protects sensitive data in AWS, enhancing security and compliance posture. Failure to activate AWS Macie increases the risk of potentially missing out on automated detection and protection of sensitive data, leaving your organization more vulnerable to data breaches and compliance violations.
+
+It is recommended to enable Macie in all regions for comprehensive adherence to security and compliance requirements.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-macie2-session' AND json.rule = status equals "ENABLED" as X; count(X) less than 1
+----
+
+|*GCP Cloud Asset Inventory is disabled*
+
+tt:[*24.5.1*]
+//RLP-137627
+
+|This policy identifies GCP accounts where GCP Cloud Asset Inventory is disabled.
+
+GCP Cloud Asset Inventory is a metadata inventory service that allows you to view, monitor, and analyze Google Cloud and Anthos assets across projects and services. This data can prove to be crucial in security analysis, resource change tracking, and compliance auditing.
+
+It is recommended to enable GCP Cloud Asset Inventory for centralized visibility and control over your cloud assets.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-services-list' AND json.rule = services[?any( name ends with "/cloudasset.googleapis.com" and state equals "ENABLED" )] does not exist
+----
+
+|*GCP External Load Balancer logging is disabled*
+
+tt:[*24.5.1*]
+//RLP-136782
+
+|This policy identifies GCP External Load Balancers using any of the protocols like HTTP, HTTPS, and HTTP/2 having logging disabled.
+
+GCP external load balancers distribute incoming traffic across multiple instances or services hosted on Google Cloud Platform. Feature "logging" for external load balancers captures and records detailed information about the traffic flowing through the load balancers. This includes data such as incoming requests, responses, errors, latency metrics, and other relevant information. By enabling logging for external load balancers, you gain visibility into the performance, health, and security of the applications. Logged data comes handy for troubleshooting an incident, monitoring, analysis, and compliance purposes.
+
+It is recommended to enable logging for all external load balancers.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-external-backend-service' AND json.rule = backends exists and ( protocol equal ignore case "HTTP" or protocol equal ignore case "HTTPS" or protocol equal ignore case "HTTP2" ) and ( logConfig.enable does not exist or logConfig.enable is false )
+----
+
+|*GCP VM instance Confidential VM service disabled*
+
+tt:[*24.5.1*]
+//RLP-136757
+
+|This policy identifies GCP VM instances that have confidential VM services disabled.
+
+GCP VM encrypts data at rest and in transit, but the data must be decrypted before processing. Confidential VM service (Confidential Computing) allows GCP VM to keep in-memory data secure by utilizing hardware-based memory encryption. This protects any sensitive data leakage in case the VM is compromised.
+
+It is recommended to enable confidential VM services on GCP VMs to enhance the confidentiality and integrity of in-memory data on the VMs.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-instances-list' AND json.rule = status equal ignore case "RUNNING" and (machineType contains "machineTypes/n2d-" or machineType contains "machineTypes/c2d-") and (confidentialInstanceConfig.enableConfidentialCompute does not exist or confidentialInstanceConfig.enableConfidentialCompute is false)
+----
+
+|*New Configuration Build Policies*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Source]
+
+|The following default policies are added within the *Build* subtype of *Configuration* policies under *Governance* for enhanced continuous integration and deployment pipeline security. 
+
+*Ansible Compute Policies*
+
+* Usage of packages with unauthenticated or missing signatures allowed
+* Usage of the force parameter disabling signature validation allowed
+
+*Ansible General Policies*
+
+* DNF usage of packages with untrusted or missing GPG signatures allowed
+
+*Ansible Monitoring Policies*
+
+* Missing 'Rescue' section in Ansible block tasks
+
+*Ansible Networking  Policies*
+
+* Disabled Ansible URI certificate validation
+* HTTPS url not used with Ansible uri
+* HTTPS url not used with Ansible get_url module
+* SSL validation disabled within Ansible DNF module
+* Certificate validation disabled within Ansible DNF module
+* Certificate validation disabled with Ansible get_url module
+* SSL certificate validation disabled in Ansible Yum Tasks
+* SSL certificate validation disabled with Ansible Yum
+
+*PANOS Policies*
+
+* End-of-session logging disabled on Palo Alto Networks security policies
+* IPsec profile uses insecure authentication algorithms on Palo Alto Networks devices
+* IPsec profile uses insecure authentication protocols on Palo Alto Networks devices
+* Security zone on Palo Alto Networks devices does not have an associated Zone Protection Profile
+* Include ACL (Access Control List) not defined for a security zone in Palo Alto Networks devices with User-ID enabled
+* Logging at session start enabled on Palo Alto Networks devices
+* Security rules apply to all zones on Palo Alto Networks devices
+* Plain-text management HTTP enabled for Interface Management Profile in Palo Alto Networks devices
+* Plain-text management Telnet enabled for Interface Management Profile in Palo Alto Networks devices
+* Disable Server Response Inspection (DSRI) enabled in security policies for Palo Alto Networks devices
+* Security rule allows any application on Palo Alto Networks devices
+* Security rule permits any service on Palo Alto Networks devices
+* Security Rule in Palo Alto Networks devices with overly broad Source and Destination IPs
+* Security policies missing descriptions in Palo Alto Networks devices
+* Log Forwarding Profile not selected for a Palo Alto Networks device security policy rule
+* Security rules have source_zone and destination_zone containing values of any
+
+*Impact—* You will view policy violations for these policies on Prisma Cloud switcher *Application Security > Projects*. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings. 
+You are required to enable the additional modules on *Application Security > Settings* to view violations and alerts for these policies.
+
+|===
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*Azure Microsoft Defender for Cloud set to Off for DNS*
+
+tt:[*24.5.1*]
+//RLP-137209
+
+|*Changes—* The policy RQL is updated to check if the legacy DNS plan is deprecated.
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.deprecated is false and properties.pricingTier does not equal Standard)] exists
+----
+
+*Impact—* Low. Alerts generated by the deprecated DNS plan will be resolved.
+
+|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
+
+tt:[*24.5.1*]
+//RLP-136748
+
+|*Changes—* The policy description, RQL, and remediation steps are updated.
+
+*Severity—* Low
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and (sslPolicy does not contain ELBSecurityPolicy-TLS13-1-2-2021-06))] exists
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists
+----
+
+*Impact—* Low. Alerts generated for Application Load Balancers(ALB) using predefined FIPS security policy `ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04` will be resolved.
+
+2+|*Policy Updates—Configuration Build*
+
+|*Configuration Build Policies*
+
+tt:[*24.5.1*]
+
+|The following policies now support Ansible framework:
+
+* EC2 EBS is not optimized
+* AWS EC2 instances with public IP and associated with security groups have Internet access
+
+*Impact—* You will view policy violations for these policies on Prisma Cloud switcher *Application Security > Projects*. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings. 
+You are required to enable the additional modules on *Application Security > Settings* to view violations and alerts for these policies.
+
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*CIS GCP Foundation benchmark 3.0*
+
+tt:[24.5.1]
+//RLP-137915
+
+|Prisma Cloud now supports CIS Google Cloud Platform Foundation Benchmark version 3.0. This latest version has new controls and new Prisma Cloud policies are mapped to the controls increasing the overall compliance coverage.
+
+You can now view this built-in standard and associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track the compliance standard over time.
+
+|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*Integration APIs*
+
+tt:[24.5.1]
+//RLP-138104
+
+|Integration APIs now support https://pan.dev/prisma-cloud/api/cspm/api-integration-config/#amazon-security-lake[integration with Amazon Security Lake] to ingest Prisma Cloud Open Cybersecurity Schema Framework (OCSF) compliant vulnerability security data into Amazon Security Lake.
+
+|*Placeholder*
+|RLP-132431 - CDEM Vulnerability, Snooze, and Toop risks widget.
+
+|===
+
+//[#changes-in-existing-behavior]
+//=== Changes in Existing Behavior
+
+//[cols="50%a,50%a"]
+//|===
+//|*Feature*
+//|*Description*
+//|===
+
+
