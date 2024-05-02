@@ -2,7 +2,15 @@
 
 This guide provides an overview of Prisma Cloud's on-premises architecture.
 
-=== On-Prem Connectivity Architecture
+=== On-Prem Connectivity  
+
+Prisma Cloud uses Transporter, a dedicated service deployed in the client's cluster, to establish secure communication channels. This allows Prisma Cloud to send requests to the client, initiating tasks such as scans. Client-initiated communication with Prisma Cloud happens directly, bypassing the Transporter.  
+There are two main options to connect your Version Control System (VCS) to Prisma Cloud for automated scanning:
+
+* *Ingress in the Cluster*: This option leverages the existing Ingress functionality within your Kubernetes cluster. Ingress acts as a single entry point for routing external traffic to services within your cluster. In this scenario, the Prisma Cloud Transporter receives traffic from the VCS via the Ingress controller. For more information on configuring Ingress within your cluster, refer to the on-prem installation section.   
+*Direct Connection*: Establish a direct connection from the VCS to the Prisma Cloud Transporter Server. This direct connection is to the Prisma Cloud API. Transporter Server is not involved in the process.
+
+NOTE: Typically, only the Transporter client communicates with the Transporter Server. Other calls to Prisma Cloud go directly to the Prisma Cloud API without involving the Transporter Server.
 
 The following example diagram describes on-prem connectivity.
 
@@ -169,6 +177,7 @@ NOTE: In the fix workflow, the difference between the Periodic and PR scan flows
 
 . *VCS Integration*: The PR Fixes service automatically updates the existing PR in your VCS with the suggested fix. This update includes comments containing the details of the suggested fix.
 
+////
 === Connecting to Prisma Cloud.
 
 There are two main ways to connect your version control system (VCS) to Prisma Cloud for automated scanning:
@@ -178,3 +187,4 @@ There are two main ways to connect your version control system (VCS) to Prisma C
 * *Direct Connection*: Alternatively, you can establish a direct connection from the VCS to the Prisma Cloud Transporter Server. This direct connection is to the Prisma Cloud API. Transporter Server is not involved in the process.
 
 NOTE: Typically, only the Transporter client communicates with the Transporter Server. Other calls to Prisma Cloud go directly to the Prisma Cloud API without involving the Transporter Server.
+////
