@@ -1,0 +1,73 @@
+[#features-at-a-glance]
+== Prisma Cloud Data Securityに含まれるもの
+
+* カナダ、EMEA、および米国リージョンの Prisma Cloud テナントに対する Azure Blob Storage および AWS S3 のサポート。
++
+[NOTE]
+====
+カナダで Prisma Cloud テナントを使用している場合、Prisma Cloud Data Security が有効になり、Data Security、Enterprise DLP、および Wildfire サービスが北米で実行されます。データ主権について懸念がある場合は、Prisma Cloud カスタマー サポート担当者にお問い合わせください。
+====
+
+* Prima Cloud Data Securityモジュールの使用料が請求される前に、テナントごとに3クレジットを提供するFreemiumエクスペリエンス。データがFreemiumのしきい値を超えると、Prisma Cloud Enterprise Editionライセンスのクレジットを使用します。無料の3クレジットを600GBの公開スキャンまたは100GBの機密性の高いマルウェアスキャンに適用できます。その後、スキャン機能に基づいてコストが調整されます。フル スキャンの場合、選択されたすべてのデータは公開に対して *5 クレジット/TB* でスキャンされますが、 xref:administration/configure-data-security/monitor-data-security-scan/supported-file-extensions.adoc[分類] 可能なデータとマルウェアのみがフル スキャン (公開、マルウェア、感度分析) に対して *30 クレジット/TB* で課金されます。
++
+[NOTE]
+====
+圧縮ファイルの実際のボリュームは、スキャン時に決定されます。
+====
+
+
+* Prisma Cloud で Azure サブスクリプション アカウントと AWS アカウントをオンボードするときに、すべてまたは選択したストレージ リソースをスキャンする機能。クラウドアカウントを追加するときに、前方スキャンまたは後方スキャンを有効にすることを選択できます。
++
+
+各テナントのデフォルトのスキャン割り当ては1500クレジットです。この割り当てにより、スキャンされるデータの量を制御できるため、組織のDLP予算をスキャンされるデータの量に合わせることができます。この1500クレジットの制限は調整可能で、Prisma Cloud Customer Successでサポートチケットを開いてコストを増やし、コストのバランスをとることができます。また、Prisma Cloud Data Securityを使用して保護対象ファイルタイプをスキャンすることもできます。
++
+[NOTE]
+====
+Prisma Cloud Data Securityは、AWSS3バケットに保存されているオブジェクトを読み取ってスキャンする必要があります。サポートされている暗号化の種類は、Amazon S3 で作成および管理されたキー (SSE-S3)、および AWS 管理またはカスタマー管理の AMS KMS キーです。 Prisma Cloud IAM ロールに xref:troubleshoot-data-security-errors.adoc[適切なアクセス許可] を付与すると、Prisma Cloud は、顧客管理の暗号化キーを使用して暗号化された S3 バケット内のファイルをスキャンできます。
+====
+
+
+* AWSの場合、Prisma Cloudは新しいデータダッシュボード、データインベントリ、オブジェクトエクスプローラでS3バケットとオブジェクトの可視化、公開、分類を提供します。
++
+** 標準ストレージクラスのS3オブジェクトは、スキャン用にのみ取り込まれます。
+
+** マルウェアスキャンの場合:
++
+*** 圧縮されていないファイルのサイズは 100 MB 未満である必要があります。例えば、ファイルサイズが100MB以上であるが、100MB未満に圧縮されている場合、ファイルは正常にスキャンされません。
+
+** データ分類スキャンの場合:
++
+*** .avro、.csv、.json、.ORC、.parquet、および .txt ファイルは 2.5 GB 未満である必要があります。
+
+*** それ以外のxref:administration/configure-data-security/monitor-data-security-scan/supported-file-extensions.adoc[ファイル形式]の場合は、解凍後のファイルサイズが20MB未満であることが必要です。例えば、ファイルサイズが20MBであるが、20MB未満に圧縮されている場合、ファイルは正常にスキャンされません。
+
+** MLベースの分類スキャンの場合、ファイルサイズは1MB未満である必要があります。
++
+[NOTE]
+====
+Prisma Cloud Data Securityは、Palo Alto NetworksのEnterprise DLPおよびWildFireサービスを使用して、機密データおよびマルウェアのS3オブジェクトを処理およびスキャンします。S3オブジェクトが分析のためにEnterprise DLPに送信されると、これらのオブジェクトはPrisma CloudのS3バケットに24時間未満一時的に保存され、その後削除されます。さらに、.avro を含むファイル、.ORC および .parquet 拡張機能は最大 7 日間保存されます。Enterprise DLPは、ファイルにデータ分類の判定を提供した後、データを保持しません。WildFireによって処理されたファイルは、https://www.paloaltonetworks.com/resources/datasheets/wildfire-privacy-datasheet[Wildfire]の標準保管ポリシーに準じています。
++++<draft-comment>マルウェアは10年間保存され、一方で良性ファイルは14日間保存さ れます。</draft-comment>+++
+====
+
+
+* Azureの場合、Prisma Cloudは以下のデータの種類とサイズをサポートしています。
++
+** データ分類のスキャンは、ファイルサイズが20MB未満であることが必要です。
+
+** マルウェア スキャンの場合、ファイル サイズは 20MB 未満である必要があります。
+
+** すべてのファイル タイプのxref:administration/configure-data-security/monitor-data-security-scan/exposure-evaluation.adoc[公開評価] 。
++
+[NOTE]
+====
+Prisma Cloud は、Azure の .avro、.csv、.json、.ORC、.parquet、および .txt ファイル タイプをサポートしていません。
+====
+
+
+* 機密情報の公開を検出するためのデフォルトのデータポリシー。データポリシーはPrismaCloudでアラートを生成し、PrismaCloudでサポートされている外部統合チャネルへの通知をセットアップできます。さらに、カスタムデータプロファイルとパターンを作成し、それらをポリシーで使用して、セキュリティのニーズに合わせてコンテンツをスキャンできます。
+
+* Config RQLとの統合により、ストレージリソース内のすべてのオブジェクト（公開、データプロファイル、マルウェア検出を含む）をリソースエクスプローラーに表示します。
+
+* データセキュリティポリシー違反のアラートは、Amazon SQS、Webhook、Splunk、Azure Service Busとの統合にのみ転送できます。
+
+//removed per Slack message from Patrick because we do not want to advertise this. [NOTE] ==== Prisma Cloud Data Security needs to read data stored on your AWS S3 buckets and Azure Blob Storage for scanning them. If you want Prisma Cloud to pay for the cost incurred for the data transfer charges, you must configure https://docs.aws.amazon.com/AmazonS3/latest/dev/RequesterPaysBuckets.html[Requester Pays] on each bucket on which you enable PCDS. ====

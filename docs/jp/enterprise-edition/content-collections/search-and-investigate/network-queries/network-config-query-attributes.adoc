@@ -1,0 +1,209 @@
+== ネットワーク設定クエリー属性
+
+//Learn about Network Configuration Query attributes using Cloud Network Analyzer.
+
+Prisma Cloud のクラウドネットワークアナライザーエンジンは、*source（送信元）*から*destination（宛先）*までのルーティングパスと、そのネットワークパス内のすべてのネットワークセキュリティポリシーのネットワークの有効性から、クラウドアセットの外部エクスポージャーを計算します。`ネットワークwhereからの設定`クエリを使用できます。検索式が有効で完全な場合、クエリ結果とともに緑色のチェックマークが表示されます。
+
+//You can save the searches that you have created in *My Saved Searches*, which enables you to use the same query at a later time, instead of typing the query again. You can also use the saved search to create a policy.
+//image::config-from-network-where-options-query.png[scale=40]
+
+各属性を使って、検索基準を絞り込むことができます。これらの属性を使用する場合、自動提案機能が各属性に適した式やxref:../rql-operators.adoc[演算子]を表示します。ネットワーク設定クエリを有効にするには、少なくとも1つの`source`、1つの`dest`（宛先）、1つの`cloud.type`の属性をそれぞれ指定する必要があります。RQLクエリでは、`and`演算子のみ使用できます。単一の値を指定する場合は`=`を使用し、コンマ区切り値 (csv) を指定する場合は`in`を使用します。
+
+[NOTE]
+====
+xref:../../administration/trusted-ip-addresses-on-prisma-cloud.adoc[Prisma Cloudで信頼されたIPアドレス]として定義しておらず、クラウド環境の一部ではないIPアドレスやCIDRは、UNTRUST_INTERNETと見なされます。
+====
+
+*  `source/dest.network`
++
+`source/dest.network`属性を使用して、信頼されていない公開されたインターネット IPをすべて検索します。インターネットIPは、`1.2.3.4/32`などのIP CIDR形式で指定します。
+
+*  `address.match.criteria`
++
+`address.match.criteria`属性は任意であり、`source/dest.network`属性と組み合わせて使用します。
++
+この基準では、IPアドレスに`full_match`または`partial_match`を使用できます。以下に例を示します。
++
+** *full_match* — IP範囲20.0.0.0/24に`address.match.criteria = 'full_match'` を使用すると 、クラウドネットワークアナライザエンジンはセキュリティ ポリシーで20.0.0.0/24と一致するすべてのホストアドレスを検索します。
+
+** *partial_match* - IP範囲20.0.0.0/24 に`address.match.criteria = 'partial_match'`を使用すると 、クラウドネットワークアナライザ エンジンはセキュリティ ポリシーで20.0.0.0/24と一致するホストアドレスの少なくとも1つを検索します。
++
+*クエリ例：*
++
+`config from network where source.network = '20.0.0.0/24' and address.match.criteria = 'partial_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )`
+
+*  `source/dest.resource.type`
++
+インスタンス、インターフェイス、PaaSまたはサービスエンドポイントなど特定のリソースタイプの真のネットワーク露出は、`source/dest.resource.type`属性で検索します。
+
+*  `source/dest.cloud.type`
++
+検索オプションを特定のクラウドに限定するには、`source/dest.cloud.type`属性を使用します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS'`
+
+* (任意) `source/dest.resource.state`
++
+`source/dest.resource.state`属性を使用して、状態が実行中または非アクティブのEC2インスタンスや、Prisma Cloudで停止状態のEC2インスタンスなど、アクティブまたは非アクティブのリソースを検索します。クエリで`source/dest.resource.state`を指定しなければ、RQLクエリでは、アクティブなリソースと非アクティブなリソースの両方が結果に表示されます。
++
+*クエリ例：*
++
+\`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.resource.state = 'Active'`
+
+* （任意）`source/dest.cloud.account`
++
+Prisma Cloudに接続している1つ以上のクラウドアカウントに検索範囲を限定するには、`source/dest.cloud.account`属性を使用します。
++
+*クエリ例：*
++
+`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.account in ( '345744466724', '667116190384' )`
++
+\`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.account = '345744466724'`
+
+* （任意）`source/dest.cloud.region`
++
+`source/dest.cloud.region`属性を使用して、1つ以上のクラウドリージョン内のソースの場所に基づいて検索範囲を絞り込みます。
++
+*クエリ例：*
++
+\`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.region = 'AWS Virginia'`
++
+`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.cloud.region in ( 'AWS Virginia', 'AWS Ohio' )`
+
+* （任意）`source/dest.cloud.instance.id`
++
+EC2インスタンスの露出は、そのリソースIDに基づいて、`source/dest.cloud.instance.id`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.id = 'i-07c6c16595ed9196b'`
++
+`config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.id in ( 'i-0a0e018fc73917ba7' , 'i-0a0e018fc73917ba7' )`
+
+* （任意）`source/dest.instance.image.id`
++
+`source/dest.instance.image.id`属性を使用して、特定のイメージ IDの仮想マシンを検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.image.id = 'ami-0fe8c3a9b6b9b3c6e'`
+
+* （任意）`source/dest.instance.product.code`
++
+`source/dest.instance.product.code`属性を使用して、特定の製品コードの設定仮想マシンを検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and dest.instance.image.product.code = '5tiyrfb5tasxk9gmnab39b843'`
+
+* （任意）`source/dest.cloud.interface.id`
++
+EC2クラウドリソースの露出は、そのIDに基づいて、`source/dest.cloud.interface.id`属性で検索します。
+
+* （任意）`source/dest.network.interface.id`
++
+ネットワークインターフェースの露出は、そのIDに基づいて`source/dest.network.interface.id`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.id = 'eni-083bb56febfd55383'`
+
+* （任意）`source/dest.network.interface.owner`
++
+ネットワークインターフェースの露出は、 その所有者に基づいて`source/dest.network.interface.owner`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner = 'amazon-rds'`
+
+* （任意）`source/dest.network.interface.type`
++
+ネットワークインターフェースの露出は、インターフェースタイプに基づいて、`source/dest.network.interface.type`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.type = 'Lambda'`
+
+* （任意）`source/dest.security.group.id`
++
+インターフェイスの露出は、ネットワークインターフェイスに関連付けられているセキュリティグループに基づいて`source/dest.security.group.id`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.security.group.id = 'sg-04242ff5c55da0c84'`
+
+* （任意）`source/dest.service.name`
++
+VPCサービスエンドポイントの露出は、サービス名に基づいて、`source/dest.service.name`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.resource.type = 'Instance' and dest.resource.type = 'Service Endpoint' and source.vpc.id = 'vpc-079e9bb7bc4ba9db2' and dest.vpc.id = 'vpc-079e9bb7bc4ba9db2' and dest.service.name = 'com.amazonaws.us-east-1.secretsmanager'`
+
+* （任意）`source/dest.subnet.id`
++
+ネットワークインターフェースの露出は、サブネットIDに基づいて、`source/dest.subnet.id`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.network.interface.id = 'subnet-0d8b58217812f9c42'`
+
+* （任意）`source/dest.tag`
++
+ネットワークインターフェースまたは仮想マシンの露出は、リソースタグのペアに基づいて、`source/dest.tag`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.tag = 'env=prod'`
+
+* （任意）`source/dest.vpc.id`
++
+ネットワークインターフェースまたは仮想マシンの露出は、VPC ID に基づいて、`source/dest.vpc.id`属性で検索します。
++
+*クエリ例：*
++
+\`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.vpc.id = 'vpc-079e9bb7bc4ba9db2'`
+
+* （任意）`excluded.networks`
++
+`excluded.networks`属性を使用して、一定のIP/IPv6 CIDRブロックをネットワークパス解析の計算から除外します。これは、`source.network = UNTRUST_INTERNET``dest.network = UNTRUST_INTERNET` RQL属性を使用する場合にのみ役立ちます。
++
+*クエリ例：*
++
+`config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and excluded.networks in ( '1.2.3.4/32', '100.0.0.0/24' )`
+
+* （任意）`alert.on`
++
+`alert.on`属性は、ポリシーとしてRQLクエリが使用されている場合にのみ適用されます。
++
+*クエリ例：*
++
+` config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS'  and alert.on = 'DestVPC'`
+
+* （任意）`protocol.ports`
++
+`protocol.ports`属性を使用して、特定のプロトコルと宛先ポートを検索します。これらのポートは、以下の形式で指定します。
++
+** UDP
+
+** tcp
+
+** tcp/22
+
+** tcp/20:50
+
+** icmp/code/type
+
+** tcp/22,443,3389,1000:5000
+
+* （任意）`effective.action`
++
+`effective.action`属性を使用して、指定された送信元から宛先へのネットワークトラフィックを許可または拒否するネット実効アクションを検索します。オプションは次のとおりです：
++
+** 許可:ルーティングパスがあり、セキュリティポリシーでトラフィックが許可されます。
+
+** 拒否：ルーティングパスはありますが、セキュリティ ポリシーでトラフィックは拒否されます。
+
+** [any]

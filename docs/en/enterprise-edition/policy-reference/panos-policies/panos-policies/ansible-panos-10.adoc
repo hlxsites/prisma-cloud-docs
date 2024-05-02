@@ -1,0 +1,54 @@
+== End-of-session logging disabled on Palo Alto Networks security policies
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| d7b88f49-8ff1-4291-8c12-f4d5b1a0cb44
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyLoggingEnabled.yaml[CKV_PAN_10]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy checks whether security policies in Palo Alto Networks devices are configured to log at the end of a session. End-of-session logging is crucial for maintaining comprehensive security logs, providing valuable information for auditing and forensic analysis.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* log_end
+
+To mitigate this risk, ensure that the `log_end` attribute in your `panos_security_rule` resources is either set to 'true' or not set at all (since the default value is true).
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  ...
+  tasks:
+    - name: Security
+      paloaltonetworks.panos.panos_security_rule:
+        ...
+        log_setting: 'default'
+-        log_end: false
++        log_end: true
+----
+
+In this example, `log_end`` is set to true for each security rule, facilitating comprehensive logging and enhancing the security posture through better visibility into session activities.
+

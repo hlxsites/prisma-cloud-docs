@@ -1,0 +1,50 @@
+== OCI Network Security Groups (NSG) has stateful security rules
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/oci/SecurityGroupsIngressStatelessSecurityRules.py[CKV_OCI_21]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that a security group has stateless ingress security rules. The security group is a set of firewall rules controlling traffic to your resources. Stateless ingress rules mean the system doesn't keep track of the traffic state. This is potentially detrimental because the system can't differentiate between legitimate responses to requests from your computer and unsolicited traffic. Therefore, it could allow harmful traffic to infiltrate your system, leading to possible security vulnerabilities, data breaches or misuse of resources. Consequently, it is best practice to utilize stateful rules where the traffic state is monitored, and responses are only permitted to legitimate requests.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+To fix this issue, you should specify the "stateless" attribute for ingress security rules in your code and set it to False. Once you do this, the security group ingress rules will be stateful, which means they automatically create egress rule for returning traffic.
+
+[source,go]
+----
+resource "oci_core_security_list" "example" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.example.id
+
+  ingress_security_rules {
+    protocol    = "6"
+    source      = "0.0.0.0/0"
+    stateless   = false
+  }
+} 
+----
+
+The above code is secure since it makes the ingress security rules stateful. Stateless security rules don't automatically allow returning traffic, which can lead to interrupted network connections if not properly managed. By making the rules stateful, the system automatically manages returning traffic which reduces the risk of unexpected network interruptions.
+

@@ -1,0 +1,872 @@
+== Prisma Cloudコンソールに対するアクセス権限を有効化
+// List of NAT Gateway IP addresses for Prisma® Cloud and the URLs/domains that you must add to an allow list.
+
+クラウド環境の継続的な接続と監視を確保するために、Prisma Cloud を構成するさまざまなコンポーネントによって使用される次の IP アドレスとホスト名を許可します。
+
+[#idcb6d3cd4-d1bf-450a-b0ec-41c23a4d4280]
+=== Prisma Cloud用NATゲートウェイIPアドレス
+Prisma**®** Cloudは次のNATゲートウェイIPアドレスを使用しています。Prisma Cloudとインシデント対応ワークフローとの間で有効にした統合、またはエージェントレス展開、Prisma Cloud DefendersとPrisma Cloud Compute Consoleとの通信のためのAPIにアクセスできるようにするには、リストを確認し、許可リストのIPアドレスを更新してください。
+
+災害による障害が発生した場合は、データのバックアップを適時に行えるように、災害復旧（DR）IPアドレスを許可リストに追加します。
+
+これらの IP アドレスを許可リストに追加するには、ネットワークセキュリティチームと協力する必要がある場合があります。許可リストを設定する構成はネットワークアーキテクチャによって異なり、ファイアウォール、プロキシ、またはサーバー自体である可能性があります。
+
+* Prisma Cloud URLは、テナントがデプロイされているリージョンを示します。例えば、URLがhttps://app3.prismacloud.io/.である場合は、テナントがapp3上に置かれます。
+
+* *Runtime Security （ランタイムセキュリティ）> Manage（管理）> System（システム）> Utilities（ユーティリティ）*で、*Path to Console（コンソールへのパス）*のURLからリージョンを検索します。このリージョンを使用して、Prisma Cloud Computeコンソールにアクセスするために信頼できるIPアドレスとして許可または追加する必要がある宛先IPアドレスを識別します。たとえば、URLが次の場合、 https://us-west1.cloud.twistlock.com/us-xxxxxx, *us-west1*はコンピュートコンソールのリージョンを示します。
+
+次の表を使用して、許可する IP アドレスを確認します。*Egress*-From Defendersからコンソールへの出口。*Ingress*-Fromコンソールから、お客様の環境に入ります。
+
+たとえば、https://app3.prismacloud.io/である app3 では、エグレス IP アドレス `34.82.51.12`のアウトバウンド セキュリティ ルールが必要になります。
+コンピューティングでは、エージェントレス および Defender 展開の通信のために、コンソールへのアウトバウンド ルールのみが必要です。
+環境にアラートを送信するには、インバウンド セキュリティ ルールを Ingress IP アドレス`104.198.109.73`に追加します。
+
+[NOTE]
+====
+Prisma Cloud DefendersをKubernetesクラスターにインストールするには、Prisma Cloudコンピュートコンソールに接続できるだけでなく、クラスター内のノードがregistry-auth.twistlock.comのPrisma Cloudクラウドレジストリにアクセスできる必要があります。
+====
+
+image::get-started/access-pc-visualization.png[]
+
+[cols="26%a,25%a,26%a,24%a"]
+|===
+|Prisma Cloud URL（AWSリージョン）
+|許可する送信元IPアドレス (Ingress)
+|コンピュートSaaSコンソールリージョン（GCP）
+|許可するDR IPアドレス
+
+
+|* app.prismacloud.io* us-east-1 (N.Virginia)
+|3.210.133.47
+
+34.235.13.250
+
+44.207.239.90
+
+3.217.51.44
+
+3.218.144.244
+
+34.199.10.120
+
+34.205.176.82
+
+34.228.96.118
+
+52.201.19.205
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 54.147.35.106
+
+* 3.210.87.2
+|*us-east1（サウスカロライナ州）*
+
+出口：34.75.54.101
+
+入口：34.74.84.51
+|52.25.108.159/32
+
+34.213.129.111/32
+
+44.242.81.208/32
+
+52.40.100.6/32
+
+54.71.172.241/32
+
+44.236.217.120/32
+
+
+|*app2.prismacloud.io* us-east-2 (オハイオ州)
+|18.116.185.157
+
+18.223.154.151
+
+3.136.199.10
+
+3.16.7.30
+
+13.59.164.228
+
+18.191.115.70
+
+18.218.243.39
+
+18.221.72.80
+
+18.223.141.221
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 3.139.149.174
+
+* 3.132.209.81
+|*us-east1（サウスカロライナ州）*
+
+出口：34.75.54.101
+
+入口：34.74.84.51
+|54.176.152.228/32
+
+54.193.231.56/32
+
+54.219.105.0/32
+
+52.8.73.14/32
+
+52.52.91.251/32
+
+54.215.34.77/32
+
+
+|*app3.prismacloud.io* us-west-2 (オレゴン州)
+|44.233.39.196
+
+52.12.85.11
+
+54.70.207.107
+
+34.208.190.79
+
+52.24.59.168
+
+52.39.60.41
+
+52.26.142.61
+
+54.213.143.171
+
+54.218.131.166
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 52.35.163.8
+
+* 44.231.203.74
+
+* 44.231.142.62
+|*us-west1（オレゴン州）*
+
+出口：35.230.69.118 
+
+入口：104.198.109.73
+|34.192.147.35/32
+
+34.205.10.23/32
+
+54.221.206.73/32
+
+54.145.56.75/32
+
+54.152.99.85/32
+
+52.73.209.182/32
+
+
+|* app4.prismacloud.io* us-west-1 (N.California)
+|184.72.47.199
+
+54.193.251.180
+
+54.241.31.130
+
+13.52.27.189
+
+13.52.105.217
+
+13.52.157.154
+
+13.52.175.228
+
+52.52.50.152
+
+52.52.110.223
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 50.18.117.136
+
+* 54.215.44.246
+|*us-west1（オレゴン州）*
+
+出口：35.230.69.118 
+
+入口：104.198.109.73
+|3.18.55.196/32
+
+3.18.59.163/32
+
+3.141.248.48/32
+
+3.135.129.242/32
+
+3.22.165.22/32
+
+3.141.146.82/32
+
+
+|* app5.prismacloud.io* us-east-2 (オハイオ州)
+|3.128.141.242
+
+3.129.241.104
+
+3.130.104.173
+
+3.136.191.187
+
+13.59.109.178
+
+18.190.115.80
+|*us-east1（サウスカロライナ州）*
+
+出口：34.75.54.101
+
+入口：34.74.84.51
+|
+
+
+|* app.anz.prismacloud.io* ap-southeast-2 (シドニー)
+|13.55.65.214
+
+3.104.84.8
+
+54.66.162.181
+
+3.104.252.91
+
+13.210.254.18
+
+13.239.110.68
+
+52.62.75.140
+
+52.62.194.176
+
+54.66.215.148
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 52.64.90.100
+
+* 54.206.227.53
+|*asia-northeast1（日本、東京*または*australia-southeast1（オーストラリア、シドニー）*
+
+出口：35.194.113.255または35.244.121.190
+
+入口：35.200.123.236または35.189.44.184
+|
+
+
+|*app.ca.prismacloud.io* ca-central-1 (カナダ - 中部)
+|3.97.19.141
+
+3.97.195.202
+
+3.97.251.220
+
+15.223.59.158
+
+15.223.96.201
+
+15.223.127.111
+
+52.60.127.179
+
+99.79.30.121
+
+35.182.209.121
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 35.183.55.7
+
+* 3.98.207.92
+|*northamerica-northeast1（モントリオール、ケベック州）*
+
+出口：35.203.59.190
+
+入口：35.203.31.67
+|
+
+
+|*app.prismacloud.cn* cn-northwest-1 (寧夏)
+|52.82.89.61
+
+52.82.102.153
+
+52.82.104.173
+
+52.83.179.1
+
+52.83.70.13
+
+52.83.77.73
+|コンピュートSaaSはサポートされていません
+|
+
+
+|*app.ind.prismacloud.io*
+|13.126.142.108
+
+3.108.78.191
+
+65.0.233.228
+
+15.207.175.101
+
+15.207.56.212
+
+3.108.163.21
+
+3.109.149.80
+
+35.154.114.39
+
+65.1.154.7
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 65.0.226.192
+
+* 13.127.213.101
+
+|*asia-south1-a（ムンバイ）*
+
+出口：35.200.249.161
+
+入口：35.200.140.118
+|
+
+
+|*app.uk.prismacloud.io* eu-west2 ( (ロンドン))
+|13.42.159.205
+
+3.8.248.150
+
+35.176.28.215
+
+3.9.200.0
+
+18.133.126.85
+
+18.134.251.157
+
+18.168.9.241
+
+18.168.51.89
+
+35.176.57.39
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 3.9.243.250
+
+* 18.133.59.44
+|*europe-west2（ロンドン）*
+
+出口：34.105.197.208
+
+入口：34.89.87.128
+|
+
+
+|*app.eu.prismacloud.io* eu-central-1 (フランクフルト)
+|18.184.42.114
+
+3.73.209.143
+
+3.75.34.63
+
+3.121.64.255
+
+3.121.248.165
+
+3.121.107.154
+
+18.184.105.224
+
+18.185.81.104
+
+52.29.141.235
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 3.69.215.10
+
+* 18.159.139.221
+|*europe-west3（ドイツ、フランクフルト）*
+
+出口：34.107.65.220
+
+入口：34.107.91.105
+|34.247.199.145/32
+
+3.248.43.139/32
+
+54.73.199.140/32
+
+52.209.24.141/32
+
+52.211.138.79/32
+
+52.208.61.249/32
+
+
+|*app2.eu.prismacloud.io* eu-west-1 (アイルランド)
+|52.208.88.215
+
+54.170.230.172
+
+54.72.135.50
+
+18.200.200.125
+
+3.248.26.245
+
+99.81.226.57
+
+52.208.244.121
+
+18.200.207.86
+
+63.32.161.197
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 54.170.182.84
+
+* 79.125.19.221
+|*europe-west3（ドイツ、フランクフルト）*
+
+出口：34.89.249.72, 34.107.65.220
+
+入口：34.107.91.105
+|3.65.146.60/32
+
+18.198.160.165/32
+
+18.194.43.28/32
+
+3.65.81.38/32
+
+3.65.16.200/32
+
+3.65.81.86/32
+
+|*app.fr.prismacloud.io* eu-west-3 (パリ)
+|13.36.26.86
+
+13.37.138.49
+
+13.37.20.19
+
+15.188.106.72
+
+15.188.116.74
+
+13.38.189.211
+
+15.188.209.236
+
+15.188.0.67
+
+35.181.110.153
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 35.180.236.144
+* 52.47.148.170
+|*europe-west9 (フランス、パリ)*
+
+出口：34.163.186.175
+
+入口：34.163.33.98
+|
+
+
+|*app.gov.prismacloud.io* us-gov-west-1 (AWS GovCloud US-West)
+|15.200.146.166
+
+15.200.89.211
+|*us-west1（オレゴン州）*
+
+出口：35.230.69.118 
+
+入口：104.198.109.73
+|
+
+
+|*app.jp.prismacloud.io* ap-northeast-1 (東京)
+|18.178.170.193
+
+18.182.113.156
+
+3.114.23.157
+
+13.114.192.248
+
+13.230.74.246
+
+18.180.127.96
+
+35.75.84.20
+
+35.76.22.242
+
+54.249.107.1
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 35.79.185.43
+
+* 54.178.36.219
+|*asia-northeast1-a (東京、日本、アジア太平洋地域)*
+
+出口：35.200.123.236
+
+入口：35.194.113.255
+|
+
+
+|*app.sg.prismacloud.io* ap-southeast-1 (シンガポール)
+|13.251.200.128
+
+18.136.72.0
+
+18.139.106.36
+
+13.250.248.219
+
+18.139.183.196
+
+52.76.28.40
+
+52.76.70.227
+
+52.221.36.124
+
+52.221.157.53
+
+トランスポーターとアプリケーションセキュリティをセルフホスト コード環境などのネットワーク制限と統合する場合に必要です。
+
+* 3.0.37.2
+
+* 54.251.48.202
+|*asia-southeast1（シンガポール）*
+
+出口：35.198.194.238
+
+入口：34.87.137.141
+|
+
+
+|*Prisma Cloud US上のデータセキュリティ*
+|3.128.230.117
+
+3.14.212.156
+
+3.22.23.119
+
+20.9.80.30
+
+20.9.81.254
+
+20.228.128.132
+
+20.228.250.145
+
+20.253.198.116
+
+20.253.198.147
+|
+|
+
+
+|*Prisma Cloud EUのデータセキュリティ*
+|3.64.66.135
+
+18.198.52.216
+
+3.127.191.112
+
+20.223.237.240
+
+20.238.97.44
+
+20.26.194.122
+
+51.142.252.210
+
+51.124.198.75
+
+51.124.199.134
+|
+|
+
+|===
+
+
+コンプライアンス上の理由により、バックアップ/ディザスタリカバリ（DR）IPアドレスは一部の地域ではサポートされていません。
+
+
+[#id82dc870f-ce5b-45c9-a196-f4d069cf94a2]
+=== PrismaCloud管理コンソール
+
+Prisma Cloudユーザーインターフェースを使用するには、以下のドメインへのアクセスを許可します。
+
+* Palo ALto Networksサブドメイン。
++
+{asterisk}.paloaltonetworks.comを追加すると、以下のすべてのURLを含めることができます。
++
+** apps.paloaltonetworks.com
+
+** autofocus.paloaltonetworks.com
+
+** docs.paloaltonetworks.com
+
+** identity.paloaltonetworks.com
+
+** live.paloaltonetworks.com
+
+** login.paloaltonetworks.com
+
+** support.paloaltonetworks.com
++
+Prisma Cloud 管理コンソールには、いくつかの追加 URL も必要です。
+
+* Prisma CloudテナントURL
++
+Prisma CloudのURLは、テナントが展開されている地域やクラスタによって異なります。Welcomeメールには、プロビジョニングされたテナント固有の、以下のいずれかのURLが含まれます。
++
+** https://app.prismacloud.io
+** https://app2.prismacloud.io
+** https://app3.prismacloud.io
+** https://app4.prismacloud.io
+** https://app5.prismacloud.io
+** https://app.anz.prismacloud.io
+** https://app.ca.prismacloud.io
+** https://app.eu.prismacloud.io
+** https://app2.eu.prismacloud.io
+** https://app.fr.prismacloud.io
+** https://app.gov.prismacloud.io
+** https://app.ind.prismacloud.io
+** https://app.jp.prismacloud.io
+** https://app.sg.prismacloud.io
+** https://app.prismacloud.cn
+** https://app.uk.prismacloud.io
+
+* Prisma Cloud APIインターフェース
++
+api{asterisk}.{asterisk}.prismacloud.io.Prisma Cloudテナントのhttps://pan.dev/prisma-cloud/api/cspm/api-urls/[API URL]を参照してください。
+
+* Prisma Cloudのサインインとステータス更新に関連するURL
++
+** assets.adobedtm.com
+** cloudfront.net
+** dpm.demdex.net
+** google.com
+** google.com/recaptcha/
+** gstatic.com
+** gstatic.com/recaptcha/
+** polyfill.io
++
+* wss://{asterisk}.prismacloud.io
++
+* クラウドワークロード保護（CWP）機能
++
+{asterisk}.twistlock.com。Prisma Cloud コンソールの*Compute（コンピュート）*タブで利用可能なCWP機能にアクセスします。
+
+* クラウドネットワークセキュリティ（CNS）/マイクロセグメンテーション機能
++
+{asterisk}.network.prismacloud.io。Prisma Cloudコンソールの*Network Security（ネットワークセキュリティ）*タブで有効になっているマイクロセグメンテーション機能にアクセスします。
+
+* アプリケーションセキュリティ機能
++
+** {asterisk}.bridgecrew.cloud。Prisma CloudコンソールのApplication Security and Settings（アプリケーションセキュリティと設定）タブで有効になっているアプリケーションセキュリティ機能です。アプリケーションセキュリティのカスタマイズされたナビゲーションにアクセスするには、Prisma Cloud スイッチャーで[アプリケーションセキュリティ]を選択していることを確認してください。アプリケーション \セキュリティ設定は [設定] の下にあります。
+
+//** To onboard a VCS/SCM integration or to scan Pull Requests, enable outbound communication from the VCS provider / on-prem server to the following IP addresses:
+
+//*** 10.236.14.127
+//*** 10.236.9.16
+
+** Checkov を使用してリポジトリをスキャンし、結果を報告する場合、以下の場合は次のドメインへのアクセスを許可する必要があります。
++
+パイプライン内でCheckovを実行しています。Checkovを実行しているマシンへのアクセスを有効にします。
++
+ローカルマシンでIDE拡張機能を実行している場合は、ローカルマシンでアクセスを有効にします。
+
+[cols="12%a,19%a,32%a,37%a"]
+
+|===
+|*Prisma Cloud URLはオンです*
+|*APIゲートウェイ*
+|*調査結果をアップロードするためのS3バケット*
+|*正しいS3バケットにルーティングするS3バケット*
+
+|app3
+|api3.prismacloud.io
+|bc-scanner-results-890234264427-prod.s3.us-west-2.amazonaws.com
+|bc-scanner-results-890234264427-prod.s3.us-west-2.amazonaws.com
+
+|app0
+|api0.prismacloud.io
+|bc-scanner-results-469330042197-prod.s3.us-east-1.amazonaws.com
+|bc-scanner-results-469330042197-prod.s3.us-west-2.amazonaws.com
+
+|app
+|api.prismacloud.io
+|bc-scanner-results-838878234734-prod.s3.us-east-1.amazonaws.com
+|bc-scanner-results-838878234734-prod.s3.us-west-2.amazonaws.com
+
+|app2
+|api2.prismacloud.io
+|bc-scanner-results-612480224350-prod.s3.us-east-2.amazonaws.com
+|bc-scanner-results-612480224350-prod.s3.us-west-2.amazonaws.com
+
+|app4
+|api4.prismacloud.io
+|bc-scanner-results-540411623009-prod.s3.us-west-1.amazonaws.com
+|bc-scanner-results-540411623009-prod.s3.us-west-2.amazonaws.com
+
+|app5
+|api5.prismacloud.io
+|bc-scanner-results-700766934309-prod.s3.us-east-2.amazonaws.com
+|bc-scanner-results-700766934309-prod.s3.us-west-2.amazonaws.com
+
+|app.ca
+|api.ca.prismacloud.io
+|bc-scanner-results-205367576728-prod.s3.ca-central-1.amazonaws.com
+|bc-scanner-results-205367576728-prod.s3.us-west-2.amazonaws.com
+
+|app.eu
+|api.eu.prismacloud.io
+|bc-scanner-results-836922451682-prod.s3.eu-central-1.amazonaws.com
+|bc-scanner-results-836922451682-prod.s3.us-west-2.amazonaws.com
+
+|app2.eu
+|api2.eu.prismacloud.io
+|bc-scanner-results-800009193461-prod.s3.eu-west-1.amazonaws.com
+|bc-scanner-results-800009193461-prod.s3.us-west-2.amazonaws.com
+
+|app.ind
+|api.ind.prismacloud.io
+|bc-scanner-results-018169107740-prod.s3.ap-south-1.amazonaws.com
+|bc-scanner-results-018169107740-prod.s3.us-west-2.amazonaws.com
+
+|app.fr
+|api.fr.prismacloud.io
+|bc-scanner-results-063178804405-prod.s3.eu-west-3.amazonaws.com
+|bc-scanner-results-063178804405-prod.s3.us-west-2.amazonaws.com
+
+|app-uk
+|api.uk.prismacloud.io
+|bc-scanner-results-580360239683-prod.s3.eu-west-2.amazonaws.com
+|bc-scanner-results-580360239683-prod.s3.us-west-2.amazonaws.com
+
+|app.jp
+|api.jp.prismacloud.io
+|bc-scanner-results-510882576293-prod.s3.ap-northeast-1.amazonaws.com
+|bc-scanner-results-510882576293-prod.s3.us-west-2.amazonaws.com
+
+|app.sg
+|api.sg.prismacloud.io
+|bc-scanner-results-277833049433-prod.s3.ap-southeast-1.amazonaws.com
+|bc-scanner-results-277833049433-prod.s3.us-west-2.amazonaws.com
+
+|app.anz
+|api.anz.prismacloud.io
+|bc-scanner-results-607751493482-prod.s3.ap-southeast-2.amazonaws.com
+|bc-scanner-results-607751493482-prod.s3.us-west-2.amazonaws.com
+
+|===
+
+
+* Adoption Advisor {asterisk}.ingest.sentry.io
+
+* Launch Darkly
++
+{asterisk}.launchdarkly.com。機能へのプレビューアクセスを有効にします。Launch Darklyのhttps://docs.launchdarkly.com/home/advanced/public-ip-list#accessing-launchdarkly-through-a-public-ip-range[パブリックIPアドレスリスト]も参照してください。
+
+* Pendo
++
+Prisma Cloudはアプリ内分析にPendoを使用しています。
++
+** app.pendo.io
+
+** data.pendo.io
+
+** cdn.pendo.io
+
+** us.pendo.io, {asterisk}.us.pendo.io
+
+** {asterisk}.storage.googleapis.com
+
+* 機能リクエストの送信
++
+** prismacloud.ideas.aha.io cdn.aha.io
+
+** secure.gravatar.com
+
+** s3.amazonaws.com
+
+* 画像とフォント
++
+** use.typekit.net
+
+** p.typekit.net
+
+** fonts.googleapis.com
+
+** {asterisk}.storage.googleapis.com
+
+** fonts.gstatic.com
+
+** mt.google.com
+
+* Palo Alto Support Portal and LiveCommunity
++
+** static.cloud.coveo.com
+
+** platform.cloud.coveo.com
+
+** nebula-cdn.kampyle.com
+
+** maxcdn.bootstrapcdn.com
+
+** use.fontawesome.com
+
+** ajax.googleapis.com
+
+** prod.hosted.lithcloud.com
+
+** static.hotjar.com
+
+** vars.hotjar.com
+
+** assets.adobedtm.com
+
+** paloaltonetworks.hosted.panopto.com
+
+** cdn.embed.ly
+
+** tag.demandbase.com
+
+** paloaltonetworks.d1.sc.omtrdc.net
+
+** cloudfront.net
+
+** cdn.pendo.io
+
+** data.pendo.io
+
+** firestore.googleapis.com
+
+** use.typekit.net
+
+** p.typekit.net
+
+** {asterisk}.youtube.com
+
+
+

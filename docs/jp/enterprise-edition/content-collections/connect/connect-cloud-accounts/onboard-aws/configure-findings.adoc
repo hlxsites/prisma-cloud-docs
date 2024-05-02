@@ -1,0 +1,64 @@
+:topic_type: タスク
+[.task]
+
+== 検出項目の構成
+
+Prisma Cloud は、AWS GuardDuty と Inspector から調査結果と脆弱性データを取り込みます。これを使用して、より有意義なインサイトを構築し、侵害された可能性のあるアセットの脆弱性を管理できます。Prisma Cloudでマルウェア対策を有効にして設定すると、スキャン中にマルウェアが検出された場合、追加の検出結果が生成され、Prisma Cloudで確認することができます。
+
+[NOTE]
+====
+* GuardDutyは現在、Prisma CloudにオンボーディングされたAWSスタンドアロンアカウントおよびメンバーアカウントでのみサポートされています。
+* GuardDuty またはインスペクターを使用して検出結果を設定する前に、EventBridge を有効にしてください。
+* Inspector は、スタンドアロンアカウントとしてオンボードされたアカウントに対してのみ使用できます。
+* 現在 Inspector Classic をご使用の場合は、構成を変更する必要はなく、そのままお使いいただけます。
+====
+
+[.procedure]
+
+. xref:onboard-aws-account.adoc[AWSアカウントのオンボーディング]、*[Settings（設定）] > [Providers（プロバイダー）] > [Cloud Accounts（クラウドアカウント）]*を順に選択します。
+
+. *ビュー*結果を設定する AWS アカウントの横にあるアイコンを選択します。そのアカウントに EventBridge が正しく設定されていることを確認してください。
+
+. *[構成ミス]*を選択します。
+
+. *Findings*にある、GuardDuty と Inspector の両方について [*無効*] ボタンを [*有効*] に切り替えます。
+
+. *検出項目の構成*を選択します。
++
+image::connect/configure-vul-findings-1.png[]
+
+. *構成の詳細*。
++
+image::connect/aws-guardduty-3.png[]
+
+.. *EventBridge クラウドフォーメーションテンプレートのダウンロード*を選択します。
++
+EventBridge CFTを導入する際の初期オンボーディングの一環として、Prisma CloudはAWS上にGuardDutyとInspectorのそれぞれ2つの個別のルールを作成します。選択に応じて、対応するルールが有効になります。
+
+.. AWS アカウントにログインし、手順に従ってスタックを作成します。
++
+* *AWS CloudFormationによってIAMリソースがカスタム名で作成される場合があることを承認する*を選択します
+* *［スタックの作成］*をクリックします。
+* ステータスが CREATE_COMPLETE と表示されるまで待ちます。
+
+. Prisma Cloud コンソールに戻ります。
+
+. *Next（次へ）*をクリックします。
+
+. *レビューステータス*。
++
+テンプレートが正常に実行されると、リージョンごとに *成功* メッセージが表示されます。
++
+リージョンの警告ステータスが表示されたら、[*Configure Details （構成の詳細）*] を選択し、CFT を再度ダウンロードして手順を完了します。
++
+image::connect/aws-guardduty-status-1.png[]
+
+. *Save（保存）*を選択します。
++
+アカウント概要ページの[*検出結果*]に[*成功*]メッセージが表示されることを確認します。
++
+*Investigate*で次のクエリを実行すると、AWS GuardDuty によって生成された脆弱性とマルウェアの検出結果、または AWS Inspector によって生成された脆弱性を確認します。
++
+\`config from cloud.resource where api.name = 'aws-iam-list-access-keys' AND finding.source = 'AWS GuardDuty'`
++
+image::connect/aws-guardduty-findings-1.png[]

@@ -1,0 +1,97 @@
+:topic_type: タスク
+[.task]
+[#idd1af59f7-792f-42bf-9d63-12d29ca7a950]
+== クラウドインフラストラクチャのアラート ルールの作成
+
+//Use alert rules to define the target cloud accounts and policies for which you want to generate alerts and send notifications to an external  destination.
+
+Prisma® Cloudは、クラウドアカウントを登録するとすぐにクラウド環境の監視を開始します。デフォルトのアラートルールは、Prisma Cloudが推奨するOOTBポリシーのみを含むデフォルトのアカウントグループが添付された、すぐに使える（OOTB）状態で含まれています。このポリシーのリストを表示するには、*Prisma_Cloud*ラベルでポリシーをフィルタリングします。たとえば、本番環境と開発クラウド環境で異なるアラートルールや通知フローを定義することができます。また、既存のSOC可視化ツールに特定のアラートを送信するための異なるアラートルールを設定することもできます。たとえば、1つのアラートセットをセキュリティ情報およびイベント管理（SIEM）システムに送信し、もう1つのアラートセットを自動発券のためにJiraに送信することができます。
+
+サードパーティ製ツールとのxref:../administration/configure-external-integrations-on-prisma-cloud/configure-external-integrations-on-prisma-cloud.adoc[Prisma Cloudで外部統合を構成]を行っている場合、きめ細かいアラートルールを定義して、クラウド環境内のポリシー違反に対するPrisma Cloudアラートを追加して、既存の運用、チケット発行、通知、エスカレーションワークフローを拡張するために必要なアラートのみを送信することができます。既存の統合を確認するには、*Settings（設定）> Integrations & Notifications （統合と通知）* を選択します。
+
+ワークロード保護のアラートルールを作成する場合は、xref:../governance/workload-protection-policies.adoc#create-alert-workload-policy[ワークロード保護]を参照してください。
+
+
+//When you create an alert rule, you can xref:view-respond-to-prisma-cloud-alerts.adoc[automatically remediate alerts], which enables Prisma Cloud to automatically run the CLI command required to remediate the policy violation directly in your cloud environments. Automated remediation is only available for default policies (Config policies only) that are designated as Remediable (image:remediable-icon.png[]).
+
+
+[.procedure]
+. *Alert（アラート）> View Alert Rules（アラートルールを表示）>Add Alert Rule（新しいアラートを追加）*の順に選択します。
+
+. *Add Details（詳細の追加）*で、アラートルールの*Name（名前）*を入力し、オプションで*Description（説明）*にルールの目的を伝えます。
+
+.. オプションの*Auto-Actions（自動アクション）*、*Alert Notifications（アラート通知）*、および*Auto-Remediation（自動修復）*の設定を事前に有効にすることができます。これらのオプションのいずれかを有効にすると、アラートルール作成プロセスの追加手順として表示されます。たとえば、*Alert Notifications（アラート通知）*を有効にすると、*Configure Notifications（通知の設定）*オプションが表示されます。
++
+[NOTE]
+====
+*Automated Remediation（自動修正）*を有効にした場合、ポリシーのリストにはRemediable（修正可能）ポリシーのみが表示されます。
+====
++
+.. *Next（次へ）*を選択します。
+
+. *ターゲットを割り当て*て、このアラートルールのアラートをトリガーするクラウドリソースの詳細度を高め、必要に応じてさらに基準を指定します。
+
+.. このアラートルールを適用する*Account Groups（アカウントグループ）*を選択します。
+
+.. 選択したアカウントグループから*クラウドアカウントとリージョンを除外する* - 選択したアカウントグループにアラートをトリガーしないクラウドアカウントとリージョンがある場合は、リストからアカウントとリージョンを選択します。
+
+.. リソースの種類を簡単に管理または特定するには、*Include Tag Resource Lists（タグリソースリストを含める）*を選択します - 選択したクラウドアカウントの特定のリソースに対してのみアラートをトリガーするには、クラウド環境内のリソースに対して作成したリソースタグの*キー*と*値*を入力します。タグは、*Config（設定）*および*Network（ネットワーク）*ポリシーにのみ適用されます。複数のリソースタグを追加する場合、論理演算子の論理和（OR）が使用されます。
++
+image::alerts/add-alert-rule-assign-targets-1.png[]
+
+.. ターゲットクラウドリソースの定義が完了したら、*Next（次へ）*を選択します。
+
+
+. このアラート ルールでアラートをトリガーするポリシーを選択し、オプションで xref:view-respond-to-prisma-cloud-alerts.adoc[アラートを自動的に修復]します。
+
+.. *Select All Policies（すべてのポリシーを選択）*するか、またはこのアラートルールでアラートを生成する特定のポリシーを選択します。*All Policies（すべてのポリシー）*を選択すると、大量のアラートが作成されます。要件に固有のより関連性の高いターゲットを絞ったアラートを得るには、詳細にフィルター処理された選択を使用することをお勧めします。
+
+.. *フィルターを追加して*、フィルタリングしたいポリシーをさらに定義します。フィルターオプションには、*ポリシーの重大度*、*クラウドタイプ*、*コンプライアンスの基準*、および*ポリシーラベル*が含まれます。フィルタを選択すると、テーブルの結果は自動的に更新されます。*フィルターをリセット* を選択して、フィルターの選択を削除します。
++
+*フィルタ条件に一致する新しいポリシーを含める*には、フィルタの少なくとも1 つを選択し、テーブルの最初の列で一番上のチェックボックスを選択してテーブルのすべての行を選択した場合に有効になります。有効にすると、フィルタ条件に一致する新しいポリシーが自動的に含まれ、クラウドアカウントのスキャンに使用されます。
++
+tt:[重要]アラートルールポリシーフィルターを追加する場合、フィルターは*OR*ではなく*AND*ロジックに従うことを覚えておいてください。例えば、「Policy label='Prisma Cloud'\`」と「コンプライアンス標準='CIS v2'`」を選択してアラートルールを作成すると、ANDルールが適用されます。スキャン結果は、Prisma CloudラベルとCIS v2準拠基準の両方を持つポリシーで返されます。
+
+.. このルールでアラートする特定のポリシーグループを検索するには、
++
+* *Filter Results（結果のフィルタリング）* — *検索*用語を入力して、特定のキーワードを持つポリシーのみを表示するようにフィルタリングします。
+* *Column Picker（列ピッカー）* — *Edit（編集）*（image:alerts/column-picker.png[]）をクリックして、表示する列を変更します。
+* *Sort（ソート）* — 特定の列をソートするには、対応する*Sort（ソート）*アイコン（image:alerts/sort-column.png[]）をクリックします。
+* *フルスクリーン*—*フルスクリーン モードで表示* をクリックし (image:alerts/add-alert-rule-fullscreen.png[])テーブルの拡大ビューを表示します。
+
+.. *Next（次へ）*をクリックします。
+
+. (tt:[任意])リソースで定義され、Prisma Cloudのリソースリストに追加された特定のタグを持つアラートを自動的に閉じることができます。却下の理由の詳細は、アラートルールL2ビューに含まれています。*Add Details（詳細を追加）*画面で*Auto-Actions*を有効にした場合、アラートルールを更新すると、一致するタグを持つ既存のアラートはすべて自動的に閉じられます。アラートが却下され、アラートルールを更新すると、アラートは引き続き却下されたままになります。ご興味のある方は、Prisma Cloudカスタマーサポートまでご連絡いただき、テナントでこの機能を有効にするためのリクエストを送信してください。チームが依頼内容を迅速に確認し、テナントがLGAアクセスを利用する資格があるかどうかをお知らせします。
++
+自動却下の理由、依頼者、承認者を追加し、*Next（次へ）*をクリックします。
+
+. (tt:[任意]) xref:send-prisma-cloud-alert-notifications-to-third-party-tools.adoc#idcda01586-a091-497d-87b5-03f514c70b08[Prisma Cloudアラート通知をサードパーティツールに送信する]。
++
+デフォルトでは、アラートルールで生成されたすべてのアラートが、*Alerts（アラート）*ページに表示されます。xref:../administration/configure-external-integrations-on-prisma-cloud/configure-external-integrations-on-prisma-cloud.adoc#id24911ff9-c9ec-4503-bb3a-6cfce792a70d[Prisma Cloud で外部統合を構成]すると、このアラート ルールによってトリガーされた Prisma Cloud アラートをサードパーティ ツールに送信することもできます。たとえば、xref:send-prisma-cloud-alert-notifications-to-third-party-tools.adoc#id84f16f30-a2d0-44b7-85b2-4beaaef2f5bc[Amazon SQS]やxref:send-prisma-cloud-alert-notifications-to-third-party-tools.adoc#id728ba82c-c17b-4e3e-baf2-131e292ec074[Jira]に送信することができます。
++
+設定アラートのアラート通知を遅延させたい場合、*Trigger notification for Config Alert only after the Alert is Open for（設定アラート生成後アラートの通知を送信するまでの時間）*に時間を分で指定します
++
+[NOTE]
+====
+設定アラートに対して設定するアラート通知の遅延は、このアラートで発生する可能性のある修正のタイミングには影響しません。
+====
+
+. (tt:[任意]) *通知を設定して*、すべての状態のアラート通知を有効にします。
++
+既存のアラートステータスが変更されたときに外部通知を受信する場合は、既存のアラートが*Dismissed（却下）*、*Snoozed（一時停止）*または*Ignored（無視）*されたときにアラートを生成するようにPrisma Cloudを設定できます。通知設定を構成するためのオプションは次のとおりです。
++
+* *Notify hen alert is（アラートが次の場合に通知する）*—アラートの状態を設定するには、このダイアログボックスを選択します。デフォルトでは、*Open（未解決）*状態が有効になっていますアラートの状態を選択したら、アラートを生成する統合サービスを選択します。
+* *Trigger notification for config alert only after the alert is open for（アラートの未解決後にのみ設定アラートの通知をトリガーする）*—アラートの生成後に通知を送信するまでの待機時間（分単位）を指定します。この値は、繰り返し（またはスケジュールされた）通知には適用されません。
++
+[NOTE]
+====
+すべての州の通知を送信する機能はGAに限定されます。ご興味のある方は、Prisma Cloudカスタマーサポートまでご連絡いただき、テナントでこの機能を有効にするためのリクエストを送信してください。チームが依頼内容を確認し、テナントがLGAアクセスを利用する資格があるかどうかをお知らせします。JiraとCortex XSOAR統合のアラートは生成されません。
+====
+
+. すべてのアラートルールの*サマリー*を表示します。設定を変更する場合は*編集*し、アラートルールを*保存*します。
+
+. 作成したアラートルールがアラート通知を生成することを確認します。
++
+アラートルールを保存すると、アラートを有効にしたポリシー違反が*Alerts（アラート）*上で通知され、同様にルールで指定されたサードパーティの統合でもアラート通知が行われます。
+
+

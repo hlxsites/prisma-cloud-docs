@@ -1,0 +1,119 @@
+:topic_type: タスク
+[.task]
+== AWS 組織のオンボーディング
+
+AWS Organization内のAWSサービスおよびアセットに対する統合アクセス権を持っている場合は、Prisma Cloud上のAWS_マスターアカウント_にオンボードできます。AWS管理コンソールで AWS 組織を有効にし、組織アカウントが発生したすべての料金を支払う責任のある支払者アカウントのロールを持つルートアカウントまたは_マスター_アカウントを追加すると、Prisma Cloud上の1つの合理化されたオペレーションで階層内のすべてのメンバーアカウントが追加されます。
+
+image::connect/aws-org-structure.png[]
+
+Prisma Cloud で AWS 組織をオンボードするには、まずマスター アカウントに CFT をデプロイして Prisma Cloud ロールを作成し、マスター アカウントにデプロイされたアセットを保護する必要があります。次に、CloudFormationスタックセットを使用してPrisma Cloudロールの作成を自動化することで、Prisma Clouｄに各メンバーアカウントにログインすることを認証します。その後、AWS Organizationに新しいメンバーアカウントを追加すると、数時間以内（最大6時間以内）にPrisma Cloudに自動的にオンボードされます。
+
+[NOTE]
+====
+* 1つ以上の組織単位（OU）とそれに含まれるすべてのメンバー アカウントを除外する場合は、オンボード後に、Prisma Cloudで個々のメンバー アカウントを手動で無効にすることができます。また、アカウントのサブセットをオンボードするには、スタックセットをデプロイするときにOUを除外して、Prisma Cloudロールを、オンボードアカウントのOU 内にのみ作成することもできます。
+
+* 以前に AWSマスターアカウントをスタンドアロンアカウントまたは個別アカウントとしてオンボードしていた場合は、そのアカウントを組織として再度追加する必要があります。監視対象の資産、生成されたアラート、または作成されたアカウントグループに関するすべての既存データは変更されません。
++
+AWS Organizationとしてアカウントをオンボードした後に、ロールバックすることはできません。アカウントをスタンドアロンアカウントまたは個別アカウントとして追加するには、Prisma Cloud上の組織を削除し、xref:onboard-aws-account.adoc[Onboard Your AWS Account]の指示に従います。
+
+* Prisma Cloudに追加したAWS OrganizationのメンバーであるAWSアカウントを以前にオンボードしていた場合、監視対象のアセット、アラート生成済み、または作成されたアカウントグループに関するすべての既存のデータは変更されません。Prisma Cloudでは、メンバーアカウントはAWS Organizationの下に論理的にグループ化されます。Prisma Cloud上のAWS Organizationを削除して24 時間以内に再登録した場合、これらのアカウントに関連するすべての既存のデータを復元できます。24 時間後、データはPrisma Cloudから削除されます。
+====
+
+[.procedure]
+. *[Settings(設定)] > [Providers(プロバイダー)]* から*[Connect Provider(プロバイダーに接続)] > [Cloud Account(クラウドアカウント)]*を選択します。
+
+. オンボーディングするクラウドアカウントとして*Amazon Web Services*を選択し、*開始*をクリックします。
++
+image::connect/aws-add-account-global-org-1.png[]
+
+.. セキュリティ カバレッジを向上させるには、[*範囲*] で [*組織*]を選択します。
+
+.. AWS 組織で有効にしたい[*セキュリティ機能とアクセス許可*] を選択します。
++
+機能は*Foundational （基礎）*と*詳細*にグループ分けされています。Prisma Cloud は、選択内容に基づいて、Prisma Cloud ロールに関連付けられた権限を含む CFT を動的に生成します。
++
+* 組織のクラウド導入の開始時に *Foundational （基礎）* (推奨) 機能を使用して、クラウドとオンプレミスの資産を効果的に管理します。
++
+*Foundational （基礎）* 機能はデフォルトで有効になっています。
++
+** *設定誤り*は、クラウドアセットのスキャンとメタデータの取り込みに必要な権限を付与します。
+** *Identity Security*は、IDの正味有効権限の計算とアクセスの管理に必要な権限を付与します。
+** xref:../../../runtime-security/agentless-scanning/agentless-scanning.adoc[エージェントレスワークロードスキャン]（デフォルトで選択されている）を有効にして追加すると、Defenderをインストールしなくてもホストとコンテナの脆弱性とコンプライアンスリスクをスキャンできます。エージェントレスワークロードスキャン機能を使いたくない場合は、このチェックボックスを選択解除できます。組織をオンボードすると、スキャンが自動的に開始されます。エージェントレススキャンのスキャンxref:../../../runtime-security/agentless-scanning/onboard-accounts/onboard-accounts.adoc[設定]を更新することもできます。
++
+* *詳細*（追加）機能により、クラウド運用をプロアクティブに制御し、ランタイム環境内で問題が顕在化する前に特定し修正することができます。
++
+有効にするように選択できる *詳細* 機能は次のとおりです。
++
+** *脅威検知* (デフォルトで有効) は、DNS、ネットワーク、ID の脅威を検出するために必要な権限を付与します。
+** AWS Lambda、Azure、Googleなどのクラウドプロバイダの関数のxref:../../../runtime-security/vulnerability-management/scan-serverless-functions.adoc[脆弱性]とxref:../../../runtime-security/compliance/visibility/serverless.adoc[コンプライアンス]をスキャンするための*サーバーレスファンクションスキャン*を有効化し、権限を追加します。組織をオンボードすると、スキャンが自動的に開始されます。サーバーレススキャンのxref:../../../runtime-security/agentless-scanning/onboard-accounts/onboard-accounts.adoc[スキャン]設定を更新することもできます
+** *Agent-Based Workload Protection*に権限を追加し、安全なクラウドxref:../../../runtime-security/install/deploy-defender/host/auto-defend-host.adoc[VM]、xref:../../../runtime-security/install/deploy-defender/container/container.adoc[コンテナ]、およびxref:../../../runtime-security/install/deploy-defender/kubernetes/kubernetes.adoc[Kubernetesオーケストレーター]に保護するためのxref:../../../runtime-security/install/deploy-defender/defender-types.adoc[Defenderの自動デプロイ]を可能にします。防御側が必要とするレジストリ スキャン、Kubernetes 監査、およびその他の機能も有効になっています。
++
+NOTE: *エージェントレスワークロードスキャン*と*サーバーレス機能スキャン*を選択すると、*組織スキャン*の切り替えが可能になります。*オン*に切り替えると、組織にリンクされているすべてのアカウントがスキャンされます。
+
+.. *次へ*をクリックします。
+
+. *アカウントを設定します*。
++
+image::connect/aws-add-account-global-org-2.png[] 
+
+.. Prisma Cloud で AWS 組織を一意に識別する *アカウント ID*(管理アカウント ID) と *クラウド アカウント名* を入力します。
+
+.. *復旧活動*(オプション)を有効にすると、誤って設定されたアセットを是正する権限が付与されます。有効にすると、Prisma Cloud ロールは AWS 組織への読み取り/書き込みアクセス許可を取得して、修復コマンドを正常に実行できるようになります。
+
+.. AWS マスター アカウントで Prisma Cloud ロールを設定するには、*IAM ロールを作成*するか、*IAM ロール CFT をダウンロード*します。
++
+対応する [*View Steps*] をクリックして、その手順に従って *IAM Role ARN*を生成します。Prisma Cloud ARNには、Prisma CloudとAWSアカウント間の認証を有効にするために必要な、外部IDと権限があります。
++
+*IAM ロール CFT をダウンロード*すると、30 日間有効です。オンボーディング プロセスを完了する前にダイアログを閉じた場合でも、以前にダウンロードした CFT で作成された同じアカウント ID とロール ARN を使用して、30 日以内にオンボーディングできます。
++
+[NOTE]
+====
+Prisma Cloud から CFT をダウンロードした後、その CFT を使用してスタックをアップロードして作成する前に、*AWS アカウント管理の信頼できるアクセス*を有効にしていない場合は、必ず有効にしてください。
+
+* AWS 組織の管理アカウントにサインインします。IAM ユーザーとしてサインインするか、IAM ロールを引き受けるか、組織の管理アカウントで root ユーザー (推奨されません) としてサインインする必要があります。
+
+* *サービス*のリストから *AWS組織*を選択します。
+
+* 左側のナビゲーションパネルから [*サービス*]をクリックします。
+
+* サービスのリストから [*CloudFormation StackSets（クラウドフォーメーションスタックセット）*] を選択します。
+
+* [*信頼できるアクセスを有効にする*]を選択します。
+
+* 組織構造から正しいhttps://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_details.html#orgs_view_root[OrganizationalUnitIds を]入力したことを確認してください。組織下のすべてのアカウントに対して実行する場合は、組織ルートの OU ID（接頭辞 r-）を、それ以外の場合は OU ID（ 接頭辞 ou-）のカンマ区切りのリストを指定します。
+====
+
+.. *IAM ロール ARN*を貼り付けます。
+
+.. *メンバーアカウント*を選択します。Prisma Cloud では、*すべての* メンバー アカウントを選択することをお勧めします。
+
+.. xref:../../../administration/create-manage-account-groups.adoc[アカウントグループ]を選択します。
++
+最初のオンボーディング時に、AWS組織階層を持つすべてのメンバークラウドアカウントをアカウントグループに割り当てる必要があります。次に、 xref:../../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[実行時チェックのアラートルールを作成] し、そのアカウントグループに関連付け、ポリシー違反が発生したときにアラートが生成されるようにします。
++
+[NOTE]
+====
+Prisma Cloud上の異なるアカウントグループにAWSメンバーアカウントを選択的に割り当てたい場合は、xref:../../../administration/create-manage-account-groups.adoc[アカウントグループを変更して複数のクラウドアカウントを含める]ことができます。
+====
+
+.. *次へ*をクリックします。
+
+. *レビューステータス*。
++
+image::connect/aws-add-account-global-org-3.png[]
++
+AWS 組織の *詳細* と、Prisma Cloud で組織をオンボーディングするときに選択した*セキュリティ機能*のステータスチェックを確認します。
+
+.. 選択したすべてのセキュリティ機能に緑色の *有効*アイコンが表示されていることを確認します。
+
+.. 赤色の「*Checks Failed（チェック失敗）*」アイコンが表示されているセキュリティ機能については、対応するドロップダウンをクリックして、失敗の原因を確認します。この問題を解決するには、「xref:troubleshoot-aws-errors.adoc[AWS オンボーディングエラーのトラブルシューティング]」を参照してください。
+
+.. [*保存して閉じる*] をクリックしてオンボーディングを完了するか、[*保存して別のアカウントを登録*] をクリックします。
++
+Prisma Cloud で AWS アカウントのオンボーディングに成功すると、そのアカウントはランタイムセキュリティで自動的に利用可能になり、*ワークロード検出* と *サーバーレスファンクションスキャン*が有効になります。*エージェントレス スキャン*の場合、スキャンをトリガーするための構成を完了する必要があります。
++
+新しくオンボーディングされた AWS 組織は、*[クラウド アカウント]* ページで確認できます。
++
+image::connect/aws-org-added-1.png[]
++
+image::connect/aws-org-status-1.png[]
