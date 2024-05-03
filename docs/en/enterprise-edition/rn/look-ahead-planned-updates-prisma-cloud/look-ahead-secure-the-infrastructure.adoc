@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.5.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.5.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -26,22 +26,78 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|*Login Experience Enhancements*
-//RLP-135039
-
-|Starting with the 24.5.1 release, users can expect a change in their login experience on the Prisma Cloud console. Updates to the Prisma Cloud login pages will provide support for all available authentication options (excluding IdP-initiated SAML SSO). This update also addresses an issue related to redirection to Palo Alto Networks SSO for login and addresses a bug preventing traversal of deep links for some users.
-
-*Impact*— The SSO Login Page will be updated to more clearly identify OIDC SSO login and add support for Palo Alto Networks SSO login. Redirection to Palo Alto Networks SSO will no longer occur when accessing Prisma Cloud links without a valid session. Deep links will be supported in cases in which previously they were not persisted through login flows.
-
-|*API Rate Limits*
-//RLP-129569
-
-|Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.5.2 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced. 
-
 |*Alert Info API*
 //RLP-134888
 
 |The Alert Info https://pan.dev/prisma-cloud/api/cspm/get-alert/[GET alert/:id] response will include a new field `connectionDetails` in release 24.5.2.
+
+|*API Rate Limits*
+//RLP-129569, RLP-139236
+
+|Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.6.1 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced.
+
+For more information, see the <<api-rate-limits>> table.
+
+|===
+
+[#api-rate-limits]
+=== API Rate Limits
+//RLP-129569, RLP-139236
+
+Rate limits will apply to the following endpoints in release *24.6.1*.
+
+[cols="60%a,20%a,20%a"]
+|===
+|*Endpoint*
+|*Rate Limit (tps)*
+|*Burst Rate (tps)*
+
+3+|*Resource Lists*
+
+|Get Resource Lists -  https://pan.dev/prisma-cloud/api/cspm/get-all-resource-list-for-customer/[GET /v1/resource_list] 
+|80 
+|80
+
+|Get Resource List by ID - https://pan.dev/prisma-cloud/api/cspm/get-resource-list-by-id/[GET /v1/resource_list/#id]
+|4
+|4
+
+|Get Resource List Types - https://pan.dev/prisma-cloud/api/cspm/get-resource-list-types/[GET /v1/resource_list/types]
+|4
+|4
+
+|Get Resource List Names -  GET /v1/resource_list/names
+|80 
+|80
+
+
+3+|*Account Groups*
+
+|List Account Groups - https://pan.dev/prisma-cloud/api/cspm/get-account-groups/[GET /cloud/group]
+|32
+|32
+
+|Account Group Info -  https://pan.dev/prisma-cloud/api/cspm/get-account-group/[GET /cloud/group/#id]
+|80
+|80
+
+|List Account Group Names - https://pan.dev/prisma-cloud/api/cspm/get-account-group-name/[GET /cloud/group/name]
+|32
+|32
+
+|List Account Group Names by Cloud Type - https://pan.dev/prisma-cloud/api/cspm/get-account-group-name-by-cloud-type/[GET cloud/group/name/#cloud_type]
+|4
+|4
+
+3+|*Collections*
+
+| Get All Collections - https://pan.dev/prisma-cloud/api/cspm/get-all-collections/[GET /entitlement/api/v1/collection]
+|4
+|4
+
+| Get Collection by ID - https://pan.dev/prisma-cloud/api/cspm/get-collection-by-id/[GET /entitlement/api/v1/collection/#id]
+|8
+|8
 
 |===
 
@@ -64,7 +120,7 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.5.1.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.5.2.
 
 . Review the updates.
 +
@@ -80,47 +136,68 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
-|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
-//RLP-136748
+|*Azure Virtual Network subnet is not configured with a Network Security Group*
+//RLP-137711
 
-|*Changes*— Use either non-FIPS security policy `ELBSecurityPolicy-TLS13-1-2-2021-06` or FIPS security policy `ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04` to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
-
-*Severity*— Low
-
-*Policy Type*— Config
-
-*Current RQL*— 
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and (sslPolicy does not contain ELBSecurityPolicy-TLS13-1-2-2021-06))] exists
-----
-
-*Proposed RQL*— 
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists
-----
-
-*Impact*: Low
-
-|*Azure Microsoft Defender for Cloud set to Off for DNS*
-//RLP-137209
-
-|*Changes*— The policy RQL will be updated to check if the legacy DNS plan is deprecated.
+|*Changes*— The policy description and RQL will be updated.
 
 *Severity*— Low
 
 *Policy Type*— Config
 
-*Current RQL*— 
+*Current Description—* This policy identifies Azure Virtual Network (VNet) subnets that are not associated with a Network Security Group (NSG). While binding an NSG to a network interface of a Virtual Machine (VM) enables fine-grained control to the VM, associating a NSG to a subnet enables better control over network traffic to all resources within a subnet. As a best practice, associate an NSG with a subnet so that you can protect your VMs on a subnet-level.
+
+For more information,
+https://learn.microsoft.com/en-gb/archive/blogs/igorpag/azure-network-security-groups-nsg-best-practices-and-lessons-learned[Azure Network Security Groups (NSG) - Best Practices and Lessons Learned] 
+https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#limitations[What is a private endpoint? - Azure Private Link] 
+
+Note: This policy will not report for subnets used by Azure Firewall, Gateway, NetApp File Share, RouteServerSubnet, Private endpoints and Private links as Azure recommends not to configure Network Security Group (NSG) for these services.
+
+*Updated Description—* This policy identifies Azure Virtual Network (VNet) subnets that are not associated with a Network Security Group (NSG). 
+
+While binding an NSG to a network interface of a Virtual Machine (VM) enables fine-grained control of the VM, associating an NSG to a subnet enables better control over network traffic to all resources within a subnet. 
+
+It is recommended to associate an NSG with a subnet so that you can protect your VMs on a subnet-level.
+
+For more information,
+https://learn.microsoft.com/en-gb/archive/blogs/igorpag/azure-network-security-groups-nsg-best-practices-and-lessons-learned[Azure Network Security Groups (NSG) - Best Practices and Lessons Learned] 
+https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#limitations[What is a private endpoint? - Azure Private Link] 
+
+Note: This policy will not report for subnets used by Azure Firewall Subnet, Azure Firewall Management Subnet, Gateway Subnet, NetApp File Share, Route Server Subnet, Private endpoints and Private links as Azure recommends not to configure Network Security Group (NSG) for these services.
+
+
+*Current RQL—*
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-subnet-list' AND json.rule = networkSecurityGroupId does not exist and name does not equal ignore case "GatewaySubnet" and name does not equal ignore case "RouteServerSubnet" and name does not equal ignore case "AzureFirewallSubnet" and ['properties.delegations'][*].['properties.serviceName'] does not equal "Microsoft.Netapp/volumes"
 ----
 
-*Proposed RQL*— 
+*Updated RQL—*
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.deprecated is false and properties.pricingTier does not equal Standard)] exists
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-subnet-list' AND json.rule = networkSecurityGroupId does not exist and name does not equal ignore case "GatewaySubnet" and name does not equal ignore case "RouteServerSubnet" and name does not equal ignore case "AzureFirewallSubnet" and name does not equal ignore case "AzureFirewallManagementSubnet" and ['properties.delegations'][*].['properties.serviceName'] does not equal "Microsoft.Netapp/volumes"
 ----
 
-*Impact*: Low
+*Impact*— Low. Alert for Azure Virtual Network (VNet) subnets used by  `AzureFirewallManagementSubnet` will be resolved. 
+
+|*Azure Storage account encryption key configured by access policy with privileged operations*
+//RLP-139004
+
+|*Changes*— The policy RQL will be updated to check if the key vault will use Role-Based Access Control (RBAC) for authorization of data actions or not.
+
+*Severity*— Medium
+
+*Policy Type*— Config
+
+*Current RQL—*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X;
+----
+
+*Updated RQL—*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.enableRbacAuthorization is false and properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+----
+
+*Impact*— Low.
 
 |===
 
@@ -132,186 +209,89 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-secu
 |*Service*
 |*API Details*
 
-|*Amazon EC2*
-//RLP-137198 
+|*AWS Network Firewall*
+//RLP-138830 
 
-|*aws-ec2-vpc-ipam*
-
-Additional permission required:
-
-* `ec2:DescribeIpams`
-
-The Security Audit role includes the permission.
-
-|*AWS Network Manager*
-//RLP-137195 
-
-|*aws-network-manager-global-network*
-
-Additional permission required:
-
-* `networkmanager:DescribeGlobalNetworks`
-
-The Security Audit role includes the permission.
-
-|*AWS Network Manager*
-//RLP-137185 
-
-|*aws-network-manager-core-network*
-
-Additional permission required:
-
-* `networkmanager:GetCoreNetwork`
-* `networkmanager:ListCoreNetworks`
-
-The Security Audit role does not include the permission. You will need to add a new role/create a custom role for the permission. 
-
-|*Amazon SNS*
-//RLP-131263
-
-|*aws-sns-data-protection-policy*
+|*aws-network-firewall-logging-configuration*
 
 Additional permissions required:
 
-* `sns:ListTopics`
-* `sns:GetDataProtectionPolicy`
+* `network-firewall:DescribeLoggingConfiguration`
+* `network-firewall:ListFirewalls`
 
-The Security Audit role includes the `sns:ListTopics` permission.
-You must manually add the `sns:GetDataProtectionPolicy` permission to the CFT template to enable it.
+The Security Audit role includes the permissions.
 
-|*Amazon FSx*
-//RLP-127615
+|*AWS Migration Hub*
+//RLP-138824 
 
-|*aws-fsx-backup*
-
-Additional permission required:
-
-* `fsx:DescribeBackups`
-
-The Security Audit role includes the permission. 
-
-|*Azure Express Route*
-//RLP-136427
-
-|*azure-express-route-circuit-diagnostic-settings*
+|*aws-migration-hub-home-region-control*
 
 Additional permission required:
 
-* `Microsoft.Network/expressRouteCircuits/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
+* `mgh:DescribeHomeRegionControls`
 
-The Reader role includes the permissions. 
+You must manually add the permission to the CFT template to enable it.
 
-|*Azure Cognitive Services*
-//RLP-136434
-
-|*azure-cognitive-services-account-diagnostic-settings*
-
-Additional permission required:
-
-* `Microsoft.CognitiveServices/accounts/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader role includes the permissions. 
-
-|*Azure Synapse Analytics*
-//RLP-134913
-
-|*azure-synapse-workspace-diagnostic-settings*
-
-Additional permission required:
-
-* `Microsoft.Synapse/workspaces/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader role includes the permissions. 
-
-|*Azure Relay*
-//RLP-134918
-
-|*azure-relay-namespaces*
-
-Additional permission required:
-
-* `Microsoft.Relay/Namespaces/read`
-
-The Reader role includes the permission.
-
-|*Azure Relay*
-//RLP-134918
-
-|*azure-relay-namespaces*
-
-Additional permission required:
-
-* `Microsoft.Relay/Namespaces/read`
-
-The Reader role includes the permission.
-
-|tt:[Update] *Azure Cognitive Services Account Diagnostic Settings*
-
-//RLP-137805
-
-|*azure-cognitive-search-service-diagnostic-settings*
-
-Updated Asset Type for `azure-cognitive-search-service-diagnostic-settings` resources.
-
-Previous name: "Azure Cognitive Services Account Diagnostic Settings"
-
-New name: "Azure Cognitive Search Service Diagnostic Settings"
-
-|*Google Vertex AI Platform*
-//RLP-136571
-
-|*gcloud-vertex-ai-aiplatform-notebook-runtime*
-
-Additional permission required:
-
-* `aiplatform.notebookRuntimes.list`
-
-The Viewer role includes the permission. 
-
-|*Google Workspace*
-//RLP-135384
-
-|*gcloud-domain-user-last-login-time*
-
-No additional permissions are required.
-
-|*Google Cloud VMware Engine*
-//RLP-135383
-
-|*gcloud-vmware-engine-external-address*
+|*Azure API Management Services*
+//RLP-134921
+|*azure-api-management-service-diagnostic-settings*
 
 Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.externalAddresses.list`
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
 
-The Viewer role includes the permission.
+The Reader role includes the permissions. 
 
-|*Google Vertex AI Platform*
-//RLP-135381
 
-|*gcloud-vertex-ai-aiplatform-feature-online-store*
+|*Azure App Service*
+//RLP-136675
 
-Additional permission required:
+|*azure-app-service-basic-publishing-credentials-policies*
 
-* `aiplatform.featureOnlineStores.list`
+Additional permissions required:
 
-The Viewer role includes the permission.
+* `Microsoft.Web/sites/Read`
+* `Microsoft.Web/sites/basicPublishingCredentialsPolicies/Read`
 
-|*Google Vertex AI Platform*
-//RLP-135380
+The Reader role includes the permissions. 
 
-|*gcloud-vertex-ai-aiplatform-feature-group*
+|*Azure App Service*
+//RLP-132837
 
-Additional permission required:
+|*azure-app-service-environment-diagnostic-settings*
 
-* `aiplatform.featureGroups.list`
+Additional permissions required:
 
-The Viewer role includes the permission.
+* `Microsoft.Web/hostingEnvironments/Read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+
+|*Azure Analysis Services*
+//RLP-134923
+
+|*azure-analysisservices-servers-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.AnalysisServices/servers/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+|*Azure Machine Learning*
+//RLP-129311
+
+|*azure-machine-learning-compute*
+
+Additional permissions required:
+
+* `Microsoft.MachineLearningServices/workspaces/read`
+* `Microsoft.MachineLearningServices/workspaces/computes/read`
+
+The Reader role includes the permissions. 
 
 |*Google Cloud Support*
 //RLP-131425
@@ -322,9 +302,49 @@ Additional permission required:
 
 * `cloudsupport.techCases.list`
 
+The Viewer role includes the permission. 
+
+
+|*Google Dataproc Clusters*
+//RLP-135383
+
+|*gcloud-dataproc-cluster-job*
+
+Additional permissions required:
+
+* `dataproc.jobs.list` 
+* `dataproc.jobs.getIamPolicy`
+
+The Viewer role includes the permissions. 
+
+|*Google Vertex AI AIPlatform*
+//RLP-135381
+|*gcloud-vertex-ai-aiplatform-feature-online-store*
+
+Additional permission required:
+
+* `aiplatform.featureOnlineStores.list`
+
 The Viewer role includes the permission.
 
+|*Google Vertex AI AIPlatform*
+//RLP-135380
+|*gcloud-vertex-ai-aiplatform-feature-group*
+
+Additional permission required:
+
+* `aiplatform.featureGroups.list`
+
+The Viewer role includes the permission.
+
+|*Google Workspace*
+//RLP-135384
+|*gcloud-domain-user-last-login-time*
+
+No additional permissions required for this API.
 |===
+
+
 
 [#deprecation-notices]
 === Deprecation Notices
