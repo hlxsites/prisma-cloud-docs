@@ -344,7 +344,53 @@ resource "aws_s3_bucket" "b1" {
 
 ==== Arrays and wildcards
 
+Wildcard (*) iterates through array items - * matches each element individually, but applies to all elements simultaneously.
 
+|===
+| Definition | Resource Example
+
+| [cols="1,2a"]
+|===
+| 
+| * Wildcard Matching for Port
+| 
+| definition:
+|   cond_type: attribute
+|   resource_types:
+|     - aws_security_group
+|   attribute: ingress.*.port
+|   operator: equals
+|   value: 22
+| 
+| resource "aws_security_group" "s1" {
+|   ingress {
+|     port = 443
+|   }
+|   ingress {
+|     port = 22
+|   }
+| }
+|===
+| 
+| * Wildcard Matching for CIDR Blocks
+| 
+| definition:
+|   cond_type: attribute
+|   resource_types:
+|     - aws_security_group
+|   attribute: ingress.*.cidr_blocks.*
+|   operator: contains
+|   value: "/32"
+| 
+| resource "aws_security_group" "s2" {
+|   ingress {
+|     cidr_blocks = ["10.0.0.0/8"]
+|   }
+|   ingress {
+|     cidr_blocks = ["10.0.1.2/8", "192.168.1.0/32"]
+|   }
+| }
+|===
 
 [.task]
 
