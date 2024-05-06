@@ -53,7 +53,6 @@ image:application-security/license-grbac-policies1.0.png[]
 
 View both default out-of-the-box and custom license policies through *Governance*.
 
-
 . On the Prisma Cloud console, select *Governance*.
 
 . Filter by *Policy Label*.
@@ -93,7 +92,7 @@ image::application-security/licenses-enable1.1.png[]
 
 ==== Modify Custom Licenses
 
-To modify a custom license, in *Governance*, select the edit icon next to the license, and edit the values that are displayed in the wizard.
+To modify a custom license, in *Governance*, select the edit icon next to the license, and edit the values that are displayed in the wizard. For more information on custom policies See <<#custom-policies,Create Custom License Policies>> below.
 
 image::application-security/license-edit-custom-policy1.1.png[]
 
@@ -116,11 +115,234 @@ Enforce license violations by severity and policy labels, ensuring developers ar
 To delete a License policy, in *Governance*, select a policy > click the *Edit* icon under the *Actions* column > select *Delete Policy* in the 'Confirmation' popup.
 ////
 
-[.task]
-
 [#custom-policies]
 === Create Custom License Policies
-Create custom license policies to align compliance measures with your organization's unique requirements.
+
+Create custom License policies to align compliance measures with your organization's unique requirements.
+
+==== Guidelines
+
+* License policies use YAML query syntax and follow the same query rules as IaC policies. For example: 
++
+[source,yaml]
+----
+metadata:
+    guidelines: "My policy guidelines"
+    category: license
+scope:
+    provider: "aws"
+definition:
+ or:
+  - cond_type: "attribute"
+    resource_types:
+    - "some_resource"
+    attribute: "hello"
+    operator: "exists"
+----
+
+* *Logical operators* include `and, or, not`
+
+* *Conditions* 
+
+** *attribute*: attribute / value check (equals, contains, and so on). See <<#attribute-cond-oper,Attribute Condition Operators>> below for more information
+** *connection*: Check connected resource types
+** *Filter*: Selects resources from a connection
+
+* The *provider* must be a supported value
+* The *resource type* does not have to be from a supported or default provider as it is a policy metadata field
+
+==== Definition Structure
+
+* Child of definition must be a single and, or, not, or a condition (not a list)
+* Child of `and / or`` must be a list of `and, or, not``, or condition(s)
+* Child of `not`` must be a single `and, or, not``, or a condition (can be a list of length 1)
+
+==== Definition Examples
+
+[cols="1,1",]
+
+|===
+| Definition | Description
+
+| [source,yaml]
+----
+definition:
+  cond_type: attribute
+  resource_types: 
+  - aws_lb
+  operator: equals
+  attribute: internal
+  value: true
+----
+
+| This definition specifies a condition where the attribute 'internal' of an AWS load balancer (aws_lb) must equal 'true'.
+
+| [source,yaml]
+----
+definition:
+  or:
+    - cond_type: attribute
+      resource_types: 
+      - aws_lb
+      operator: equals
+      attribute: internal
+      value: true
+    - ...
+----
+
+| This definition represents an 'OR' condition where either the attribute 'internal' of an AWS load balancer (aws_lb) equals 'true' or another condition applies.
+
+| [source,yaml]
+----
+definition:
+  or:
+    - cond_type: attribute
+      resource_types: 
+      - aws_lb
+      operator: equals
+      attribute: internal
+      value: true
+    - and:
+      - or:
+        - ...
+----
+
+| This definition represents an 'OR' condition where either the attribute 'internal' of an AWS load balancer (aws_lb) equals 'true' or a complex 'AND' condition applies.
+
+| [source,yaml]
+----
+definition:
+  not:
+    - cond_type: attribute
+      value: true
+      attribute: internal
+      resource_types: 
+      - aws_lb
+      operator: equals
+----
+
+| This definition specifies a negation condition where the attribute 'internal' of an AWS load balancer (aws_lb) must not equal 'true'.
+
+| [source,yaml]
+----
+definition:
+  not:
+    cond_type: attribute
+    value: true
+    attribute: internal
+    resource_types: 
+    - aws_lb
+    operator: equals
+----
+
+| This definition specifies a negation condition where the attribute 'internal' of an AWS load balancer (aws_lb) must not equal 'true'.
+| 
+|===
+
+[#attribute-cond-oper]
+==== 'attribute' Condition Operators
+
+* Attribute condition operators are defined in the xref:../../../../governance/custom-build-policies/code-editor.adoc[Code Editor]documentation
+
+* Common operators include: `equals, greater than / less than, contains, exists, within, starting with, ending with`
+
+* All operators have an inverted variant (`not_equals, less than or equal` and so on)
+
+* All operators support the 'jsonpath_' prefix syntax, allowing you to reference specific fields or values within JSON documents for condition evaluation
+
+==== 'equals' Operator
+
+The `equals` operator supports simple or complex types.
+
+|===
+
+| Definition | Resource
+
+| cond_type: attribute
+  resource_types: 
+  - aws_ecs_cluster
+  attribute: name
+  operator: equals
+  value: "xyz"
+| ```
+resource "aws_ecs_cluster" "c1" {
+  name = "xyz"
+}
+
+| Definition | Resource
+
+| cond_type: attribute
+  resource_types:
+  - aws_ecs_cluster
+  attribute: setting
+  operator: equals
+  value:
+    name: "containerInsights"
+    value: "enabled"
+| ```
+resource "aws_ecs_cluster" "c2" {
+  name = "xyz"
+  setting {
+    name = "containerInsights"
+    value = "enabled"
+  }
+}
+
+|===
+
+=== 'within' and 'contains' Operators
+
+'within' and 'contains' operators work on strings, lists, and dictionary keys.
+
+|===
+
+|Type | Definition | Resource
+
+|String
+| cond_type: attribute
+  resource_types: 
+  - aws_s3_bucket
+  attribute: name
+  operator: contains
+  value: "some-value"
+|```
+resource "aws_s3_bucket" "b3" {
+  name = "my-bucket-some-value-123"
+} 
+
+|List
+|cond_type: attribute
+  resource_types: 
+  - aws_s3_bucket
+  attribute: tags.env
+  operator: within
+  value:
+    - "dev"
+    - "stage"
+    - "prod"
+| ```
+resource "aws_s3_bucket" "b2" {
+  tags = {
+    env = "prod"
+  }
+}
+
+|Dictionary keys
+||cond_type: attribute
+  resource_types: 
+  - aws_s3_bucket
+  attribute: tags
+  operator: contains
+  value: "owner"
+|```
+resource "aws_s3_bucket" "b1" {
+  tags = {
+    owner = "..."
+  }
+}
+
+
+[.task]
 
 [.procedure]
 
@@ -239,7 +461,20 @@ For more information on Suppression, refer to the xref:../monitor-and-manage-cod
 
 === License scans in Checkov CLI
 
-License scans are supported in Checkov CLI. for more information on Ckeckov CLI scans, refer to the https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[Checkov CLI] documentation.
+License scans are supported in Checkov CLI. 
+
+Checkov License policies use the following YAML query syntax:
++
+[source,yaml]
+----
+metadata:
+    id: "POLICY ID"
+    name: "My policy name"
+    category: "license"
+definition:
+----
+
+For more information on Ckeckov CLI License scans, refer to the https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[Checkov CLI] documentation.
 
 === License scans in IDE
 
