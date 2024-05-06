@@ -81,6 +81,31 @@ This feature includes three statuses:
 * *Manually imported accounts:* Cloud accounts that were manually imported from Prisma Cloud console to Runtime Security in the past prior to the Lagrange release (end of 2022)
 * *Auto-imported accounts:* Cloud accounts that originated from Prisma Cloud console and seamlessly imported into Runtime Security.
 
+|*New Console Environment Variable for System Load Management*
+//CWP-56788
+|A new Console environment variable, REFRESH_INTERVAL_SECONDS, has been added to prevent system overload issues when using the TAS applications with Defender.
+
+Previously, Defender checked the state of TAS applications and containers every 10 seconds through an API call to the BBS server. However, frequent changes or restarts in applications within this duration could lead to system overload as Defender scanned all the apps that were impacted by the changes.
+
+By setting a higher value for REFRESH_INTERVAL_SECONDS, users can now reduce system load by decreasing the scanning frequency. For example, if REFRESH_INTERVAL_SECONDS is set to 600 seconds, Defender checks for changes every 600 seconds, leading to a decrease in system load.
+
+NOTE: Restart Defender for the REFRESH_INTERVAL_SECONDS environment variable to take effect.
+
+|*OS-specific Evaluation for Go Packages*
+//CWP-56790
+|Prisma Cloud now evaluates operating system (OS) data for vulnerabilities detected in Go packages. This enhancement ensures that vulnerabilities are reported only if they meet the OS-specific criteria. For example, if vulnerabilities are detected in Go packages that are specific to Windows, they are reported only for Windows-based systems. They are not flagged for UNIX-based systems.
+
+To view a detailed list of identified vulnerabilities, go to Monitor > Vulnerabilities > Vulnerability Explorer.
+
+|*Support for Google Registry Scanning*
+//CWP-57947
+|When onboarding GCP cloud accounts, Prisma Cloud now supports scanning of Google Container Registry (GCR) and Google Artifact Registry (GAR).
+
+|*Support for Blocking Kubernetes cri-o Containers*
+//CWP-57990
+|For Kubernetes versions employing latest versions of cri-o runtime, crun replaces runc for launching containers. To manage user-defined vulnerability/compliance blocking rules, however, Prisma Cloud uses, when such rules are present, a binary written in the Go language to proxy the crun runtime. This proxy blocks containers whenever vulnerabilities or compliance issues, as per user-defined rules, are detected. Prisma Cloud uses the original crun runtime for all other functionalities.
+
+NOTE: If you want to run containers with a minimal number of processes, you can't set a low PIDs limit, because the Go binary generates multiple threads. The original crun runtime does not have this limitation, as it is written in C.
 
 |===
 
@@ -133,7 +158,28 @@ Prisma Cloud now seamlessly identifies 'Rejected' and 'Disputed' statuses of CVE
 //CWP-58016
 |*Exported CSV does not include sam data across all asset types*
 |Fix an issue where `risk factor` field was missed on Function and Host CSV results.
+
+//CWP-58081
+|*Parsing issues in vulnerable package versions*
+|The fix resolves the following issues related to detection of vulnerable package versions:
+
+* Correct parsing of vulnerable package versions.
+
+* Parsing of version ranges with different prefixes.
+
+* Handling of conditions for multiple versions to ensure they are added to the Intelligence feed. This resolves both false negative and false positive alerts.
+
+//CWP-56788
+|*Defender fails to re-scan TAS applications after changes*
+|Previously, if modifications were done to a TAS application (such as renaming it), Defender would fail to re-scan the application and update the results in the Console. This issue has been resolved. Defender now re-scans the TAS applications whenever changes are made to them.
+
+//CWP-56786
+|*Alpine Linux zlib not affected by CVE-2023-6992*
+|CVE-2023-6992 impacts the Cloudflare version of the zlib library. However, the zlib library included in Alpine Linux is not affected by this vulnerability. A formal https://gitlab.alpinelinux.org/alpine/aports/-/issues/15970[request] has been made to Alpine Linux to classify this CVE as a non-vulnerability for their zlib version. The necessary patch has been merged, and we anticipate its inclusion in the https://secdb.alpinelinux.org/[Alpine Linux Security Database] soon.
+
 |===
+
+
 
 // [#backward-compatibility]
 === Backward Compatibility for New Features
@@ -148,3 +194,13 @@ There are no changes in behavior for this release.
 // [#end-of-support]
 === End of Support Notifications
 There are no End of Support notifications for this release.
+
+// [#deprecation-notices]
+=== Deprecation Notices
+
+//CWP-58084
+==== Deprecated "Send Debug Logs to Support" Button
+
+The "Send Debug Logs to Support" button in Manage > Logs > Console page is deprecated. You cannot send debug logs directly to Prisma Cloud Support from the Console Debug Logs page. 
+
+To obtain the console debug logs for sending it to the support team, click the Download Logs icon in the Console Debug Logs page. The log file is downloaded to your local computer.
