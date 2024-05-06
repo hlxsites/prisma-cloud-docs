@@ -392,6 +392,45 @@ Wildcard (*) iterates through array items - * matches each element individually,
 | }
 |===
 
+==== Wildcards Examples
+
+[source,yaml]
+----
+resource "aws_security_group" "s2" {
+  ingress {
+    cidr_blocks = ["10.0.0.0/8"]
+    port = 22
+  }
+  ingress {
+    cidr_blocks = ["10.0.1.2/8", "192.168.1.0/32"]
+    port = 22
+  }
+}
+----
+
+|===
+| Attribute (in condition block) | Value (in JSON)
+
+| ingress
+| [
+  { "cidr_blocks": ["10.0.0.0/8"], port: 22 },
+  { "cidr_blocks": ["10.0.1.2/8", "192.168.1.0/32"], port: 22 }
+]
+
+| ingress.*
+| { "cidr_blocks": ["10.0.0.0/8"], port: 22 } 
+| { "cidr_blocks": ["10.0.1.2/8", "192.168.1.0/32"], port: 22 }
+
+| ingress.*.cidr_blocks
+| ["10.0.0.0/8"] 
+| ["10.0.1.2/8", "192.168.1.0/32"]
+
+| ingress.*.cidr_blocks.*
+| "10.0.0.0/8"
+| "10.0.1.2/8"
+| "192.168.1.0/32"
+|===
+
 [.task]
 
 [.procedure]
