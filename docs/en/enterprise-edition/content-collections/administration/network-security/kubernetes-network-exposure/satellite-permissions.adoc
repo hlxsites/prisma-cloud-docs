@@ -1,0 +1,61 @@
+== Permissions Required by Satellite
+
+Satellite requires the following roles and permissions in order to be deployed:
+
+*Cluster Role*
+
+----
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["tokenreviews"]
+  verbs: ["create"]
+- apiGroups: ["authorization.k8s.io"]
+  resources: ["subjectaccessreviews"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["list", "get"]
+----  
+
+*Role*
+
+Satellite can only use these permissions within its own namespace:
+
+----
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: ["batch"]
+  resources: ["cronjobs"]
+  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "delete", "get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: [ "get", "list", "create", "update", "patch"]
+----
+
+*Discovery/Job Role*
+
+----
+- apiGroups: [""]
+  resources: ["pods","pods/log","services","endpoints","nodes","namespaces"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses","networkpolicies"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments","statefulsets","replicasets","daemonsets"]
+  verbs: ["list", "get", "watch"]
+----
