@@ -44,6 +44,88 @@ tt:[Secure the Infrastructure]
 
 image::login-5-1.png[]
 
+
+|*Enhanced Vulnerability Assessment*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-56841[Doc Ticket]CWP-48564[Eng Ticket]
+//Moved from Update 4
+
+|To enhance the accuracy of vulnerability assessments, Prisma Cloud has incorporated support for the 'Running On/With' configuration as outlined by NVD. This configuration, which integrates nodes based on both vulnerable and non-vulnerable criteria, requires specific conditions to be met, such as relevant packages or operating systems, for a vulnerability to be applicable. This enhancement allows Prisma Cloud to consider 'Running On/With' configurations that were not previously assessed. However, it is important to note that the impact of this enhancement is contingent on whether the CVE is assessed through NVD, as vulnerability information from the vendor feed is prioritized.
+
+|*Serverless Defender support for Java 17 and 21*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-56785
+
+|Added support for deploying Serverless Defender on Java 17 and Java 21 runtimes.
+
+|*Support for Blocking Kubernetes cri-o Containers*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-57990
+
+|For Kubernetes versions employing the latest versions of cri-o runtime, crun replaces runc for launching containers. To manage user-defined vulnerability and compliance blocking rules, however, Prisma Cloud uses, when such rules are present, a binary written in the Go language to proxy the crun runtime. This proxy blocks containers whenever vulnerabilities or compliance issues, as per user-defined rules, are detected. Prisma Cloud uses the original crun runtime for all other functionalities.
+
+NOTE: If you want to run containers with a minimal number of processes, you cannot set a low PIDs limit, because the Go binary generates multiple threads. The original crun runtime does not have this limitation, as it is written in C.
+
+|*OS-specific Evaluation for Go Packages*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-56790
+
+|Prisma Cloud now evaluates operating system (OS) data for vulnerabilities detected in Go packages. This enhancement ensures that vulnerabilities are reported only if they meet the OS-specific criteria. For example, if vulnerabilities are detected in Go packages that are specific to Windows, they are reported only for Windows-based systems. They are not flagged for UNIX-based systems.
+
+To view a detailed list of identified vulnerabilities, go to *Monitor > Vulnerabilities > Vulnerability Explorer.*
+
+|*New Console Environment Variable for System Load Management*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-58081
+
+|A new Console environment variable, REFRESH_INTERVAL_SECONDS, has been added to prevent system overload issues when using the TAS applications with Defender.
+
+Previously, Defender checked the state of TAS applications and containers every 10 seconds through an API call to the BBS server. However, frequent changes or restarts in applications within this duration could lead to system overload as Defender scanned all the apps that were impacted by the changes.
+
+By setting a higher value for REFRESH_INTERVAL_SECONDS, users can now reduce system load by decreasing the scanning frequency. For example, if REFRESH_INTERVAL_SECONDS is set to 600 seconds, Defender checks for changes every 600 seconds, leading to a decrease in system load.
+
+NOTE: Restart Defender for the REFRESH_INTERVAL_SECONDS environment variable to take effect.
+
+|*Support for Google Registry Scanning*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-57947
+
+|When onboarding GCP cloud accounts, Prisma Cloud now supports scanning of Google Container Registry (GCR) and Google Artifact Registry (GAR).
+
+
+|*Cloud Account Management*
+
+tt:[*24.5.1*]
+
+tt:[Secure the Runtime]
+//CWP-55308
+|Introduced the *Account Import Status* filter on the *Cloud Accounts* page in *Runtime Security*.
+This feature includes three statuses:
+
+* *Local accounts:* Cloud accounts created in Runtime Security only (and not in the Prisma Cloud console)
+
+* *Manually imported accounts:* Cloud accounts that were manually imported from Prisma Cloud console to Runtime Security in the past prior to the Lagrange release (end of 2022)
+
+* *Auto-imported accounts:* Cloud accounts that originated from Prisma Cloud console and seamlessly imported into Runtime Security.
+
 |===
 
 
