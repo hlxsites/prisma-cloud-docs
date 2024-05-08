@@ -1,5 +1,5 @@
 
-== GKE container cluster configuration of NodePools is at the cluster level
+== GKE NodePool configuration managed at cluster level
 
 === Policy Details
 
@@ -25,9 +25,11 @@
 
 === Description
 
-This policy is designed to identify the use of NodePools within the configuration of a Google Kubernetes Engine (GKE) cluster. The rationale behind this check is that utilizing NodePools in the cluster configuration may unnecessarily complicate the management of the cluster.
+This policy checks whether Google Kubernetes Engine (GKE) clusters uses NodePools within their configuration. The reason for this check is that using NodePools in the cluster configuration can unnecessarily complicate cluster management.
 
-When NodePools are employed at the cluster level, modifications to the node configuration will result in the creation of a new NodePool, which can increase operational complexity. Moreover, this could lead to excess resource consumption if older NodePools are not properly deleted after the creation of new ones. Therefore, it's advisable to manage node configurations outside of the cluster configuration to prevent such issues.
+
+When NodePools are used at the cluster level, modifying the node configuration creates a new NodePool, increasing operational complexity. Additionally, failing to delete older NodePools after creating new ones can lead to excess resource consumption. It is recommended to manage node configurations separately from the cluster to prevent these issues.
+
 
 === Fix - Buildtime
 
@@ -36,7 +38,7 @@ When NodePools are employed at the cluster level, modifications to the node conf
 * *Resource:* google_container_cluster
 * *Arguments:* node_pool
 
-To fix the issue, you need to separate the node pool configuration from your cluster configuration. 
+To fix the issue, separate the node pool configuration from your cluster configuration. By doing so, you can manage and scale your node pools independently from the cluster. This approach makes it easier to manage resources and make changes to your cluster without affecting your applications. Additionally, it prevents the reuse of the default node pool, which could lead to unintended consequences. Here's an example of how you can achieve this in your configuration
 
 [source,go]
 ----
@@ -76,6 +78,4 @@ resource "google_container_node_pool" "my_nodes" {
   }
 }
 ----
-
-By separating the node pool configuration from the cluster configuration, it allows you to manage and scale your node pools independently from the cluster. This makes it easier to manage resources and to make changes to your cluster without affecting your applications. It also prevents the reuse of the default node pool which could lead to unintended consequences.
 
