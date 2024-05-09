@@ -1,0 +1,55 @@
+== Missing 'Rescue' section in Ansible block tasks
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/BlockErrorHandling.yaml[CKV2_ANSIBLE_3]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether each Ansible block contains a rescue section, ensuring proper error handling mechanisms are in place. In Ansible, the block keyword is used to group multiple tasks together, with rescue sections allowing specification of tasks to execute in case of preceding block task errors.
+
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Resource Type:* block
+* *Attribute:* rescue
+
+To mitigate this risk, ensure that each block in your Ansible playbooks includes a rescue section containing tasks that are executed if any task within the block fails. This provides a mechanism for error recovery or cleanup, enhancing the robustness of your playbooks.
+
+Secure Code Example:
+
+
+[source,yaml]
+----
+- name: Example
+  block:
+    - name: Attempt task
+      ansible.builtin.command: /bin/false
+  rescue:
+    - name: Handle error
+      ansible.builtin.debug:
+        msg: "An error occurred."
+----
+
+In the example above, if the command `/bin/false`` fails, the playbook automatically executes the rescue block, providing error handling within the block.
+

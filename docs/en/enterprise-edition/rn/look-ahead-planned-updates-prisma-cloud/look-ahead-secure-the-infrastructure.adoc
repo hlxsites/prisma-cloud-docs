@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.4.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.5.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -12,45 +12,11 @@ The Look Ahead announcements are for an upcoming release and it is not a cumulat
 The details and functionality listed below are a preview and the actual release date is subject to change.
 ====
 
-//* <<announcement>>
 * <<changes-in-existing-behavior>>
-//* <<new-ips-for-runtime>>
 * <<new-policies>>
 * <<policy-updates>>
-//* <<policy-updates-iam>>
 * <<api-ingestions>>
-* <<rest-api-updates>>
 * <<deprecation-notices>>
-
-//[#announcement]
-//=== Announcement
-
-//[cols="50%a,50%a"]
-//|===
-//|*Feature*
-//|*Description*
-
-//|*Prisma Cloud Darwin Release*
-//received the blurb on Slack from Matangi. No Jira ticket for this.
- 
-//|The *Prisma Cloud Darwin Release* is live. With the Code to Cloud™ intelligence capabilities, your security and development teams can work together to reduce application risks and prevent breaches.
-
-//image::darwin-release.gif[]
-
-//The rollout for existing customers started on October 18, 2023 and will run through February 2024. Your tenant will be updated with the new intuitive user interface and https://live.paloaltonetworks.com/t5/prisma-cloud-customer-videos/prisma-cloud-evolution-amp-transformation/ta-p/556596[rich set of security capabilities] during this period. 
-
-//All Prisma Cloud environments except app.gov are updated to the Darwin release. Contact your Prisma Cloud Customer Success team for more details.
-
-//* 24.2.1 (Feb 6-15) - app.gov
-
-//* 23.11.1 (Nov 1-9) - app.ind, app.ca, app.uk, app.fr
-//* 23.12.1 (Nov 29-Dec 7) - app, app3, app.eu, app2.eu
-//* 24.1.1 (Jan 10-18) - app2, app4, app.anz, app.jp, app.sg
-//* 24.1.2 (Jan 29-Feb 6) - app.cn
-
-//When you are upgraded to the Darwin release, refer to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/[Enterprise Edition documentation]. Until then, you can continue to refer to the  https://docs.prismacloud.io/en/classic/cspm-admin-guide/[Enterprise Edition- Classic documentation].
-
-//|===
 
 [#changes-in-existing-behavior]
 === Changes in Existing Behavior
@@ -60,28 +26,78 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|
+|*Alert Info API*
+//RLP-134888
 
-//RLP-134289
-|
+|The Alert Info https://pan.dev/prisma-cloud/api/cspm/get-alert/[GET alert/:id] response will include a new field `connectionDetails` in release 24.5.2.
 
 |*API Rate Limits*
+//RLP-129569, RLP-139236
 
-//RLP-129569
+|Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.6.1 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced.
 
-|Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.5.2 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced. 
+For more information, see the <<api-rate-limits>> table.
+
+|===
+
+[#api-rate-limits]
+=== API Rate Limits
+//RLP-129569, RLP-139236
+
+Rate limits will apply to the following endpoints in release *24.6.1*.
+
+[cols="60%a,20%a,20%a"]
+|===
+|*Endpoint*
+|*Rate Limit (tps)*
+|*Burst Rate (tps)*
+
+3+|*Resource Lists*
+
+|Get Resource Lists -  https://pan.dev/prisma-cloud/api/cspm/get-all-resource-list-for-customer/[GET /v1/resource_list] 
+|80 
+|80
+
+|Get Resource List by ID - https://pan.dev/prisma-cloud/api/cspm/get-resource-list-by-id/[GET /v1/resource_list/#id]
+|4
+|4
+
+|Get Resource List Types - https://pan.dev/prisma-cloud/api/cspm/get-resource-list-types/[GET /v1/resource_list/types]
+|4
+|4
+
+|Get Resource List Names -  GET /v1/resource_list/names
+|80 
+|80
 
 
-|*S3 Flow Logs with Hourly Partition*
+3+|*Account Groups*
 
-tt:[This change was first announced in the look ahead that was published with the 23.1.1 release.]
-//RLP-76433 - verify with PM moving blurb from LA to 24.3.1 RN
+|List Account Groups - https://pan.dev/prisma-cloud/api/cspm/get-account-groups/[GET /cloud/group]
+|32
+|32
 
-|If you currently ingest AWS flow logs using S3 with the 24-hour partition, you need to change it to the hourly partition.
+|Account Group Info -  https://pan.dev/prisma-cloud/api/cspm/get-account-group/[GET /cloud/group/#id]
+|80
+|80
 
-To make this change, https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-aws/configure-flow-logs[Configure Flow Logs] to use the hourly partition and enable the required additional fields.
+|List Account Group Names - https://pan.dev/prisma-cloud/api/cspm/get-account-group-name/[GET /cloud/group/name]
+|32
+|32
 
-*Impact*— VPC Flow logs with partitions set to *Every 24 hours (default)* was disabled on February 29th, 2024. As a result, you will no longer be able to monitor or receive alerts for these logs. If you have any questions, contact your Prisma Cloud Customer Success Representative immediately.
+|List Account Group Names by Cloud Type - https://pan.dev/prisma-cloud/api/cspm/get-account-group-name-by-cloud-type/[GET cloud/group/name/#cloud_type]
+|4
+|4
+
+3+|*Collections*
+
+| Get All Collections - https://pan.dev/prisma-cloud/api/cspm/get-all-collections/[GET /entitlement/api/v1/collection]
+|4
+|4
+
+| Get Collection by ID - https://pan.dev/prisma-cloud/api/cspm/get-collection-by-id/[GET /entitlement/api/v1/collection/#id]
+|8
+|8
 
 |===
 
@@ -104,7 +120,7 @@ The folder contains RQL based Config, Network, and Audit Event policies in JSON 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.4.1.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.5.2.
 
 . Review the updates.
 +
@@ -120,33 +136,68 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
-2+|*Policy Updates—RQL*
+|*Azure Virtual Network subnet is not configured with a Network Security Group*
+//RLP-137711
 
-|*AWS MFA is not enabled on Root account*
+|*Changes*— The policy description and RQL will be updated.
 
-tt:[*24.4.1*]
+*Severity*— Low
 
-//RLP-135019
+*Policy Type*— Config
 
-|*Changes—* The RQL has been updated to be inline with standard conventions followed by Prisma Cloud.
+*Current Description—* This policy identifies Azure Virtual Network (VNet) subnets that are not associated with a Network Security Group (NSG). While binding an NSG to a network interface of a Virtual Machine (VM) enables fine-grained control to the VM, associating a NSG to a subnet enables better control over network traffic to all resources within a subnet. As a best practice, associate an NSG with a subnet so that you can protect your VMs on a subnet-level.
 
-//*Severity—* 
+For more information,
+https://learn.microsoft.com/en-gb/archive/blogs/igorpag/azure-network-security-groups-nsg-best-practices-and-lessons-learned[Azure Network Security Groups (NSG) - Best Practices and Lessons Learned] 
+https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#limitations[What is a private endpoint? - Azure Private Link] 
 
-*Policy Type—* Config
+Note: This policy will not report for subnets used by Azure Firewall, Gateway, NetApp File Share, RouteServerSubnet, Private endpoints and Private links as Azure recommends not to configure Network Security Group (NSG) for these services.
+
+*Updated Description—* This policy identifies Azure Virtual Network (VNet) subnets that are not associated with a Network Security Group (NSG). 
+
+While binding an NSG to a network interface of a Virtual Machine (VM) enables fine-grained control of the VM, associating an NSG to a subnet enables better control over network traffic to all resources within a subnet. 
+
+It is recommended to associate an NSG with a subnet so that you can protect your VMs on a subnet-level.
+
+For more information,
+https://learn.microsoft.com/en-gb/archive/blogs/igorpag/azure-network-security-groups-nsg-best-practices-and-lessons-learned[Azure Network Security Groups (NSG) - Best Practices and Lessons Learned] 
+https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#limitations[What is a private endpoint? - Azure Private Link] 
+
+Note: This policy will not report for subnets used by Azure Firewall Subnet, Azure Firewall Management Subnet, Gateway Subnet, NetApp File Share, Route Server Subnet, Private endpoints and Private links as Azure recommends not to configure Network Security Group (NSG) for these services.
+
 
 *Current RQL—*
-
 ----
-config from cloud.resource where cloud.type = 'aws' AND cloud.service = 'IAM' AND api.name  = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and mfa_active is false and arn does not contain gov:'
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-subnet-list' AND json.rule = networkSecurityGroupId does not exist and name does not equal ignore case "GatewaySubnet" and name does not equal ignore case "RouteServerSubnet" and name does not equal ignore case "AzureFirewallSubnet" and ['properties.delegations'][*].['properties.serviceName'] does not equal "Microsoft.Netapp/volumes"
 ----
 
 *Updated RQL—*
-
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name  = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and mfa_active is false and arn does not contain gov:'
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-subnet-list' AND json.rule = networkSecurityGroupId does not exist and name does not equal ignore case "GatewaySubnet" and name does not equal ignore case "RouteServerSubnet" and name does not equal ignore case "AzureFirewallSubnet" and name does not equal ignore case "AzureFirewallManagementSubnet" and ['properties.delegations'][*].['properties.serviceName'] does not equal "Microsoft.Netapp/volumes"
 ----
 
-*Impact—* None.
+*Impact*— Low. Alert for Azure Virtual Network (VNet) subnets used by  `AzureFirewallManagementSubnet` will be resolved. 
+
+|*Azure Storage account encryption key configured by access policy with privileged operations*
+//RLP-139004
+
+|*Changes*— The policy RQL will be updated to check if the key vault will use Role-Based Access Control (RBAC) for authorization of data actions or not.
+
+*Severity*— Medium
+
+*Policy Type*— Config
+
+*Current RQL—*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X;
+----
+
+*Updated RQL—*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.enableRbacAuthorization is false and properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+----
+
+*Impact*— Low.
 
 |===
 
@@ -158,174 +209,142 @@ config from cloud.resource where cloud.type = 'aws' AND api.name  = 'aws-iam-get
 |*Service*
 |*API Details*
 
-|tt:[Update] *Amazon API Gateway*
-//RLP-134216 
+|*AWS Network Firewall*
+//RLP-138830 
 
-|*aws-apigateway-method*
-
-Prisma Cloud will update the `aws-apigateway-method` API to exclude the `methodIntegration.cacheNamespace` field from the JSON because it changes frequently causing too many resource snapshots.
-
-|*Amazon GuardDuty*
-//RLP-134711
-
-|*aws-guardduty-organization-configuration*
-
-Additional permissions required:
-* `guardduty:ListDetectors`
-* `guardduty:DescribeOrganizationConfiguration`
-
-The Security Audit role includes the `guardduty:ListDetectors` permission.
-You must manually add the `guardduty:DescribeOrganizationConfiguration` permission to the CFT template to enable it.
-
-|*Amazon Comprehend*
-//RLP-134166
-
-|*aws-comprehend-document-classifier-summary*
-
-Additional permission required:
-
-* `comprehend:ListDocumentClassifierSummaries`
-
-The Security Audit role includes the permission.
-
-|*Amazon Comprehend*
-//RLP-134162
-
-|*aws-comprehend-document-classifier*
-
-Additional permission required:
-
-* `comprehend:ListDocumentClassifiers`
-
-The Security Audit role includes the permission.
-
-|*Azure Data Factory*
-//RLP-129307
-
-|*azure-data-factory-v2-integration-runtimes*
+|*aws-network-firewall-logging-configuration*
 
 Additional permissions required:
 
-* `Microsoft.DataFactory/factories/read`
-* `Microsoft.DataFactory/factories/integrationruntimes/read`
+* `network-firewall:DescribeLoggingConfiguration`
+* `network-firewall:ListFirewalls`
 
-The Reader role includes the permissions.
+The Security Audit role includes the permissions.
 
-|*Azure Active Directory*
-//RLP-122229
+|*AWS Migration Hub*
+//RLP-138824 
 
-|*azure-active-directory-directoryrole-definition*
+|*aws-migration-hub-home-region-control*
+
+Additional permission required:
+
+* `mgh:DescribeHomeRegionControls`
+
+You must manually add the permission to the CFT template to enable it.
+
+|*Azure API Management Services*
+//RLP-134921
+|*azure-api-management-service-diagnostic-settings*
 
 Additional permissions required:
 
-* `EntitlementManagement.Read.All`
-* `RoleManagement.Read.All`
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
 
-The Global Reader role includes the permissions.
+The Reader role includes the permissions. 
 
-|*Google Vertex AI AIPlatform*
-//RLP-124671
 
-|*gcloud-vertex-ai-aiplatform-deployment-resource-pool*
+|*Azure App Service*
+//RLP-136675
+
+|*azure-app-service-basic-publishing-credentials-policies*
+
+Additional permissions required:
+
+* `Microsoft.Web/sites/Read`
+* `Microsoft.Web/sites/basicPublishingCredentialsPolicies/Read`
+
+The Reader role includes the permissions. 
+
+|*Azure App Service*
+//RLP-132837
+
+|*azure-app-service-environment-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.Web/hostingEnvironments/Read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+
+|*Azure Analysis Services*
+//RLP-134923
+
+|*azure-analysisservices-servers-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.AnalysisServices/servers/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+|*Azure Machine Learning*
+//RLP-129311
+
+|*azure-machine-learning-compute*
+
+Additional permissions required:
+
+* `Microsoft.MachineLearningServices/workspaces/read`
+* `Microsoft.MachineLearningServices/workspaces/computes/read`
+
+The Reader role includes the permissions. 
+
+|*Google Cloud Support*
+//RLP-131425
+
+|*gcloud-cloud-support-case*
 
 Additional permission required:
 
-* `aiplatform.deploymentResourcePools.list`
+* `cloudsupport.techCases.list`
+
+The Viewer role includes the permission. 
+
+
+|*Google Dataproc Clusters*
+//RLP-135383
+
+|*gcloud-dataproc-cluster-job*
+
+Additional permissions required:
+
+* `dataproc.jobs.list` 
+* `dataproc.jobs.getIamPolicy`
+
+The Viewer role includes the permissions. 
+
+|*Google Vertex AI AIPlatform*
+//RLP-135381
+|*gcloud-vertex-ai-aiplatform-feature-online-store*
+
+Additional permission required:
+
+* `aiplatform.featureOnlineStores.list`
 
 The Viewer role includes the permission.
 
 |*Google Vertex AI AIPlatform*
-//RLP-124670
-
-|*gcloud-vertex-ai-aiplatform-nas-job*
-
-Additional permission required:
-
-* `aiplatform.nasJobs.list`
-
-The Viewer role includes the permission.
-
-|*Google Vertex AI AIPlatform*
-//RLP-124647
-
-|*gcloud-vertex-ai-aiplatform-batch-prediction-job*
+//RLP-135380
+|*gcloud-vertex-ai-aiplatform-feature-group*
 
 Additional permission required:
 
-* `aiplatform.batchPredictionJobs.list`
+* `aiplatform.featureGroups.list`
 
 The Viewer role includes the permission.
 
-|*Google Vertex AI AIPlatform*
-//RLP-124013
+|*Google Workspace*
+//RLP-135384
+|*gcloud-domain-user-last-login-time*
 
-|*gcloud-vertex-ai-aiplatform-model*
-
-Additional permission required:
-
-* `aiplatform.models.list`
-
-The Viewer role includes the permission.
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-121321
-
-|*gcloud-vertex-ai-aiplatform-specialist-pool*
-
-Additional permission required:
-
-* `aiplatform.specialistPools.list`
-
-The Viewer role includes the permission.
-
-
+No additional permissions required for this API.
 |===
 
-[#rest-api-updates]
-=== REST API Updates
 
-[cols="37%a,63%a"]
-|===
-|*Change*
-|*Description*
-
-|tt:[Update] *Alerts API Responses*
-
-//RLP-134238
-
-|The following *Alert API* responses will include a new `investigateOptions` field:
-
-* *List Alerts*
-** https://pan.dev/prisma-cloud/api/cspm/get-alerts/[GET /alert]
-** https://pan.dev/prisma-cloud/api/cspm/post-alerts/[POST /alert]
-
-* *List Alerts V2*
-** https://pan.dev/prisma-cloud/api/cspm/get-alerts-v-2/[GET v2/alert]
-** https://pan.dev/prisma-cloud/api/cspm/post-alerts-v-2/[POST v2/alert]
-
-* *Alert Info*
-** https://pan.dev/prisma-cloud/api/cspm/get-alert/[GET alert/:id]
-
-|tt:[Update] *GET CVE Overview API*
-
-//RLP-134310
-
-|The response of the https://pan.dev/prisma-cloud/api/cspm/cve-overview/[GET CVE Overview] endpoint will include the following changes:
-
-* The following new parameters will be added to *impactedDistrosList*:
-** highestCVSS
-** highestSeverity
-** firstPublishedDate
-** lastModifiedDate
-
-* The following new parameters will be added to *impactedDistrosList.distroDetailsList*:
-** publishedDate
-** modifiedDate
-
-* The data type of *impactedDistrosList.distroDetailsList.severity* will be changed from integer to string.
-
-|===
 
 [#deprecation-notices]
 === Deprecation Notices
@@ -343,7 +362,7 @@ The Viewer role includes the permission.
 //RLP-134902
 
 |NA
-|24.4.2
+|24.5.2
 |The following APIs are planned for deprecation at the end of April 2024 because Azure has announced the retirement of Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
 
 * azure-data-lake-analytics-account
@@ -366,6 +385,14 @@ In RQL, the key will not available in the `api.name` attribute auto-completion.
 |23.9.2
 |24.6.2
 |* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
+
+
+|tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
+//RLP-126719, need to check if this notice can be moved to current features in 24.1.2
+| - 
+| - 
+|To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
+The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
 
 |The following endpoints are deprecated as the date filters—time object or time string in query parameters or the request body—used by these APIs will be removed in the updated API endpoints. The updated API endpoints will always return current data.
 
@@ -402,7 +429,7 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 
 |23.10.1
 
-|24.4.1
+|24.6.1
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
@@ -432,13 +459,6 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 * https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-3/[get /v3/inventory/trend]
 * https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-3/[post /v3/inventory/trend]
 
-
-|tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
-//RLP-126719, need to check if this notice can be moved to current features in 24.1.2
-| - 
-| - 
-|To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
-The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
 
 |tt:[*Deprecation of End Timestamp in Config Search*]
 //RLP-126583, suset release TBD

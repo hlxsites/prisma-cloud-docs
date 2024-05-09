@@ -2,21 +2,28 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your runtime.
 
-// There are no previews or look ahead announcements for the upcoming `32.03` release. Details on the updates included in the `32.03` release will be shared in the release notes that accompany the release.
+//(Edited in the month of Feb 20 as per Manu's suggestion)There are no previews or look ahead announcements for the upcoming `32.03` release. Details on the updates included in the `32.03` release will be shared in the release notes that accompany the release.
 
-[NOTE]
-====
-The details and functionality listed below are a preview of what is planned for the `v32.04` release; the changes listed herein and the actual release date, are subject to change.
-====
+//The following text is a revert to the old content.
+// Read this section to learn about what is planned in the upcoming `32.05` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
+
+// The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+
+Currently, there are no previews or announcements for updates.
+
+// [NOTE]
+// ====
+// The details and functionality listed below are a preview of what is planned for the `v32.05` release; the changes listed herein and the actual release date, are subject to change.
+// ====
 
 
 // * <<defender-upgrade>>
 // * <<new-ips-for-runtime>>
-* <<enhancements>>
-* <<api-changes>>
+// * <<enhancements>>
+// * <<api-changes>>
 // * <<deprecation-notices>>
-// // * <<eos-notices>>
-* <<addressed-issues>>
+// * <<eos-notices>>
+// * <<addressed-issues>>
 
 
 // [#new-ips-for-runtime]
@@ -28,126 +35,124 @@ The details and functionality listed below are a preview of what is planned for 
 
 // |===
 
-[#enhancements]
-=== Enhancements
+// [#enhancements]
+// === Enhancements
 
-The following enhancements are planned; the details will be available at release:
+// The following enhancements are planned. The details will be available at release:
 
-[cols="30%a,70%a"]
-|===
-
-//CWP-56841[Doc Ticket]CWP-48564[Eng Ticket]
-//TODO: Require a confirmation from Tal to add the blurb in 32.04 release.
-// | *Enhanced Vulnerability Assessment*
-// | NVD utilizes the 'Running On/With' configuration, which combines nodes based on both vulnerable and non-vulnerable match criteria. This configuration specifies that for a vulnerability to apply, specific criteria must be met, such as packages or operating systems. Prisma Cloud now supports vulnerability assessment based on the 'Running On/With' configuration. This enhancement may result in a more accurate assessment of vulnerabilities, as Prisma Cloud now evaluates previously unassessed 'Running On/With' configurations.
-
-//CWP-56798 [Doc Ticket]CWP-44076[Eng Ticket]
-|*Blobstore Scanning Defender Upgrade for Tanzu Customers*
-|Enhanced the existing blobstore scanning feature for Tanzu customers. As a part of this enhancement, existing blobstore scanning defenders  will now appear disconnected and new defender instances will be automatically created to replace them. The disconnected blobstore will disappear after 24 hours as part of the retention process. This upgrade excludes Linux and Windows defenders (Full coverage defenders).
-If you have configured blobstore scanning and assigned it to a specific blobstore defender after the release of 32.04, you are required to manually edit the configurations and change it to a newly created blobstore defender scanner. This release will also introduce a new tile support - Jimmy for TAS. 
-
-//CWP-56709 [Doc Ticket] CWP-42824 [Eng Ticket]
-// TODO:Pending Approval
-//|*Support of the OSV vulnerability database*
-//|Added https://pkg.go.dev/golang.org/x/vuln/internal/osv[OSV vulnerability database] support to detect Go package vulnerabilities.
-
-//CWP-56557 [Doc Ticket] CWP-53610 [Eng Ticket]
-//TODO:Pending Approval
-|*Show account ID on the defender page*
-|The Account ID is displayed on the Manage Defenders dashboard under *Manage > Defenders*.
-|===
-
-
-// [#deprecation-notices]
-// === Deprecation Notices
 // [cols="30%a,70%a"]
 // |===
 
+// //CWP-56841[Doc Ticket]CWP-48564[Eng Ticket]
+// //Moved from Update 4
+// | *Enhanced Vulnerability Assessment*
+
+// |To enhance the accuracy of vulnerability assessments, Prisma Cloud has incorporated support for the 'Running On/With' configuration as outlined by NVD. This configuration, which integrates nodes based on both vulnerable and non-vulnerable criteria, requires specific conditions to be met, such as relevant packages or operating systems, for a vulnerability to be applicable. This enhancement allows Prisma Cloud to consider 'Running On/With' configurations that were not previously assessed. However, it is important to note that the impact of this enhancement is contingent on whether the CVE is assessed through NVD, as vulnerability information from the vendor feed is prioritized.
+
+// //CWP-56785
+// |*Serverless Defender support for Java 17 and 21*
+// |Added support for deploying Serverless Defender on Java 17 and Java 21 runtimes.
+
+// //CWP-56791 & CWP-56790 & CWP-56030
+// // |*Exclude Windows vulnerabilities found in Go packages from UNIX OS*
+// // |Prisma Cloud now excludes vulnerabilities found in Go packages that are specific to Windows from UNIX based operating systems in the Vulnerability Explorer. Select *Monitor > Vulnerabilities > Vulnerability Explorer* for a comprehensive list of the detected vulnerabilities.
+
+// //CWP-57947
+// //TODO:Approval Pending -- Kamesh
+// |*Support for Google registry scanning*
+
+// |When onboarding GCP cloud accounts, Prisma Cloud now supports scanning of Google Container Registry (GCR) and Google Artifact Registry (GAR).
+
+// //CWP-56790 & CWP-56030
+// //TODO:Approval Pending -- Kamesh
+// |*OS-specific Evaluation for Go Packages*
+
+// |Prisma Cloud now evaluates operating system (OS) data for vulnerabilities detected in Go packages. This enhancement ensures that vulnerabilities are reported only if they meet the OS-specific criteria. For example, if vulnerabilities are detected in Go packages that are specific to Windows, they are reported only for Windows-based systems. They are not flagged for UNIX-based systems.
+
+// To view a detailed list of identified vulnerabilities, go to Monitor > Vulnerabilities > Vulnerability Explorer.
+
+// //CWP-56788
+// //TODO:Approval Pending -- Kamesh
+// |*New Console Environment Variable for system load management*
+
+// |A new Console environment variable, REFRESH_INTERVAL_SECONDS, has been added to prevent system overload issues when using the TAS applications with Defender.
+
+// Previously, Defender checked the state of TAS applications and containers every 10 seconds through an API call to the BBS server. However, frequent changes or restarts in applications within this duration could lead to system overload as Defender scanned all the apps that were impacted by the changes.
+
+// By setting a higher value for REFRESH_INTERVAL_SECONDS, users can now reduce system load by decreasing the scanning frequency. For example, if REFRESH_INTERVAL_SECONDS is set to 600 seconds, Defender checks for changes every 600 seconds, leading to a decrease in system load.
+
+// NOTE: Restart Defender for the REFRESH_INTERVAL_SECONDS environment variable to take effect.
+
 // |===
 
-[#api-changes]
-=== API Changes
 
-[cols="30%a,70%a"]
-|===
+// // [#deprecation-notices]
+// // === Deprecation Notices
+// // [cols="30%a,70%a"]
+// // |===
 
-//CWP-56590 [Doc Ticket] CWP-49617 [Eng Ticket]
-//TODO: Pending approval
-|*Report vulnerabilities using Package URL (purl) format*
-|The following API responses include a new parameter, ‘purl’:
+// // |===
 
-* https://pan.dev/compute/api/get-images[Get Image Scan Results]
-* https://pan.dev/compute/api/get-registry/[Get Registry Scan Results]
-* https://pan.dev/compute/api/get-scans/[Get All CI Image Scan Results]
-* https://pan.dev/compute/api/get-hosts/[Get Host Scan Results]
-* https://pan.dev/compute/api/get-vms/[Get VM Image Scan Results]
-* https://pan.dev/compute/api/get-serverless/[Get All CI Image Scan Results]
+// [#api-changes]
+// // === API Changes
 
-The ‘purl’ field identifies the absolute path for the packages.
+// // [cols="30%a,70%a"]
+// // |===
 
-//CWP-56448 [Doc Ticket] CWP-46058 [Eng Ticket]
-//TODO: Pending approval
-|*API for sending console logs to remote syslog*
-| https://pan.dev/compute/api/post-settings-logging/[Add Logging Settings] API includes a new parameter ‘cert’ under ‘Syslog’ to configure a TLS certificate.
 
-|===
+// // |===
 
-// [#eos-notices]
-// === End of Support Notices
+// // [#eos-notices]
+// // === End of Support Notices
+// // |===
+
+// // |===
+
+
+// [#addressed-issues]
+// === Addressed Issues
+
+// [cols="30%a,70%a"]
 // |===
 
+// // CWP-56591
+// // IMPORTANT: Not part of Update 5!!
+// // |*Enhanced CVE Detection for Older JAR Versions*
+// // |Fixed an issue where incorrect parsing of older JAR file versions resulted in missing CVE entries.
+
+// //CWP-56784
+// //TODO: Reviewd by Shlomi
+// |*Improved Handling of Rejected and Disputed CVEs*
+// |With the transition to the CVE 5.0 dataset, NVD has updated the format of rejected CVE descriptions.
+// Prisma Cloud now seamlessly identifies 'Rejected' and 'Disputed' statuses of CVEs. In NVD the status is *now* labeled as 'Rejected reason', while CVEs tagged as 'Disputed' are identified using cve.org data source, ensuring accurate vulnerability assessment.
+
+// //CWP-56554
+// //TODO: Pending Approval -- Perhaps incorrect
+// // |*Fixed Containerized Scan Failure*
+
+// // |Resolved issue causing containerized scans to fail due to long JSON, particularly when encountering large Java dependency lists. You can now conduct scans without encountering this issue.
+
+// //CWP-56788
+// //TODO: Approval Pending -- Kamesh
+// |*Defender fails to re-scan TAS applications after changes*
+
+// |Previously, if modifications were done to a TAS application (such as renaming it), Defender would fail to re-scan the application and update the results in the Console. This issue has been resolved, and Defender now re-scans the TAS applications whenever changes are made to them.
+
+// //CWP-56786
+// //TODO:Approval Pending -- Kamesh
+// |*Alpine Linux zlib not affected by CVE-2023-6992*
+
+// |CVE-2023-6992 impacts the Cloudflare version of the zlib library. However, the zlib library included in Alpine Linux is not affected by this vulnerability. We have submitted a https://gitlab.alpinelinux.org/alpine/aports/-/issues/15970[request] with Alpine Linux to add the CVE as a non-vulnerability for their zlib version.
+
+// //CWP-58081
+// //TODO:Approval Pending -- Kamesh
+// |*Fix for Parsing Issues in Vulnerable Package Versions*
+
+// |The fix resolves the following issues related to detection of vulnerable package versions: 
+
+// * Correct parsing of vulnerable package versions.
+// * Parsing of version ranges with different prefixes.
+// * Handling of conditions for multiple versions to ensure they are added to the Intelligence feed. This resolves both false negative and false positive alerts.
+
+
 // |===
-
-
-[#addressed-issues]
-=== Addressed Issues
-[cols="30%a,70%a"]
-|===
-
-//CWP-56818[Doc ticket] CWP-53147 [Engg. Ticket]
-|*Missing Node Count for EKS Clusters in SaaS Environment*
-|Previously, node count was not appearing for EKS clusters on *Manage > Cloud accounts* as a part of *Discovery* report. This is now addressed, and the accurate node count is displayed both on the Prisma Cloud console and in https://pan.dev/prisma-cloud/api/cwpp/get-cloud-discovery/[API Cloud Discovery scan results].
-
-//CWP-56591 [Doc Ticket] CWP-50970 [Eng Ticket]
-//|*Inconsistency with jar packages names*
-//|Fixed an issue where old jar versions were not parsed properly.
-
-//CWP-55859 [Eng Ticket] CWP-56294 [Doc Issue]
-//FIXME: No Doc ticket
-|*`incidentTime` (timestamp) macro for Webhooks*
-|The `incidentTime` macro is available for webhook alerts. The macro shows the time the incident occurred. For example, `Jan 21, 2018 UTC`.
-
-//CWP-56589[Doc Ticket] CWP-49010 [Eng Ticket]
-//TODO: Pending final approval post edit.
-|*Twistcli Image Scanning*
-|Resolved an issue where container images scanned with twistcli were not appearing in the Runtime Security, *Monitor >Vulnerabilities >Images >CI*. Use  `--build` and `--job` flags to include build number and job name information on *Runtime Security > Inventory*.
-
-//CWP-56554 [Doc Ticket] CWP-54108 [Eng Ticket]
-//TODO: Pending approval
-|*Fixed Containerized Scan Failure*
-|Resolved issue causing containerized scans to fail due to long JSON, particularly when encountering large Java dependency lists. You can now conduct scans without encountering this issue.
-
-//CWP-56787[Doc Ticket] CWP-56697 [Eng Ticket]
-//TODO: Pending approval
-|*Support to download Serverless Defender Bundle*
-|Prisma Cloud console supports downloading the serverless defender bundle for C# on Azure and AWS. This enhancement resolves a prior runtime error that prevented users from downloading the bundle.
-
-//CWP-56786 [Doc Ticket]
-//TODO: Pending Blurb
-
-//CWP-56784 [Doc Ticket] CWP-54107 [Eng Ticket]
-//TODO: Pending Approval
-//|*Improved Handling of Rejected CVEs*
-//|With the transition to the CVE 5.0 dataset, NVD has updated the format of rejected CVE descriptions. Prisma Cloud now seamlessly identifies 'Rejected' and 'Disputed' statuses of CVEs. The 'Rejected' status is now labeled as 'Rejected reason', while 'Disputed' status is indicated as a tag, ensuring accurate vulnerability assessment.
-
-//CWP-56782 [Doc Ticket] CWP-51529 [Eng Ticket]
-//TODO: Pending Approval
-|*Improved Vulnerability Assessment Process*
-|Prisma Cloud now enhances the vulnerability assessment process for applications installed from the OS. In cases where no vulnerabilities are detected in the vendor feed, Prisma Cloud will automatically search for third-party security data, ensuring comprehensive security coverage.
-
-//CWP-56294 [Doc Ticket] CWP-55859 [Eng Ticket]
-//HIDING THIS AS IT IS DUPLICATE OF CWP-55859
-//|*Add "incidentTime"*
-//|Added the `incidentTime` macro for webhook alerts. The macro shows the time the incident occurred. For example, `Jan 21, 2018 UTC`.
-
-|===

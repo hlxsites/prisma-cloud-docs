@@ -24,6 +24,20 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 //On *Inventory > Assets*, if you filter based on the _Key-Value_ *Asset Tag* and your environment has more that 1 million assets, the results will be inconclusive.
 //Contact your Prisma Cloud Customer Success representative for more details.
 
+|*RLP-128421*
+//Added in 24.4.1
+
+|When you run an RQL query to filter assets associated with the `azure-active-directory-b2c-tenants` API in the Europe region, you may notice that assets listed on the *Investigate* page under *Region Name* incorrectly display as GCP Europe instead of Azure Europe. However, you can safely assume that the asset listed under *Region Name* is Azure Europe instead of GCP Europe.
+
+*Workaround*: To verify the correct region, search for the `location` field in the asset’s JSON.
+
+|*RLP-128421*
+//Added in 24.4.1
+
+|When you filter assets associated with the *Azure AD B2C tenants* in the Europe region, you may notice that assets listed on the *Inventory* page under *Region ID* and *Region* columns incorrectly display as GCP Europe instead of Azure Europe. However, you can safely assume that the assets listed under the *Region* and *Region ID* columns are Azure Europe instead of GCP Europe.
+
+*Workaround*: To verify the correct region, search for the `location` field in the asset’s JSON.
+
 |*RLP-133698*
 //Added in 24.3.2
 
@@ -50,18 +64,13 @@ You can safely ignore these errors. They occur due to the migration of OCI tenan
 
 To verify successful onboarding, go to *Settings > Providers > Cloud Accounts* and ensure your account *Status* is *green* after 24 hours.
 
-|*RLP-118360*
-//Added in 24.1.2
-
-|The Saved Filters option is no longer available in the Darwin UI. It will be replaced with Saved Views in an upcoming release.
-
 |*RLP-123335*
 //Added in 23.12.1
 
 |When configuring Jira fields in the Prisma Cloud Notification template, it is important to note that the automatic population is limited to fields specifically of types `user` and `labels`. Other field types may not be populated as expected during the setup process. This is a known issue.
 
 |*RLP-113952*
-//Added in 24.1.1. Plan is to fix it in 24.2.2. This must be moved to fixed issues then.
+//Added in 24.1.1. Plan is to fix it in 24.5.2. This must be moved to fixed issues then.
 |While onboarding your Azure China tenant to Prisma Cloud, you might see an inaccurate warning within the *Review Status > Security Capabilities and Permissions* section, even if you have granted the necessary permissions.
 
 `Prisma Cloud application is not assigned following role(s): GroupMember.Read.All, Domain.Read.All, Reports.Read.All, Application.Read.All, Policy.Read.All;`
@@ -302,6 +311,37 @@ In particular, for such roles currently data about the following types of assets
 |*ISSUE ID*
 |*DESCRIPTION*
 
+//CWP-56554
+|tt:[Fixed in 32.05]
+|Resolved issue causing containerized scans to fail due to long scan data, particularly when encountering large Java dependency lists. You can now conduct scans without encountering this issue.
+
+//CWP-56784
+|tt:[Fixed in 32.05]
+|With the transition to the CVE 5.0 dataset, NVD has updated the format of rejected CVE descriptions.
+Prisma Cloud now seamlessly identifies 'Rejected' and 'Disputed' statuses of CVEs. In NVD the status is *now* labeled as 'Rejected reason', while CVEs tagged as 'Disputed' are identified using http://cve.org/[cve.org] data source, ensuring accurate vulnerability assessment.
+
+//CWP-56788
+|tt:[Fixed in 32.05]
+|Previously, if modifications were done to a TAS application (such as renaming it), Defender failed to re-scan the application and update the results in the Console. This issue has been resolved. Defender now re-scans the TAS applications whenever changes are made to them.
+
+//CWP-58016
+|tt:[Fixed in 32.05]
+|Fix an issue where “risk factor” field was missed on Function and Host CSV results.
+
+//CWP-56786
+|tt:[Fixed in 32.05]
+|CVE-2023-6992 impacts the Cloudflare version of the zlib library. However, the zlib library included in Alpine Linux is not affected by this vulnerability. A formal https://gitlab.alpinelinux.org/alpine/aports/-/issues/15970[request] has been made to Alpine Linux to classify this CVE as a non-vulnerability for their zlib version. The necessary patch has been merged, and we anticipate its inclusion in the https://secdb.alpinelinux.org[Alpine Linux Security Database] soon.
+
+//CWP-58081
+|tt:[Fixed in 32.05]
+|Resolved parsing issues in vulnerable package versions.
+
+The fix resolves the following issues related to detection of vulnerable package versions: 
+
+* Correct parsing of vulnerable package versions.
+* Parsing of version ranges with different prefixes.
+* Handling of conditions for multiple versions to ensure they are added to the Intelligence feed. This resolves both false negative and false positive alerts.
+
 //CWP-57215 and CWP-57235(cloned doc ticket)
 |tt:[Fixed in 32.04]
 |Vulnerabilities identified as GHSA-xm99-6pv5-q363, also known as CVE-2022-29583, are now suppressed in Defender and Console images since they are disputed.
@@ -330,7 +370,6 @@ Go to https://docs.prismacloud.io/en/classic/compute-admin-guide/alerts/webhook[
 |Resolved the issue where container images scanned with twistcli did not appear on the *Runtime Security > Inventory > Assets* and the *Cloud Security > Inventory > Compute Workloads* pages.
 *Note:* Use the `--build` and `--job` flags to include the build number and the job name to help identify the image as a build image that will be presented in the above screens.
 
-
 //RLP-133444
 |tt:[Fixed in 24.3.1]
 |The *Asset Tag* filter is only available for Limited General Availability enabled tenants. Previously, it was incorrectly added to Asset Inventory for all users of the Prisma Cloud console. 
@@ -339,7 +378,6 @@ As an affected user you may have experienced the following:
 
 * Asset Tag filter option available in the UI.
 * Using the filter results in no filtering of assets or an error displaying results.
-
 
 // CWP-54770
 |tt:[Fixed in 32.03]

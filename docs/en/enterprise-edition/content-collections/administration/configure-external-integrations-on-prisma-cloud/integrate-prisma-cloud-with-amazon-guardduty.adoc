@@ -16,17 +16,22 @@ Prisma® Cloud integrates with GuardDuty and extends its threat visualization ca
 +
 The Prisma Cloud IAM Role policy you use to onboard your AWS setup needs to include these permissions:
 +
-screen:[ guardduty:List*, ]screen:[guardduty:Get*]If you used the CFT templates to onboard your AWS account, the Prisma Cloud IAM Role policy already has the permissions required for Amazon GuardDuty.
+* `guardduty:List`
+* `guardduty:Get`
++
+tt:[NOTE] If you used the CFT templates to onboard your AWS account, the Prisma Cloud IAM Role policy already has the permissions required for Amazon GuardDuty.
 
-. After Prisma Cloud has access to the Amazon GuardDuty findings, use the following RQL queries for visibility into the information collected from Amazon GuardDuty.
+. After Prisma Cloud has access to the Amazon GuardDuty findings, use RQL queries for visibility into the information collected from Amazon GuardDuty.
 +
-Config Query:
+.. Navigate to *Investigate > Search* page.
 +
-screen:[config from cloud.resource where cloud.type = 'aws' AND finding.type = 'AWS GuardDuty Host' ]
+.. To search for *Config Query*, enter the following RQL query.  
 +
-Network Query:
+----
+config from cloud.resource where cloud.type = 'aws' AND finding.type = 'AWS GuardDuty Host'
+----
 +
-screen:[network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS GuardDuty Host' ) ]Click on the resource to see the *Audit Trail*.
+The query returns a list of affected assets for further investigation. Select an asset to view the *Finding Types* side panel. The panel lists threats or security issues associated with the asset.
 +
 image::administration/guardduty-audit-trail.png[]
 +
@@ -34,4 +39,16 @@ Click *Findings* for information related to vulnerabilities. Select *AWS GuardDu
 +
 image::administration/guardduty-host-findings.png[]
 +
-screen:[config from cloud.resource where api.name = 'aws-iam-list-access-keys' AND finding.source = 'AWS GuardDuty']
+----
+config from cloud.resource where api.name = 'aws-iam-list-access-keys' AND finding.source = 'AWS Guard Duty'
+----
+
+.. To search for *Network Query*, enter the following RQL query.
++
+----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS GuardDuty Host' )
+----
++
+The query returns a visual representation of the assets for further investigation. 
++
+image::administration/guardduty-network-query.png[]

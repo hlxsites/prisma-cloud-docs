@@ -1,0 +1,50 @@
+== Log Forwarding Profile not selected for a Palo Alto Networks device security policy rule
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 7d87f63b-abca-47c8-8e18-0365f4bb4a23
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyLogForwarding.yaml[CKV_PAN_9]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether all security policy rules in Palo Alto Networks devices are associated with a Log Forwarding Profile. These profiles are essential for monitoring, troubleshooting, and auditing, as they determine which logs are forwarded and their destination for analysis and storage.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* log_setting
+
+To mitigate this issue, ensure that the `log_setting` attribute in your `panos_security_rule` resources is defined, and points to an existing Log Forwarding Profile. This setup ensures that activity logs for each rule are captured and forwarded correctly, facilitating effective monitoring and analysis.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  tasks:
+    - name: Example
+      paloaltonetworks.panos.panos_security_rule:
+        ...
++        log_setting: 'default'
+----
+
+In this example, configuring the `log_setting` attribute with a valid Log Forwarding Profile name for each security rule ensures that logging is properly implemented for security monitoring and analysis.
