@@ -1,6 +1,24 @@
 == Network Flow Query Examples
 
-//Some examples for Network Flow Log Queries.
+//Some examples for Network Flow Log Queries. 
+
+//Removed 3 examples based on Akbar Aziz's comments in Slack: 
+//|Look for source entities which are AWS ELBs with connections to more than 10 unique peer IP addresses, but those peer IPs are not endpoints that function as Databases.
+//|----
+//network from vpc.flow_record where src.resource IN (RESOURCE WHERE role = ('AWS ELB') AND source.outboundpeers > 10) AND dest.resource IN (RESOURCE WHERE role != ('Database'))
+//----
+//|Identify any instances with a private IP address (specified in the CIDR format) that are sending traffic to the Internet.
+//|----
+//network from vpc.flow_record where cloud.account=account_name AND source.ip IN(172.31.0.0/12,10.0.0.0/8) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
+//----
+//[NOTE]
+//====
+//Public IP addresses in the CIDR format cannot be set as a source or destination IP address, or a comma seperated value list.
+//====
+//|View whether a list of specified IP addresses are sending traffic to the Internet.
+//|----
+//network from vpc.flow_record where cloud.account=account_name AND source.ip IN(52.31.0.0,10.0.8.0) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
+//----
 
 The following examples show you how to use xref:network-flow-query-attributes.adoc[Network Flow Query Attributes] in RQL for investigating network flow issues.
 
@@ -37,28 +55,6 @@ network from vpc.flow_record where src.publicnetwork IN ('Suspicious IPs','Inter
 |Look for traffic from Internet to any instance outside of Web servers, NAT Gateways or ELBs.
 |----
 network from vpc.flow_record where src.publicnetwork IN ('Suspicious IPs','Internet IPs') AND dest.resource IN ( resource where role not in ( 'AWS NAT Gateway' , 'AWS ELB' ) ) and protocol not in ( 'ICMP' , 'ICMP6' )
-----
-
-
-|Look for source entities which are AWS ELBs with connections to more than 10 unique peer IP addresses, but those peer IPs are not endpoints that function as Databases.
-|----
-network from vpc.flow_record where src.resource IN (RESOURCE WHERE role = ('AWS ELB') AND source.outboundpeers > 10) AND dest.resource IN (RESOURCE WHERE role != ('Database'))
-----
-
-
-|Identify any instances with a private IP address (specified in the CIDR format) that are sending traffic to the Internet.
-|----
-network from vpc.flow_record where cloud.account=account_name AND source.ip IN(172.31.0.0/12,10.0.0.0/8) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
-----
-[NOTE]
-====
-Public IP addresses in the CIDR format cannot be set as a source or destination IP address, or a comma seperated value list.
-====
-
-
-|View whether a list of specified IP addresses are sending traffic to the Internet.
-|----
-network from vpc.flow_record where cloud.account=account_name AND source.ip IN(52.31.0.0,10.0.8.0) AND dest.publicnetwork IN 'Internet IPs' AND bytes > 0
 ----
 
 |===
