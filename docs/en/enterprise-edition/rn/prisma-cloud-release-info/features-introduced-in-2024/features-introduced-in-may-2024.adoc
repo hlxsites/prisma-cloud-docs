@@ -10,7 +10,7 @@ Learn what's new on Prisma® Cloud in May 2024.
 * <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
 * <<changes-in-existing-behavior>>
-* <<deprecation-notices>>
+//* <<deprecation-notices>>
 
 
 [#new-features]
@@ -20,30 +20,6 @@ Learn what's new on Prisma® Cloud in May 2024.
 |===
 |*Feature*
 |*Description*
-
-|tt:[Update] *Top Risks From Unmanaged Assets Widget*
-
-tt:[*24.5.2*]
-
-tt:[Secure the Infrastructure]
-//RLP-132742
-
-|The https://docs.prismacloud.io/en/enterprise-edition/content-collections/dashboards/dashboards-discovery-exposure-management[Top Risks From Unmanaged Assets] widget in the Discovery and Exposure Management Dashboard is enhanced to display the top risks based on various categories that affect your security posture due to public exposure of assets on the internet. The risks are categorized as Critical, Exploited, Patchable, Vulnerable, and Exposed. The links provide additional context and options to convert and inspect affected assets, helping you to quickly assess and address potential threats.
-
-image::top-risks-from-unmanaged-assets.png[]
-
-
-|*Vulnerabilities Tab*
-
-tt:[*24.5.2*]
-
-tt:[Secure the Infrastructure]
-//RLP-132742
-
-|Explore the new Vulnerabilities tab in the side panel while inspecting internet-exposed assets. You can now see Common Vulnerabilities and Exposures (CVE) discovered on the exposed asset. The severity levels of the CVEs are categorized based on the Common Vulnerability Scoring System (CVSS) scores, helping you to make informed decisions and take appropriate actions to secure the internet-exposed asset.
-
-image::cdem-rn.gif[]
-
 
 |*Visualize and Resolve Identity Based Threats*
 
@@ -59,6 +35,8 @@ tt:[Secure the Infrastructure]
 * What are the risk categories that require my immediate attention?
 * How can I see key Identity and Access Management benchmarks that I can track and report to the rest of my team?
 
+image::identity-dashboard.gif[]
+
 
 |*RQL Available to Investigate Over-Privileged Access*
 
@@ -69,34 +47,22 @@ tt:[Secure the Infrastructure]
 
 |The Permissions https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/permissions-queries/permissions-query-attributes[queries] are enhanced to include a new *grantedby.cloud.policy.isExcessive* attribute to identify excessive access in IAM policies across your AWS, Azure, and GCP cloud environments. 
 
-
-|*Support for Agentless Scan in AWS Onboarding*
-
-tt:[*24.5.2*]
-
-tt:[Secure the Infrastructure]
-//RLP-126138
-
-|<WIP>
-
-
-|*CNA Kubernetes (K8s) Container Exposure*
+|*Prisma Cloud Surfaces Third Party Vendor Account Information*
 
 tt:[*24.5.2*]
 
 tt:[Secure the Infrastructure]
-//CNS-9431
-
-|<WIP>
-
-//*Prisma Cloud Surfaces Third Party Vendor Account Information*
-
-//tt:[*24.5.2*]
-
-//tt:[Secure the Infrastructure]
 //RLP-139507
 
-//Enhancements to Prisma Cloud's Search and Investigate functionality, allow you to identify third party vendors that may have access to service accounts and roles in your cloud environment. Explore and investigate these vendor accounts in AWS with ease, leveraging account number to vendor matching look up. RQL queries are also available to surface vendor account information.
+|Enhancements to Prisma Cloud's Search and Investigate functionality allow you to identify third-party vendors that may have access to service accounts and roles in your cloud environment. Explore and investigate third party vendor accounts in AWS with ease, leveraging account number to vendor matching look up. Use the https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/permissions-queries/permissions-query-attributes[RQL query] examples to fine tune your search to surface vendor account information.
+
+* To retrieve all known vendor accounts that have access to your environment:
+
+`config from iam where source.cloud.account.isvendor = true` 
+
+* To retrieve all vendor accounts with environment access that start with Red:
+
+`config from iam where source.cloud.account STARTS WITH 'Red' and source.cloud.account.isvendor = true`
 
 |*Risk Factors to Prioritize Your Code-to-Cloud Security*
 
@@ -114,7 +80,7 @@ tt:[*24.5.2*]
 tt:[Secure the Source]
 //BCE-32899
 
-|You can now customize your https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/fix-code-issues[pull request titles and branch names] for suggested fixes. This feature enables organizations to enforce a consistent naming convention, ensuring clear and contextual information about the purpose of the fix and makes it easier for team members to understand the changes being made.
+|You can now customize your https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/fix-code-issues[pull request titles and branch names] for suggested fixes. This enables organizations to enforce a consistent naming convention, ensuring clear and contextual information about the purpose of the fix and makes it easier for team members to understand the changes being made.
 
 
 |*Integration with Amazon Security Lake*
@@ -226,7 +192,7 @@ This feature includes three statuses:
 
 |===
 
-//check with engg RLP-132803, RLP-139583, and RLP-136776
+
 
 [#api-ingestions]
 === API Ingestions
@@ -248,7 +214,7 @@ Additional permissions required:
 * `network-firewall:DescribeLoggingConfiguration`
 * `network-firewall:ListFirewalls`
 
-The Security Audit role includes the permissions.
+The Security Audit Policy role includes the permissions.
 
 |*AWS Migration Hub*
 
@@ -577,7 +543,7 @@ tt:[*24.5.1*]
 tt:[*24.5.2*]
 //RLP-139079
 
-|Identifies Amazon OpenSearch Service domains that have service software updates available but not installed for the domain.
+|This policy identifies Amazon OpenSearch Service domains that have service software updates available but not installed for the domain.
 
 Amazon OpenSearch Service is a managed solution for deploying, managing, and scaling OpenSearch clusters. Service software updates deliver the most recent platform fixes, enhancements, and features for the environment, ensuring domain security and availability. To minimize service disruption, it's advisable to schedule updates during periods of low domain traffic. 
 
@@ -596,7 +562,7 @@ config from cloud.resource where cloud.type = 'aws' and api.name= 'aws-es-descri
 tt:[*24.5.2*]
 //RLP-139010
 
-|Identifies Amazon Neptune DB clusters lacking sufficient backup retention tenure. 
+|This policy identifies Amazon Neptune DB clusters lacking sufficient backup retention tenure. 
 
 AWS Neptune DB is a fully managed graph database service. The backup retention period denotes the duration for storing automated backups of the Neptune DB clusters. Inadequate retention periods heighten the risk of data loss, and compliance issues, and hinder effective recovery in security breaches or system failures. 
 
@@ -615,7 +581,7 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-neptune-
 tt:[*24.5.2*]
 //RLP-138983
 
-|Identifies Amazon Neptune DB clusters where audit logging is disabled or audit logs are not published to Amazon CloudWatch Logs.
+|This policy identifies Amazon Neptune DB clusters where audit logging is disabled or audit logs are not published to Amazon CloudWatch Logs.
 
 Neptune DB integrates with Amazon CloudWatch for performance metric gathering and analysis, supporting CloudWatch Alarms. While Neptune DB provides customizable audit logs for monitoring database operations, these logs are not automatically sent to CloudWatch Logs, limiting centralized monitoring and analysis of database activities.
 
@@ -634,7 +600,7 @@ config from cloud.resource where api.name = 'aws-neptune-db-cluster' AND json.ru
 tt:[*24.5.2*]
 //RLP-138895
 
-|Identifies Amazon DocumentDB cluster where audit logging is disabled or audit logs are not published to Amazon CloudWatch Logs. 
+|This policy identifies Amazon DocumentDB cluster where audit logging is disabled or audit logs are not published to Amazon CloudWatch Logs. 
 
 DocumentDB integrates with Amazon CloudWatch for performance metric gathering and analysis, supporting CloudWatch Alarms. While DocumentDB provides customizable audit logs for monitoring database operations, these logs are not automatically sent to CloudWatch Logs, limiting centralized monitoring and analysis of database activities. 
 
@@ -653,7 +619,7 @@ config from cloud.resource where api.name = 'aws-docdb-db-cluster' AND json.rule
 tt:[*24.5.2*]
 //RLP-138877
 
-|Identifies the AWS Network Firewall for which delete protection is disabled. AWS Network Firewall manages inbound and outbound traffic for the AWS resources within Virtual Private Clouds (VPCs). 
+|This policy identifies the AWS Network Firewall for which delete protection is disabled. AWS Network Firewall manages inbound and outbound traffic for the AWS resources within Virtual Private Clouds (VPCs). 
 
 The deletion protection setting protects against accidental deletion of the firewall. Deletion of a firewall increases the risk of unauthorized access, data breaches, and compliance issues. 
 
@@ -673,7 +639,7 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-networkf
 tt:[*24.5.2*]
 //RLP-138515
 
-|Identifies AWS Application Load Balancers that are not configured to drop HTTP headers. 
+|This policy identifies AWS Application Load Balancers that are not configured to drop HTTP headers. 
 
 AWS Application Load Balancers distribute incoming HTTP/HTTPS traffic across multiple targets such as EC2 instances, containers, and Lambda functions, based on routing rules and health checks. By default, ALBs are not configured to drop invalid HTTP header values, which can leave the load balancer vulnerable to HTTP desync attacks. HTTP desync attacks manipulate request headers to exploit inconsistencies between servers, potentially leading to security vulnerabilities and unauthorized access. 
 
@@ -693,7 +659,7 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-de
 tt:[*24.5.2*]
 //RLP-137211
 
-|Identifies Azure Storage accounts that are enabled with cross tenant replication. 
+|This policy identifies Azure Storage accounts that are enabled with cross tenant replication. 
 
 Azure Storage account cross tenant replication allows data to be replicated across multiple Azure tenants. Though this feature is beneficial for data availability it also poses a significant security risk if not properly managed. Possible risks include unauthorized access to data, data leaks, and compliance violations. Disabling Cross Tenant Replication reduces the risk of unauthorized data access and prevents the accidental sharing of sensitive information. 
 
@@ -713,7 +679,7 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-stor
 tt:[*24.5.2*]
 //RLP-133160
 
-|Identifies Azure App services that have HTTP logging disabled. 
+|This policy identifies Azure App services that have HTTP logging disabled. 
 
 By enabling HTTP logging for your app service, you can collect log information and use it to monitor and troubleshoot your app, as well as identify any potential security issues or threats. This can help to ensure that your app is running smoothly and is secure from potential attacks. 
 
@@ -732,7 +698,7 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 tt:[*24.5.2*]
 //RLP-139380
 
-|Identifies Azure App Service Environments that are configured with weak TLS Cipher suites.
+|This policy identifies Azure App Service Environments that are configured with weak TLS Cipher suites.
 
 Azure App Service Environments host web applications and APIs in a dedicated and isolated environment. When these environments are configured with weak TLS Cipher suites, they can expose sensitive data to potential security risks. Weak cipher suites may allow attackers to intercept and decrypt communication between clients and the App Service Environment, leading to unauthorized access, data breaches, and potential compliance violations. The recommended cipher suites are TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 and TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256.
 
@@ -745,93 +711,6 @@ As best practice, it is recommended to avoid using weak TLS Cipher suites to enh
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service-environment' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.clusterSettings exists and properties.clusterSettings[?any(name equal ignore case FrontEndSSLCipherSuiteOrder)] does not exist
 ----
-
-|*GKE NodePool configuration managed at cluster level*
-
-tt:[*24.5.2*]
-//By JBakst via Slack
-
-|This policy checks whether Google Kubernetes Engine (GKE) clusters uses NodePools within their configuration. The reason for this check is that using NodePools in the cluster configuration can unnecessarily complicate cluster management. When NodePools are used at the cluster level, modifying the node configuration creates a new NodePool, increasing operational complexity. Additionally, failing to delete older NodePools after creating new ones can lead to excess resource consumption. It is recommended to manage node configurations separately from the cluster to prevent these issues.
-
-*Policy Severity—* Low
-
-*Policy Type—* Config
-
-*Policy Subtype—* Build
-
-
-|*GCP Cloud Function configured with overly permissive Ingress setting*
-
-tt:[*24.5.2*]
-//By JBakst via Slack
-
-|This policy checks whether GCP Cloud Functions are configured with overly permissive Ingress settings. Overly permissive Ingress settings allow all inbound requests to the function, both from the public and from resources within the same project. It is recommended to restrict the traffic to improve network-based access control, allowing traffic only from VPC networks within the same project or through the Cloud Load Balancer.
-
-*Policy Severity—* Low
-
-*Policy Type—* Config
-
-*Policy Subtype—* Run, Build
-
-
-|*IBM Cloud Object Storage bucket is not restricted to Private IP ranges*
-
-tt:[*24.5.2*]
-//RLP-138876
-
-|This policy identifies IBM Cloud object storage buckets that are not restricted to private IP ranges or if the cloud object storage firewall is not configured.
-
-IBM Cloud Storage Firewall enables users to control access to their stored data by setting up firewall rules and restricting access to authorised IP addresses or ranges, thereby enhancing security and compliance with regulatory standards. Not restricting access via the IBM Cloud Storage Firewall to private IPs increases the risk of unauthorised data access, breaches, and potential compliance violations.
-
-It is recommended to add only private IPs to the list of authorised IPs / ranges in bucket firewall policies.
-
-*Policy Severity—* Low
-
-*Policy Type—* Config
-
-----
-config from cloud.resource where cloud.type = 'ibm' AND api.name = 'ibm-object-storage-bucket' AND json.rule = (firewall does not exist or (firewall exists and _IPAddress.areAnyOutsideCIDRRange(firewall.allowed_ip,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8) is true))
-----
-
-|*IBM Cloud user with IAM policies provide administrative privileges for Cloud object storage buckets*
-
-tt:[*24.5.2*]
-//RLP-138015
-
-|This policy identifies IBM Cloud users with overly permissive administrative role on IBM Cloud cloud object storage service. 
-
-IBM Cloud Object Storage is a highly scalable, resilient, and secure managed data storage service on the IBM Cloud platform that offers an alternative to traditional block and file storage solutions. When a user having a policy with admin rights on object storage gets compromised, the whole service gets compromised. 
-
-As a security best practice, it is recommended to grant the least privilege access, such as granting only the permissions required to perform a task, instead of providing excessive permissions.
-
-*Policy Severity—* Low
-
-*Policy Type—* Config
-
-----
-config from cloud.resource where api.name = 'ibm-iam-policy' AND json.rule = type equal ignore case "access" and roles[?any( role_id is member of ("crn:v1:bluemix:public:iam::::role:Administrator","crn:v1:bluemix:public:iam::::serviceRole:Manager") )] exists and resources[?any( attributes[?any( name equal ignore case "serviceName" and value equal ignore case "cloud-object-storage" and operator is member of ("stringEquals", "stringMatch"))] exists and (attributes[?any( name is member of ("resource","resourceGroupId","serviceInstance","prefix"))] does not exist or attributes[?any( name equal ignore case "resourceType" and value equal ignore case "bucket" )] exists ) )] exists and subjects[?any( attributes[?any( name contains "iam_id" and value contains "IBMid")] exists )] exists as X;config from cloud.resource where api.name = 'ibm-iam-user' as Y; filter '$.X.subjects[].attributes[].value contains $.Y.iam_id'; show Y;
-----
-
-
-|*IBM Cloud Service ID with IAM policies provide administrative privileges for Cloud object storage buckets*
-
-tt:[*24.5.2*]
-//RLP-138005
-
-|This policy identifies IBM Cloud Service ID, which has policy with administrator role permission for cloud object storage service. 
-
-IBM Cloud Object Storage is a highly scalable, resilient, and secure managed data storage service on the IBM Cloud platform that offers an alternative to traditional block and file storage solutions. When a Service ID having a policy with admin rights on object storage gets compromised, the whole service gets compromised.
-
-As a security best practice, it is recommended to grant the least privileged access, such as granting only the permissions required to perform a task, instead of providing excessive permissions.
-
-*Policy Severity—* Low
-
-*Policy Type—* Config
-
-----
-config from cloud.resource where api.name = 'ibm-iam-policy' AND json.rule = type equal ignore case "access" and roles[?any( role_id is member of ("crn:v1:bluemix:public:iam::::role:Administrator","crn:v1:bluemix:public:iam::::serviceRole:Manager") )] exists and resources[?any( attributes[?any( name equal ignore case "serviceName" and value equal ignore case "cloud-object-storage" and operator is member of ("stringEquals", "stringMatch"))] exists and (attributes[?any( name is member of ("resource","resourceGroupId","serviceInstance","prefix"))] does not exist or attributes[?any( name equal ignore case "resourceType" and value equal ignore case "bucket" )] exists ) )] exists and subjects[?any( attributes[?any( name contains "iam_id" and value contains "iam-ServiceId")] exists )] exists as X;config from cloud.resource where api.name = 'ibm-iam-service-id' as Y; filter '$.X.subjects[].attributes[].value contains $.Y.id'; show Y;
-----
-
 
 |*AWS DocumentDB clusters have backup retention period less than 7 days*
 
@@ -1361,20 +1240,15 @@ You can now view this built-in standard and associated policies on the *Complian
 |*Change*
 |*Description*
 
-|*RLP-140724 placeholder*
-
-tt:[24.5.2]
+// |*RLP-140724 placeholder*
+// tt:[24.5.2]
 //RLP-140724
+// |<tbd>
 
-|<tbd>
-
-|*RLP-134393 placeholder*
-
-tt:[24.5.2]
+// |*RLP-134393 placeholder*
+//tt:[24.5.2]
 //RLP-134393
-
-|<tbd>
-
+// |<tbd>
 
 |*Integration APIs*
 
@@ -1400,28 +1274,10 @@ tt:[24.5.1]
 
 |===
 
-[#deprecation-notices]
-=== Deprecation Notices
-
-[cols="37%a,63%a"]
-|===
-|*Change*
-|*Description*
-
-|*End of support for Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services*
-
-tt:[24.5.2]
-//RLP-134902
-
-|The following APIs are now deprecated because Azure had announced the retirement of Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
-
-* azure-data-lake-analytics-account
-* azure-data-lake-analytics-diagnostic-settings
-* azure-data-lake-store-gen1-account
-* azure-data-lake-store-gen1-diagnostic-settings
-
-In RQL, the key is not available in the `api.name` attribute auto-completion.
-
-*Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts are resolved as Policy_Deleted.
-
-|===
+//[#deprecation-notices]
+//=== Deprecation Notices
+// [cols="37%a,63%a"]
+// |===
+// |*Change*
+// |*Description*
+// |===
