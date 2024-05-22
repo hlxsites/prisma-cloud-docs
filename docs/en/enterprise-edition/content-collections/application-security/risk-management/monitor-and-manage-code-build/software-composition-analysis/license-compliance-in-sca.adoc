@@ -1,6 +1,598 @@
 
 == License Compliance in Software Composition Analysis (SCA)
 
+Open source software licenses define the terms under which open source software can be used, modified, and distributed. Therefore, when selecting an open source package, it's crucial to understand the types of licenses and the associated user restrictions to mitigate any potential compliance issues.
+
+In Prisma Cloud, licenses are scanned as part of the Software Composition Analysis (SCA) vulnerability scan for open source packages. License restrictions for each package are determined either at the root package (direct dependent package) or at the sub-dependent package level. 
+
+NOTE: By default, license policies are disabled. To enable them, refer to <<#enable-disable-license,Enable/Disable License Policies>> below. 
+
+=== License Types
+
+Prisma Cloud offers three types of default license policies out of the box, providing comprehensive coverage for managing license compliance within your environment. Within each license type, SPDX identifiers are organized and sorted based on their characteristics and attributes. This sorting method helps effectively categorize and identify software packages distributed under each specific license type, enabling precise management of license compliance.
+
+* *Weak Copyleft Licenses* policies (*Medium* severity): Identifies software packages distributed under weak copyleft licenses. These licenses permit combining code with other licenses, including proprietary licenses, without mandating the entire derivative work to be released under the same copyleft license
+
+* *Strong Copyleft Licenses* policies (*High* severity): Identifies software packages distributed under strong copyleft licenses, such as the GNU General Public License (GPL). These licenses require derivative works to be distributed under the same copyleft license terms as the original work. This ensures broader access and modification rights
+
+* *Non Permissive Licenses* policies (*High* severity): Identifies software packages distributed under non-permissive or restrictive licenses. These licenses restrict how you can use, modify, and distribute the software. They might limit your ability to integrate the software into certain projects or require you to purchase a commercial license for specific uses
+
+For more information on default license policies refer to xref:../../../../../policy-reference/license-policies/license-policies.adoc[License Policies].
+
+In addition, you can create custom license policies to suit your organization's requirements. See <<#custom-policies,Create Custom License Policies>> below for more information.
+
+=== Permissions
+
+For permissions required to view, create, modify policies, and more, refer to xref:../../../../administration/prisma-cloud-admin-permissions.adoc[Prisma Cloud Administrator Permissions].
+
+[.task]
+=== GRBAC for License Policy Permissions
+
+GRBAC (Granular Role-Based Access Control) is used to manage permissions for License policies, as well as all Build policies. You can define the policy permissions as required for each Permission Group.
+
+[.procedure]
+
+. In *Application Security*, select *Settings* > *Access Control* in the left side-bar menu.
++
+The *Permission Groups* tab is selected by default.
++
+image::application-security/licenses-permission-group1.1.png[]
+
+. Create or edit a Permission Group according to requirements.
++
+Refer to the xref:../../../../administration/create-custom-permission-groups.adoc[Create Custom Permission Groups] documentation for more information.
+
+. In the 'Assign Permissions' step of the 'Add Permission Group' wizard, select your required permissions in the *Policies* menu under the *Assign Permission* step > complete the Group Permission setup.
++
+image:application-security/license-grbac-policies1.0.png[]
+
+
+[#view-license-policies]
+=== View License Policies
+
+Access the *Governance* page to review license policies. To narrow a search, select *Config* under *Policy Type* and *Build* under *Policy Subtype* filters. Apply additional filters from the *Add Filter* menu to further narrow your search.
+
+To view custom license policies, select the *Custom* tab on the Governance page, and then use filters to narrow your search.
+
+image::application-security/licenses-custom-find2.1.png[]
+////
+. On the Prisma Cloud console, select *Governance*.
+
+. To locate License policies. 
+
+.. Select *Config* under *Policy Type*.
+.. Select *Build* under *Policy Subtype*.
+
+. Further narrow a search through Policy Category filters 
+////
+////
++
+You can apply this filter to search for predefined policies based on either Policy or specific license category. In addition, you can filter by custom policies. 
+
+.. Create a *Policy Label* filter: Select *Add Filter* > *Policy Label* > *License Policy*.
+
+
+.. *Filter by Policy type*: Select *License Policy*. All predefined policies related to licenses, that is all weak copyleft, strong copyleft, and non-permissive license policies, are displayed
+.. *Filter by specific License category*: Select a license category: *Weak copyleft*, *Strong copyleft*, or *Non-permissive license*. All predefined policies related to the selected category are displaye.
+.. *Custom Policies*: Select a custom policy label that you assigned when creating a custom policy. Refer to *step 2* of <<#custom-policies,Create Custom License Policies>> process below.
++
+image::application-security/licenses-add-policy-add-license3.1.png[]
+
+NOTE: This procedure offers one method for locating License policies. Alternatively, you can filter by 'Policy Type' and 'Policy Subtype', 'Compliance Requirement', and more. Additionally, utilize the search bar to quickly locate specific policies.
+
+////
+////
+Actionable Steps:
+Navigate to Governance Tab: Go to the Prisma Cloud console and click on the "Governance" tab.
+Filter by Policy Label: Add a filter for "Policy Label" to view both default and custom license policies.
+Select Pre-defined Policies: Filter using provided values for common license types such as Weak Copyleft, Strong Copyleft, and Non-permissive.
+Explore Custom Policies: If applicable, select custom policy labels assigned during creation.
+////
+////
+////
+=== Manage License Policies
+
+You can edit, clone, view Alert rules, delete license policies and more to suit your organizations requirements. 
+
+. Locate  your License policies - see <<#view-license-policies],View License Policies>> above. 
+. Select the *edit* icon under the *Actions* column of a license policy, and edit the values that are displayed in the wizard. 
+
+NOTE: For more information on custom policies, refer to <<#custom-policies,Create Custom License Policies>> below.
+
+[#enable-disable-license]
+==== Enable/Disable License Policies
+
+Enable/disable individual license policies based on your organization's specific needs to maintain flexibility in compliance management.
+
+. On the *Governance* page, select a policy > toggle the button under the *Status* column *ON/OFF* .
++ 
+image::application-security/licenses-enable1.1.png[]
+
+
+
+////
+==== Modify License Policy Severity Level 
+
+Modify the severity level of a policy to effectively prioritize and address compliance violations.
+
+. On the *Governance* page, select the *edit* icon under the *Actions* column of a license license policy.
+. In the *Edit Config Policy* step of the wizard that is displayed, select a value from the *Severity* menu > Select *Next* through the wizard steps > click *Submit*.
+////
+// Need to add procedure and image
+
+==== Enforcement
+
+Enforce license violations by severity and policy labels, ensuring developers are promptly notified during pull requests if they introduce a package with an unapproved license. For further details on Enforcement rules, refer to xref:../../monitor-and-manage-code-build/enforcement.adoc[Enforcement].
+
+////
+==== Delete License Policies
+
+To delete a License policy, in *Governance*, select a policy > click the *Edit* icon under the *Actions* column > select *Delete Policy* in the 'Confirmation' popup.
+////
+
+
+////
+==== Guidelines
+
+* License policies use YAML query syntax and follow the same query rules as IaC policies. For example: 
++
+[source,yaml]
+----
+metadata:
+    guidelines: "My policy guidelines"
+    category: license
+scope:
+    provider: "aws"
+definition:
+ or:
+  - cond_type: "attribute"
+    resource_types:
+    - "some_resource"
+    attribute: "hello"
+    operator: "exists"
+----
+
+* *Logical operators* include `and, or, not`
+
+* *Conditions* 
+
+** *attribute*: attribute / value check (equals, contains, and so on). See <<#attribute-cond-oper,Attribute Condition Operators>> below for more information
+** *connection*: Check connected resource types
+** *Filter*: Selects resources from a connection
+
+* The *provider* must be a supported value
+* The *resource type* does not have to be from a supported or default provider as it is a policy metadata field
+
+==== Definition Structure
+
+* Child of definition must be a single and, or, not, or a condition (not a list)
+* Child of `and / or`` must be a list of `and, or, not``, or condition(s)
+* Child of `not`` must be a single `and, or, not``, or a condition (can be a list of length 1)
+
+For more information on creating custom policies refer to the xref:../../../../governance/custom-build-policies/code-editor.adoc[Code Editor]documentation. For examples, refer to ../../../../governance/custom-build-policies/custom-build-policy-examples.adoc.
+
+
+
+==== Definition Examples
+
+[cols="1,1",]
+
+|===
+| Definition | Description
+
+| [source,yaml]
+----
+definition:
+  cond_type: attribute
+  resource_types: 
+  - aws_lb
+  operator: equals
+  attribute: internal
+  value: true
+----
+
+| This definition specifies a condition where the attribute 'internal' of an AWS load balancer (aws_lb) must equal 'true'.
+
+| [source,yaml]
+----
+definition:
+  or:
+    - cond_type: attribute
+      resource_types: 
+      - aws_lb
+      operator: equals
+      attribute: internal
+      value: true
+    - ...
+----
+
+| This definition represents an 'OR' condition where either the attribute 'internal' of an AWS load balancer (aws_lb) equals 'true' or another condition applies.
+
+| [source,yaml]
+----
+definition:
+  or:
+    - cond_type: attribute
+      resource_types: 
+      - aws_lb
+      operator: equals
+      attribute: internal
+      value: true
+    - and:
+      - or:
+        - ...
+----
+
+| This definition represents an 'OR' condition where either the attribute 'internal' of an AWS load balancer (aws_lb) equals 'true' or a complex 'AND' condition applies.
+
+| [source,yaml]
+----
+definition:
+  not:
+    - cond_type: attribute
+      value: true
+      attribute: internal
+      resource_types: 
+      - aws_lb
+      operator: equals
+----
+
+| This definition specifies a negation condition where the attribute 'internal' of an AWS load balancer (aws_lb) must not equal 'true'.
+
+| [source,yaml]
+----
+definition:
+  not:
+    cond_type: attribute
+    value: true
+    attribute: internal
+    resource_types: 
+    - aws_lb
+    operator: equals
+----
+
+| This definition specifies a negation condition where the attribute 'internal' of an AWS load balancer (aws_lb) must not equal 'true'.
+| 
+|===
+
+[#attribute-cond-oper]
+==== 'attribute' Condition Operators
+
+* Attribute condition operators are defined in the xref:../../../../governance/custom-build-policies/code-editor.adoc[Code Editor]documentation
+
+* Common operators include: `equals, greater than / less than, contains, exists, within, starting with, ending with`
+
+* All operators have an inverted variant (`not_equals, less than or equal` and so on)
+
+* All operators support the 'jsonpath_' prefix syntax, allowing you to reference specific fields or values within JSON documents for condition evaluation
+
+==== 'equals' Operator
+
+The `equals` operator supports simple or complex types.
+
+|===
+
+| Definition | Resource
+
+| cond_type: attribute
+  resource_types: 
+  - aws_ecs_cluster
+  attribute: name
+  operator: equals
+  value: "xyz"
+| ```
+resource "aws_ecs_cluster" "c1" {
+  name = "xyz"
+}
+
+| Definition | Resource
+
+| cond_type: attribute
+  resource_types:
+  - aws_ecs_cluster
+  attribute: setting
+  operator: equals
+  value:
+    name: "containerInsights"
+    value: "enabled"
+| ```
+resource "aws_ecs_cluster" "c2" {
+  name = "xyz"
+  setting {
+    name = "containerInsights"
+    value = "enabled"
+  }
+}
+
+|===
+
+=== 'within' and 'contains' Operators
+
+'within' and 'contains' operators work on strings, lists, and dictionary keys.
+
+|===
+
+|Type | Definition | Resource
+
+|String
+| cond_type: attribute
+  resource_types: 
+  - aws_s3_bucket
+  attribute: name
+  operator: contains
+  value: "some-value"
+|```
+resource "aws_s3_bucket" "b3" {
+  name = "my-bucket-some-value-123"
+} 
+
+|List
+|cond_type: attribute
+  resource_types: 
+  - aws_s3_bucket
+  attribute: tags.env
+  operator: within
+  value:
+    - "dev"
+    - "stage"
+    - "prod"
+| ```
+resource "aws_s3_bucket" "b2" {
+  tags = {
+    env = "prod"
+  }
+}
+
+|Dictionary keys
+||cond_type: attribute
+  resource_types: 
+  - aws_s3_bucket
+  attribute: tags
+  operator: contains
+  value: "owner"
+|```
+resource "aws_s3_bucket" "b1" {
+  tags = {
+    owner = "..."
+  }
+}
+|===
+
+==== Arrays and wildcards
+
+Wildcard (*) iterates through array items - * matches each element individually, but applies to all elements simultaneously.
+
+|===
+| Definition | Resource Example
+
+| [cols="1,2a"]
+|===
+| 
+| * Wildcard Matching for Port
+| 
+| definition:
+|   cond_type: attribute
+|   resource_types:
+|     - aws_security_group
+|   attribute: ingress.*.port
+|   operator: equals
+|   value: 22
+| 
+| resource "aws_security_group" "s1" {
+|   ingress {
+|     port = 443
+|   }
+|   ingress {
+|     port = 22
+|   }
+| }
+|===
+| 
+| * Wildcard Matching for CIDR Blocks
+| 
+| definition:
+|   cond_type: attribute
+|   resource_types:
+|     - aws_security_group
+|   attribute: ingress.*.cidr_blocks.*
+|   operator: contains
+|   value: "/32"
+| 
+| resource "aws_security_group" "s2" {
+|   ingress {
+|     cidr_blocks = ["10.0.0.0/8"]
+|   }
+|   ingress {
+|     cidr_blocks = ["10.0.1.2/8", "192.168.1.0/32"]
+|   }
+| }
+|===
+
+==== Wildcards Examples
+
+[source,yaml]
+----
+resource "aws_security_group" "s2" {
+  ingress {
+    cidr_blocks = ["10.0.0.0/8"]
+    port = 22
+  }
+  ingress {
+    cidr_blocks = ["10.0.1.2/8", "192.168.1.0/32"]
+    port = 22
+  }
+}
+----
+
+|===
+| Attribute (in condition block) | Value (in JSON)
+
+| ingress
+| [
+  { "cidr_blocks": ["10.0.0.0/8"], port: 22 },
+  { "cidr_blocks": ["10.0.1.2/8", "192.168.1.0/32"], port: 22 }
+]
+
+| ingress.*
+| { "cidr_blocks": ["10.0.0.0/8"], port: 22 } 
+| { "cidr_blocks": ["10.0.1.2/8", "192.168.1.0/32"], port: 22 }
+
+| ingress.*.cidr_blocks
+| ["10.0.0.0/8"] 
+| ["10.0.1.2/8", "192.168.1.0/32"]
+
+| ingress.*.cidr_blocks.*
+| "10.0.0.0/8"
+| "10.0.1.2/8"
+| "192.168.1.0/32"
+|===
+
+////
+
+[.task]
+[#custom-policies]
+=== Create Custom License Policies
+
+Create custom License policies to align compliance measures with your organization's unique requirements.
+
+[.procedure]
+
+. On Prisma Cloud console, select *Governance* > *Add Policy* > *Config*.
++
+image::application-security/licenses-add-custom-policy3.1.png[]
++
+The *Add Details* step of the 'Create New Config Policy' wizard is displayed.
++
+image::application-security/licenses-create-new-config-wizstep1.1.png[]
+
+. Fill in the provided fields.
++
+* *Policy Name* (Required): The name of the custom license policy
+* *Description* (Optional): A description of the custom policy
+* *Policy Subtype*: Select *Build* to enable scanning code repositories 
+* *Severity* (Required): The policy severity level. Values: 'Critical', 'High', 'Medium', 'Low', 'Informational'
+* *Labels* (Optional): Assigning labels to your policies is an optional but highly recommended practice. Labels act like tags, allowing you to easily filter and find specific policies later. This can save you significant time when managing a large number of policies. You can choose from existing labels by clicking on the 'Labels' field or create a custom label by typing a value in this field.
+
+. Select *Next*.
++
+The *Create Query* step of the wizard is displayed.
++
+image::application-security/licenses-query-select1.1.png[]
+// add image
+. Create a query.
+.. Select *License Policy* from the menu.
++
+The *License Policy* fields are displayed.
++
+image::application-security/licenses-query-selct-sdpx1.1.png[]
+.. Select a license/ multiple licenses from the menu in the *License Type* field (Required).
++
+These licenses are the SDPX licenses supported by Prisma Cloud.
+
+.. Click *Next*.
++
+The *Compliance Standards* step of the wizard is displayed.
+//+
+//image::application-security/license-query-compliance1.1.png[]
+// add image
+
+. Configure a *Compliance* standard (Optional).
++
+image::application-security/licenses-compliance2.0.png[]
++
+NOTE: Compliance standards ensure your policies align with established security or industry regulations. Additionally, compliance standards serve as a filtering criterion, allowing you to easily filter your policies based on the assigned standard.
+
+.. Select the required compliance *Standard*, *Requirement*, and *Section* values from their respective fields.
+.. Click *(+)* to add additional standards as required.
+.. Select *Next*.
++
+The *Remediation* step of the wizard is displayed.
+// add image
+. Provide steps to remediate the license violation (optional) > *Submit*.
++
+The custom license is created and can be viewed on the *Governance* page.
+
+[.task]
+
+[#view-remediate-license-issues]
+=== View and Remediate Non-Compliant License Findings
+
+View and mitigate non-compliance license findings through the *Projects* page.
+
+[.procedure]
+
+. In *Application Security*, select *Home* > *Projects* > *Licenses* tab.
+
+. Use filters to locate and prioritize findings.
+.. (Optional) To filter by *License type*: Select *Add Filter* > *License type* > Select a license policy type from the list, which includes both default and custom License policy types.
++
+NOTE: You can select multiple policy types. 
+
+. Select a package from the list in the table containing a non-compliant license.
+
+. Select the *Details* and *Issues* tab in the sidecar that is displayed to view additional details about the license and non-compliance issues.
+
+For more information on mitigating license policy issues, refer to xref:../../monitor-and-manage-code-build/monitor-code-build-issues.adoc[Monitor and Manage Code Build Issues].
+
+[.task]
+
+[#suppress-license-issues]
+=== Suppress License Violations
+
+[.procedure]
+
+You can suppress license violations to exclude the license from the scope of future scans on a global scale.  All license compliance issues associated with this package and version will no longer be considered in future scans across your entire environment.
+
+////
+==== Suppression Types
+
+* *License Types*: Absolves the violation based on the specific license associated with the resource
+* *Package*: Suppresses any license violations tied to a specified package
+////
+
+[.procedure]
+
+. On the *Projects* page, select a non-compliant license policy> click to open the sidecar.
+
+. Under the *Issues* tab, select *Suppress*.
+
+. Create a *Suppression* rule in the popup that is displayed > *Save*.
+
+For more information on Suppression, refer to the xref:../../monitor-and-manage-code-build/suppress-code-issues.adoc[Suppress Code Issues] documentation.
+
+=== License scans in Checkov CLI
+
+License scans are supported in Checkov CLI. 
+
+Checkov License policies use the following YAML query syntax:
+
+[source,yaml]
+----
+metadata:
+    id: "POLICY ID"
+    name: "My policy name"
+    category: "license"
+definition:
+----
+
+For more information on Checkov CLI License scans, refer to the https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[Checkov CLI] documentation.
+
+=== License Scans in IDE Environments
+
+License scans are supported in IDE environments. For more information on License scans through IDEs, refer to the xref:../../../ides/ides.adoc[IDE] documentation.
+
+=== Integrations
+
+You can view License non-compliance scan results for packages in your VCS repositories.
+//to be checked
+
+
+=== Pull Request Comment Support for License Policies
+
+Prisma Cloud supports Pull Request (PR) comment notifications for license policy violations. These violations are detected during scans of PRs. If violations are found, the system generates comments on the PR to notify the developer about the detected issues.
+
+
+////
 Open source software licenses define how you can use, modify and distribute the open source software. Thus, when selecting an open source package to merge to your code it is imperative to understand the types of licenses and the user restrictions the package falls under, which helps you mitigate any compliance issues.
 On Prisma Cloud, licenses are scanned in parallel to the vulnerability scan for open source packages to understand usage restrictions. For every package license restrictions are defined either at the root package (direct dependent package) or sub-dependent package.
 In addition, Prisma Cloud supports an OOTB (Out-Of-The-Box) license policy (for example, BC_LIC_1) where all https://spdx.org/licenses/[SPDX] licenses with http://opensource.org/licenses/alphabetical[OSI] approval are considered compliant during the scan. If a violation occurs with an unknown license, private license or the license is not a part of the approved list, then a different policy is created to monitor it (for example, BC_LIC_2).
@@ -33,9 +625,11 @@ In this example, you see the scan result of a license violation with contextuali
 +
 image::application-security/sca-22.png[]
 ////
+////
 In this example, you see the scan result of a license sub-dependent violation with contextualized information in *Resource Explorer > Details* where you can also see the list of direct dependencies.
 +
 image::application-security/sca-23.png[]
+////
 ////
 
 [.task]
@@ -82,3 +676,4 @@ In this example, you see the package has one license `LGPLV2.1`.
 image::application-security/sca-30.png[]
 
 . Select *Save* to save the suppression rule.
+////

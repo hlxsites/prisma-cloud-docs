@@ -126,6 +126,21 @@ To get the error logs, run the command: `kubectl describe pod[name]`.
 This is caused due to a temporary memory resource overload.
 When running WAAS Out-of-Band (OOB), the Defender automatically increases the `cgroup` memory limit to 4 GB (as OOB needs more memory). But since the Defenders' `cgroup` in K8s is hierarchically under the `cgroup` of the K8s pod with a limit of 512 MB, this results in an Out-Of-Memory error.
 
+==== Out-of-Memory (OOM) Error in Kubernetes Defender Nodes
+//CWP-56444
+
+**Issue**
+
+Users encounter out-of-memory (OOM) issues when running an inline container firewall on Defender nodes operating within Kubernetes (k8s), particularly when there are more than 10 protected workloads on the same node.
+
+**Reason**
+
+The hierarchical nature of cgroups in Kubernetes means that the memory limit set for the pod takes precedence over the memory limit set specifically for the Defender cgroup. Consequently, this hierarchy can lead to OOM errors, especially when multiple protected workloads are present on the same node.
+
+**Solution**
+
+When deploying inline firewall instances on a Defender node with more than 10 protected workloads, increase the memory allocation for the Defender pod to 4GB.
+
 [.task]
 ==== Increase the Defender Pod Limit
 

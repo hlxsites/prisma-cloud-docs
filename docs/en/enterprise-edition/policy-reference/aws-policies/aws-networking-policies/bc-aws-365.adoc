@@ -1,0 +1,50 @@
+== TLS not enforced in SES configuration set
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| da19b3af-cfca-4e08-af38-07fca6e98ae6
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SesConfigurationSetDefinesTLS.py[CKV_AWS_365]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether the Simple Email Service (SES) Configuration configured in AWS enforces Transport Layer Security (TLS). TLS plays a crucial role in safeguarding the confidentiality and integrity of transmitted data, especially in emails. Not enforcing TLS can potentially expose data to risks such as interception and manipulation.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ses_configuration_set
+* *Arguments:* delivery_options.tls_policy
+
+To fix this issue, modify your AWS Simple Email Service (SES) configurations to ensure the enforcement of Transport Layer Security (TLS) usage.
+
+[source,go]
+----
+resource "aws_ses_configuration_set" "example" {
+  ...
+
+  delivery_options {
+    tls_policy = "Require"
+  }
+}
+----
+
+The revised Terraform code above implements TLS enforcement in the SES configuration set, guaranteeing secure transmission for all outgoing emails. By setting `tls_policy` to `"Require"`, AWS SES will only deliver emails through connections encrypted with TLS. Any attempt to deliver emails over unencrypted SSL/TLS connections will be rejected.
+

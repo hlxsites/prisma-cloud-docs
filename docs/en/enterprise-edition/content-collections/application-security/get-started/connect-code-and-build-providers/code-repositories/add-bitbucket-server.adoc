@@ -32,7 +32,7 @@ NOTE: Refer to <<#subscribed-events,Subscribed Events>> below for a list of even
 .. Provide a *Token name*.
 .. Select the *Permissions* scope.
 +
-* For Projects: *Read* permissions
+* For Projects: *Read* permissions. If you require for CI/CD scanning capabilities, select *Administrator* permissions
 * For Repositories: *Administrator* permissions
 +
 Providing read and write permissions to the necessary repositories enables Prisma Cloud to copy files for scanning, and access repository settings. This, in turn, facilitates the ability to subscribe to pull request (PR) webhooks, allowing for the initiation of fix PRs and comments on open PRs.
@@ -117,7 +117,7 @@ NOTE: Selecting a repository for a specific integration will restrict you from s
 
 . In *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers* > *Bitbucket Server/Data Center* (under Code Repositories) in the catalog that is displayed.  
 +
-A popup with a list of Bitbucket integrations is displayed.
+A popup with a list of Bitbucket Data Center/Server integrations is displayed.
 +
 image::application-security/bb-server-multi-int1.1.png[]
 
@@ -141,14 +141,39 @@ Manage integrations from the integration wizard.
 .. Select *Reselect repositories* to add or remove repositories
 .. Select *Delete Integration* to delete integrations
 
+=== Rotate Integration Tokens
+
+Rotate integration tokens to enhance security and prevent unauthorized access.
+
+Create a *PUT* request: `PUT /code/api/v1/integration/token/<integration_id>` with the following body:
+
+[source,JSON]
+----
+{
+"token": "new token"
+}
+----
+
+To find your <integration_id>: 
+
+. In *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers* > *Bitbucket Server/Data Center* (under Code Repositories) in the catalog that is displayed.  
+. Select the menu under the *Actions* column of an account.
+. Click *Reselect repositories*.
++
+The integration ID is displayed in the URL bar on the *Select Repositories* step of the integration wizard.
++
+image::application-security/bb-id1.1.png[]  
+
 [#user-permissions]
 === User Permissions
 
 Authorize the user integrating Prisma Cloud with your Bitbucket Server/Data Center instance with the following permissions.
 
+* *Organization owner* permissions
 * *Read* permissions for projects
 * *Administrator* permissions for repositories
 
+[#ci-cd-permissions]
 ==== CI/CD Module Permissions
 
 * *Administrator* permissions for projects

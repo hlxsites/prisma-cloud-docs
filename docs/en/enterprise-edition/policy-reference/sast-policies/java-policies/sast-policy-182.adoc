@@ -1,0 +1,62 @@
+
+== User input incorporated in Java web request
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 6c2e6bfb-6661-4988-827d-47cb4b0577fe
+
+|Checkov ID 
+|CKV3_SAST_182
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Java
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/74.html[CWE-74: Improper Neutralization of Special Elements in Output Used by a Downstream Component ('Injection')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+
+=== Description
+
+This policy detects instances where user input is used in a Java web request. This may potentially cause a Cross-Site Scripting (XSS) vulnerability, as it returns user-supplied data without proper sanitization, exposing it to a wide range of injection attacks.
+
+Vulnerable code example:
+
+[source,Java]
+----
+@RequestMapping("/getData/{userData}")
+public String fetchData(@PathVariable String userData) {
+  return "You entered : " + userData;
+}
+----
+
+In this code snippet, user-provided data is integrated directly into the response without undergoing any safety validations. This creates a vulnerability to several injection attacks, including Cross-Site Scripting (XSS), where an attacker could potentially inject malicious scripts through the userData parameter.
+
+=== Fix - Buildtime
+
+To fix this issue, do not return user-supplied data in a response.
+
+Secure code example:
+
+[source,Java]
+----
+@RequestMapping("/getData/{userData}")
+public String fetchData() {
+  return "Static response";
+}
+----
+The fixed code no longer includes user data in the response and is therefore no longer susceptible to attack.

@@ -6,7 +6,13 @@ import shutil
 import fnmatch
 from pathlib import Path
 
+'''
+Copy the description folder from prism-cloud repo to the pan.dev /desc repo.
+'''
 
+def copy_desc_folders(des_location):
+  desc_path = "../descriptions"
+  shutil.copytree(desc_path, des_location)
 
 def copy_compute_cwpp(specfile, output_file_location):
  
@@ -37,7 +43,7 @@ def copy_compute_cwpp(specfile, output_file_location):
             print(specfile+" file moved to " + saas_folder)
             shutil.move(previous_rls_saas_file_loc, previous_rls_saas_loc)
             print(previous_rls_saas_file+" file moved to " + previous_rls_saas_loc)
-           
+            copy_desc_folders(saas_folder+"/desc")
             
           except Exception as e:
             print(e)
@@ -62,7 +68,8 @@ def copy_compute_cwpp(specfile, output_file_location):
             print(specfile+" file moved to  " + sh_folder)
             shutil.move(previous_rls_sh_file_loc, previous_rls_sh_loc)
             print(previous_rls_sh_file+" file moved to " + previous_rls_sh_loc)
-            
+            copy_desc_folders(sh_folder+"/desc")
+
           except Exception as e:
             print(e)
 
