@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.6.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.6.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -17,7 +17,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<new-policies>>
 //* <<policy-updates>>
 * <<api-ingestions>>
-* <<new-compliance-benchmarks-and-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
 * <<deprecation-notices>>
 
 [#changes-in-existing-behavior]
@@ -117,7 +117,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.6.1.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.6.2.
 
 . Review the updates.
 +
@@ -125,30 +125,34 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 +
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
-//[#policy-updates]
-//=== Policy Updates
 
-//[cols="50%a,50%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+=== New Policies
 
-// |**
-//RLP-
-// |*Changes*— .
-//*Severity*— 
-//*Policy Type*— 
-//*Current Description—* .
-//*Updated Description—* .
-//*Current RQL—*
-//----
-//----
-//*Updated RQL—*
-//----
-//----
-//*Impact*— 
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
 
-//|===
+|*Azure Application Gateway WAF policy is not enabled in prevention mode*
+
+tt:[*24.5.2*]
+//RLP-141038
+
+|This policy identifies the Azure Application Gateway WAF policies that are not enabled in prevention mode.
+
+Azure Application Gateway WAF policies support Prevention and Detection modes. Detection mode monitors and logs all threat alerts to a log file. Detection mode is useful for testing purposes and configures WAF initially but it does not provide protection. It logs the traffic, but it doesn't take any actions such as allow or deny. Where as, in Prevention mode, WAF analyzes incoming traffic to the application gateway and blocks any requests that are determined to be malicious based on a set of rules.
+
+As a best security practice, it is recommended to enable Application Gateway WAF policies with Prevention mode to prevent malicious requests from reaching your application and potentially causing damage.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.applicationGateways[*].id size greater than 0 and properties.policySettings.state equal ignore case Enabled and properties.policySettings.mode does not equal ignore case Prevention
+----
+
+|===
 
 [#api-ingestions]
 === API Ingestions
@@ -158,226 +162,114 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Service*
 |*API Details*
 
-|*Amazon CloudFront*
-//RLP-139944
+|*AWS Service Catalog*
+//RLP-141195
 
-|*aws-cloudfront-response-headers-policy*
+|*aws-servicecatalog-principals-for-portfolio*
 
 Additional permissions required:
 
-* `cloudfront:ListResponseHeadersPolicies`
-* `cloudfront:GetResponseHeadersPolicy`
+* `servicecatalog:ListPortfolios`
+* `servicecatalog:ListPrincipalsForPortfolio`
+
+The Security Audit role does not include the permissions. Create a new custom role for the permissions.
+
+|*Amazon Comprehend*
+//RLP-141193
+
+|*aws-comprehend-pii-entities-detection-jobs*
+
+Additional permissions required:
+
+* `comprehend:ListPiiEntitiesDetectionJobs`
+* `comprehend:ListTagsForResource`
 
 The Security Audit role includes the permissions. 
 
-|*AWS Database Migration Service*
-//RLP-139939
+|*Amazon Comprehend*
+//RLP-141490
 
-|*aws-dms-replication-task*
+|*aws-comprehend-sentiment-detection-jobs*
 
 Additional permissions required:
 
-* `dms:DescribeReplicationTasks`
-* `dms:ListTagsForResource`
+* `comprehend:ListSentimentDetectionJobs`
+* `comprehend:ListTagsForResource`
 
 The Security Audit role includes the permissions. 
 
-|*AWS Network Firewall*
-//RLP-139913
+|*Amazon Comprehend*
+//RLP-141485
 
-|*aws-network-firewall-rule-group*
-
-Additional permissions required:
-
-* `network-firewall:ListRuleGroups`
-* `network-firewall:DescribeRuleGroup`
-
-The Security Audit role includes the permissions. 
-
-|*AWS Glue*
-//RLP-139895
-
-|*aws-glue-resource-policy*
+|*aws-comprehend-key-phrases-detection-jobs*
 
 Additional permission required:
 
-* `glue:GetResourcePolicies`
+* `comprehend:ListKeyPhrasesDetectionJobs`
+* `comprehend:ListTagsForResource`
 
-You must manually add the above permission to the CFT template to enable it.
+The Security Audit role includes the permissions.
 
-//The Security Audit role includes the permissions. 
+|*Google Vertex AI AIPlatform*
+//RLP-141136
 
-|*AWS Macie*
-//RLP-139941
-
-|*aws-macie2-classification-job*
-
-Additional permission required:
-
-* `macie2:ListClassificationJobs`
-
-You must manually add the above permission to the CFT template to enable it.
-
-//The Security Audit Policy does not include the permission. 
-
-
-|*Azure Monitor*
-//RLP-136333
-
-|*azure-monitor-action-groups*
+|*gcloud-vertex-ai-aiplatform-monitoring-job*
 
 Additional permission required:
 
-* `Microsoft.Insights/ActionGroups/Read`
-
-The Reader role includes the permission. 
-
-|*Azure Log Analytics*
-//RLP-120365
-
-|*azure-log-analytics-clusters*
-
-Additional permission required:
-
-* `Microsoft.OperationalInsights/clusters/read`
-
-The Reader role includes the permission. 
-
-|*Azure App Service*
-//RLP-139922
-
-|*azure-app-service-private-endpoint-connections*
-
-Additional permissions required:
-
-* `Microsoft.Web/sites/Read`
-* `Microsoft.Web/sites/privateEndpointConnections/Read`
-
-The Reader role includes the permissions. 
-
-|*Azure Event Grid*
-//RLP-139161
-
-|*azure-event-grid-namespaces*
-
-Additional permission required:
-
-* `Microsoft.EventGrid/namespaces/read`
-
-The Reader role includes the permission. 
-
-|*Azure Virtual Network*
-//RLP-139108
-
-|*azure-network-private-dns-zone-groups*
-
-Additional permissions required:
-
-* `Microsoft.Network/privateEndpoints/read`
-* `Microsoft.Network/privateEndpoints/privateDnsZoneGroups/read`
-
-The Reader role includes the permissions. 
-
-|*Google Storage Transfer*
-//RLP-140219
-
-|*gcloud-storage-transfer-agent-pool*
-
-Additional permission required:
-
-* `storagetransfer.agentpools.list`
+* `aiplatform.modelDeploymentMonitoringJobs.list`
 
 The Viewer role includes the permission. 
 
-|*Google Storage Transfer*
-//RLP-140218
 
-|*gcloud-storage-transfer-job*
+|*Google Vertex AI AIPlatform*
+//RLP-141135
 
-Additional permission required:
-
-* `storagetransfer.jobs.list`
-
-The Viewer role includes the permission. 
-
-|*Google Cloud Workstation*
-//RLP-140215
-
-|*gcloud-cloud-workstation-configuration*
-
-Additional permissions required:
-
-* `workstations.workstationClusters.list`
-* `workstations.workstationConfigs.list`
-* `workstations.workstationConfigs.getIamPolicy`
-
-The Viewer role includes the permissions. 
-
-|*Google Cloud Workstation*
-//RLP-140214
-
-|*gcloud-cloud-workstation-cluster*
+|*gcloud-vertex-ai-aiplatform-persistent-resource*
 
 Additional permission required:
 
-* `workstations.workstationClusters.list`
+* `aiplatform.persistentResources.list`
 
 The Viewer role includes the permission. 
 
-|*Google Cloud Workstation*
-//RLP-136571
+|*Google Vertex AI AIPlatform*
+//RLP-141134
 
-|*gcloud-cloud-workstation*
+|*gcloud-vertex-ai-aiplatform-vizier-study*
 
-Additional permissions required:
+Additional permission required:
 
-* `workstations.workstationClusters.list`
-* `workstations.workstationConfigs.list`
-* `workstations.workstations.list`
-* `workstations.workstationConfigs.getIamPolicy`
+* `aiplatform.studies.list`
 
-The Viewer role includes the permissions. 
+The Viewer role includes the permission. 
 
-// |*Ensure multi-factor authentication (MFA) is enabled for the account owner*
-//RLP-137906 - removed since IBM policies are not yet GA
-// |*Changes*— A *mfaStatus* field is now appended to the existing *ibm-iam-user* API. 
-// To call this method, you must be assigned one or more IAM access roles that include the `iam-identity.mfa-status.get` action.
+|*Google Vertex AI AIPlatform*
+//RLP-141133
 
-|===
+|*gcloud-vertex-ai-aiplatform-tuning-job*
 
-[#new-compliance-benchmarks-and-updates]
-=== New Compliance Benchmarks and Updates
+Additional permission required:
 
-[cols="50%a,50%a"]
-|===
-|*Compliance Benchmark*
-|*Description*
+* `aiplatform.tuningJobs.list`
 
-|*Support for CIS GKE v1.5*
+The Viewer role includes the permission. 
 
-//RLP-140371
+|*Google Vertex AI*
+//RLP-129987
 
-|Prisma Cloud will support CIS GKE version 1.5. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
+|*gcloud-vertex-ai-workbench-instance*
 
-You can view this built-in standard and the associated policies on *Compliance > Standards*. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+Additional permission required:
 
+* `notebooks.instances.list`
+* `notebooks.instances.getIamPolicy`
 
-// |*Support for CIS OCI v2.0*
-//RLP-140367
-// |Prisma Cloud will support CIS OCI version 2.0. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
-// You can view this built-in standard and the associated policies on *Compliance > Standards*. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-
-|*Support for CIS Azure Foundation benchmark v2.1*
-
-//RLP-140362
-
-|Prisma Cloud will support CIS Azure Foundation benchmark version 2.1. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
-
-You can view this built-in standard and the associated policies on *Compliance > Standards*. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+The Viewer role includes the permission. 
 
 
 |===
+
 
 [#deprecation-notices]
 === Deprecation Notices
