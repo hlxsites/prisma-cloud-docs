@@ -37,7 +37,7 @@ The details and functionality listed below are a preview and the actual release 
 //* Up to 5 Tag-based Resource Lists may be associated with a Role
 
 //*Impact*: These changes will affect Tag-based Resource Lists and Roles after the X release. Existing configurations will not be affected.
-// Commenting out per feedback from AO 5/24
+// Commenting out per feedback from AO 5/24 - check for 6.2 inclusion
 
 |*API Rate Limits — Update User Role API*
 //RLP-141323
@@ -84,82 +84,84 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-=== New Policies
+//=== New Policies
 
-[cols="50%a,50%a"]
-|===
-|*Policies*
-|*Description*
+//Commenting out but retaining for next release.
 
-|*Azure Application Gateway WAF policy is not enabled in prevention mode*
+//[cols="50%a,50%a"]
+//|===
+//|*Policies*
+//|*Description*
+
+//|*Azure Application Gateway WAF policy is not enabled in prevention mode*
 //RLP-141038
 
-|This policy identifies the Azure Application Gateway WAF policies that are not enabled in prevention mode.
+//|This policy identifies the Azure Application Gateway WAF policies that are not enabled in prevention mode.
 
-Azure Application Gateway WAF policies support Prevention and Detection modes. Detection mode monitors and logs all threat alerts to a log file. Detection mode is useful for testing purposes and configures WAF initially but it does not provide protection. It logs the traffic, but it doesn't take any actions such as allow or deny. Where as, in Prevention mode, WAF analyzes incoming traffic to the application gateway and blocks any requests that are determined to be malicious based on a set of rules.
+//Azure Application Gateway WAF policies support Prevention and Detection modes. Detection mode monitors and logs all threat alerts to a log file. Detection mode is useful for testing purposes and configures WAF initially but it does not provide protection. It logs the traffic, but it doesn't take any actions such as allow or deny. Where as, in Prevention mode, WAF analyzes incoming traffic to the application gateway and blocks any requests that are determined to be malicious based on a set of rules.
 
-As a best security practice, it is recommended to enable Application Gateway WAF policies with Prevention mode to prevent malicious requests from reaching your application and potentially causing damage.
+//As a best security practice, it is recommended to enable Application Gateway WAF policies with Prevention mode to prevent malicious requests from reaching your application and potentially causing damage.
 
-*Policy Severity—* Low
+//*Policy Severity—* Low
 
-*Policy Type—* Config
+//*Policy Type—* Config
 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.applicationGateways[*].id size greater than 0 and properties.policySettings.state equal ignore case Enabled and properties.policySettings.mode does not equal ignore case Prevention
-----
+//----
+//config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.applicationGateways[*].id size greater than 0 and properties.policySettings.state equal ignore case Enabled and properties.policySettings.mode does not equal ignore case Prevention
+//----
 
-|*Azure Storage Account storing Cognitive service diagnostic logs is publicly accessible*
+//|*Azure Storage Account storing Cognitive service diagnostic logs is publicly accessible*
 //RLP-141884
 
-| This policy identifies Azure Storage Accounts storing Cognitive service diagnostic logs are publicly accessible. 
+//| This policy identifies Azure Storage Accounts storing Cognitive service diagnostic logs are publicly accessible. 
 
-Azure Storage account stores Cognitive service diagnostic logs which might contain detailed information of platform logs, resource logs, trace logs and metrics. Diagnostic log data may contain sensitive data and helps in identifying potentially malicious activity. The attacker could exploit publicly accessible storage account to get cognitive diagnostic data logs and could breach in to the system by leveraging data exposed and propagate across your system.
+//Azure Storage account stores Cognitive service diagnostic logs which might contain detailed information of platform logs, resource logs, trace logs and metrics. Diagnostic log data may contain sensitive data and helps in identifying potentially malicious activity. The attacker could exploit publicly accessible storage account to get cognitive diagnostic data logs and could breach in to the system by leveraging data exposed and propagate across your system.
 
-As a best security practice, it is recommended to restrict storage account access to only to the services as per business requirement.
+//As a best security practice, it is recommended to restrict storage account access to only to the services as per business requirement.
 
-*Policy Severity—* Medium
+//*Policy Severity—* Medium
 
-*Policy Type—* Config
+//*Policy Type—* Config
 
-----
-config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
-----
+//----
+//config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
+//----
 
-|*Azure Key vault used for machine learning workspace secrets storage is not enabled with audit logging*
+// |*Azure Key vault used for machine learning workspace secrets storage is not enabled with audit logging*
 //RLP-142008
 
-|This policy identifies Azure Key vaults used for machine learning workspace secrets storage that are not enabled with audit logging.
+// |This policy identifies Azure Key vaults used for machine learning workspace secrets storage that are not enabled with audit logging.
 
-Azure Key vaults are used to store machine learning workspace secrets and other sensitive information that is needed by the workspace. Enabling key vaults with audit logging will help in monitoring how and when machine learning workspace secrets are accessed, and by whom. This audit log data enhances visibility by providing valuable insights into the trail of interactions involving confidential information.
+//Azure Key vaults are used to store machine learning workspace secrets and other sensitive information that is needed by the workspace. Enabling key vaults with audit logging will help in monitoring how and when machine learning workspace secrets are accessed, and by whom. This audit log data enhances visibility by providing valuable insights into the trail of interactions involving confidential information.
 
-As a best practice,  it is recommended to enable audit event logging for key vaults used for machine learning workspace secrets storage.
+//As a best practice,  it is recommended to enable audit event logging for key vaults used for machine learning workspace secrets storage.
 
-*Policy Severity—* Informational
+//*Policy Severity—* Informational
 
-*Policy Type—* Config
+//*Policy Type—* Config
 
-----
-config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = properties.keyVault exists as X; config from cloud.resource where api.name = 'azure-key-vault-list' AND json.rule =  "not (diagnosticSettings.value[*].properties.logs[*].enabled any equal true and diagnosticSettings.value[*].properties.logs[*].enabled size greater than 0)" as Y; filter '$.X.properties.keyVault contains $.Y.name'; show Y; 
-----
+//----
+//config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = properties.keyVault exists as X; config from cloud.resource where api.name = 'azure-key-vault-list' AND json.rule =  "not (diagnosticSettings.value[*].properties.logs[*].enabled any equal true and diagnosticSettings.value[*].properties.logs[*].enabled size greater than 0)" as Y; filter '$.X.properties.keyVault contains $.Y.name'; show Y; 
+//----
 
-|*OCI VCN subnet flow logging is disabled*
+// |*OCI VCN subnet flow logging is disabled*
 //RLP-61034
 
-|This policy identifies Virtual Cloud Network (VCN) subnets that have flow logs disabled. 
+// |This policy identifies Virtual Cloud Network (VCN) subnets that have flow logs disabled. 
 
-Enabling VCN flow logs enables you to monitor traffic flowing within your virtual network and can be used to detect anomalous traffic. Without the flow logs turned on, it is not possible to get any visibility into network traffic. 
+//Enabling VCN flow logs enables you to monitor traffic flowing within your virtual network and can be used to detect anomalous traffic. Without the flow logs turned on, it is not possible to get any visibility into network traffic. 
 
-It is recommended to enable a VCN flow log on each of your VCN subnets
+//It is recommended to enable a VCN flow log on each of your VCN subnets
 
-*Policy Severity—* Low
+//*Policy Severity—* Low
 
-*Policy Type—* Config
+//*Policy Type—* Config
 
-----
-config from cloud.resource where api.name = 'oci-networking-subnet' as X; config from cloud.resource where api.name = 'oci-logging-logs' AND json.rule = lifecycleState equals ACTIVE and isEnabled is true and configuration.source.service contains flowlogs as Y; filter 'not ($.X.id contains $.Y.configuration.source.resource)'; show X;
-----
+//----
+//config from cloud.resource where api.name = 'oci-networking-subnet' as X; config from cloud.resource where api.name = 'oci-logging-logs' AND json.rule = lifecycleState equals ACTIVE and isEnabled is true and configuration.source.service contains flowlogs as Y; filter 'not ($.X.id contains $.Y.configuration.source.resource)'; show X;
+//----
 
-|===
+// |===
 
 [#policy-updates]
 === Policy Updates
@@ -169,108 +171,152 @@ config from cloud.resource where api.name = 'oci-networking-subnet' as X; config
 |*Policy Updates*
 |*Description*
 
+
 2+|*Policy Updates—RQL*
 
-|*Config Policies related to Azure Function App*
-//RLP-139004
+|*Azure Function App doesn't have a Managed Service Identity*
 
-|*Changes*— All Function app policies have been updated to not report for logic app and web apps as the scope of the policy is Azure function app only.
+//RLP-141890
 
-*Policy*— *Azure Function App doesn't have a Managed Service Identity*
+|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
 
-*Severity*— Low
+*Severity—* Low
 
-*Policy Type*— Config
+*Policy Type—* Config
 
 *Current RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and (identity.type does not exist or identity.principalId is empty) 
 ----
 
 *Updated RQL—*
+
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND (identity.type does not exist or identity.principalId is empty)
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND (identity.type does not exist or identity.principalId is empty)----
 ----
 
-*Policy*— *Azure Function app configured with public network access*
+*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
 
-*Severity*— Medium
+|*Azure Function app configured with public network access*
 
-*Policy Type*— Config
+//RLP-141890
+
+|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
+
+*Severity—* Medium
+
+*Policy Type—* Config
 
 *Current RQL—*
+
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists' 
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
 ----
 
 *Updated RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
 ----
 
-*Policy*— *Azure Function App doesn't use latest TLS version*
+*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
 
-*Severity*— Low
+|*Azure Function App doesn't use latest TLS version*
 
-*Policy Type*— Config
+//RLP-141890
+
+|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
+
+*Severity—* Low
+
+*Policy Type—* Config
 
 *Current RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND config.minTlsVersion does not equal "1.2"
 ----
 
 *Updated RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.minTlsVersion does not equal "1.2"
 ----
 
-*Policy*— *Azure Function App doesn't use HTTP 2.0*
+*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
 
-*Severity*— Informational
+|*Azure Function App doesn't use HTTP 2.0*
 
-*Policy Type*— Config
+//RLP-141890
+
+|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
+
+*Severity—* Informational
+
+*Policy Type—* Config
 
 *Current RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND config.http20Enabled is false
 ----
 
 *Updated RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.http20Enabled is false
 ----
 
-*Policy*— *Azure Function App doesn't redirect HTTP to HTTPS*
+*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
 
-*Severity*— Medium
+|*Azure Function App doesn't redirect HTTP to HTTPS*
 
-*Policy Type*— Config
+//RLP-141890
+
+|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
+
+*Severity—* Medium
+
+*Policy Type—* Config
 
 *Current RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND properties.httpsOnly is false
 ----
 
 *Updated RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND properties.httpsOnly is false
 ----
 
-*Policy*— *Azure Function App client certificate is disabled*
+*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
 
-*Severity*— Informational
+|*Azure Function App client certificate is disabled*
 
-*Policy Type*— Config
+//RLP-141890
+
+|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
+
+*Severity—* Informational
+
+*Policy Type—* Config
 
 *Current RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and properties.clientCertEnabled is false
 ----
 
 *Updated RQL—*
+
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND properties.clientCertEnabled is false
 ----
+
+*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
 
 |===
 
@@ -292,7 +338,8 @@ Additional permissions required:
 * `servicecatalog:ListPortfolios`
 * `servicecatalog:ListPrincipalsForPortfolio`
 
-The Security Audit role does not include the permissions. Create a new custom role for the permissions.
+The Security Audit role does not include the permissions. You must manually add the above permission to
+the CFT template to enable it.
 
 |*Amazon Comprehend*
 //RLP-141193
@@ -513,24 +560,6 @@ The `flaggedResources` field with the status `OK` will be excluded from the reso
 |*Deprecated Release*
 |*Sunset Release*
 |*Replacement Endpoints*
-
-// |*End of support for Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services*
-
-//RLP-134902, RLP-127361
-
-// |NA
-// |24.6.1
-
-// |The following APIs are planned for deprecation because Azure has announced the retirement of Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
-
-// * azure-data-lake-analytics-account
-// * azure-data-lake-analytics-diagnostic-settings
-// * azure-data-lake-store-gen1-account
-// * azure-data-lake-store-gen1-diagnostic-settings
-
-// In RQL, the key will not be available in the `api.name` attribute auto-completion.
-
-// *Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
 
 
 |tt:[*Deprecation of Compliance Standards*]
