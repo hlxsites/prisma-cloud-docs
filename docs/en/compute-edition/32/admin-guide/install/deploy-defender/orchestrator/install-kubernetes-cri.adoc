@@ -4,7 +4,7 @@
 Kubernetes lets you set up a cluster with the container runtime of your choice.
 Prisma Cloud supports Docker Engine, CRI-O, and cri-containerd.
 
-When generating the YAML file or Helm chat to deploy the Defender DaemonSet, you can select the *Container Runtime type* on Console UI under *Manage > Defenders > Defenders: Deployed > Manual deploy*.
+When generating the YAML file or Helm chat to deploy the Defender DaemonSet, you can select the *Container Runtime type* on Prisma Cloud console from *Manage > Defenders > Defenders: Deployed > Manual deploy*.
 
 Since Defenders need to have a view of other containers, this option is necessary to guide the communication.
 
@@ -66,6 +66,8 @@ spec:
           mountPath: "/host"
         - name: data-folder
           mountPath: "/var/lib/twistlock"
+        - name: containerd-volume
+          mountPath: "/var/lib/containerd"
           ...
         env:
         - name: WS_ADDRESS
@@ -75,6 +77,12 @@ spec:
         - name: DEFENDER_LISTENER_TYPE
           value: "none"
           ...
+volumes:
+  - name: containerd-volume
+    hostPath:
+      path: /var/lib/containerd
+...
+
 ----
 endif::prisma_cloud[]
 
@@ -98,15 +106,23 @@ spec:
           mountPath: "/host"
         - name: data-folder
           mountPath: "/var/lib/twistlock"
+        - name: containerd-volume
+          mountPath: "/var/lib/containerd"
           ...
         env:
         - name: WS_ADDRESS
-          value: wss://yourconsole.example.com:8084
+          value: wss://yourconsole.example.com:443
         - name: DEFENDER_TYPE
           value: daemonset
         - name: DEFENDER_LISTENER_TYPE
           value: "none"
           ...
+volumes:
+  - name: containerd-volume
+    hostPath:
+      path: /var/lib/containerd
+...
+
 ----
 endif::compute_edition[]
 
@@ -132,6 +148,8 @@ spec:
           mountPath: "/host"
         - name: data-folder
           mountPath: "/var/lib/twistlock"
+        - name: containerd-volume
+          mountPath: "/var/lib/containerd"
           ...
         env:
         - name: WS_ADDRESS
@@ -141,6 +159,12 @@ spec:
         - name: DEFENDER_LISTENER_TYPE
           value: "none"
           ...
+volumes:
+  - name: containerd-volume
+    hostPath:
+      path: /var/lib/containerd
+...
+
 ----
 endif::prisma_cloud[]
 
@@ -164,14 +188,22 @@ spec:
           mountPath: "/host"
         - name: data-folder
           mountPath: "/var/lib/twistlock"
+        - name: containerd-volume
+          mountPath: "/var/lib/containerd"
           ...
         env:
         - name: WS_ADDRESS
-          value: wss://yourconsole.example.com:8084
+          value: wss://yourconsole.example.com:443
         - name: DEFENDER_TYPE
           value: cri
         - name: DEFENDER_LISTENER_TYPE
           value: "none"
           ...
+volumes:
+  - name: containerd-volume
+    hostPath:
+      path: /var/lib/containerd
+...
+
 ----
 endif::compute_edition[]
