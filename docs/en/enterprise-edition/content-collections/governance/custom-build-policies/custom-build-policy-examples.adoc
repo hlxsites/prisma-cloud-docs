@@ -681,13 +681,13 @@ definition:
 [#ss-examples]
 === Secrets Security Examples
 
-The following examples demonstrate how to create a custom build policy for detecting secrets.
+The following examples demonstrate how to create a custom build policy code.
 
 //* <<ss-basic-policy-definition, Basic Policy Definition>>
 
 [#ss-basic-policy-definition]
 ==== Example #1 Basic Policy Definition
-Use the sample guideline to create a basic policy definition using a single attribute. Multiple signatures, as shown in this example, will be treated as OR statements, meaning that all strings matching either pattern will be flagged.
+Use the sample guideline to create a basic policy definition using a single attribute.
 
 [source,yaml]
 ----
@@ -702,16 +702,18 @@ definition:
     - "my-super-secret-password-regex"
 ----
 
-==== Example #2 Detect Generic Passwords
+==== Example #2 Detect Passwords
 
-This policy detects instances where literal strings starting with "password", "pass" or "pwd" are used directly in the code or configuration files. This is a security risk because it exposes the actual password value.
+This policy detects simple instances where literal strings starting with "password" or "pwd" are used directly in the code or configuration files. This is a security risk because it exposes the actual password value.
 
 ----
 metadata:
-  guidelines: "Find passwords starting with password|pass|pwd and the value format is not {var}.{var}"
+  name: "Detect password definition"
+  guidelines: "Find passwords starting with password|pwd and the value format is not {var}.{var}"
   category: "secrets"
+  severity: "high"
 definition: 
   cond_type: "secrets"
   value:
-    - " -"(?:password|pass|pwd)\s*[=:|=>|\|\||:=|<]\s*([^.\s]+)(?![.\w])"    
+    - "(?:password|pass|pwd)\s*[=:|=>|\|\||:=|<]\s*([^.\s]+)(?![.\w])"    
 ----
