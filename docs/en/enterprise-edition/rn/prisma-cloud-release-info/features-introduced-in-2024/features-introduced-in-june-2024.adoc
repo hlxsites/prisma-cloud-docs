@@ -924,6 +924,7 @@ config from iam where dest.cloud.type = 'AWS' AND action.name in ('iam:PutGroupP
 |----
 config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('iam:PassRole', 'glue:CreateDevEndpoint') AND source.cloud.resource.type IN ('instance', 'function')
 ----
+
 |AWS
 |High
 
@@ -931,6 +932,33 @@ config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('iam
 |An adversary able to create a Glue DevEndpoint with any role would be able to escalate their permissions by attaching a privileged role to the endpoint and configuring authentication to the endpoint using a key which they control. As such, they would obtain the ability to perform actions using the permissions of the attached role, allowing further enumeration and exploitation of the environment.
 |----
 config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('iam:PassRole', 'glue:CreateDevEndpoint') AND source.cloud.resource.type IN ('instance', 'function')
+----
+|AWS
+|High
+
+|*Azure Compute Resource Assigned Role & Role Assignment Related Permissions Which Could Lead to Privilege Escalation*
+
+|An adversary able to edit role assignments or role definitions could grant themselves additional roles, or grant additional permissions to roles they already have access to, escalating their privileges within the environment. This would allow them to further enumerate and exploit the environment.
+|----
+config from iam where dest.cloud.type = 'AZURE' AND source.cloud.type = 'AZURE' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'VirtualMachines' and action.name IN ('Microsoft.Authorization/roleAssignments/write', 'Microsoft.Authorization/roleDefinitions/write')
+----
+|Azure
+|High
+
+
+|*Azure Compute Resource Assigned Managed Identity Assignment Permissions Which Could Lead to Privilege Escalation*
+
+|An adversary able to assign managed identities could assign them to themselves, obtaining the additional permissions granted to the managed identity, escalating their privileges within the environment. This would allow them to further enumerate and exploit the environment.
+|----
+config from iam where dest.cloud.type = 'AZURE' AND source.cloud.type = 'AZURE' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'VirtualMachines' and action.name = 'Microsoft.ManagedIdentity/userAssignedIdentities/assign/action'
+----
+|Azure
+|High
+
+|*AWS Role With Administrative Permissions Can Be Assumed By All Users*
+|A globally assumable role with administartive permissions could allow an adversary to assume it (regardless of their original role as the target role is globally assumable) and utilize its administrative permissions to further compromise the environment.
+|----
+config from iam where source.public = true AND grantedby.cloud.entity.type='role' and action.access.isAdministrative = true
 ----
 |AWS
 |High
@@ -1155,31 +1183,6 @@ config from iam where dest.cloud.type = 'GCP' AND source.cloud.service.name = 'a
 |GCP
 |High
 
-|*Azure Compute Resource Assigned Role & Role Assignment Related Permissions Which Could Lead to Privilege Escalation*
-
-|An adversary able to edit role assignments or role definitions could grant themselves additional roles, or grant additional permissions to roles they already have access to, escalating their privileges within the environment. This would allow them to further enumerate and exploit the environment.
-|----
-config from iam where dest.cloud.type = 'AZURE' AND source.cloud.type = 'AZURE' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'VirtualMachines' and action.name IN ('Microsoft.Authorization/roleAssignments/write', 'Microsoft.Authorization/roleDefinitions/write')
-----
-|Azure
-|High
-
-|*Azure Compute Resource Assigned Managed Identity Assignment Permissions Which Could Lead to Privilege Escalation*
-
-|An adversary able to assign managed identities could assign them to themselves, obtaining the additional permissions granted to the managed identity, escalating their privileges within the environment. This would allow them to further enumerate and exploit the environment.
-|----
-config from iam where dest.cloud.type = 'AZURE' AND source.cloud.type = 'AZURE' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'VirtualMachines' and action.name = 'Microsoft.ManagedIdentity/userAssignedIdentities/assign/action'
-----
-|Azure
-|High
-
-|*AWS Role With Administrative Permissions Can Be Assumed By All Users*
-|A globally assumable role with administartive permissions could allow an adversary to assume it (regardless of their original role as the target role is globally assumable) and utilize its administrative permissions to further compromise the environment.
-|----
-config from iam where source.public = true AND grantedby.cloud.entity.type='role' and action.access.isAdministrative = true
-----
-|AWS
-|High
 
 |===
 
@@ -1195,7 +1198,7 @@ config from iam where source.public = true AND grantedby.cloud.entity.type='role
 |*Support for CIS GKE v1.5*
 //RLP-140371
 
-|Prisma Cloud will support CIS GKE version 1.5. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
+|Prisma Cloud now supports CIS GKE version 1.5. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
 
 You can view this built-in standard and the associated policies on *Compliance > Standards*. Generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
@@ -1203,7 +1206,7 @@ You can view this built-in standard and the associated policies on *Compliance >
 |*Support for CIS OCI v2.0*
 //RLP-140367
 
-|Prisma Cloud will support CIS OCI version 2.0. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
+|Prisma Cloud now supports CIS OCI version 2.0. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
 
 You can view this built-in standard and the associated policies on *Compliance > Standards*. Generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
@@ -1211,7 +1214,7 @@ You can view this built-in standard and the associated policies on *Compliance >
 |*Support for CIS Azure Foundation benchmark v2.1*
 //RLP-140362
 
-|Prisma Cloud will support CIS Azure Foundation benchmark version 2.1. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
+|Prisma Cloud now supports CIS Azure Foundation benchmark version 2.1. The latest version has new controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
 
 You can view this built-in standard and the associated policies on *Compliance > Standards*. Generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
