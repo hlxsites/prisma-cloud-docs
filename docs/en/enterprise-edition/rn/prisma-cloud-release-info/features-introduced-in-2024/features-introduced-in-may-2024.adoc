@@ -5,7 +5,6 @@ Learn what's new on Prisma® Cloud in May 2024.
 * <<new-features>>
 * <<api-ingestions>>
 * <<new-policies>>
-* <<iam-policies>>
 * <<policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
@@ -996,58 +995,60 @@ tt:[Secure the Source]
 *Impact—* You will view policy violations for these policies on Prisma Cloud switcher *Application Security > Projects*. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings. 
 You are required to enable the additional modules on *Application Security > Settings* to view violations and alerts for these policies.
 
+
+|*New IAM OOTB Policies*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Infrastructure]
+
+|The following new OOTB IAM policies are added in Prisma Cloud. You can also find these policies in JSON format on this https://github.com/PaloAltoNetworks/prisma-cloud-policies/tree/master/policies[GitHub Repo]. To see a comprehensive list of all the policies added, check the https://github.com/PaloAltoNetworks/prisma-cloud-policies/blob/master/CHANGELOG.md[changelog.md] file. The name of each policy in the changelog matches the filename for each policy. Within each policy file, the JSON field names clearly describe the characteristics they represent.
+
+- AWS Administrators with IAM permissions are unused for 90 days
+- AWS Groups and IAM Roles with Administrative Permissions
+- AWS IAM Groups and Roles with Excessive Policies
+- AWS IAM Groups and Roles with IAM Data Read permissions are unused for 90 days
+- AWS IAM Groups and Roles with IAM Data Write permissions are unused for 90 days
+- AWS IAM Groups and Roles with IAM Metadata Read permissions are unused for 90 days
+- AWS IAM Groups and Roles with IAM Metadata Write permissions are unused for 90 days
+- AWS Users and Machine Identities with Administrative Permissions
+- AWS Users and Machine Identities with Excessive Policies
+- AWS Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+- AWS Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+- AWS Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+- AWS Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with Administrative Permissions
+- Azure AD Groups, Service Principals and Managed Identities with Excessive Policies
+- Azure AD Groups, Service Principals and Managed Identities with IAM Data Read permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with IAM Data Write permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Read permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Write permissions are unused for 90 days
+- Azure Administrators with IAM permissions are unused for 90 days
+- Azure Users and Machine Identities with Administrative Permissions
+- Azure Users and Machine Identities with Excessive Policies
+- Azure Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+- Azure Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+- Azure Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+- Azure Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+- GCP Administrators with IAM permissions are unused for 90 days
+- GCP Groups and Service Accounts with Administrative Permissions
+- GCP Groups and Service Accounts with Excessive Policies
+- GCP Groups and Service Accounts with IAM Data Read permissions are unused for 90 days
+- GCP Groups and Service Accounts with IAM Data Write permissions are unused for 90 days
+- GCP Groups and Service Accounts with IAM Metadata Read permissions are unused for 90 days
+- GCP Groups and Service Accounts with IAM Metadata Write permissions are unused for 90 days
+- GCP Users and Machine Identities with Administrative Permissions
+- GCP Users and Machine Identities with Excessive Policies
+- GCP Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+- GCP Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+- GCP Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+- GCP Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+- Third-party service account can assume a service account with high privileges
+- Third-party service account with a Lateral Movement Through Lambda Edit
+- Third-party service account with a Lateral Movement to Data Services Through Redshift Cluster Creation
+- Third-party Service Account With Lateral Movement Through CloudFormation Stack Creation
 |===
 
-
-[#iam-policies]
-=== IAM Policies
-
-The 24.5.2 release includes the following OOTB IAM policies:
-
-//RLP-139907
-
-[cols="20%a,30%a,30%a,10%a,10%a"]
-
-|===
-|*Policy Name*
-|*Description*
-|*RQL*
-|*Cloud*
-|*Policy Severity*
-
-|*Third-party service account can assume a service account with high privileges*
-|Identifies instances where third-party vendors are granted the ability to assume roles with high privileges and may allow significant administrative access to your cloud environment. Such permissions can potentially lead to unauthorized access or escalation of privileges, compromising the security posture of your organization.
-|----
-config from iam where dest.cloud.type = 'AWS' AND grantedby.cloud.entity.type = 'role' AND action.access.isAdministrative = true AND source.cloud.account.isvendor = true
-----
-|AWS
-|High
-
-|*Third-party service account with a Lateral Movement to Data Services Through Redshift Cluster Creation*
-|Identifies and mitigates risky behavior where third-party vendors can create Amazon Redshift clusters and pass IAM roles without 'iam:PassedToService' constraint. Such permissions may allow adversaries to leverage Redshift’s Default Role and Redshift commands for example 'COPY', enabling lateral movement within your AWS environment. This unauthorized access to sensitive resources through newly established Redshift clusters can compromise data confidentiality and manipulate or expose your cloud infrastructure to potential breaches.
-|----
-config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('iam:PassRole', 'redshift:CreateCluster') and grantedby.cloud.entity.type = 'role' AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist AND source.cloud.account.isvendor = true
-----
-|AWS
-|High
-
-|*Third-party service account with a Lateral Movement Through Lambda Edit*
-|Detects when third-party vendors are granted permissions to manage access to Lambda functions and pass IAM roles. Specifically, the 'lambda:AddPermission' action enables these accounts to grant execution permissions on Lambda functions to other AWS services, accounts, or organizations, potentially broadening access to sensitive functions. Additionally, the ability to 'iam:PassRole' can allow third-party accounts to assign roles that expand the permissions available to those entities.
-|----
-config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('lambda:AddPermission', 'iam:PassRole') and grantedby.cloud.entity.type = 'role' AND source.cloud.account.isvendor = true
-----
-|AWS
-|High
-
-|*Third-party service account With Lateral Movement Through CloudFormation Stack Creation*
-|Identifies  third-party vendors with permissions to both pass IAM roles ('iam:PassRole') and create CloudFormation stacks ('cloudformation:CreateStack'). These permissions enable vendors to establish new CloudFormation stacks and assign them highly privileged roles. Such actions could allow these external entities to escalate their privileges within your AWS environment, posing a serious security risk.
-|----
-config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('iam:PassRole', 'cloudformation:CreateStack', 'cloudformation:DescribeStacks') AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist AND source.cloud.account.isvendor = true
-----
-|AWS
-|High
-
-|===
 
 
 [#policy-updates]
