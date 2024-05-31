@@ -12,6 +12,9 @@ Copy the description folder from prism-cloud repo to the pan.dev /desc repo.
 
 def copy_desc_folders(des_location):
   desc_path = "../descriptions"
+  if os.path.exists(des_location):
+    shutil.rmtree(des_location)
+  
   shutil.copytree(desc_path, des_location)
 
 def copy_compute_cwpp(specfile, output_file_location):
