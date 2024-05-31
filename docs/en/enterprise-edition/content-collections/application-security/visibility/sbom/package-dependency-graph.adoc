@@ -1,0 +1,50 @@
+== Package Dependency Graph
+
+Prisma Cloud's *Investigate* feature offers a Package Dependency graph. This graphical representation of your xref:sbom.adoc[SBOM] allows you to explore package dependencies in your code repositories through the xref:../../../search-and-investigate/application-asset-queries/application-asset-queries.adoc[Simple Mode Query] builder. You can investigate both transitive and intransitive packages, including their licenses and vulnerabilities. 
+
+//For transitive packages, you can view their dependency tree by clicking on the 'indirect' connection edge.
+
+*Requirement*:  To use the graph, you must first enable the CAS SCA module. For more information on SCA licenses, refer to xref:../../../administration/prisma-cloud-licenses.adoc[Prisma Cloud License Types].
+
+//Other use cases of the Supply Chain graph, like Image Referencer and IaC Resources Exploration, are not yet integrated into the Application Asset Graph.
+
+[.task]
+=== Query Example
+
+Find all code repositories that import packages infected with the *CVE-2017-20165* vulnerability through package files.  
+
+[.procedure]
+
+. Select *Investigate* on the Prisma Cloud console.
+
+. Select *Application Asset* from the *Select a Query Type* field.
+. Under *Type*, select *VCSRepository*, which represents a repository.
+. Add clauses: 
+.. Click *+ Add* > *That Contains PackageFile*.
+.. Click *+ Add* > *That Depends On Package*.
+.. Click *+ Add* > *That Has Vulnerability*.
+.. Click *+ Add* > *id* > *is* > *CVE-2017-20165*.
++
+The query results are displayed as a graphical representation.
++
+image::application-security/sbom-dep-graph-query1.1.png[]
+
+=== Legend
+
+* Numbers next to the VCS Repository node: represent the grouping and amount or repositories containing the package file
+
+* Numbers next to the PackageFile node: represent the grouping and amount of package files depending on the package
+
+* Numbers next to the Package node: represent the grouping and amount of packages including the CVE vulnerability
+
+* The edges describe the relationships between the nodes
+
+* Clicking on a number expands the node, allowing you to drill-down for additional details by clicking on each child entity 
+
+* Clicking on a vulnerability displays its details, such as severity, CVSS score, impacted stages and more
+
+image::application-security/sbom-dep-graph-expnd1.1.png[]  
+
+NOTE: A link icon on an edge denotes indirect dependencies. Click on the icon to view details of the indirect dependency between a package file and its package. 
+
+image::application-security/sbom-dep-graph-indirect1.1.png[]
