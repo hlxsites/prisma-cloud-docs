@@ -1,0 +1,231 @@
+:toc: macro
+== 32.06 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|32.06.110
+|Code name
+|O'Neal - Update 6, 32.06
+
+|Release date
+|June 03rd, 2024
+
+|Type
+|Maintenance Release
+
+|SHA-256
+|TBD
+
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtime, tools, and orchestrators.
+
+// You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+//[LINK]
+
+toc::[]
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defender Versions
+
+With the v32.xx release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported (n, n-1, and n-2) Defender versions] are v32.xx, v31.xx, and v30.xx. Defender versions below v30.xx such as v22.12 cannot connect to the current version.
+
+//To prepare for this update, upgrade your Defenders from version `v22.06` (Kepler) or earlier to a later version.
+
+==== Upcoming Defender Obsolescence
+
+With the upcoming v33.00 release, release v30.xx defenders will be obsolete. To prepare for this upcoming update, plan to upgrade defenders to release v31.xx or later.
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+With the v32.xx release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported (n, n-1, and n-2) Console versions] are v32.xx, v31.xx, and v30.xx.  For example: for the current (n) major release v32.xx, the supported n-1 and n-2 versions are v31.xx and v30.xx respectively.
+
+You can upgrade the Prisma Cloud Console from a major release to the next major release, but not to a major release that follows the next. So, to upgrade from the v30.xx release to the v32.xx release, you will have to first upgrade to  v31.xx and then upgrade to the v32.xx release.
+
+
+// [#cve-coverage-update]
+// === CVE Coverage Update
+
+[#enhancements]
+=== Enhancements
+[cols="40%a,60%a"]
+|===
+
+|FEATURE
+|DESCRIPTION
+
+|*Go Symbol Extraction in Prisma Cloud*
+//CWP-58813[Doc Ticket]
+|When scanning Golang binaries, Prisma Cloud extracts Go symbols, which allows for evaluating vulnerabilities accurately with specific package names and symbols. The feature flag for extracting Go symbols is enabled by default.
+Prisma Cloud also allows you to selectively disable symbol extraction when they are not needed, to optimize the scan.
+
+To disable this feature, follow these steps:
+
+* Self-hosted edition: Add the environment variable SYMBOL_EXTRACTION_ENABLED=False in the twistlock.cfg file.
+
+* SaaS edition: Add the environment variable core-symbol-extraction-enabled=False in the Launch Darkly mode.
+
+* Using twistcli: Add the --disable-symbol-extraction flag to the image scan command.
+
+|*Exporting Software Bill of Materials (SBOM) files in CycloneDX version 1.4*
+//CWP-58812[Doc Ticket]
+|Prisma Cloud now supports exporting Software Bill of Materials (SBOM) files in CycloneDX version 1.4 for functions, images, and hosts scans. SBOM files can be generated in JSON or XML format.
+SBOM files can be downloaded either through API calls or twistcli.
+
+*API Configuration*
+
+Download SBOMs through the following API endpoints:
+
+*/api/v1/sbom/download/images
+
+*/api/v1/sbom/download/hosts
+
+*/api/v1/sbom/download/vms
+
+*/api/v1/sbom/download/scans
+
+*/api/v1/sbom/download/registry
+
+*/api/v1/sbom/download/cli-serverless
+
+*/api/v1/sbom/download/cli-images
+
+*Input parameters for the API:*
+
+*ID*: imageID/registryID/hostID/functionID (Obtain ID from scan results. An empty list returns all entities under the same type.)
+
+*SbomFormat*: cyclonedx_json or cyclonedx_xml
+
+*twistcli Configuration*
+Export SBOMs using the new flag: --SBOM [file_format]
+File Format Values: cyclonedx_json or cyclonedx_xml
+SBOM output is concatenated to the scan results output.
+Use the --output flag to print scan results and SBOM output to a specified file.
+
+|*Resolving method for cluster name*
+//CWP-59133
+|When deploying Defender to your Kubernetes cluster, Prisma Cloud now provides you the option to use the API server address from the kube config file to resolve cluster names. This option ensures that each cluster has a unique cluster name in Prisma Cloud.
+
+A new field, Cluster name resolving method, has been added to the Manage → Defenders → “Manual Deploy” → Orchestrator → “Orchestrator type = Kubernetes" → Advanced Settings page.
+The Cluster name resolving method field has the following options:
+
+* *Default*: Allows Prisma Cloud to automatically generate the name based on available information such as kube config, resource group information, and cloud provider metadata endpoints.
+
+* *Manual*: Enables you to set the cluster name manually. When you select this option, the "Specify a cluster name" box appears, allowing you to enter the desired name.
+
+* *API Server*: Uses the API server address from the kube config file to generate a unique cluster name in Prisma Cloud.
+
+This enhancement ensures that vulnerability information is accurately reported for each cluster and makes sure that the clean clusters are not misrepresented as vulnerable due to naming conflicts
+
+
+|===
+
+[#api-changes]
+=== API Changes and New APIs
+[cols="40%a,60%a"]
+
+|===
+
+|Download the Software Bill of Materials (SBOM)
+//CWP-59122
+|The following new API endpoints enable you to download the Software Bill of Materials (SBOM) details:
+
+*/api/v1/sbom/download/images
+
+*/api/v1/sbom/download/hosts
+
+*/api/v1/sbom/download/vms
+
+*/api/v1/sbom/download/scans
+
+*/api/v1/sbom/download/registry
+
+*/api/v1/sbom/download/cli-serverless
+
+*/api/v1/sbom/download/cli-images
+
+
+|*Remove hostname from registry progress response*
+//CWP-57289
+|The response of the https://pan.dev/prisma-cloud/api/cwpp/get-registry-progress/[View Registry Scan Progress] API has the following changes:
+
+* A new “specScanStartTime” field is added
+* The existing “discovery” and “imageScan” properties have been modified to:
+
+** Include a new “type” field
+** Remove the “hostname” and “scanTime” fields`
+
+|*Documentation update for Add Registry Settings*
+//CWP-58891
+|A new registry type - “Harbor” is added to the “version” field for the https://pan.dev/compute/api/post-settings-registry/[Add Registry Settings] API.
+
+This option enables you to configure a Harbor registry for scanning.
+
+|*Component documentation for API address resolving method for cluster name*
+//CWP-58306
+|A new optional field clusterNameResolvingMethod is added to the following APIs:
+
+ * https://pan.dev/compute/api/post-defenders-daemonset-yaml/[Generate Daemonset Deployment YAML File]
+
+ * https://pan.dev/compute/api/post-defenders-helm-twistlock-defender-helm-tar-gz/[Generate a Helm Deployment Chart for Defender]
+
+The permissible values for this field are default, manual, and api-server.
+
+
+|===
+
+// [#new-features-core]
+// === New Features in Core
+// |===
+// |===
+
+// [#new-features-host-security]
+// === New Features in Host Security
+// |===
+// |===
+
+// [#new-features-serverless]
+// === New Features in Serverless
+// |===
+// |===
+
+// [#new-features-waas]
+// === New Features in WAAS
+// |===
+// |===
+
+// [#breaking-api-changes]
+// === Breaking Changes in API
+// [cols="30%a,70%a"]
+
+[#addressed-issues]
+=== Addressed Issues
+[cols="40%a,60%a"]
+There are no Addressed Issues for this release.
+
+
+// [#backward-compatibility]
+=== Backward Compatibility for New Features
+There is no backward compatibility for new features in this release.
+
+// [#change-in-behavior]
+=== Change in Behavior
+There are no changes in behavior for this release.
+
+// ==== Breaking fixes compare with SaaS RN
+
+// [#end-of-support]
+=== End of Support Notifications
+There are no End of Support notifications for this release.
+
+// [#deprecation-notices]
+=== Deprecation Notices
+There are no Deprecation Notices for this release.

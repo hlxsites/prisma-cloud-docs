@@ -1,14 +1,71 @@
 == 32.00 Known Issues
 
-Review the list of known issues on the 32.00 release.
+The following table lists the known issues for 32.00 release.
+
+=== Known Issues
+
+[cols="23%a,77%a"]
+|===
+|*ISSUE ID*
+|*DESCRIPTION*
+
+
 
 // Note that when we add a known issue, you have to then update this page to include the "Fixed in xx.xx.xxx" for the known issue when it is fixed subsequently. Fixed issues in a given release are documented in the 31.xx adoc file and indicated as fixed on this page (if it was identified as a known issue earlier).
 
 //CWP-53375
-* In *Inventory > Compute Workloads*, for users logged in with a role other than the built-in system admin role, currently only data about cloud provider managed registry images and VM instances can be viewed.
+|*CWP-53375*
+|* In *Inventory > Compute Workloads*, for users logged in with a role other than the built-in system admin role, currently only data about cloud provider managed registry images and VM instances can be viewed.
 +
 In particular, for such roles currently data about the following types of assets is not displayed:
 ** Run stage images
 ** Private registry images
 ** Build stage images
 ** On-premises hosts/hosts managed by cloud providers unsupported by Compute
+
+//CWP-58896
+|*CWP-58896*
+|* With the support for ACI in cloud discovery, here are the two issues:
+
+** Status: The `status` field currently utilizes Properties > ProvisioningState, which does not reflect the container status. For more information, refer to https://learn.microsoft.com/en-us/azure/container-instances/container-state[Azure Container Instances states].
+
+** Defend: The Defend functionality does not support Azure Container Instances (ACI). The Defend is enabled across all accounts and services, and when selected, it redirects to Images > Registry Settings.
+
+|*CWP-58709*
+|*Duplicate Admission Rules*
+
+Six admission rules released in Version 32, Update 2 were duplicates of existing rules. If you require the functionality provided by these rules, we recommend disabling the old rule and using the corresponding new rule, as the older rules will be removed in an upcoming release.
+The following table lists the rules that provide the same functionality:
+
+[cols="1,1"]
+!===
+!*Old Rule* ! *New Rule*
+
+
+!Twistlock Labs - CIS - Pod created in host process ID namespace
+!Twistlock Labs - PSS - Baseline - Pod with containers that share host process ID (hostPID) namespace
+
+!Twistlock Labs - CIS - Pod created on host IPC namespace
+!Twistlock Labs - PSS - Baseline - Pod with containers that share host IPC namespace
+!Twistlock Labs - CIS - Pod created on host network
+!Twistlock Labs - PSS - Baseline - Pod that allows containers to share the host network namespace
+!Twistlock Labs - Pod created with sensitive host file system mount
+!Twistlock Labs - PSS - Baseline - Pod created with sensitive host file system mount
+!Twistlock Labs - CIS - Privileged pod created
+!Twistlock Labs - PSS - Baseline - Pod should not run privileged containers
+!Twistlock Labs - CIS - Privilege escalation pod created
+!Twistlock Labs - PSS - Restricted - Pod that allows container privilege escalation
+!===
+
+
+Note: Even though both the new and old rules are enabled by default, you will not receive duplicate alerts as only the first encountered rule is enforced.
+
+|*CWP-58350*
+|*CVE Exclusions Update*
+
+The following CVEs that are included in the Intelligence Stream feed are ignored:
+CVE-2022-29583 - GitHub Advisory Database as it is a disputed vulnerability.
+CVE-2024-3154 - Arbitrary Systemd Property Injection as Defender does not directly use this package.
+
+|*CWP-52710*
+|While upgrading consoles from the 30.03 release to a 32.xx release, the error log `failed to retrieve "size" specification option value` during the migration doesn't impact the migration process and can be ignored.
