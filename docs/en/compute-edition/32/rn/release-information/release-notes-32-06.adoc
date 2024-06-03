@@ -80,31 +80,40 @@ To disable this feature, follow these steps:
 |Prisma Cloud now supports exporting Software Bill of Materials (SBOM) files in CycloneDX version 1.4 for functions, images, and hosts scans. SBOM files can be generated in JSON or XML format.
 SBOM files can be downloaded either through API calls or twistcli.
 
-*API Configuration*
+*SBOM Attributes*
 
-Download SBOMs through the following API endpoints:
+The SBOM files contain the following attributes.
 
-*/api/v1/sbom/download/images
+[cols="1,1"]
+!===
+!*Attribute* ! *Description*
 
-*/api/v1/sbom/download/hosts
+!Name
+!Name of the package
+!BOM-REF
+!Package URL (PURL) if it exists; otherwise, UUID (for applications)
+!Package Version
+!Version number for the package
+!Package Author
+!Applicable only for specific package types such as rpm, jem, apk, and deb
+!PURL Identifier
+!Package URL (PURL) identifier
+!License 
+!Package license details
+!*Metadata:*
+!
+!Timestamp
+!Time of printing
+!Type
+!Type of asset. Images (in all stages) are categorized as containers. Serverless functions (in all stages) are categorized as services. Hosts and VMs are categorized as frameworks.
+!Name
+!Asset ID of images, hosts, and functions
+!===
 
-*/api/v1/sbom/download/vms
-
-*/api/v1/sbom/download/scans
-
-*/api/v1/sbom/download/registry
-
-*/api/v1/sbom/download/cli-serverless
-
-*/api/v1/sbom/download/cli-images
-
-*Input parameters for the API:*
-
-*ID*: imageID/registryID/hostID/functionID (Obtain ID from scan results. An empty list returns all entities under the same type.)
-
-*SbomFormat*: cyclonedx_json or cyclonedx_xml
+SBOM files can be downloaded either through API calls or twistcli.
 
 *twistcli Configuration*
+
 Export SBOMs using the new flag: --SBOM [file_format]
 File Format Values: cyclonedx_json or cyclonedx_xml
 SBOM output is concatenated to the scan results output.
@@ -112,10 +121,13 @@ Use the --output flag to print scan results and SBOM output to a specified file.
 
 |*Resolving method for cluster name*
 //CWP-59133
-|When deploying Defender to your Kubernetes cluster, Prisma Cloud now provides you the option to use the API server address from the kube config file to resolve cluster names. This option ensures that each cluster has a unique cluster name in Prisma Cloud.
+|When deploying Defender to your Kubernetes cluster, Prisma Cloud now provides you the option to use the API server address from the kube config file to resolve cluster names. 
+
+This option ensures that each cluster has a unique cluster name in Prisma Cloud.
 
 A new field, Cluster name resolving method, has been added to the Manage → Defenders → “Manual Deploy” → Orchestrator → “Orchestrator type = Kubernetes" → Advanced Settings page.
-The Cluster name resolving method field has the following options:
+
+The *Cluster name resolving method* field has the following options:
 
 * *Default*: Allows Prisma Cloud to automatically generate the name based on available information such as kube config, resource group information, and cloud provider metadata endpoints.
 
@@ -151,6 +163,13 @@ This enhancement ensures that vulnerability information is accurately reported f
 */api/v1/sbom/download/cli-serverless
 
 */api/v1/sbom/download/cli-images
+
+*Input parameters for the API:*
+
+*ID*: asset ID of images, hosts, and functions (Obtain ID from scan results. An empty list returns all entities under the same type.)
+
+*SbomFormat*: cyclonedx_json or cyclonedx_xml
+
 
 
 |*Remove hostname from registry progress response*
