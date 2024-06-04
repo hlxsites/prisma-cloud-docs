@@ -1,12 +1,12 @@
 == Manage Transporter (Network Tunnel)
 
-The Prisma Cloud Transporter (Transporter) acts as a secure intermediary between your on-premises environment and Prisma Cloud. This setup allows Prisma Cloud to scan your code without exposing your data to the internet. The Transporter operates as a communication proxy or broker, establishing a secure communication channel between Prisma Cloud and self-hosted providers such as version control systems (VCS) and more, that restrict incoming network traffic. The Transporter's outbound-only operation ensures that sensitive data remains within the customer network or DMZ.
+The Prisma Cloud Transporter (Transporter) acts as a secure intermediary between your on-premises environment and Prisma Cloud. This setup allows Prisma Cloud to scan your code without exposing your data to the internet. The Transporter operates as a communication proxy or broker, establishing a secure communication channel between Prisma Cloud and self-hosted providers such as version control systems *(VCS)*, *Terraform Enterprise (Run Tasks)* and more, that restrict incoming network traffic. The Transporter's outbound-only operation ensures that sensitive data remains within the customer network or DMZ.
 
 // NOTE: Transporter is only available on request..
 
 To create a network tunnel, Transporter requires the following components:
 
-* *Prisma Cloud Transporter Client*: A Docker container running in your environment with access to VCS, isolated from inbound network traffic
+* *Prisma Cloud Transporter Client*: A Docker container running in your environment with access to VCS/Terraform Enterprise (Run Tasks), isolated from inbound network traffic
 * *Prisma Cloud Transporter Server*: Pre-enabled access to the server.
 +
 NOTE: Transporter is not meant to act as a tool for air-gapped environments, that is, environments that do not allow access to the internet.
@@ -24,19 +24,21 @@ NOTE: These requirements apply to both Docker and Kubernetes setups. Requirement
 * xref:../../../administration/create-access-keys.adoc[Generate and copy a Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a Key ID and secret
 * *Set Up internal DNS Resolution*: Create an internal naming resolution to direct traffic to the VM hosting the Docker Container or the Kubernetes (k8s) service
 +
-NOTE: There is no justification for creating publicly accessible DNS records. The name serves the purpose of facilitating communication between the VCS and the Transporter and validating its certificate, which is associated with the name.
-//+
+NOTE: There is no justification for creating publicly accessible DNS records. The name serves the purpose of facilitating communication between the VCS/Terraform Enterprise (Run Tasks) and the Transporter and validating its certificate, which is associated with the name.
+
+// +
 ////
 NOTE: Creating either an 'A' or 'CNAME' record requires configuring Domain Name System (DNS) settings to associate a domain name with a specific IP address, typically an internal IP address in the context of the Transporter. In the context of a virtual machine (VM) running Docker or a Kubernetes (k8s) service, this configuration serves the purpose of making services accessible through a custom domain name. Additionally it enables securing communication through a certificate linked to the specific domain name. 
 ////
-* *Generate an TLS Certificate and Key*: To establish a secure webhook connection to your provider, including Version Control Systems (VCS), private registries, Terraform Enterprise and so on, generate an TLS certificate and key for the Transporter URL. Define the certificate storage path and key to ensure secure communication over HTTPS. Self-signed certificates are supported. 
+
+* *Generate an TLS Certificate and Key*: To establish a secure webhook connection to your provider, including Version Control Systems (VCS), private registries, Terraform Enterprise (Run Tasks) and so on, generate a TLS certificate and key for the Transporter URL. Define the certificate storage path and key to ensure secure communication over HTTPS. Self-signed certificates are supported. 
 +
 NOTE: For more information on certificates for Docker Container environments, refer to xref:deploy-transporter-docker.adoc#self-signed-certificates[Self-signed Certificates]. For more information on certificates for Kubernetes environments see xref:deploy-transporter-helmcharts.adoc[Helm Charts].
 
 * *Network Access*
 ** *Allow egress network traffic*: Add the Prisma Cloud IP addresses and hostname for Application Security to an allow list and configure your firewall or proxy to allow egress network access for the specified IP addresses, in order to allow access to the Prisma Cloud Console. For a list of available whitelisted Transporter IP addresses, refer to <<whitelist-ip-addresses-,Whitelist IP Addresses>> below 
 
-** *Proxy*: Establishing connectivity through a proxy with Transporter enhances both security and network efficiency as it establishes a secure and isolated communication channel between the Prisma Cloud service and your self-hosted version control system (VCS). Proxies can be configured when setting up Transporter through both Docker and Kubernetes. For more on proxy configuration, refer to xref:transporter-connectivity-overview.adoc#proxy-connectivity[Proxy Connectivity]
+** *Proxy*: Establishing connectivity through a proxy with Transporter enhances both security and network efficiency as it establishes a secure and isolated communication channel between the Prisma Cloud service and your self-hosted version control system (VCS)/Terraform Enterprise (Run Tasks). Proxies can be configured when setting up Transporter through both Docker and Kubernetes. For more on proxy configuration, refer to xref:transporter-connectivity-overview.adoc#proxy-connectivity[Proxy Connectivity]
 
 ** *Browser network access requirements*: To facilitate the Prisma Cloud Transporter integration, the browser performing the setup must meet specific network access conditions. For detailed information on browser requirements, refer to xref:transporter-connectivity-overview.adoc#browser-connectivity[Browser Connectivity]
 
@@ -74,7 +76,7 @@ For more information refer to:
 [#whitelist-ip-addresses-] 
 === Whitelist Transporter IP Addresses
 
-If you select Transporter as the connectivity option when integrating your VCS with Prisma Cloud, you will automatically be assigned two dedicated IP addresses specifically for Transporter functionality. These IP addresses differ from the two IP addresses specified during the VCS integration without Transporter connectivity. 
+If you select Transporter as the connectivity option when integrating your VCS or Terraform Enterprise (Run Tasks) with Prisma Cloud, you will automatically be assigned two dedicated IP addresses specifically for Transporter functionality. These IP addresses differ from the two IP addresses specified during the VCS integration without Transporter connectivity. 
 
 NOTE: The list of whitelisted Transporter IP addresses provided below is for planning purposes. Only the two relevant IP addresses associated with your tenant will be displayed during the actual configuration process.
 

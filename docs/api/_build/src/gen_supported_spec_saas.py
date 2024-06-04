@@ -200,7 +200,6 @@ def filter_env_details(spec):
   for path in spec['paths']:
     for method in spec['paths'][path]:
       env = spec['paths'][path][method]['x-prisma-cloud-target-env']
-      print("to start", env)
       if 'saas' in env:
         env.pop('saas')
       if 'self-hosted' in env:

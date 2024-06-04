@@ -8,7 +8,7 @@ Learn what's new on Prisma® Cloud in May 2024.
 * <<policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
-//* <<changes-in-existing-behavior>>
+* <<changes-in-existing-behavior>>
 //* <<deprecation-notices>>
 
 
@@ -19,6 +19,68 @@ Learn what's new on Prisma® Cloud in May 2024.
 |===
 |*Feature*
 |*Description*
+
+|*Visualize and Resolve Identity Based Threats*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Infrastructure]
+//IVG-14606
+
+|The out-of-the-box (OOTB) dashboards now include the https://docs.prismacloud.io/en/enterprise-edition/content-collections/dashboards/dashboards-identity[Identity dashboard] to empower your teams to proactively detect and mitigate identity-based threats. This Dashboard provides in-depth visualizations to help you answer the following questions:
+
+* How do I get critical insights into user activity, permissions, and potential risks, enabling teams to prioritize vulnerabilities and take timely action?
+* What are my Top Identity and Access Management Risks relative to my cloud assets? 
+* What are the risk categories that require my immediate attention?
+* How can I see key Identity and Access Management benchmarks that I can track and report to the rest of my team?
+
+image::identity-dashboard.gif[]
+
+
+|*RQL Available to Investigate Over-Privileged Access*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Infrastructure]
+//IVG-14597
+
+|The Permissions https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/permissions-queries/permissions-query-attributes[queries] are enhanced to include a new *grantedby.cloud.policy.isExcessive* attribute to identify excessive access in IAM policies across your AWS, Azure, and GCP cloud environments. 
+
+|*Prisma Cloud Surfaces Third Party Vendor Account Information*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Infrastructure]
+//RLP-139507
+
+|Enhancements to Prisma Cloud's Search and Investigate functionality allow you to identify third-party vendors that may have access to service accounts and roles in your cloud environment. Explore and investigate third party vendor accounts in AWS with ease, leveraging account number to vendor matching look up. Use the https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/permissions-queries/permissions-query-attributes[RQL query] examples to fine tune your search to surface vendor account information.
+
+* To retrieve all known vendor accounts that have access to your environment:
+
+`config from iam where source.cloud.account.isvendor = true` 
+
+* To retrieve all vendor accounts with environment access that start with Red:
+
+`config from iam where source.cloud.account STARTS WITH 'Red' and source.cloud.account.isvendor = true`
+
+|*Risk Factors to Prioritize Your Code-to-Cloud Security*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Source]
+//BCE-27077
+
+|Prisma Cloud now includes https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/risk-indicators[Risk Factors] (Indicators) that help you prioritize security vulnerabilities by identifying critical elements within your development environment. Risk Factors focus specifically on deployed container images and the runtime-connected repositories they rely on. This prioritization is crucial because external exposure can increase the risk of unauthorized access, data breaches, and exploitation of vulnerabilities.
+
+|*Custom Fix PR Titles and Branch Names*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Source]
+//BCE-32899
+
+|You can now customize your https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/fix-code-issues[pull request titles and branch names] for suggested fixes. This enables organizations to enforce a consistent naming convention, ensuring clear and contextual information about the purpose of the fix and makes it easier for team members to understand the changes being made.
+
 
 |*Integration with Amazon Security Lake*
 
@@ -37,7 +99,8 @@ tt:[*24.5.1*]
 tt:[Secure the Infrastructure]
 //RLP-135039
 
-|Updates to the Prisma Cloud https://docs.prismacloud.io/en/enterprise-edition/content-collections/get-started/access-prisma-cloud#id3c964e17-24c6-4e7c-9a47-adae096cc88d[login experience], provide support for all available authentication options (excluding IdP-initiated SAML SSO). Enhancements include:
+|Enhanced Prisma Cloud https://docs.prismacloud.io/en/enterprise-edition/content-collections/get-started/access-prisma-cloud#id3c964e17-24c6-4e7c-9a47-adae096cc88d[login experience] provides support for all available authentication options (excluding IdP-initiated SAML SSO) including:
+
 * SSO Login page update to clearly identify OIDC SSO login and add provide support Palo Alto Networks SSO login.
 
 * Fixed an issue with deep link resolution. Accessing Prisma Cloud deep links without a valid browser session now redirects to the Prisma Cloud login page.
@@ -129,6 +192,7 @@ This feature includes three statuses:
 |===
 
 
+
 [#api-ingestions]
 === API Ingestions
 
@@ -136,6 +200,168 @@ This feature includes three statuses:
 |===
 |*Service*
 |*API Details*
+
+|*AWS Network Firewall*
+
+tt:[*24.5.2*]
+//RLP-138830 
+
+|*aws-network-firewall-logging-configuration*
+
+Additional permissions required:
+
+* `network-firewall:DescribeLoggingConfiguration`
+* `network-firewall:ListFirewalls`
+
+The Security Audit Policy role includes the permissions.
+
+|*AWS Migration Hub*
+
+tt:[*24.5.2*]
+//RLP-138824 
+
+|*aws-migration-hub-home-region-control*
+
+Additional permission required:
+
+* `mgh:DescribeHomeRegionControls`
+
+You must manually add the permission to the CFT template to enable it.
+
+|*Azure App Service*
+
+tt:[*24.5.2*]
+//RLP-136675
+
+|*azure-app-service-basic-publishing-credentials-policies*
+
+Additional permissions required:
+
+* `Microsoft.Web/sites/Read`
+* `Microsoft.Web/sites/basicPublishingCredentialsPolicies/Read`
+
+The Reader role includes the permissions. 
+
+
+|*Azure Analysis Services*
+
+tt:[*24.5.2*]
+//RLP-134923
+
+|*azure-analysisservices-servers-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.AnalysisServices/servers/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+|*Azure API Management Services*
+
+tt:[*24.5.2*]
+//RLP-134921
+
+|*azure-api-management-service-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+|*Azure App Service*
+
+tt:[*24.5.2*]
+//RLP-132837
+
+|*azure-app-service-environment-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.Web/hostingEnvironments/Read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the permissions. 
+
+|*Azure Machine Learning*
+
+tt:[*24.5.2*]
+//RLP-129311
+
+|*azure-machine-learning-compute*
+
+Additional permissions required:
+
+* `Microsoft.MachineLearningServices/workspaces/read`
+* `Microsoft.MachineLearningServices/workspaces/computes/read`
+
+The Reader role includes the permissions. 
+
+
+|*Google Workspace*
+
+tt:[*24.5.2*]
+//RLP-135384
+
+|*gcloud-domain-user-last-login-time*
+
+No additional permissions required for this API.
+
+|*Google Dataproc Clusters*
+
+tt:[*24.5.2*]
+//RLP-135383
+
+|*gcloud-dataproc-cluster-job*
+
+Additional permissions required:
+
+* `dataproc.jobs.list` 
+* `dataproc.jobs.getIamPolicy`
+
+The Viewer role includes the permissions. 
+
+|*Google Vertex AI AIPlatform*
+
+tt:[*24.5.2*]
+//RLP-135381
+
+|*gcloud-vertex-ai-aiplatform-feature-online-store*
+
+Additional permission required:
+
+* `aiplatform.featureOnlineStores.list`
+
+The Viewer role includes the permission.
+
+|*Google Vertex AI AIPlatform*
+
+tt:[*24.5.2*]
+//RLP-135380
+
+|*gcloud-vertex-ai-aiplatform-feature-group*
+
+Additional permission required:
+
+* `aiplatform.featureGroups.list`
+
+The Viewer role includes the permission.
+
+|*Google Cloud Support*
+
+tt:[*24.5.2*]
+//RLP-131425
+
+|*gcloud-cloud-support-case*
+
+Additional permission required:
+
+* `cloudsupport.techCases.list`
+
+The Viewer role includes the permission. 
+
 
 |*Amazon EC2*
 
@@ -310,6 +536,180 @@ tt:[*24.5.1*]
 |===
 |*Policies*
 |*Description*
+
+|*AWS OpenSearch domain does not have the latest service software version*
+
+tt:[*24.5.2*]
+//RLP-139079
+
+|This policy identifies Amazon OpenSearch Service domains that have service software updates available but not installed for the domain.
+
+Amazon OpenSearch Service is a managed solution for deploying, managing, and scaling OpenSearch clusters. Service software updates deliver the most recent platform fixes, enhancements, and features for the environment, ensuring domain security and availability. To minimize service disruption, it's advisable to schedule updates during periods of low domain traffic. 
+
+It is recommended to keep OpenSearch regularly updated to maintain system security, while also accessing the latest features and improvements.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' and api.name= 'aws-es-describe-elasticsearch-domain' AND json.rule = serviceSoftwareOptions.updateAvailable exists and serviceSoftwareOptions.updateAvailable is true
+----
+
+|*AWS Neptune DB clusters have backup retention period less than 7 days*
+
+tt:[*24.5.2*]
+//RLP-139010
+
+|This policy identifies Amazon Neptune DB clusters lacking sufficient backup retention tenure. 
+
+AWS Neptune DB is a fully managed graph database service. The backup retention period denotes the duration for storing automated backups of the Neptune DB clusters. Inadequate retention periods heighten the risk of data loss, and compliance issues, and hinder effective recovery in security breaches or system failures. 
+
+It is recommended to ensure a backup retention period of at least 7 days or according to your business and compliance requirements.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-neptune-db-cluster' AND json.rule = Status equals "available" and (BackupRetentionPeriod does not exist or BackupRetentionPeriod less than 7)
+----
+
+|*AWS Neptune DB cluster does not publish audit logs to CloudWatch Logs*
+
+tt:[*24.5.2*]
+//RLP-138983
+
+|This policy identifies Amazon Neptune DB clusters where audit logging is disabled or audit logs are not published to Amazon CloudWatch Logs.
+
+Neptune DB integrates with Amazon CloudWatch for performance metric gathering and analysis, supporting CloudWatch Alarms. While Neptune DB provides customizable audit logs for monitoring database operations, these logs are not automatically sent to CloudWatch Logs, limiting centralized monitoring and analysis of database activities.
+
+It is recommended to configure the Neptune DB cluster to enable audit logs and publish audit logs to CloudWatch logs.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-neptune-db-cluster' AND json.rule = Status equals "available" as X; config from cloud.resource where api.name = 'aws-neptune-db-cluster-parameter-group' AND json.rule = parameters.neptune_enable_audit_log.ParameterValue exists and parameters.neptune_enable_audit_log.ParameterValue equals 0 as Y; filter '($.X.EnabledCloudwatchLogsExports.member does not contain "audit") or $.X.DBClusterParameterGroup equals $.Y.DBClusterParameterGroupName' ; show X;
+----
+
+|*AWS DocumentDB cluster does not publish audit logs to CloudWatch Logs*
+
+tt:[*24.5.2*]
+//RLP-138895
+
+|This policy identifies Amazon DocumentDB cluster where audit logging is disabled or audit logs are not published to Amazon CloudWatch Logs. 
+
+DocumentDB integrates with Amazon CloudWatch for performance metric gathering and analysis, supporting CloudWatch Alarms. While DocumentDB provides customizable audit logs for monitoring database operations, these logs are not automatically sent to CloudWatch Logs, limiting centralized monitoring and analysis of database activities. 
+
+It is recommended to configure the DocumentDB cluster to enable audit logs and publish audit logs to CloudWatch logs.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-docdb-db-cluster' AND json.rule = Status equals "available" as X; config from cloud.resource where api.name = 'aws-docdb-db-cluster-parameter-group' AND json.rule = parameters.audit_logs.ParameterValue is member of ( 'disabled','none') as Y; filter '($.X.EnabledCloudwatchLogsExports.member does not contain "audit") or $.X.DBClusterParameterGroup equals $.Y.DBClusterParameterGroupName' ; show X;
+----
+
+|*AWS Network Firewall delete protection is disabled*
+
+tt:[*24.5.2*]
+//RLP-138877
+
+|This policy identifies the AWS Network Firewall for which delete protection is disabled. AWS Network Firewall manages inbound and outbound traffic for the AWS resources within Virtual Private Clouds (VPCs). 
+
+The deletion protection setting protects against accidental deletion of the firewall. Deletion of a firewall increases the risk of unauthorized access, data breaches, and compliance issues. 
+
+It is recommended to enable deletion protection for a network firewall to safeguard against accidental deletion.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-networkfirewall-firewall' AND json.rule = FirewallStatus.Status equals READY and Firewall.DeleteProtection is false
+----
+
+
+|*AWS Application Load Balancer (ALB) is not configured to drop HTTP headers*
+
+tt:[*24.5.2*]
+//RLP-138515
+
+|This policy identifies AWS Application Load Balancers that are not configured to drop HTTP headers. 
+
+AWS Application Load Balancers distribute incoming HTTP/HTTPS traffic across multiple targets such as EC2 instances, containers, and Lambda functions, based on routing rules and health checks. By default, ALBs are not configured to drop invalid HTTP header values, which can leave the load balancer vulnerable to HTTP desync attacks. HTTP desync attacks manipulate request headers to exploit inconsistencies between servers, potentially leading to security vulnerabilities and unauthorized access. 
+
+It is recommended to enable this feature, to prevent the load balancer from forwarding requests with invalid HTTP headers to mitigate potential security vulnerabilities.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and ['attributes'].['routing.http.drop_invalid_header_fields.enabled'] is false
+----
+
+
+|*Azure Storage account with cross tenant replication enabled*
+
+tt:[*24.5.2*]
+//RLP-137211
+
+|This policy identifies Azure Storage accounts that are enabled with cross tenant replication. 
+
+Azure Storage account cross tenant replication allows data to be replicated across multiple Azure tenants. Though this feature is beneficial for data availability it also poses a significant security risk if not properly managed. Possible risks include unauthorized access to data, data leaks, and compliance violations. Disabling Cross Tenant Replication reduces the risk of unauthorized data access and prevents the accidental sharing of sensitive information. 
+
+As best practice, it is recommended to disable cross tenant replication on your storage accounts.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.allowCrossTenantReplication exists and properties.allowCrossTenantReplication is true
+----
+
+
+|*Azure App service HTTP logging is disabled*
+
+tt:[*24.5.2*]
+//RLP-133160
+
+|This policy identifies Azure App services that have HTTP logging disabled. 
+
+By enabling HTTP logging for your app service, you can collect log information and use it to monitor and troubleshoot your app, as well as identify any potential security issues or threats. This can help to ensure that your app is running smoothly and is secure from potential attacks. 
+
+As best practice, it is recommended to enable HTTP logging on your app service.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and config.httpLoggingEnabled exists and config.httpLoggingEnabled is false
+----
+
+|*Azure App Service Environment configured with weak TLS cipher suites*
+
+tt:[*24.5.2*]
+//RLP-139380
+
+|This policy identifies Azure App Service Environments that are configured with weak TLS Cipher suites.
+
+Azure App Service Environments host web applications and APIs in a dedicated and isolated environment. When these environments are configured with weak TLS Cipher suites, they can expose sensitive data to potential security risks. Weak cipher suites may allow attackers to intercept and decrypt communication between clients and the App Service Environment, leading to unauthorized access, data breaches, and potential compliance violations. The recommended cipher suites are TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 and TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256.
+
+As best practice, it is recommended to avoid using weak TLS Cipher suites to enhance security and protect sensitive data.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service-environment' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.clusterSettings exists and properties.clusterSettings[?any(name equal ignore case FrontEndSSLCipherSuiteOrder)] does not exist
+----
 
 |*AWS DocumentDB clusters have backup retention period less than 7 days*
 
@@ -595,7 +995,61 @@ tt:[Secure the Source]
 *Impact—* You will view policy violations for these policies on Prisma Cloud switcher *Application Security > Projects*. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings. 
 You are required to enable the additional modules on *Application Security > Settings* to view violations and alerts for these policies.
 
+
+|*New IAM OOTB Policies*
+
+tt:[*24.5.2*]
+
+tt:[Secure the Infrastructure]
+
+|The following new OOTB IAM policies are added in Prisma Cloud. You can also find these policies in JSON format on this https://github.com/PaloAltoNetworks/prisma-cloud-policies/tree/master/policies[GitHub Repo]. To see a comprehensive list of all the policies added, check the https://github.com/PaloAltoNetworks/prisma-cloud-policies/blob/master/CHANGELOG.md[changelog.md] file. The name of each policy in the changelog matches the filename for each policy. Within each policy file, the JSON field names clearly describe the characteristics they represent.
+
+- AWS Administrators with IAM permissions are unused for 90 days
+- AWS Groups and IAM Roles with Administrative Permissions
+- AWS IAM Groups and Roles with Excessive Policies
+- AWS IAM Groups and Roles with IAM Data Read permissions are unused for 90 days
+- AWS IAM Groups and Roles with IAM Data Write permissions are unused for 90 days
+- AWS IAM Groups and Roles with IAM Metadata Read permissions are unused for 90 days
+- AWS IAM Groups and Roles with IAM Metadata Write permissions are unused for 90 days
+- AWS Users and Machine Identities with Administrative Permissions
+- AWS Users and Machine Identities with Excessive Policies
+- AWS Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+- AWS Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+- AWS Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+- AWS Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with Administrative Permissions
+- Azure AD Groups, Service Principals and Managed Identities with Excessive Policies
+- Azure AD Groups, Service Principals and Managed Identities with IAM Data Read permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with IAM Data Write permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Read permissions are unused for 90 days
+- Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Write permissions are unused for 90 days
+- Azure Administrators with IAM permissions are unused for 90 days
+- Azure Users and Machine Identities with Administrative Permissions
+- Azure Users and Machine Identities with Excessive Policies
+- Azure Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+- Azure Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+- Azure Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+- Azure Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+- GCP Administrators with IAM permissions are unused for 90 days
+- GCP Groups and Service Accounts with Administrative Permissions
+- GCP Groups and Service Accounts with Excessive Policies
+- GCP Groups and Service Accounts with IAM Data Read permissions are unused for 90 days
+- GCP Groups and Service Accounts with IAM Data Write permissions are unused for 90 days
+- GCP Groups and Service Accounts with IAM Metadata Read permissions are unused for 90 days
+- GCP Groups and Service Accounts with IAM Metadata Write permissions are unused for 90 days
+- GCP Users and Machine Identities with Administrative Permissions
+- GCP Users and Machine Identities with Excessive Policies
+- GCP Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+- GCP Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+- GCP Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+- GCP Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+- Third-party service account can assume a service account with high privileges
+- Third-party service account with a Lateral Movement Through Lambda Edit
+- Third-party service account with a Lateral Movement to Data Services Through Redshift Cluster Creation
+- Third-party Service Account With Lateral Movement Through CloudFormation Stack Creation
 |===
+
+
 
 [#policy-updates]
 === Policy Updates
@@ -606,6 +1060,71 @@ You are required to enable the additional modules on *Application Security > Set
 |*Description*
 
 2+|*Policy Updates—RQL*
+
+|*Azure Storage account encryption key configured by access policy with privileged operations*
+
+tt:[*24.5.2*]
+//RLP-139004
+
+|*Changes*— The policy RQL will be updated to check if the key vault will use Role-Based Access Control (RBAC) for authorization of data actions or not.
+
+*Severity*— Medium
+
+*Policy Type*— Config
+
+*Current RQL—*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X;
+----
+
+*Updated RQL—*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = properties.enableRbacAuthorization is false and properties.accessPolicies[*].permissions exists and (properties.accessPolicies[*].permissions.keys[*] intersects ('Decrypt', 'Encrypt', 'Release', 'Purge', 'all') or properties.accessPolicies[*].permissions.secrets[*] intersects ('Purge', 'all') or properties.accessPolicies[*].permissions.certificates[*] intersects ('Purge', 'all')) as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+----
+
+*Impact*— Low.
+
+
+|*Azure Virtual Network subnet is not configured with a Network Security Group*
+
+tt:[*24.5.2*]
+//RLP-137711
+
+|*Changes*— The policy description and RQL are updated.
+
+*Severity*— Low
+
+*Policy Type*— Config
+
+*Current Description—* This policy identifies Azure Virtual Network (VNet) subnets that are not associated with a Network Security Group (NSG). While binding an NSG to a network interface of a Virtual Machine (VM) enables fine-grained control to the VM, associating a NSG to a subnet enables better control over network traffic to all resources within a subnet. As a best practice, associate an NSG with a subnet so that you can protect your VMs on a subnet-level.
+
+For more information, see https://learn.microsoft.com/en-gb/archive/blogs/igorpag/azure-network-security-groups-nsg-best-practices-and-lessons-learned[Azure Network Security Groups (NSG) - Best Practices and Lessons Learned] and https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#limitations[What is a private endpoint? - Azure Private Link].
+
+NOTE: This policy will not report for subnets used by Azure Firewall, Gateway, NetApp File Share, RouteServerSubnet, Private endpoints and Private links as Azure recommends not to configure Network Security Group (NSG) for these services.
+
+*Updated Description—* This policy identifies Azure Virtual Network (VNet) subnets that are not associated with a Network Security Group (NSG). 
+
+While binding an NSG to a network interface of a Virtual Machine (VM) enables fine-grained control of the VM, associating an NSG to a subnet enables better control over network traffic to all resources within a subnet. 
+
+It is recommended to associate an NSG with a subnet so that you can protect your VMs on a subnet-level.
+
+For more information, see https://learn.microsoft.com/en-gb/archive/blogs/igorpag/azure-network-security-groups-nsg-best-practices-and-lessons-learned[Azure Network Security Groups (NSG) - Best Practices and Lessons Learned] and https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#limitations[What is a private endpoint? - Azure Private Link]. 
+
+NOTE: This policy will not report for subnets used by Azure Firewall Subnet, Azure Firewall Management Subnet, Gateway Subnet, NetApp File Share, Route Server Subnet, Private endpoints and Private links as Azure recommends not to configure Network Security Group (NSG) for these services.
+
+
+*Current RQL—*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-subnet-list' AND json.rule = networkSecurityGroupId does not exist and name does not equal ignore case "GatewaySubnet" and name does not equal ignore case "RouteServerSubnet" and name does not equal ignore case "AzureFirewallSubnet" and ['properties.delegations'][*].['properties.serviceName'] does not equal "Microsoft.Netapp/volumes"
+----
+
+*Updated RQL—*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-subnet-list' AND json.rule = networkSecurityGroupId does not exist and name does not equal ignore case "GatewaySubnet" and name does not equal ignore case "RouteServerSubnet" and name does not equal ignore case "AzureFirewallSubnet" and name does not equal ignore case "AzureFirewallManagementSubnet" and ['properties.delegations'][*].['properties.serviceName'] does not equal "Microsoft.Netapp/volumes"
+----
+
+*Impact*— Low. Alert for Azure Virtual Network (VNet) subnets used by  `AzureFirewallManagementSubnet` will be resolved. 
+
 
 |*Azure Microsoft Defender for Cloud set to Off for DNS*
 
@@ -682,6 +1201,27 @@ You are required to enable the additional modules on *Application Security > Set
 |*Compliance Benchmark*
 |*Description*
 
+|*Policy Mapping Update for HIPAA*
+
+tt:[24.5.2]
+//RLP-139379
+
+|New Policy mappings are added to the HIPAA compliance standard.  
+
+*Impact—* As new mappings are introduced, compliance scoring might vary.
+
+
+|*Support for NIST CSF v2.0*
+
+tt:[24.5.2]
+//RLP-139490
+
+|Prisma Cloud has integrated support for the NIST CSF v2.0 compliance standard. This version has new controls and the new Prisma Cloud policies are mapped to the controls increasing the overall coverage.
+
+You can now view this built-in standard and the associated policies on *Compliance > Standards*. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+
+
 |*CIS GCP Foundation benchmark 3.0*
 
 tt:[24.5.1]
@@ -701,6 +1241,16 @@ You can now view this built-in standard and associated policies on the *Complian
 |*Change*
 |*Description*
 
+// |*RLP-140724 placeholder*
+// tt:[24.5.2]
+//RLP-140724
+// |<tbd>
+
+// |*RLP-134393 placeholder*
+//tt:[24.5.2]
+//RLP-134393
+// |<tbd>
+
 |*Integration APIs*
 
 tt:[24.5.1]
@@ -708,17 +1258,27 @@ tt:[24.5.1]
 
 |Integration APIs now support https://pan.dev/prisma-cloud/api/cspm/api-integration-config/#amazon-security-lake[integration with Amazon Security Lake] to ingest Prisma Cloud Open Cybersecurity Schema Framework (OCSF) compliant vulnerability security data into Amazon Security Lake.
 
+|===
 
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Alert Info API*
+//RLP-134888 - incorrect Jira # ask AN
+
+|The Alert Info https://pan.dev/prisma-cloud/api/cspm/get-alert/[GET alert/:id] response now includes a new `connectionDetails` field.
 
 |===
 
-//[#changes-in-existing-behavior]
-//=== Changes in Existing Behavior
-
-//[cols="50%a,50%a"]
-//|===
-//|*Feature*
-//|*Description*
-//|===
-
-
+//[#deprecation-notices]
+//=== Deprecation Notices
+// [cols="37%a,63%a"]
+// |===
+// |*Change*
+// |*Description*
+// |===

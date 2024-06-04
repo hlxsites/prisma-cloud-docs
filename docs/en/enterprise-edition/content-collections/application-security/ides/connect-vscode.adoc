@@ -5,9 +5,16 @@
 
 Integrate the Prisma Cloud Code Security plugin (plugin) for VS Code IDE (IDE) to seamlessly enhance security while coding, allowing you to identify issues before you commit your code, reducing the risk of pull requests failing due to undetected issues. Prisma Cloud scans for security policy violations based on both default, out-of-the-box and custom policies.
 
+=== Choose Your Security Level
+
+* *Enhanced Security with Prisma Cloud Integration* (Recommended): For comprehensive security analysis, connect the plugin to Prisma Cloud using your Prisma Cloud Access Key and Secret Key. This unlocks the full power of Prisma Cloud's security features.
+* *Basic Open Source Functionality*: If you prefer not to use an access credentials, you can still benefit from the plugin's basic open-source features. These features provide a foundational level of security analysis, helping you identify common vulnerabilities. However, you will not have access to Prisma Cloud. 
+
 For default policies, refer to the https://docs.prismacloud.io/en/enterprise-edition/policy-reference/get-started-code-sec-policies/get-started-code-sec-policies[Policies] documentation.
 
 For information on creating custom policies, refer to xref:../../governance/custom-build-policies/custom-build-policies.adoc[Custom Build Policies].
+
+=== Supported Scan Categories
 
 The plugin utilizes Prisma Cloud's capabilities to scan these security categories:
 
@@ -16,13 +23,14 @@ The plugin utilizes Prisma Cloud's capabilities to scan these security categorie
 * Secrets: Security vulnerabilities in your base images
 * Licenses: Software license noncompliance
 
-You can prioritize findings and address the most critical issues by filtering the scan results based on severity.
-
 === Prerequisites
 
 //[.procedure]
 
-. Install https://www.python.org/downloads/[Python] v3.7 or above, https://docs.pipenv.org/[Pipenv], or a running https://www.docker.com/products/docker-desktop[Docker] daemon.
+. Environment Setup.
++
+* On *Mac*: Install https://www.python.org/downloads/[Python] v3.7 or above, https://docs.pipenv.org/[Pipenv], or a running https://www.docker.com/products/docker-desktop[Docker] daemon
+* On *Windows*: Install Python v3 or above, or a running Docker daemon
 +
 NOTE: The plugin automatically invokes the latest version of Prisma Cloud Code Security.
 
@@ -72,19 +80,30 @@ You are redirected to the Prisma Cloud extension on VS Code.
 . Click *Install*.
 
 === Configure Plugin Settings
-. Navigate to the bottom menu bar of your VS Code editor and select the *Prisma Cloud* tab to access *Settings*.
+
+This section guides you through configuring the plugin. The configuration process depends on whether you're using the open-source or proprietary version. For the proprietary version, to establish a secure connection between your environment and Prisma Cloud, you are required to provide the following credentials: *Access Key*, *Secret Key* and *Prisma URL* values. The open-source project does not require these settings.
+
+NOTE: *Enforcement* rules and *CA certificates* are not applicable to the open-source project.
+
+. Navigate to the bottom menu bar of your VS Code editor and select the *Prisma Cloud* tab to access *Settings* or click the *Settings* icon.
 +
-image::application-security/vscode-settings1.1.png[]
+image::application-security/vscode-settings2.1.png[]
 
 . Fill in the provided fields:
 +
-* *Access Key* (required): The Prisma Cloud access key ID generated in step 1.2 above
-* *Secret Key* (required): The Prisma Cloud secret key generated in step 1.2 above
-* *Prisma URL* (required): Your Prisma URL - see prerequisites  in step 1.2 above
-* *CA-Certificate* (optional): Add the CA certificate. Format: `.pem` file
-* *Use Enforcement Rules* (Optional): Enforce soft-fail thresholds set by Enforcement apply for VS Code scans
+* *Access Key*: The Prisma Cloud access key ID generated in step 1.2 above
+* *Secret Key*: The Prisma Cloud secret key generated in step 1.2 above
+* *Prisma URL*: Your Prisma URL - see prerequisites  in step 1.2 above
+* *Checkov Version*: Leave blank to use the latest Checkov version (or enter 'latest'), or specify a version like 2.0.123
+* *Disable Error Message Popups*: Hide error message popups 
+* *Certificate*: Add the CA certificate. Format: `.pem` file
+* *Use Enforcement Rules*: Enforce soft-fail thresholds set by Enforcement apply for VS Code scans
 +
 NOTE: Hard-fail and comment bot are not supported by the IDE. For more information on Enforcement, refer to the xref:../risk-management/monitor-and-manage-code-build/enforcement.adoc[Enforcement documentation].
+* *External Checks Directory*: Provide the path to a folder containing custom security checks
+* *Skip SSL Verification*: Bypass SSL certificate verification for troubleshooting purposes in test environments ONLY. This is highly discouraged in production environments as it exposes you to potential security risks, since invalid and falsified certificates will not be detected
+* *Specific Frameworks*: Scan specific frameworks such as `arm json secrets serverless`. You can add multiple frameworks using spaces between the values in the command. Refer to https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[Checkov CLI Command Reference] for more information
+* *SAST Full Scan Size Limit*: Set a threshold (in MB), above which SAST scans will not run on a repository. This setting is currently available for Beta customers only.
 
 === UI Layout
 
@@ -98,7 +117,7 @@ image::application-security/vscode-ui-overview1.2.png[]
 
 === Usage
 
-The Prisma Cloud Security extension allows you to conduct comprehensive scans, manage findings efficiently, and remediate issues, all within your coding environment.
+The Prisma Cloud Security extension allows you to conduct comprehensive scans, manage findings efficiently, and remediate issues, all within your coding environment. You can prioritize findings and address the most critical issues by filtering the scan results based on category and severity.
 
 ==== Scans
 

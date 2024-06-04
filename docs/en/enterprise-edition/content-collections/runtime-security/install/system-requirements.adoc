@@ -22,22 +22,24 @@ Each Defender requires 256MB of RAM and 8GB of host storage.
 
 The Defender uses `cgroups` v1 or v2 to cap resource usage at 512MB of RAM and 900 CPU shares where a typical load is ~1-5% CPU and 30-70MB RAM.
 
-The Defender stores its data in the `/var` folder.
-When allocating disk space for Defender, ensure the required space is available in the `/var` folder.
-Defenders are designed to be portable containers that collect data.
-Any data that must be persisted is sent to the Prisma Cloud Console for storage.
-Defenders don't require persistent storage.
-If you deploy persistent storage for Defenders, it can corrupt Defender files.
+For every additional 5,000 Defenders beyond 10,000 Defenders, you need 4 CPUs and 10GB RAM. For example, if there are 20,000 connected Defenders, you require 16 vCPUs, 50GB of RAM, and 500GB SSD of persistent storage.
 
 If Defenders provide registry scanning they require the following resources:
 
-* Defenders providing registry scanning--
 * 2GB of RAM
 * 20GB of storage
 * 2 CPU cores
-Defenders that are part of CI integrations (Jenkins, twistcli) require storage space depending on the size of the scanned images.
-The required disk space is 1.5 times the size of the largest image to be scanned, per executor.
-For example, if you have a Jenkins instance with two executors, and your largest container image is 500MB, then you need at least 1.5GB of storage space: `500MB x 1.5 x 2`
+
+For Defenders that are a part of CI integrations such as Jenkins and twistcli, the amount of storage space required depends on the size of the scanned images. You will need disk space that is 1.5 times the size of the largest image to be scanned, per executor. For example, if you have a Jenkins instance with two executors and your largest container image is 500MB, you will need at least 1.5GB of storage space (500MB x 1.5 x 2).
+
+Keep the following caveats in mind when determining Defender storage and memory requirements:
+
+* The Defender stores its data in the `/var` folder. When allocating disk space for Defender, ensure the required space is available in the `/var` folder.
+* Defenders are designed to be portable containers that collect data. Any data that must be persisted is sent to the Prisma Cloud Console for storage.
+* Defenders do not require persistent storage. Deploying persistent storage for Defenders can corrupt Defender files.
+* For Web Application and API Security (WAAS):
+** Inline - Increase the pod memory to 4GB if the Defender is protecting more than 10 workloads. 
+** Out-Of-Band - Increase the pod memory to 4GB.
 
 [#vms]
 === Virtual Machines (VMs)
