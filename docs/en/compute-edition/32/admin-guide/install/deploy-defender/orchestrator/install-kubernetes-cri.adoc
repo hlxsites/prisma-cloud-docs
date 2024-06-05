@@ -4,7 +4,7 @@
 Kubernetes lets you set up a cluster with the container runtime of your choice.
 Prisma Cloud supports Docker Engine, CRI-O, and cri-containerd.
 
-When generating the YAML file or Helm chat to deploy the Defender DaemonSet, you can select the *Container Runtime type* on Console UI under *Manage > Defenders > Defenders: Deployed > Manual deploy*.
+When generating the YAML file or Helm chat to deploy the Defender DaemonSet, you can select the *Container Runtime type* on Prisma Cloud console from *Manage > Defenders > Defenders: Deployed > Manual deploy*.
 
 Since Defenders need to have a view of other containers, this option is necessary to guide the communication.
 
@@ -74,7 +74,20 @@ spec:
           value: daemonset
         - name: DEFENDER_LISTENER_TYPE
           value: "none"
-          ...
+...
+----
+endif::prisma_cloud[]
+
+NOTE: To change the default containerd data directory from `/var/lib/containerd` to a custom directory (for example: `/var/lib/kubelet/containerd`), modify the `volumeMounts` and `volumes` sections. Here is an example:
+
+ifdef::prisma_cloud[]
+[source,yaml]
+----
+
+        volumeMounts:
+        - name: containerd-volume
+          mountPath: "/var/lib/kubelet/containerd"
+      ...
 ----
 endif::prisma_cloud[]
 
@@ -110,6 +123,19 @@ spec:
 ----
 endif::compute_edition[]
 
+NOTE: To change the default containerd data directory from `/var/lib/containerd` to a custom directory (for example: `/var/lib/kubelet/containerd`), modify the `volumeMounts` and `volumes` sections. Here is an example:
+
+ifdef::compute_edition[]
+[source,yaml]
+----
+
+        volumeMounts:
+        - name: containerd-volume
+          mountPath: "/var/lib/kubelet/containerd"
+      ...
+----
+endif::compute_edition[]
+
 In this abbreviated version DEFENDER_TYPE:cri will use the CRI.
 
 ifdef::prisma_cloud[]
@@ -141,6 +167,7 @@ spec:
         - name: DEFENDER_LISTENER_TYPE
           value: "none"
           ...
+
 ----
 endif::prisma_cloud[]
 
@@ -175,3 +202,5 @@ spec:
           ...
 ----
 endif::compute_edition[]
+
+NOTE: Similar to the Defenders, to customize the containerd data directory, modify the paths in the `volumeMounts` and `volumes` sections accordingly.
