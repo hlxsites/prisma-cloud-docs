@@ -2,6 +2,7 @@
 
 Learn what's new on Prisma® Cloud in June 2024.
 
+* <<announcement>>
 * <<new-features>>
 * <<changes-in-existing-behavior>>
 * <<api-ingestions>>
@@ -12,6 +13,23 @@ Learn what's new on Prisma® Cloud in June 2024.
 * <<rest-api-updates>>
 * <<deprecation-notices>>
 
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Base Image updated to RHEL 9*
+
+tt:[Secure the Runtime]
+
+//CWP-59173
+ 
+|The base image used by Defenders is now updated to Red Hat Enterprise Linux (RHEL) 9.
+|===
+
 
 [#new-features]
 === New Features
@@ -21,18 +39,7 @@ Learn what's new on Prisma® Cloud in June 2024.
 |*Feature*
 |*Description*
 
-|*Vulnerabilities Tab*
-
-tt:[*24.6.1*]
-
-tt:[Secure the Infrastructure]
-//RLP-132742
-
-|Explore the new *Vulnerabilities* tab in the side panel while inspecting internet-exposed assets. You can now see Common Vulnerabilities and Exposures (CVE) discovered on the exposed asset. The severity levels of the CVEs are categorized based on the Common Vulnerability Scoring System (CVSS) scores, helping you to make informed decisions and take appropriate actions to secure the internet-exposed asset.
-
-image::vulnerabilities-tab.gif[60]
-
-|*Update Top Risks From Unmanaged Assets Widget*
+|tt:[Update] *Top Risks From Unmanaged Assets Widget*
 
 tt:[*24.6.1*]
 
@@ -42,6 +49,25 @@ tt:[Secure the Infrastructure]
 |The https://docs.prismacloud.io/en/enterprise-edition/content-collections/dashboards/dashboards-discovery-exposure-management[Top Risks From Unmanaged Assets] widget in the Discovery and Exposure Management Dashboard is enhanced to display the top risks based on various categories that affect your security posture due to public exposure of assets on the internet. The risks are categorized as Critical, Exploited, Patchable, Vulnerable, and Exposed. Links offer additional context and options to convert and inspect affected assets, helping you to quickly assess and address potential threats. 
 
 image::top-risks-from-unmanaged-assets-widget.png[]
+
+
+|*Vulnerabilities Tab*
+
+tt:[*24.6.1*]
+
+tt:[Secure the Infrastructure]
+//RLP-132742
+
+|You can explore the new *Vulnerabilities* tab in the side panel while inspecting internet-exposed assets. 
+//You can now see Common Vulnerabilities and Exposures (CVE) discovered on the exposed asset. The severity levels of the CVEs are categorized based on the Common Vulnerability Scoring System (CVSS) scores, helping you to make informed decisions and take appropriate actions to secure the internet-exposed asset.
+
+* *Support for EPSS Scores* - Prisma Cloud now supports EPSS in the Vulnerability Dashboard, Search and Investigate, and Common Vulnerabilities and Exposures (CVE) side panel.
+
+* *Support for Internet Exposure in Vulnerability Prioritization* - The prioritization engine now supports Internet Exposure as a risk factor.
+
+* *Complete CVE Details* - The CVE side panel now includes a new *CVE Details* tab that provides all the information about a given CVE, such as complete Common Vulnerability Scoring System (CVSS) Risk Factors, EPSS, Exploit information, CISA KEV, and external links.
+
+image::vulnerabilities-tab.gif[60]
 
 
 |*Improved IAM Risk Management*
@@ -109,6 +135,78 @@ tt:[Secure the Source]
 * Vulnerability detection and license compliance: Prisma Cloud can now parse, analyze, and report vulnerabilities, and ensure license compliance for projects using package-lock.json v3
 * Full dependency tree analysis: Provides a comprehensive view of all dependencies and sub-dependencies to identify potential risks
 * Cross-platform support: Supported across Prisma Cloud platforms such as PR comments, Fix PRs, Enforcement, IDE, and CLI
+
+//Compute 32-06 changes
+
+|*Go Symbol Extraction in Prisma Cloud*
+
+tt:[Secure the Runtime]
+
+//CWP-58813[Doc Ticket]
+|When scanning Golang binaries, Prisma Cloud extracts Go symbols, which allows for evaluating vulnerabilities accurately with specific package names and symbols. The feature flag for extracting Go symbols is enabled by default.
+Prisma Cloud also allows you to selectively disable symbol extraction when they are not needed, to optimize the scan.
+
+To disable this feature, follow these steps:
+
+* Self-hosted edition: Add the environment variable SYMBOL_EXTRACTION_ENABLED=False in the twistlock.cfg file.
+
+* SaaS edition: Add the environment variable core-symbol-extraction-enabled=False in the Launch Darkly mode.
+
+* Using twistcli: Add the --disable-symbol-extraction flag to the image scan command.
+
+|*Exporting Software Bill of Materials (SBOM) files in CycloneDX version 1.4*
+
+tt:[Secure the Runtime]
+
+//CWP-58812[Doc Ticket]
+|Prisma Cloud now supports https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/vulnerability-management/exporting-sboms[exporting Software Bill of Materials (SBOM) files] in CycloneDX version 1.4 for functions, images, and hosts scans. SBOM files can be generated in JSON or XML format.
+
+*SBOM Attributes*
+
+The SBOM files contain the following attributes:
+
+* Name: Name of the package
+* BOM-REF: Package URL (PURL) if it exists; otherwise, UUID (for applications)
+* Package Version: Version number for the package
+* Package Author: Applicable only for specific package types such as rpm, jem, apk, and deb
+* PURL Identifier: Package URL (PURL) identifier
+* License: Package license details
+* Timestamp (metadata): Time of printing
+* Type (metadata): Type of asset. In all the stages, images are categorized as containers, serverless functions as services, hosts and VMs as frameworks.
+* Name (metadata): Asset ID of images, hosts, and functions
+
+SBOM files can be downloaded either through API calls or twistcli.
+
+For information about the SBOM API calls, see the link:#rest-api-updates[REST API Updates] section.
+
+*twistcli Configuration*
+
+* Export SBOMs using the new flag: --SBOM [file_format]
+
+* File Format Values: cyclonedx_json or cyclonedx_xml
+
+* SBOM output is concatenated to the scan results output. Use the --output flag to print scan results and SBOM output to a specified file.
+
+|*Resolving method for cluster name*
+
+tt:[Secure the Runtime]
+
+//CWP-59133
+|When deploying Defender to your Kubernetes cluster, Prisma Cloud now provides you the option to use the API server address from the kube config file to resolve cluster names. 
+
+This option ensures that each cluster has a unique cluster name in Prisma Cloud.
+
+A new field, Cluster name resolving method, has been added to the Manage → Defenders → “Manual Deploy” → Orchestrator → “Orchestrator type = Kubernetes" → Advanced Settings page.
+
+The *Cluster name resolving method* field has the following options:
+
+* *Default*: Allows Prisma Cloud to automatically generate the name based on available information such as kube config, resource group information, and cloud provider metadata endpoints.
+
+* *Manual*: Enables you to set the cluster name manually. When you select this option, the "Specify a cluster name" box appears, allowing you to enter the desired name.
+
+* *API Server*: Uses the API server address from the kube config file to generate a unique cluster name in Prisma Cloud.
+
+This enhancement ensures that vulnerability information is accurately reported for each cluster and makes sure that the clean clusters are not misrepresented as vulnerable due to naming conflicts.
 
 
 |===
@@ -403,15 +501,14 @@ Additional permissions required:
 
 The Viewer role includes the permissions. 
 
-|*GCP Vertex AI Platform Pipeline Job*
+|tt:[Update] *GCP Vertex AI Platform Pipeline Job*
 
-tt:[*Update*]
 tt:[*24.6.1*]
 //RLP-141422
 
 |*gcloud-vertex-ai-aiplatform-pipeline-job*
 
-A new field called runtimeConfig and it's sub-fields will be ingested as part of this update.
+A new `runtimeConfig` field and it's sub-fields are now ingested as part of this update.
 
 |===
 
@@ -1227,6 +1324,12 @@ You can now view this built-in standard and the associated policies on the *Comp
 |*Change*
 |*Description*
 
+|tt:[Update] *Alerts APIs*
+//RLP-128008
+
+|The https://pan.dev/prisma-cloud/api/cspm/alert-policy-list/[POST /alert/v1/policy] and https://pan.dev/prisma-cloud/api/cspm/alert-aggregation/[POST /alert/v1/aggregate] APIs have an additional `countDetails` parameter in the response that includes `totalAlerts` and `totalPolicies`. The `countDetails` parameter allows you to view the total number of alerts across the total number of policies on the *Alerts Overview* page.
+
+
 |*IAM APIs*
 //RLP-141016
 
@@ -1281,6 +1384,67 @@ The following new versions of the existing endpoints are introduced to fetch add
 
 * The *atRisk* and *internetExposed* parameters are added to the response of Get Vulnerable Assets by RQL. 
 ** https://pan.dev/prisma-cloud/api/cspm/list-vulnerable-assets/[GET uve/api/v1/vulnerabilities/search/asset] endpoint.
+
+//Compute 32-06 changes
+
+
+|*Download the Software Bill of Materials (SBOM)*
+
+tt:[Secure the Runtime]
+
+//CWP-59122
+|The following new API endpoints enable you to download the Software Bill of Materials (SBOM) details:
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-images/[Download SBOM Images]
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-hosts/[Download SBOM Hosts]
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-vms/[Download SBOM VMs]
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-serverless/[Download SBOM Serverless]
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-registry/[Download SBOM Registry]
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-cli-serverless/[Download SBOM CLI Serverless]
+
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-cli-images/[Download SBOM CLI Images]
+
+For more details on the SBOM feature, refer to the link:#new-features[New Features] section.
+
+|*Remove hostname from registry progress response*
+
+tt:[Secure the Runtime]
+
+//CWP-57289
+|The response of the https://pan.dev/prisma-cloud/api/cwpp/get-registry-progress/[View Registry Scan Progress] API has the following changes:
+
+* A new “specScanStartTime” field is added
+* The existing “discovery” and “imageScan” properties have been modified to:
+
+** Include a new “type” field
+** Remove the “hostname” and “scanTime” fields`
+
+|*Documentation update for Add Registry Settings*
+
+tt:[Secure the Runtime]
+
+//CWP-58891
+|A new registry type - “Harbor” is added to the “version” field for the https://pan.dev/prisma-cloud/api/cwpp/post-settings-registry/[Add Registry Settings] API.
+
+This option enables you to configure a Harbor registry for scanning.
+
+|*Component documentation for API address resolving method for cluster name*
+
+tt:[Secure the Runtime]
+
+//CWP-58306
+|A new optional field clusterNameResolvingMethod is added to the following APIs:
+
+ * https://pan.dev/prisma-cloud/api/cwpp/post-defenders-daemonset-yaml/[Generate Daemonset Deployment YAML File]
+
+ * https://pan.dev/prisma-cloud/api/cwpp/post-defenders-helm-twistlock-defender-helm-tar-gz/[Generate a Helm Deployment Chart for Defender]
+
+The permissible values for this field are default, manual, and api-server.
 
 
 |===

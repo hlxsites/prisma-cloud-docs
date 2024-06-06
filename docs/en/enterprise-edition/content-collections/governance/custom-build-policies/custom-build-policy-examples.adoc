@@ -5,7 +5,7 @@ To create code-based policies for your infrastructure, use these examples as gui
 * <<terraform-examples, Terraform Examples>>
 * <<cloudformation-examples, Cloud Formation Examples>>
 * <<kubernetes-examples,Kubernetes Examples>>
-* <<ss-examples,Secrets Security Example >>
+* <<ss-examples,Secrets Security Examples >>
 
 
 [#terraform-examples]
@@ -679,15 +679,15 @@ definition:
 ----
 
 [#ss-examples]
-=== Secrets Security Example
+=== Secrets Security Examples
 
-If you are creating policies for detecting secrets, here is an example you can use to create a custom build policy code.
+The following examples demonstrate how to create a custom build policy code.
 
-* <<ss-basic-policy-definition, Basic Policy Definition>>
+//* <<ss-basic-policy-definition, Basic Policy Definition>>
 
 [#ss-basic-policy-definition]
-==== Basic Policy Definition
-Use the sample guideline to create a basic policy definition using one attribute.
+==== Example #1 Basic Policy Definition
+Use the sample guideline to create a basic policy definition using a single attribute.
 
 [source,yaml]
 ----
@@ -700,4 +700,20 @@ definition:
   value:
     - "[A-Za-z0-9]{8,20}"
     - "my-super-secret-password-regex"
+----
+
+==== Example #2 Detect Passwords
+
+This policy detects instances where literal strings starting with "password" or "pwd" are used directly in the code or configuration files. This is a security risk because it exposes the actual password value.
+
+----
+metadata:
+  name: "Detect password definition"
+  guidelines: "Find passwords starting with password|pwd and the value format is not {var}.{var}"
+  category: "secrets"
+  severity: "high"
+definition: 
+  cond_type: "secrets"
+  value:
+    - "(?:password|pass|pwd)\s*[=:|=>|\|\||:=|<]\s*([^.\s]+)(?![.\w])"    
 ----
