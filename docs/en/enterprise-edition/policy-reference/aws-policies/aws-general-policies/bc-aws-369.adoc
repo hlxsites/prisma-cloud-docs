@@ -1,0 +1,66 @@
+
+== Amazon Sagemaker Data Quality Job not encrypting communications between instances used for monitoring jobs
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerDataQualityJobDefinitionTrafficEncryption.py[CKV_AWS_369]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy is checking to ensure that all communications between instances used for monitoring jobs in Amazon Sagemaker Data Quality Job are encrypted. The lack of encryption could potentially expose sensitive data during transmission, creating a security vulnerability. Unencrypted data can easily be intercepted and accessed by unauthorized individuals, which could lead to data breaches or other security incidents. Therefore, it is crucial to encrypt all communications to safeguard your sensitive information.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_data_quality_job_definition
+* *Arguments:* network_config/enable_inter_container_traffic_encryption
+
+To fix this issue, you need to ensure that the `network_config` block includes the `enable_inter_container_traffic_encryption` argument, and that this argument is set to `true`. 
+
+[source,go]
+----
+resource "aws_sagemaker_data_quality_job_definition" "job_definition" {
+  job_definition_name = "data-quality-job-definition"
+  ...
+  network_config {
++    enable_inter_container_traffic_encryption = true
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::DataQualityJobDefinition
+* *Arguments:* Properties/NetworkConfig/EnableInterContainerTrafficEncryption
+
+To fix this issue, you need to ensure that the `NetworkConfig` block includes the `EnableInterContainerTrafficEncryption` argument, and that this argument is set to `True`. 
+
+[source,yaml]
+----
+Resources:
+  DataQualityJobDefinitionPass:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      ...
+      NetworkConfig:
++        EnableInterContainerTrafficEncryption: True
+----

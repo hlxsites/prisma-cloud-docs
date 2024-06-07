@@ -1,0 +1,73 @@
+
+== Azure Cognitive Services account is not configured with managed identity
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/CognitiveServicesConfigureIdentity.py[CKV_AZURE_238]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,ARM
+
+|===
+
+=== Description
+
+This policy ensures that the Cognitive Services account is not configured with managed identity. Managed identity is often used to securely manage credentials for a service and also to simplify secret management. However, using it with a Cognitive Services account can open up potential security risks. It can allow unauthorized services to access and manipulate sensitive information in the Cognitive Services account without necessarily requiring explicit permission. Thus, it's important not to configure a Cognitive Services account with a managed identity to prevent the probability of security threats and data breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_cognitive_account
+* *Arguments:* identity/type
+
+To fix this issue, you should disable the "identity" block in your Cognitive Services resource configuration.
+
+[source,go]
+----
+resource "azurerm_cognitive_account" "pass" {
+  ...
+  identity {
+    type = "example"
+  }
+  ...
+}
+----
+
+*ARM*
+
+* *Resource:* Microsoft.CognitiveServices/accounts
+* *Arguments:* identity/type
+
+To fix this issue, you should disable the "identity" block in your Cognitive Services resource configuration.
+
+[source,json]
+----
+{
+  ...
+  "resources": [
+      {
+          "type": "Microsoft.CognitiveServices/accounts",
+          ...
+          "identity": {
+              "type": "SystemAssigned"
+          },
+          ...
+      }
+  ]
+}
+----
+

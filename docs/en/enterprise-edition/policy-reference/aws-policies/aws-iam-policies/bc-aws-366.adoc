@@ -1,0 +1,67 @@
+
+== AWS Cognito identity pool allows unauthenticated guest access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 3626a6d9-d55e-48b2-ae4c-2453ab65ff88
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CognitoUnauthenticatedIdentities.py[CKV_AWS_366]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy is checking to ensure that AWS Cognito identity pools are not allowing unauthenticated guest access. Allowing such access could present a significant security risk by potentially enabling unauthorized individuals or entities to gain access to sensitive data or functionality. By making sure that AWS Cognito identity pools are configured to prevent unauthenticated guest access, it can help maintain the security and integrity of the system and data.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cognito_identity_pool
+* *Arguments:* allow_unauthenticated_identities
+
+To fix this issue:
+
+You need to ensure that `allow_unauthenticated_identities` is set to `false` within the `aws_cognito_identity_pool` resource. Here's an example of how to do that:
+
+[source,go]
+----
+resource "aws_cognito_identity_pool" "example" {
+  ...
++  allow_unauthenticated_identities = false
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::Cognito::IdentityPool
+* *Arguments:* Properties/AllowUnauthenticatedIdentities
+
+To fix this issue:
+
+You need to ensure that `AllowUnauthenticatedIdentities` is set to `false` within the `AWS::Cognito::IdentityPool` resource. Here's an example of how to do that:
+
+[source,yaml]
+----
+Resources:
+  Pass:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      ...
++      AllowUnauthenticatedIdentities: False
+----
+

@@ -1,0 +1,69 @@
+== Amazon Sagemaker Data Quality Job not using KMS to encrypt data on attached storage volume
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerDataQualityJobDefinitionVolumeEncryption.py[CKV_AWS_368]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy verifies that an Amazon Sagemaker Data Quality Job is using Key Management Service (KMS) to encrypt data on the attached storage volume. It is crucial because if this method is not used, sensitive information can remain unprotected and vulnerable to unauthorized access or cyber threats. The encryption helps to enhance data security, prevent data breaches, and comply with regulatory requirements that demand the protection of specific types of information.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_monitoring_schedule
+* *Arguments:* job_resources/cluster_config/volume_kms_key_id
+
+To fix the issue, you need to provide a `volume_kms_key_id` attribute in your `aws_sagemaker_monitoring_schedule` resource to enable encryption using AWS KMS. AWS manages the KMS key you specify and it is used to encrypt the data stored in the storage volume attached to the Sagemaker instance.
+
+[source,go]
+----
+resource "aws_sagemaker_data_quality_job_definition" "example" {
+  ...
+  job_resources {
+    cluster_config {
+      ...
++      volume_kms_key_id = "arn:aws:kms:us-west-2:123456789012:key/my-existing-volume-kms-key-id"
+    }
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::DataQualityJobDefinition
+* *Arguments:* JobResources/ClusterConfig/VolumeKmsKeyId
+
+To fix the issue, you need to provide a `VolumeKmsKeyId` attribute in your `AWS::SageMaker::DataQualityJobDefinition` resource to enable encryption using AWS KMS. AWS manages the KMS key you specify and it is used to encrypt the data stored in the storage volume attached to the Sagemaker instance.
+
+[source,yaml]
+----
+  MyDataQualityJobDefinitionPass:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      ...
+      JobResources:
+        ClusterConfig:
+          ...
+          VolumeKmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-existing-volume-kms-key-id"
+----
+

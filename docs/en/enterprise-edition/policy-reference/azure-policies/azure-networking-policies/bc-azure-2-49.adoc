@@ -1,0 +1,68 @@
+
+== Azure Machine Learning workspace is not configured with overly permissive network access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMLWorkspacePublicNetwork.yaml[CKV2_AZURE_49]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,ARM
+
+|===
+
+=== Description
+
+This policy validates that your Azure Machine Learning workspace is not set up with too broad network access. This is a measure against potential security risks, as having overly permissive network access can lead to unauthorized access, data breaches, and loss of sensitive data. Maintaining stringent network access control ensures only authorized personnel, applications or machines can access or change your data. The policy ensures that only the necessary, trusted entities have access to your machine learning workspace. This strengthens the security stance and helps protect your resources.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_machine_learning_workspace
+* *Arguments:* public_network_access_enabled
+
+To fix the issue, you need to set the `public_network_access_enabled` to either `false` or is not present.
+
+[source,go]
+----
+resource "azurerm_machine_learning_workspace" "pass2" {
+  ...
++  public_network_access_enabled=false
+}
+----
+
+*ARM*
+
+* *Resource:* Microsoft.MachineLearningServices/workspaces
+* *Arguments:* properties.publicNetworkAccess
+
+To fix the issue, you need to set the `public_network_access_enabled` to either `Disabled` or is not present.
+
+[source,json]
+----
+{
+  ...
+  "resources": [
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces",
+      ...
+      "properties": {
+        "publicNetworkAccess": "Disabled"
+      }
+    }
+  ]
+}
+----

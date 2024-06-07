@@ -1,0 +1,66 @@
+
+== Ensure Amazon SageMaker model uses network isolation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerModelWithNetworkIsolation.py[CKV_AWS_370]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy is inspecting if an Amazon SageMaker model is utilizing network isolation. It falls under the network categories bracket. Network isolation is a critical aspect of infrastructural security that restricts unauthorized network communications between computing resources. 
+
+In the scenario of a SageMaker model, enabling network isolation ensures that the inference code is executed in an environment without access to the internet. This is vital to safeguard the learning models and data sets from potential intrusions or data breaches. 
+
+A violation of this policy implies that the SageMaker model's network isolation is not activated, thus leaving your model and data potentially exposed to security threats. Therefore, it's vital to enable network isolation on your SageMaker models to reinforce secure network practices and protect your data and models.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_model
+* *Arguments:* enable_network_isolation
+
+To fix the issue concerning ensuring Amazon SageMaker uses network isolation, you need to modify the Amazon SageMaker model in your Terraform script. You must apply a parameter for enabling network isolation. 
+
+[source,go]
+----
+resource "aws_sagemaker_model" "default" {
+  ...
++  enable_network_isolation = true
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::Model
+* *Arguments:* Properties/EnableNetworkIsolation
+
+To fix the issue concerning ensuring Amazon SageMaker uses network isolation, you need to modify the Amazon SageMaker model in your Terraform script. You must apply a parameter for enabling network isolation. 
+
+[source,yaml]
+----
+Resources:
+  SageMakerModelPass:
+    Type: 'AWS::SageMaker::Model'
+    Properties:
+      ...
++      EnableNetworkIsolation: True
+----

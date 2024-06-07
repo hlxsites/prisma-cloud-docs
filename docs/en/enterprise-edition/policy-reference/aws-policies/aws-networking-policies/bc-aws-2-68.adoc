@@ -1,0 +1,91 @@
+
+== SageMaker notebook instance IAM policy is overly permissive
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/SageMakerIAMPolicyOverlyPermissiveToAllTraffic.yaml[CKV2_AWS_68]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the Identity and Access Management (IAM) policy for a SageMaker notebook instance is not overly permissive. Overly permissive IAM policies may allow unauthorized users to perform certain actions that can potentially be harmful to the system, such as accessing sensitive data, modifying configurations, or deleting resources. This could lead to potential breaches of security or data loss. In order to maintain a secure environment, it's critical to limit permissions to the least amount required for necessary tasks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_notebook_instance, aws_iam_role
+* *Arguments:* policy
+
+To address this issue, ensure that the IAM role attached to the Sagemaker notebook does not have an Allow statement with Action = "*".
+
+[source,go]
+----
+resource "aws_iam_role" "example_role_restricted" {
+  name = "example_role_restricted"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+-        Action = "*"
++        Action = "s3:ListBucket"
+        Resource = "arn:aws:s3:::example-bucket"
+      }
+    ]
+  })
+  assume_role_policy = ""
+}
+
+resource "aws_sagemaker_notebook_instance" "example" {
+  ...
+  role_arn = aws_iam_role.example_role_restricted.arn
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::NotebookInstance, AWS::IAM::Role
+* *Arguments:* AssumeRolePolicyDocument
+
+To address this issue, ensure that the IAM role attached to the Sagemaker notebook does not have an Allow statement with Action = "*".
+
+[source,yaml]
+----
+Resources:
+  Example:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      ...
+      RoleArn: !GetAtt ExampleRole.Arn
+
+  ExampleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+-            Action: *
++            Action: sts:AssumeRole
+----
+

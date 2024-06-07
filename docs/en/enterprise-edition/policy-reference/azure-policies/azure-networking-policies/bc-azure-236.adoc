@@ -1,0 +1,69 @@
+
+== Azure Cognitive Services account configured with local authentication
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/CognitiveServicesEnableLocalAuth.py[CKV_AZURE_236]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that local authentication is enabled for Azure Cognitive Services accounts. Failing to enable local authentication can expose your systems to unnecessary risks because it allows any authenticated user to make changes, even if they are not physically present in a secure, trusted environment. This can lead to unauthorized access, data breaches, and other security issues. Enabling local authentication adds an extra layer of security by ensuring that users are not only authenticated, but also accessing the system from a trusted location.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_cognitive_account
+* *Arguments:* local_auth_enabled
+
+To fix the issue of ensuring that Cognitive Services accounts enable local authentication, you need to set the `local_auth_enabled` parameter to `false` for the cognitive services resource. 
+
+[source,go]
+----
+resource "azurerm_cognitive_account" "example" {
+  ...
++  local_auth_enabled = false
+}
+----
+
+*ARM*
+
+* *Resource:* Microsoft.CognitiveServices/accounts
+* *Arguments:* disableLocalAuth
+
+To fix the issue of ensuring that Cognitive Services accounts enable local authentication, you need to set the `disableLocalAuth` parameter to `True` for the cognitive services resource. 
+
+[source,go]
+----
+{
+  ...
+  "resources": [
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "kind": "CognitiveServices",
+      ...
+      "properties": {
++        "disableLocalAuth": True
+      }
+    }
+  ]
+}
+----
