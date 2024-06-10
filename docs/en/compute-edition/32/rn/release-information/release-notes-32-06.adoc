@@ -11,7 +11,7 @@ The following table outlines the release particulars:
 |O'Neal - Update 6, 32.06
 
 |Release date
-|June 03rd, 2024
+|June 10th, 2024
 
 |Type
 |Maintenance Release
@@ -51,18 +51,29 @@ With the v32.xx release, the https://docs.prismacloud.io/en/compute-edition/32/a
 You can upgrade the Prisma Cloud Console from a major release to the next major release, but not to a major release that follows the next. So, to upgrade from the v30.xx release to the v32.xx release, you will have to first upgrade to  v31.xx and then upgrade to the v32.xx release.
 
 
-// [#cve-coverage-update]
-// === CVE Coverage Update
+[#announcement]
+=== Announcement
+
+[cols="40%a,60%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Base Image updated to RHEL 9*
+
+|The base image used by the Console and Defenders is now updated to Red Hat Enterprise Linux (RHEL) 9.
+|===
+
 
 [#enhancements]
 === Enhancements
 [cols="40%a,60%a"]
 |===
-
-|FEATURE
-|DESCRIPTION
+|*Feature*
+|*Description*
 
 |*Go Symbol Extraction in Prisma Cloud*
+
 //CWP-58813[Doc Ticket]
 |When scanning Golang binaries, Prisma Cloud extracts Go symbols, which allows for evaluating vulnerabilities accurately with specific package names and symbols. The feature flag for extracting Go symbols is enabled by default.
 Prisma Cloud also allows you to selectively disable symbol extraction when they are not needed, to optimize the scan.
@@ -76,50 +87,39 @@ To disable this feature, follow these steps:
 * Using twistcli: Add the --disable-symbol-extraction flag to the image scan command.
 
 |*Exporting Software Bill of Materials (SBOM) files in CycloneDX version 1.4*
+
+
 //CWP-58812[Doc Ticket]
-|Prisma Cloud now supports exporting Software Bill of Materials (SBOM) files in CycloneDX version 1.4 for functions, images, and hosts scans. SBOM files can be generated in JSON or XML format.
-SBOM files can be downloaded either through API calls or twistcli.
+|Prisma Cloud now supports https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/vulnerability-management/exporting-sboms[exporting Software Bill of Materials (SBOM) files] in CycloneDX version 1.4 for functions, images, and hosts scans. SBOM files can be generated in JSON or XML format.
 
 *SBOM Attributes*
 
-The SBOM files contain the following attributes.
+The SBOM files contain the following attributes:
 
-[cols="1,1"]
-!===
-!*Attribute* ! *Description*
-
-!Name
-!Name of the package
-!BOM-REF
-!Package URL (PURL) if it exists; otherwise, UUID (for applications)
-!Package Version
-!Version number for the package
-!Package Author
-!Applicable only for specific package types such as rpm, jem, apk, and deb
-!PURL Identifier
-!Package URL (PURL) identifier
-!License 
-!Package license details
-!*Metadata:*
-!
-!Timestamp
-!Time of printing
-!Type
-!Type of asset. Images (in all stages) are categorized as containers. Serverless functions (in all stages) are categorized as services. Hosts and VMs are categorized as frameworks.
-!Name
-!Asset ID of images, hosts, and functions
-!===
+* Name: Name of the package
+* BOM-REF: Package URL (PURL) if it exists; otherwise, UUID (for applications)
+* Package Version: Version number for the package
+* Package Author: Applicable only for specific package types such as rpm, jem, apk, and deb
+* PURL Identifier: Package URL (PURL) identifier
+* License: Package license details
+* Timestamp (metadata): Time of printing
+* Type (metadata): Type of asset. In all the stages, images are categorized as containers, serverless functions as services, hosts and VMs as frameworks.
+* Name (metadata): Asset ID of images, hosts, and functions
 
 SBOM files can be downloaded either through API calls or twistcli.
 
+For information about the SBOM API calls, see the link:#rest-api-updates[REST API Updates] section.
+
 *twistcli Configuration*
 
-Export SBOMs using the new flag: --SBOM [file_format]
-File Format Values: cyclonedx_json or cyclonedx_xml
-SBOM output is concatenated to the scan results output.
-Use the --output flag to print scan results and SBOM output to a specified file.
+* Export SBOMs using the new flag: --SBOM [file_format]
+
+* File Format Values: cyclonedx_json or cyclonedx_xml
+
+* SBOM output is concatenated to the scan results output. Use the --output flag to print scan results and SBOM output to a specified file.
 
 |*Resolving method for cluster name*
+
 //CWP-59133
 |When deploying Defender to your Kubernetes cluster, Prisma Cloud now provides you the option to use the API server address from the kube config file to resolve cluster names. 
 
@@ -135,7 +135,8 @@ The *Cluster name resolving method* field has the following options:
 
 * *API Server*: Uses the API server address from the kube config file to generate a unique cluster name in Prisma Cloud.
 
-This enhancement ensures that vulnerability information is accurately reported for each cluster and makes sure that the clean clusters are not misrepresented as vulnerable due to naming conflicts
+This enhancement ensures that vulnerability information is accurately reported for each cluster and makes sure that the clean clusters are not misrepresented as vulnerable due to naming conflicts.
+
 
 
 |===
@@ -145,34 +146,34 @@ This enhancement ensures that vulnerability information is accurately reported f
 [cols="40%a,60%a"]
 
 |===
+|*Feature*
+|*Description*
 
-|Download the Software Bill of Materials (SBOM)
+|*Download the Software Bill of Materials (SBOM)*
+
 //CWP-59122
 |The following new API endpoints enable you to download the Software Bill of Materials (SBOM) details:
 
-*/api/v1/sbom/download/images
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-images/[Download SBOM Images]
 
-*/api/v1/sbom/download/hosts
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-hosts/[Download SBOM Hosts]
 
-*/api/v1/sbom/download/vms
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-vms/[Download SBOM VMs]
 
-*/api/v1/sbom/download/scans
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-serverless/[Download SBOM Serverless]
 
-*/api/v1/sbom/download/registry
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-registry/[Download SBOM Registry]
 
-*/api/v1/sbom/download/cli-serverless
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-cli-serverless/[Download SBOM CLI Serverless]
 
-*/api/v1/sbom/download/cli-images
+* https://pan.dev/prisma-cloud/api/cwpp/get-sbom-download-cli-images/[Download SBOM CLI Images]
 
-*Input parameters for the API:*
-
-*ID*: asset ID of images, hosts, and functions (Obtain ID from scan results. An empty list returns all entities under the same type.)
-
-*SbomFormat*: cyclonedx_json or cyclonedx_xml
-
-
+For more details on the SBOM feature, refer to the link:#new-features[New Features] section.
 
 |*Remove hostname from registry progress response*
+
+tt:[Secure the Runtime]
+
 //CWP-57289
 |The response of the https://pan.dev/prisma-cloud/api/cwpp/get-registry-progress/[View Registry Scan Progress] API has the following changes:
 
@@ -183,18 +184,20 @@ This enhancement ensures that vulnerability information is accurately reported f
 ** Remove the “hostname” and “scanTime” fields`
 
 |*Documentation update for Add Registry Settings*
+
 //CWP-58891
-|A new registry type - “Harbor” is added to the “version” field for the https://pan.dev/compute/api/post-settings-registry/[Add Registry Settings] API.
+|A new registry type - “Harbor” is added to the “version” field for the https://pan.dev/prisma-cloud/api/cwpp/post-settings-registry/[Add Registry Settings] API.
 
 This option enables you to configure a Harbor registry for scanning.
 
 |*Component documentation for API address resolving method for cluster name*
+
 //CWP-58306
 |A new optional field clusterNameResolvingMethod is added to the following APIs:
 
- * https://pan.dev/compute/api/post-defenders-daemonset-yaml/[Generate Daemonset Deployment YAML File]
+ * https://pan.dev/prisma-cloud/api/cwpp/post-defenders-daemonset-yaml/[Generate Daemonset Deployment YAML File]
 
- * https://pan.dev/compute/api/post-defenders-helm-twistlock-defender-helm-tar-gz/[Generate a Helm Deployment Chart for Defender]
+ * https://pan.dev/prisma-cloud/api/cwpp/post-defenders-helm-twistlock-defender-helm-tar-gz/[Generate a Helm Deployment Chart for Defender]
 
 The permissible values for this field are default, manual, and api-server.
 
