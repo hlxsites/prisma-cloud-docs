@@ -1,25 +1,58 @@
 == Event Aggregation
 
-This document explains logic behind runtime event aggregation in Prisma Cloud Compute. 
+When multiple events of the same type occur in quick succession, Prisma Cloud implements event aggregation to prevent the console from displaying the same audits repetitively.
 
-When a high number of events of the same event type are reported on the same image in specific host, Prisma Cloud Compute starts aggregating them to avoid Console inflating with large number of similar audits. 
+[#conditions-for-event-aggregation]
+=== Conditions for Event Aggregation
 
-For event aggregation to start, the following conditions must take place:
+Event aggregation starts when the following conditions are met:
 
-* Events are generated on the same resource.
-Example: a specific image on a host.
-* Events generated are the same "Event Type" category (not specific audit). 
-Example: Network / Unexpected Listening Port, Filesystem / Reg File Access etc.
-* More than 5 events satisfying the above conditions are reported within a 15 minutes timeframe.
+* Events are generated on the same resource, such as a specific image on a host.
+* Events fall within the same "event type" category.
 
-When such report aggregation starts, a message with the same is recorded in the Events table.
+[#event-aggregation-process]
+=== Event Aggregation Process
+The event aggregation process depends on the following criteria:
 
-Example:: High rate of reg file access events, reporting aggregation started; last event: /sbin/apk wrote a suspicious file to /usr/lib/node_modules/npm/.apk.f64bd79770d6df713fa07ddeabb044bb3eb76ffb554c2dab. Command: apk add npm
+* Grace period: A period during which no events are displayed or counted towards aggregation. In Prisma Cloud, it is a 15-minute period without audits since the last event.
 
-Aggregation happens for 10 minutes, after which a message with the most recent audit is displayed.
+* Throttle period: A waiting period before setting the aggregation mode. It is the time within which events must occur to qualify for aggregation. In Prisma Cloud, the throttle period is 15 minutes.
 
-Example:: In the past 10 minutes, container /aqsa_high_alerts had 3 events of type unexpected listening port; The most recent event was: Container process /usr/local/bin/np is listening on unexpected port 8888
+* Aggregation mode: A state activated when specific criteria are met: the grace period of 15 minutes is complete and then 5 qualifying events occur within the throttle period of 15 minutes. In aggregation mode, the Defender combines multiple events into a single aggregated event. This reduces repetitive displays of similar audits.
 
-After aggregation period is completed, any new events that occur, are identified uniquely and go through the same logic above for aggregation as applicable. 
+*Prisma Cloud Event Aggregation Process*
+
+1. Event monitoring: Defender monitors for audit events.
+
+2. Grace period and throttle period check:
+   - After event detection, Defender checks whether a 15-minute grace period (without audits) has passed since the last event.
+   - After the grace period is completed, Defender assesses whether the throttle period (set to 15 minutes) has elapsed since the first event. Throttle period is the waiting period before setting the aggregation mode.
+   - If both the grace period and throttle period conditions are not met, Defender waits for additional events.
+
+3. Activation of aggregation mode:
+   - On meeting the criteria (the grace period of 15 minutes is complete and then 5 qualifying events occur within the throttle period of 15 minutes), Defender activates the aggregation mode.
+   - It verifies whether the aggregation period, set to 10 minutes, has passed since the last aggregation.
+   - If the aggregation period has not passed, Defender waits for more events.
+
+4. Display of Aggregated Events:
+   - After all criteria are met, including compliance with the category limit, Defender sends the aggregated event to the console.
+
+5. Resumption of Normal Operation:
+   - Normal operation resumes when the grace period expires without new messages or when the throttle period lapses from the first event.
+   - Defender resets the counter, establishes the aggregation period again, and resumes monitoring for audit events.
+
+This process is illustrated using the following flowchart:
+
+image::aggregation-audit.png[width=800]
+
+[#displaying-audit-information]
+=== Displaying Audit Information
+
+Prisma Cloud displays the summarized audit information in the following format: 
+`The most recent individual audit, along with the aggregated message count.`
+
+For example: 
+
+`High rate of <event type>, reporting aggregation started; Last event: <event name> launched from <path> but is not found in the runtime model. In the past 10 minutes, container <name> had <number of event occurrences> of <event type>.`
 
 image::runtime_defense_aggregation.png[width=800]
