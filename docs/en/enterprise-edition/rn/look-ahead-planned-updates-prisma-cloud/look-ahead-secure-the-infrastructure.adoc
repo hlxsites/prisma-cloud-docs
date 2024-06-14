@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.6.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.7.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -16,7 +16,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<new-policies>>
 * <<policy-updates>>
 * <<api-ingestions>>
-//* <<new-compliance-benchmarks-and-updates>>
+* <<new-compliance-benchmarks-and-updates>>
 //* <<rest-api-updates>>
 * <<deprecation-notices>>
 
@@ -28,16 +28,17 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-// |*Tag-based Resource Lists*
+|*Tag-based Resource Lists*
 //RLP-140177
 
-// |Starting with the X release, the following limits will be enforced for Tag-based Resource Lists:
+|Starting with the 24.7.2 release, the following limits will be enforced for Tag-based Resource Lists:
 
-//* Tag-based Resource Lists will be limited to 10 key-value pairs
-//* Up to 5 Tag-based Resource Lists may be associated with a Role
+* Tag-based Resource Lists will be limited to 10 key-value pairs
+* Up to 5 Tag-based Resource Lists may be associated with a Role
+* Tag-based Resource List Tag key and value will be limited to 256 characters each
 
-//*Impact*: These changes will affect Tag-based Resource Lists and Roles after the X release. Existing configurations will not be affected.
-// Commenting out per feedback from AO 5/24 - check for 6.2 inclusion
+*Impact—* These changes will affect Tag-based Resource Lists and Roles after the 24.7.2 release. Existing configurations will not be affected.
+// Commenting out per feedback from AO 5/24 - check for 24.7.1 inclusion
 
 |*New Limits for Audit Log API*
 //RLP-142211
@@ -50,11 +51,11 @@ The details and functionality listed below are a preview and the actual release 
 |*API Rate Limits — Update User Role API*
 //RLP-141323
 
-|To resolve a critical performance issue with the https://pan.dev/prisma-cloud/api/cspm/update-user-role/[Update User Role] API (PUT /user/role), a rate limit with the following parameters will be implemented effective 24.6.2.
+|To resolve a critical performance issue with the https://pan.dev/prisma-cloud/api/cspm/update-user-role/[Update User Role] API (PUT /user/role), a rate limit with the following parameters will be implemented effective 24.7.1.
 
 `Limit=3, Burst=3` 
 
-*Impact*—Requests exceeding these limits will result in an *HTTP 429* Too Many Requests response.
+*Impact—* Requests exceeding these limits will result in an *HTTP 429* Too Many Requests response.
 
 |*Role-Based Access Control for Compliance and Alert Reports*
 //RLP-140182
@@ -83,7 +84,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.6.2.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.7.1.
 
 . Review the updates.
 +
@@ -92,241 +93,17 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//=== New Policies
-
-//Commenting out but retaining for next release.
-
-//[cols="50%a,50%a"]
-//|===
-//|*Policies*
-//|*Description*
-
-//|*Azure Application Gateway WAF policy is not enabled in prevention mode*
-//RLP-141038
-
-//|This policy identifies the Azure Application Gateway WAF policies that are not enabled in prevention mode.
-
-//Azure Application Gateway WAF policies support Prevention and Detection modes. Detection mode monitors and logs all threat alerts to a log file. Detection mode is useful for testing purposes and configures WAF initially but it does not provide protection. It logs the traffic, but it doesn't take any actions such as allow or deny. Where as, in Prevention mode, WAF analyzes incoming traffic to the application gateway and blocks any requests that are determined to be malicious based on a set of rules.
-
-//As a best security practice, it is recommended to enable Application Gateway WAF policies with Prevention mode to prevent malicious requests from reaching your application and potentially causing damage.
-
-//*Policy Severity—* Low
-
-//*Policy Type—* Config
-
-//----
-//config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.applicationGateways[*].id size greater than 0 and properties.policySettings.state equal ignore case Enabled and properties.policySettings.mode does not equal ignore case Prevention
-//----
-
-//|*Azure Storage Account storing Cognitive service diagnostic logs is publicly accessible*
-//RLP-141884
-
-//| This policy identifies Azure Storage Accounts storing Cognitive service diagnostic logs are publicly accessible. 
-
-//Azure Storage account stores Cognitive service diagnostic logs which might contain detailed information of platform logs, resource logs, trace logs and metrics. Diagnostic log data may contain sensitive data and helps in identifying potentially malicious activity. The attacker could exploit publicly accessible storage account to get cognitive diagnostic data logs and could breach in to the system by leveraging data exposed and propagate across your system.
-
-//As a best security practice, it is recommended to restrict storage account access to only to the services as per business requirement.
-
-//*Policy Severity—* Medium
-
-//*Policy Type—* Config
-
-//----
-//config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
-//----
-
-// |*Azure Key vault used for machine learning workspace secrets storage is not enabled with audit logging*
-//RLP-142008
-
-// |This policy identifies Azure Key vaults used for machine learning workspace secrets storage that are not enabled with audit logging.
-
-//Azure Key vaults are used to store machine learning workspace secrets and other sensitive information that is needed by the workspace. Enabling key vaults with audit logging will help in monitoring how and when machine learning workspace secrets are accessed, and by whom. This audit log data enhances visibility by providing valuable insights into the trail of interactions involving confidential information.
-
-//As a best practice,  it is recommended to enable audit event logging for key vaults used for machine learning workspace secrets storage.
-
-//*Policy Severity—* Informational
-
-//*Policy Type—* Config
-
-//----
-//config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = properties.keyVault exists as X; config from cloud.resource where api.name = 'azure-key-vault-list' AND json.rule =  "not (diagnosticSettings.value[*].properties.logs[*].enabled any equal true and diagnosticSettings.value[*].properties.logs[*].enabled size greater than 0)" as Y; filter '$.X.properties.keyVault contains $.Y.name'; show Y; 
-//----
-
-// |*OCI VCN subnet flow logging is disabled*
-//RLP-61034
-
-// |This policy identifies Virtual Cloud Network (VCN) subnets that have flow logs disabled. 
-
-//Enabling VCN flow logs enables you to monitor traffic flowing within your virtual network and can be used to detect anomalous traffic. Without the flow logs turned on, it is not possible to get any visibility into network traffic. 
-
-//It is recommended to enable a VCN flow log on each of your VCN subnets
-
-//*Policy Severity—* Low
-
-//*Policy Type—* Config
-
-//----
-//config from cloud.resource where api.name = 'oci-networking-subnet' as X; config from cloud.resource where api.name = 'oci-logging-logs' AND json.rule = lifecycleState equals ACTIVE and isEnabled is true and configuration.source.service contains flowlogs as Y; filter 'not ($.X.id contains $.Y.configuration.source.resource)'; show X;
-//----
-
-// |===
-
 [#policy-updates]
 === Policy Updates
 
-[cols="50%a,50%a"]
-|===
-|*Policy Updates*
-|*Description*
+No policy updates planned for 24.7.1 release.
 
+//[cols="50%a,50%a"]
+//|===
+//|*Policy Updates*
+//|*Description*
 
-2+|*Policy Updates—RQL*
-
-|*Azure Function App doesn't have a Managed Service Identity*
-
-//RLP-141890
-
-|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
-
-*Severity—* Low
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and (identity.type does not exist or identity.principalId is empty) 
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND (identity.type does not exist or identity.principalId is empty)----
-----
-
-*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
-
-|*Azure Function app configured with public network access*
-
-//RLP-141890
-
-|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
-
-*Severity—* Medium
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with functionapp and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
-----
-
-*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
-
-|*Azure Function App doesn't use latest TLS version*
-
-//RLP-141890
-
-|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
-
-*Severity—* Low
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND config.minTlsVersion does not equal "1.2"
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.minTlsVersion does not equal "1.2"
-----
-
-*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
-
-|*Azure Function App doesn't use HTTP 2.0*
-
-//RLP-141890
-
-|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
-
-*Severity—* Informational
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND config.http20Enabled is false
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.http20Enabled is false
-----
-
-*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
-
-|*Azure Function App doesn't redirect HTTP to HTTPS*
-
-//RLP-141890
-
-|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
-
-*Severity—* Medium
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND properties.httpsOnly is false
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND properties.httpsOnly is false
-----
-
-*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
-
-|*Azure Function App client certificate is disabled*
-
-//RLP-141890
-
-|*Changes—* The policy RQL will be updated to exclude logic apps and web apps from reporting, focusing solely on Azure function apps within its scope.
-
-*Severity—* Informational
-
-*Policy Type—* Config
-
-*Current RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running and kind contains functionapp and properties.clientCertEnabled is false
-----
-
-*Updated RQL—*
-
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND properties.clientCertEnabled is false
-----
-
-*Impact—* Medium. Existing alerts generated for logicapp and webapps will be resolved as *Policy_Updated*.
-
-|===
+//|===
 
 [#api-ingestions]
 === API Ingestions
@@ -336,221 +113,180 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 |*Service*
 |*API Details*
 
-|*AWS Service Catalog*
-//RLP-141195
+|*Amazon Route53 Resolver*
+//RLP-142816
 
-|*aws-servicecatalog-principals-for-portfolio*
-
-Additional permissions required:
-
-* `servicecatalog:ListPortfolios`
-* `servicecatalog:ListPrincipalsForPortfolio`
-
-The Security Audit role does not include the permissions. You must manually add the above permission to
-the CFT template to enable it.
-
-|*Amazon Comprehend*
-//RLP-141193
-
-|*aws-comprehend-pii-entities-detection-jobs*
+|*aws-route53resolver-resolver-endpoint*
 
 Additional permissions required:
 
-* `comprehend:ListPiiEntitiesDetectionJobs`
-* `comprehend:ListTagsForResource`
-
-The Security Audit role includes the permissions. 
-
-|*Amazon Comprehend*
-//RLP-141490
-
-|*aws-comprehend-sentiment-detection-jobs*
-
-Additional permissions required:
-
-* `comprehend:ListSentimentDetectionJobs`
-* `comprehend:ListTagsForResource`
-
-The Security Audit role includes the permissions. 
-
-|*Amazon Comprehend*
-//RLP-141485
-
-|*aws-comprehend-key-phrases-detection-jobs*
-
-Additional permission required:
-
-* `comprehend:ListKeyPhrasesDetectionJobs`
-* `comprehend:ListTagsForResource`
+* `route53resolver:ListResolverEndpoints`
+* `route53resolver:ListTagsForResource`
 
 The Security Audit role includes the permissions.
 
-|*Azure Compute*
-//RLP-141280
+|*AWS AppConfig*
+//RLP-142813
 
-|*azure-compute-disk-encryption-sets*
+|*aws-appconfig-application*
+
+Additional permissions required:
+
+* `appconfig:ListApplications`
+* `appconfig:ListEnvironments`
+* `appconfig:ListConfigurationProfiles`
+
+The Security Audit role doe not include the permissions. You must manually add the above permissions to the CFT template to enable them.
+
+|*AWS Service Catalog*
+//RLP-142801
+
+|*aws-servicecatalog-product-as-admin*
 
 Additional permission required:
 
-* `Microsoft.Compute/diskEncryptionSets/read`
+* `servicecatalog:SearchProductsAsAdmin`
+
+The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
+
+|*Amazon Simple Email Service*
+//RLP-142798
+
+|*aws-ses-receipt-rule-set*
+
+Additional permissions required:
+
+* `ses:ListReceiptRuleSets`
+* `ses:DescribeReceiptRuleSet`
+
+The Security Audit role includes the permissions.
+
+|*Azure Cache*
+//RLP-141839
+
+|*azure-cache-redis-enterprise*
+
+Additional permission required:
+
+* `Microsoft.Cache/redisEnterprise/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+//RLP-142103
+
+|*azure-monitor-data-collection-endpoints*
+
+Additional permission required:
+
+* `Microsoft.Insights/DataCollectionEndpoints/Read`
 
 The Reader role includes the permission.
 
 
-|*Azure Active Directory*
-//RLP-141052
+|*Azure SignalR Service*
+//RLP-137475
 
-|*azure-active-directory-user-registration-details*
+|*azure-signalr-diagnostic-settings*
 
-Additional permission required:
+Additional permissions required:
 
-* `AuditLog.Read.All`
-
-The Reader role includes the permission.
-
-
-|*Azure Databricks*
-//RLP-141045
-
-|*azure-databricks-diagnostic-settings*
-
-Additional permission required:
-
-* `Microsoft.Databricks/workspaces/read
+* `Microsoft.SignalRService/SignalR/read`
 * `Microsoft.Insights/DiagnosticSettings/Read`
 
 The Reader role includes the permissions.
 
 
-|*Azure App Service*
-//RLP-141007
+|*Google Policy Analyzer*
+//RLP-142633
 
-|*azure-app-service-web-apps-functions*
+|*gcloud-policy-analyzer-service-account-authentication*
 
 Additional permission required:
 
-* `Microsoft.Web/sites/Read`
-* `Microsoft.Web/sites/Functions/Read`
+* `policyanalyzer.serviceAccountLastAuthenticationActivities.query`
+
+The Viewer role includes the permission.
+
+
+|*Google Eventarc*
+//RLP-142632
+
+|*gcloud-eventarc-trigger*
+
+Additional permissions required:
+
+* `eventarc.triggers.list`
+* `eventarc.triggers.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|*Google Eventarc*
+//RLP-142631
+
+|*gcloud-eventarc-channel*
+
+Additional permissions required:
+
+* `eventarc.channels.list`
+* `eventarc.channels.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|*Google Compute Engine*
+//RLP-142630
+
+|*gcloud-compute-machine-image*
+
+Additional permissions required:
+
+* `compute.machineImages.list`
+* `compute.machineImages.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Compute Engine*
+//RLP-142627
+
+|*gcloud-compute-reservation*
+
+Additional permissions required:
+
+* `compute.reservations.list`
+* `compute.reservations.getIamPolicy`
 
 The Reader role includes the permissions.
 
 
-|*Azure NetApp Files*
-//RLP-141005
+|tt:[Update] *OCI Cloud Guard*
+//RLP-138217. Move this blurb to features introduced in 24.7.2
 
-|*aws-comprehend-key-phrases-detection-jobs*
+|*oci-cloudguard-security-recipe*
 
-Additional permission required:
-
-* `Microsoft.NetApp/netAppAccounts/capacityPools/volumes/read`
-* `Microsoft.NetApp/netAppAccounts/read`
-* `Microsoft.NetApp/netAppAccounts/capacityPools/read`
-
-The Reader role includes the permissions.
-
-|*Azure App Service*
-//RLP-138481
-
-|*azure-app-service-plan*
-
-Additional permission required:
-
-* `Microsoft.Web/serverfarms/Read`
-
-The Reader role includes the permission.
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-141136
-
-|*gcloud-vertex-ai-aiplatform-monitoring-job*
-
-Additional permission required:
-
-* `aiplatform.modelDeploymentMonitoringJobs.list`
-
-The Viewer role includes the permission. 
-
-
-|*Google Vertex AI AIPlatform*
-//RLP-141135
-
-|*gcloud-vertex-ai-aiplatform-persistent-resource*
-
-Additional permission required:
-
-* `aiplatform.persistentResources.list`
-
-The Viewer role includes the permission. 
-
-|*Google Vertex AI AIPlatform*
-//RLP-141134
-
-|*gcloud-vertex-ai-aiplatform-vizier-study*
-
-Additional permission required:
-
-* `aiplatform.studies.list`
-
-The Viewer role includes the permission. 
-
-|*Google Vertex AI AIPlatform*
-//RLP-141133
-
-|*gcloud-vertex-ai-aiplatform-tuning-job*
-
-Additional permission required:
-
-* `aiplatform.tuningJobs.list`
-
-The Viewer role includes the permission. 
-
-|*Google Vertex AI*
-//RLP-129987
-
-|*gcloud-vertex-ai-workbench-instance*
-
-Additional permission required:
-
-* `notebooks.instances.list`
-* `notebooks.instances.getIamPolicy`
-
-The Viewer role includes the permission. 
-
-|tt:[Update] *Amazon Route53*
-//RLP-141028
-
-|*aws-route53-list-hosted-zones*
-
-The following fields will be excluded from the resource JSON for this API:
-
-* `resourceRecordSet[*].region`
-
-* `resourceRecordSet[*].trafficPolicyInstanceId`
-
-* `resourceRecordSet[*].ttl`
-
-|tt:[Update] *AWS Trusted Advisor*
-//RLP-141028
-
-|*aws-trusted-advisor-check-result*
-
-The `flaggedResources` field with the status `OK` will be excluded from the resource JSON for this API.
-
+The `oci-cloudguard-security-recipe` API will be updated to exclude the `timeCreated` and `timeUpdated` fields from JSON because it changes frequently causing too many resource snapshots.
 
 |===
 
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
 
-//[#rest-api-updates]
-//=== REST API Updates
-//[cols="37%a,63%a"]
-//|===
-//|*Change*
-//|*Description*
-//|
-//|
-//|===
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
 
+|*Policy Mapping Update for CIS v3.0.0 (GCP) Level 1 and Level 2*
+
+tt:[*24.6.2*]
+//RLP-142387
+
+|New Policy mappings are added to CIS v3.0.0 (GCP) Level 1 and Level 2 compliance standard.
+
+*Impact—* No impact on existing alerts. The compliance score may vary because a new mapping has been added.
+
+|===
 
 [#deprecation-notices]
 === Deprecation Notices
@@ -566,14 +302,14 @@ The `flaggedResources` field with the status `OK` will be excluded from the reso
 
 |tt:[*Resource Explorer API*]
 
-//RLP-131482
+//RLP-131482, RLP-115752
 
 * https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
 * https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
 * https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
 
 |23.9.2
-|24.6.2
+|24.10.2
 |* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
 
 |tt:[*Deprecation of Compliance Standards*]
@@ -670,6 +406,18 @@ In RQL, the key will not be available in the api.name attribute auto-completion.
 
 *Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
 
+|tt:[*End of support for Azure Active Directory v1 API*]
+//RLP-143110
+
+|NA
+|24.9.2
+|`azure-active-directory-credential-user-registration-details` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for `azure-active-directory-credential-user-registration-details API`. 
+
+In RQL, the key will not be available in the api.name attribute auto-completion. As a replacement, it is recommended to use the `azure-active-directory-user-registration-details` API.
+
+*Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
+
+
 |tt:[*Deprecation of End Timestamp in Config Search*]
 //RLP-126583, suset release TBD
 | - 
@@ -717,8 +465,5 @@ Response object property `risk.grade.options` is deprecated for the following re
 | - 
 |To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
 The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
-
-|The following endpoints are deprecated as the date filters—time object or time string in query parameters or the request body—used by these APIs will be removed in the updated API endpoints. The updated API endpoints will always return current data.
-
 
 |===
