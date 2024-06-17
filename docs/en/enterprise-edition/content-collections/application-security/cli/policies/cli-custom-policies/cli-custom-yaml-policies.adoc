@@ -1,0 +1,690 @@
+== Custom Yaml Policies - Attribute Check and Composite
+
+Custom policies created in YAML support checking a resource's connection state and the use of complex AND/OR logic. For information on creating custom Python Policies for attribute scanning refer to xref:cli-custom-python-policies.adoc[Custom Python Policies].
+
+A YAML-based custom policy for Checkov consists of Metadata and Policy Definition sections.
+
+image::application-security/cli-yml-custom-policy-report.png[]
+
+=== Metadata
+
+[source,yaml]
+----
+metadata:
+  id: "CKV2_CUSTOM_1"
+  name: "Ensure bucket has versioning and owner tag"
+  category: "BACKUP_AND_RECOVERY"
+  guideline: "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ckv2_custom_1"
+----
+
+The metadata includes:
+
+* Policy Name
+* ID - *CKV2_<provider>_<number>*
+* Category
+* Guideline (optional)
+
+==== Category Values
+
+The metadata supports the following categories:
+
+* GENERAL_SECURITY
+* LOGGING
+* ENCRYPTION
+* NETWORKING
+* IAM
+* BACKUP_AND_RECOVERY
+* CONVENTION
+* SECRETS
+* KUBERNETES
+* APPLICATION_SECURITY
+* SUPPLY_CHAIN
+* API_SECURITY
+
+=== Policy Definition
+
+The policy definition consists of:
+
+* *Definition Block(s)*: Attribute Block(s), Connection State Block(s), or both
+* *Logical Operator(s)* (optional)
+* *Filter* (optional)
+
+The top level object under *definition* must be a single object, not a list. It can be an attribute block, a connection block, or a logical operator (and, or, not).
+
+==== Types of Definition Blocks
+
+* *Attribute Blocks*: The policy describes resources with a certain configuration as defined by a configuration attribute and its value (per Terraform), or by the presence/absence of an attribute
+* *Connection State Blocks*: The policy describes resources in a particular Connection state; either connected or not connected to another type of resource (for example, a security group)
+
+==== Using AND/OR Logic
+
+A policy definition may include multiple blocks (Attribute, Connection state or both), associated by AND/OR logic.
+
+==== Using NOT Logic
+
+A policy definition may include any block (Attribute, Connection state, or AND/OR) underneath a *NOT* block to invert the statement.
+
+=== Attribute Blocks
+
+An Attribute Block in a policy's definition indicates that a resource will be non-compliant if a certain configuration attribute does not have a specified value or if it exists/doesn't exist.
+
+Prisma Cloud's custom policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both build-time and runtime resources and for all supported cloud providers.
+
+==== Attribute Block Example
+
+The Attribute Block in the definition in the example below is used to ensure that a proper back-up policy is configured for Redshift clusters.
+
+[source,yaml]
+----
+definition:
+     cond_type: "attribute"
+     resource_types:
+     - "aws_redshift_cluster"
+     attribute: "automated_snapshot_retention_period"
+     operator: "not_equals"
+     value: "0"
+----
+
+=== Attribute Condition: Operators
+
+[cols="1,3,1,1"]
+|===
+|Value in YAML |Description |Value types |Example
+
+|**equals**
+|Exact value match
+|String, Int, Bool
+|operator: “equals” +
+value: “t3.nano”
+
+|**not_equals**
+|Not equal to the value
+|String, Int, Bool
+|operator: “not_equals” +
+value: “t3.nano”
+
+|**regex_match**
+|The value must match the regular expression
+|String (RegEx)
+|operator: “regex_match” +
+value: “^myex-.*”
+
+|**not_regex_match**
+|The value must not match the regular expression
+|String (RegEx)
+|operator: “not_regex_match” +
+value: “^myex-.*”
+
+|**exists**
+|The attribute or connection appears in the resource definition
+|None
+|attribute: “name” +
+operator: exists
+
+|**not_exists**
+|The attribute or connection does not appear in the resource
+|None
+|attribute: “name” +
+operator: not_exists
+
+|**one_exists**
+|At least one connection of a specific type exists
+|None
+|resource_types: +
+- aws_vpc
+connected_resource_types: +
+- aws_flow_log +
+operator: one_exists +
+attribute: networking +
+cond_type: connection +
+
+|**any**
+|Any of a list of attribute values match what the resource contains
+|(List) Strings
+|operator: “any” +
+value: +
+- “value1”
+
+|**contains**
+|The values of a resource attribute includes all of these values
+|(List) Strings
+|operator: “contains” +
+value: +
+- “value1”
+
+|**not_contains**
+|The values of a resource attribute includes all of these values
+|(List) Strings
+|operator: “not_contains” +
+value: +
+- “value1”
+
+|**within**
+|Used with filter to focus the findings on a specific resource type or with attribute to provide a list of possible options
+|String
+|cond_type: filter +
+attribute: resource_type +
+value: +
+- google_logging_organization_sink +
+operator: within
+
+|**not_within**
+|Specify a list of unacceptable resource and value options
+|(List) Strings
+|cond_type: attribute +
+attribute: 'subjects.*.kind' +
+operator: not_within +
+value: +
+- 'Node' +
+resource_types: +
+- ClusterRoleBinding
+
+|**starting_with** 
+|The value must begin with a string 
+|String 
+|operator: starting_with +
+value: terraform-aws-modules
+
+|**not_starting_with** 
+|The value must not begin with a string 
+|String 
+|operator: not_starting_with +
+value: terraform-aws-modules
+
+|**ending_with** 
+|The value used by the attribute must end with this string 
+|String 
+|operator: not_ending_with +
+value: “-good”
+
+|**not_ending_with** |The value used by the attribute must not end with this string
+|String 
+|operator: ending_with +
+value: “-bad”
+
+|**greater_than** 
+|The value used by the attribute must be greater than this value 
+|String, Int 
+|operator: greater_than +
+value: “100”
+
+|**greater_than_or_equal** |The value used by the attribute must be greater than or equal to this value 
+|String, Int 
+|operator: less_than_or_equal +
+value: “100”
+
+|**less_than** 
+|The value used by the attribute must be less than this value 
+|String, Int 
+|operator: less_than +
+value: “100”
+
+|**less_than_or_equal** 
+|The value used by the attribute must be less than or equal to this value 
+|String, Int 
+|operator: less_than_or_equal +
+value: “100”
+
+|**subset** 
+|The values used by the attribute must be a subset of the listed values and not outside of that 
+|(List) String 
+|operator: subset +
+value: +
+- “a” +
+- “b”
+
+|**not_subset** 
+|The values used by the attribute must not be any of a subset of the listed values and not outside of that |(List) String 
+|operator: not_subset +
+value: +
+- “a” +
+- “b”
+
+|**is_empty** 
+|The attribute must not have a value 
+|None 
+|attribute: +
+“audit_log_config.*.exempted_members” +
+operator: is_empty
+
+|**is_not_empty** 
+|The attribute must have a value 
+|None 
+|attribute: “description” +
+operator: is_not_empty
+
+|**length_equals**
+|The list of attributes of that type must be of this number 
+|String, Int 
+|resource_types: +
+- aws_security_group +
+attribute: ingress +
+operator: length_equals +
+value: “2”
+
+|**length_not_equals** 
+|The list of attributes of that type must not be of this number 
+|String, Int 
+|resource_types: +
+- aws_security_group +
+attribute: ingress +
+operator: length_not_equals +
+value: “2”
+
+|**length_less_than** |The list of attributes of that type must be less than this number 
+|String, Int 
+|resource_types: +
+- aws_security_group +
+attribute: ingress +
+operator: length_less_than +
+value: “20”
+
+|**length_less_than_or_equal** 
+|The list of attributes of that type must be less than or equal to this number 
+|String, Int 
+|resource_types: +
+- aws_security_group +
+attribute: ingress +
+operator: length_less_than_or_equal +
+value: “20”
+
+|**length_greater_than** 
+|The list of attributes of that type must be greater than this number 
+|String, Int 
+|resource_types: +
+- aws_security_group +
+attribute: ingress +
+operator: length_greater_than +
+value: “20”
+
+|**length_greater_than_or_equal** 
+|The list of attributes of that type must be greater than or equal to this number
+|String, Int 
+|resource_types: +
+- aws_security_group +
+attribute: ingress +
+operator: length_greater_than_or_equal +
+value: “20”
+
+|**is_false** 
+|The value of the attribute must be false 
+|None 
+|operator: is_false
+
+|**is_true** 
+|The value of the attribute must be true 
+|None 
+|operator: is_true
+
+|**intersects** 
+|Given 2 values, check if those values intersect |(List) Strings |attribute: “availability_zone”
+operator: “intersects”
+value: “us-“
+
+|**not_intersects** 
+|Given 2 values, check if those values do not intersect 
+|(List) Strings 
+|attribute: “availability_zone” +
+operator: “not_intersects” +
+value: “us-“
+
+|**equals_ignore_case** 
+|The value of the attribute equals this value, ignoring case for both 
+|String 
+|operator: “equals_ignore_case” +
+value: “INGRESS”
+
+|**not_equals_ignore_case** 
+|The value of the attribute does not equal this value, ignoring case for both 
+|String 
+|operator: “not_equals_ignore_case” +
+value: “INGRESS”
+
+|**range_includes** 
+|The range of the value of the attribute includes this single number 
+|String, Int 
+|operator: “range_includes” +
+value: 3000
+
+|**range_not_includes** 
+|The range of the value of the attribute does not include this single number 
+|String, Int 
+|operator: “range_not_includes” +
+value: 3000
+
+|**number_of_words_equals**
+|The number of words in the value of the attribute is equal to this number 
+|String, Int 
+|operator: number_of_words_equals +
+value: 6
+
+|**number_of_words_not_equals** 
+|The number of words in the value of the attribute is not equal to this number 
+|String, Int 
+|operator: number_of_words_not_equals +
+value: 6
+
+|===
+
+NOTE: All the above operators support *JSONPath* attribute expression by adding the *jsonpath_ prefix* to the operator, for example - `jsonpath_length_equals`.
+
+==== Attribute Condition: Keys and Values
+
+[cols="1,3,3"]
+|===
+|*Type* |*Value(s)* |*Description*
+
+|**cond_type** |string |Must be *attribute*
+
+|**resource_type** |collection of strings |Use either *all* or [resource types from list]
+
+|**attribute** |string |Attribute of defined resource types. For example,  *automated_snapshot_retention_period*
+
+|**operator** |string |- equals, not_equals, regex_match, not_regex_match, exists, not exists, any, contains, not_contains, within, starting_with, not_starting_with, ending_with, not_ending_with, greater_than, greater_than_or_equal, less_than, less_than_or_equal, is_empty, is_not_empty, length_equals, length_not_equals, length_greater_than, length_greater_than_or_equal, length_less_than, length_less_than_or_equal, is_true, is_false, intersects, not_intersects
+
+|**value** (not relevant for operators: exists/not_exists) |string |User input.
+|===
+
+==== Evaluating list attributes
+
+You can use a wildcard (*) to evaluate all of the items within a list. You can use multiple wildcards to evaluated nested lists. If any item in the list matches the condition, then the condition passes.
+
+In the following example: 
+
+[source,terraform]
+----
+resource "aws_security_group" "sg" {
+  ...
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    ...
+  }
+  ingress {
+    cidr_blocks = ["192.168.1.0/24"]
+    ...
+  }
+}
+----
+
+The following definition returns *true*, as one of the CIDR blocks contains 0.0.0.0/0:
+
+[source,terraform]
+----
+cond_type: attribute
+resource_types:
+  - "aws_security_group"
+attribute: "ingress.*.cidr_blocks"
+operator: "contains"
+value: "0.0.0.0/0"
+----
+
+NOTE: Switching the operator to `not_contains` will still result in the evaluation being true, because there is also an element that does not contain 0.0.0.0/0. To write a policy that fails if any CIDR block contains 0.0.0.0/0, consider the *not* operator, described below.
+
+=== Connection State Block
+
+A Connection State Block indicates a type of resource that has or does not have a connection to another type of resource. In the example presented in the table below, in order to be compliant, *aws_lb* and *aws_elb* must have connections to either *aws_security_group* or *aws_default_security_group*.
+
+[cols="1,1"]
+|===
+|Group A |Group B
+| aws_lb aws_elb	|aws_security_group aws_default_security_group
+|===
+
+==== Connection State Example
+
+The Connection State Block below indicates that to be compliant with the policy, resources of type *aws_lb* or of type *aws_elb* must be connected to either a resource of type *aws_security_group* or a resource of type *aws_default_security_group*.
+
+[source,Terraform]
+----
+definition:
+       cond_type: "connection"
+       resource_types:
+           - "aws_elb"
+           - "aws_lb"
+       connected_resource_types:
+         - "aws_security_group"
+         - "aws_default_security_group"
+       operator: "exists"
+----
+
+==== Connection State Condition: Operators
+
+[cols="1,1"]
+|===
+|Operator |Value
+
+|exists
+|*exists*
+
+|Not exists
+|*not_exists*
+
+|One exists
+|*one_exists*
+
+|===
+
+==== Connection State Condition: Keys and Values
+
+[cols="1,1,1"]
+|===
+|Type |Values |Description
+
+|**cond_type** |string |Must be connection
+
+|**resource_types** | |Use either *all* or [included resource type from list]
+
+|**connected_resource_types** |collection of strings |Use either *all* or [included resource type from list]
+
+|**operator** |string |exists/not exists
+|===
+
+=== Filters
+
+Filters can be used to limit the types of resources relevant to a condition. Filters are most commonly used for Connection Blocks (for Attribute Blocks you can easily limit the resource type with the *resource_type* parameter). For example, you may want to enforce a policy only for a specific resource type (or types) from specific groups defined in the conditions. Filters are available only for AND logic at the top level.
+
+==== Filter Example
+
+The Custom Policy in this example ensures that all ELBs are attached to security groups as shown in the table below. In line with best practices, connections of this nature should be defined using the *security_groups* key.
+
+[cols="1,1,"]
+|===
+|Group A |Group B
+|aws_elb	|aws_security_group aws_default_security_group
+|Not Exists |bot_exists
+|===
+
+[source,terraform]
+----
+definition:
+ and:
+      - cond_type: "filter"
+        attribute: "resource_type"
+        value:
+           - "aws_elb"
+        operator: "within"
+      - cond_type: "connection"
+        resource_types:
+           - "aws_elb"
+        connected_resource_types:
+         - "aws_security_group"
+         - "aws_default_security_group"
+        operator: "exists
+----
+
+NOTE: The condition above uses AND logic. See additional examples for complex logic in policy definitions.
+
+=== Using AND/OR Logic
+
+The Prisma Cloud platform allows you to combine definition blocks using AND/OR operators.
+
+* The top-level logical operator is the first key below "definition" (and not an item in a collection). Most policies will start with an *and* or *or* key here, with multiple conditions nested within that
+* Filter blocks apply (only) to the top-level and constitute an AND condition. For example, if you'd like to indicate a requirement for a Connection State between types of resources, but only within a certain subset of all of those resources. Every other logical operator applies within a collection. For example, you can use AND/OR logic in a collection of key-value pairs.
+* The value for the *and* or *or* key must be a list; each element of the list must be a valid definition on its own (that is, a combination of attribute conditions, connection conditions, nested AND/OR, etc).
+
+==== AND/OR Logic Example
+
+The logic in the policy definition shown below is: AND[block 1,block 2,OR[block 3,block 4]].
+
+[source,Terraform]
+----
+#....
+definition:
+  and:
+  - #filter block 1
+  - #block 2
+  - or:
+    - #block 3
+    - #block 4
+----
+
+For more examples of custom policies refer to xref:custom-policies-examples.adoc[Custom Policy examples].
+
+=== Using NOT Logic
+
+You can use *not* in the same places that you may use *and* and *or* to invert the nested condition definition. The value of the *not* element in the policy may be either a list containing exactly one element (which can also be nested more deeply), or any other type of block.
+
+==== NOT Logic Examples
+
+The definition below inverts the example in the previous section.
+
+[source,terraform]
+----
+#....
+definition:
+  not:
+    and:
+    - #filter block 1
+    - #block 2
+    - or:
+      - #block 3
+      - #block 4
+----
+
+The following code is also valid (the child of not is a list of length 1).
+[source,terraform]
+----
+#....
+definition:
+  not:
+  - and:
+    - #filter block 1
+    - #block 2
+    - or:
+      - #block 3
+      - #block 4
+----
+
+For more examples of custom policies refer to xref:custom-policies-examples.adoc[Custom Policy examples].
+
+=== Supported Frameworks
+
+==== Ansible
+
+Following resource_types are supported
+
+* block
+* tasks.[module name]
+
+Example:
+
+[source,terraform]
+----
+cond_type: attribute
+resource_types:
+  - tasks.ansible.builtin.uri
+  - tasks.uri
+attribute: url
+operator: starting_with
+value: "https://"
+----
+
+NOTE: In the case a module can be used without parameters by just adding the value to it, then it can be queried via the special attribute *__self__*. Example: +
+
+[source,terraform]
+----
+cond_type: "attribute"
+resource_types:
+  - "ansible.builtin.command"
+  - "command"
+attribute: "__self__"
+operator: "not_contains"
+value: "vim"
+----
+
+==== ARM
+All resources can be referenced under *resource_types*. Currently, no support for connections.
+
+==== Bicep
+All resources can be referenced under *resource_types*. Any kind of connection between resources is supported
+
+==== CloudFormation
+All resources can be referenced under *resource_types*. Any kind of connection between resources is supported
+
+==== Dockerfile
+All official Docker instructions can be referenced under *resource_types*. Currently, no support for connections.
+
+NOTE: The following attribute values are supported
+
+* content stores the raw data for an instruction
+* value stores the sanitized data for an instruction
+
+Examples
+
+[source,terraform]
+----
+RUN apt-get update \
+ && sudo apt-get install vim
+----
+
+->
+
+[source,terraform]
+----
+content: "RUN apt-get update \\\n && sudo apt-get install vim\n"
+value: "apt-get update  && sudo apt-get install vim"
+----
+
+==== GitHub Actions
+
+The following resource_types are supported.
+
+* *permissions* on the root level
+* *steps*
+* *jobs*
+* *on*
+
+The following connections are supported.
+
+*steps* -> *jobs*
+
+The value for *permissions* can be either a map or a single string. Map entries should be prefixed with *permissions*. Key and a single string entry can be accessed by using *permissions* as the attribute. Example:
+
+[source,terraform]
+----
+cond_type: "attribute"
+resource_types:
+  - "permissions"
+attribute: "permissions"
+operator: "not_equals"
+value: "write-all"
+----
+
+The value for *on* can be either a map, a string or a list of strings. Example:
+
+[source,terraform]
+----
+cond_type: attribute
+resource_types:
+  - "on"
+attribute: on.push.branches
+operator: contains
+value: main
+----
+
+==== Kubernetes
+
+All resources can be referenced under *resource_types*. Currently, no support for connections.
+
+=== Terraform
+All resources can be referenced under *resource_types*. Any kind of connection between resources is supported.

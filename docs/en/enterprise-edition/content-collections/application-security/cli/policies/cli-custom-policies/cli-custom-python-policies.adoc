@@ -1,0 +1,381 @@
+== Custom Python Policies
+
+Custom Policies created in Python support checking the state of a resource's attributes. A Python-based Custom Policy for Checkov consists of sections for Metadata and Policy Definition.
+
+Additionally, you can create xref:application-security/cli-custom-yaml-policies[YAML custom policies] policies for attribute and composite scanning.
+
+NOTE: Policies cannot share the same file name. If two policies with the same file name exist, only the first one will be loaded.
+
+=== Create a custom Checkov policy in Python
+
+Specify the *name*, *ID*, *relevant resources* and *categories* parameters.
+
+[cols="1,3,2"]
+|===
+|Parameter |Description |Example/Comments
+
+|**name**
+|A new policy's unique purpose. It should ideally specify the positive desired outcome of the policy.
+|
+
+|**id**
+|A mandatory unique identifier of a policy. Native policies written by Prisma Cloud contributors will follow the following convention: *CKV_providerType_serialNumber*
+|*CKV_AWS_9*, *CKV_GCP_12*
+
+|**supported_resources**
+|Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain
+|`*` usage depends on which check base class you extend; see the note below table. *?ws_* will match anything where the second character is a *'w'*, the third is a *'s'* and the fourth is a *'_'*
+
+|**categories**
+|Categorization of a scan. Usually used to produce compliance reports, pipeline analytics, and infrastructure health metrics and so on
+|
+
+|**guideline** (Optional)
+|Add additional information to help the user to solve the issue
+|This is not required
+|===
+
+NOTE: For the *Supported Resources Parameter*: If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all Terraform resources.
+
+[.task]
+=== Example
+
+The following example demonstrates a policy that ensures that new RDS services spun-up are encrypted at rest. This policiy is triggered by a scanned Terraform configuration (CKV_AWS_16).
+
+[.procedure]
+
+. Create a new file in the AWS check directory `checkov/terraform/checks/resource/aws/RDSEncryption.py`.
+
+. Import the following:
++
+[source,python]
+----
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+----
+
+. Define the meta entities for this check as described in the table above.
++
+[source,python]
+----
+class RDSEncryption(BaseResourceCheck):
+    def __init__(self) -> None:
+        name = "Ensure all data stored in the RDS is securely encrypted at rest"
+        id = "CKV_AWS_16"
+        supported_resources = ("aws_db_instance",)
+        categories = (CheckCategories.ENCRYPTION,)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+----
+
+. Define a check for the *aws_db_instance* resource block to determine if the *aws_db_instance* is disabled. If it is disabled, return an *CheckResult.FAILED* error.
++
+[source,python]
+----
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    """
+        Looks for encryption configuration at aws_db_instance:
+        https://www.terraform.io/docs/providers/aws/d/db_instance.html
+    :param conf: aws_db_instance configuration
+    :return: <CheckResult>
+    """
+    if 'storage_encrypted' in conf.keys():
+        key = conf['storage_encrypted'][0]
+        if key:
+            return CheckResult.PASSED
+    return CheckResult.FAILED
+----
++
+NOTE: The *conf* parameter is dependent on the resource type, which was chosen via the *supported_resources* class instance attribute. For example, for the *aws_db_instance* resource, the following value is returned:
+
+[source,python]
+----
+conf = {
+    "__end_line__": 11,  # internal field
+    "__start_line__": 3,  # internal field
+    "allocated_storage": [5],
+    "enabled_cloudwatch_logs_exports": [["postgresql", "upgrade"]],
+    "engine": ["postgres"],
+    "instance_class": ["db.t3.small"],
+    "password": ["postgres"],
+    "username": ["postgres"],
+    "
+    __address__": "aws_db_instance.postgres",  # internal field
+}
+----
+
+Which is the internal representation of following Terraform resource block.
+
+[source,terraform]
+----
+
+resource "aws_db_instance" "postgres" {
+  allocated_storage = 5
+  engine            = "postgres"
+  instance_class    = "db.t3.small"
+  password          = "postgres"
+  username          = "postgres"
+
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+}
+----
+
+If more than one resource type was set for *supported_resources*, then it is possible to retrieve the info via the class instance attribute `self.entity_type`.
+
+[source,python]
+----
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    if self.entity_type == "aws_db_instance":
+        ...
+    elif self.entity_type == "aws_rds_cluster_instance":
+        ...
+----
+
+. Implement `get_evaluated_keys`` to allow the check results report show the specified key.
++
+[source,python]
+----
+def get_evaluated_keys(self) -> List[str]:
+    return ['storage_encrypted/[0]']
+----
++
+If the evaluated keys are determined dynamically, you can set the evaluated key when scanning the resource configuration.
++
+[source,python]
+----
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    """
+        Looks for encryption configuration at aws_db_instance:
+        https://www.terraform.io/docs/providers/aws/d/db_instance.html
+    :param conf: aws_db_instance configuration
+    :return: <CheckResult>
+    """
+    if 'storage_encrypted' in conf.keys():
+        key = conf['storage_encrypted'][0]
+        if key:
+            # The following line sets the evaluated keys
+            self.evaluated_keys = ['storage_encrypted/[0]']
+            return CheckResult.PASSED
+    return CheckResult.FAILED
+----
+
+. You can also add *details* to be printed on the execution report:
++
+[source,python]
+----
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+ """
+     Looks for encryption configuration at aws_db_instance:
+     https://www.terraform.io/docs/providers/aws/d/db_instance.html
+ :param conf: aws_db_instance configuration
+ :return: <CheckResult>
+ """
+ if 'storage_encrypted' in conf.keys():
+     key = conf['storage_encrypted'][0]
+     if key:
+         # The following line sets the evaluated keys
+         self.evaluated_keys = ['storage_encrypted/[0]']
+         return CheckResult.PASSED
+        
+ self.details.append("'storage_encrypted' was not found on the resource configuration")
+    
+ return CheckResult.FAILED
+----
+
+The example producers the following report:
+
+image::application-security/cli-python-custom-policy-report.png[]
+
+
+. Conclude the policy name and operationalize it with the statement: `check = RDSEncryption()`.
+
+=== Select the best base check class to extend
+
+Terraform and CloudFormation have two base classes extending *BaseResourceCheck*:
+
+* *Option 1: BaseResourceValueCheck*: This check will pass only if the inspected_key is within the *expected_values*. If `get_expected_value` is not implemented, the default value is *True*.
+
+[source,python]
+----
+class RDSPubliclyAccessible(BaseResourceValueCheck):
+    def __init__(self) -> None:
+        name = "Ensure all data stored in RDS is not publicly accessible"
+        id = "CKV_AWS_17"
+        supported_resources = ("AWS::RDS::DBInstance",)
+        categories = (CheckCategories.NETWORKING,)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
+                         missing_block_result=CheckResult.PASSED)
+    
+    def get_inspected_key(self) -> str:
+        return 'Properties/PubliclyAccessible'    
+        
+    def get_expected_values(self) -> list[Any]:
+        return [False]
+----
+
+Another option is to use `ANY_VALUE`.
+
+[source,python]
+----
+def get_expected_values(self) -> list[Any]:
+    return [ANY_VALUE]
+----
+
+* *Option 2: BaseResourceNegativeValueCheck*: This check will pass only if the `inspected_key` is NOT within the `forbidden_values`.
+
+[source,python]
+----
+class NeptuneClusterInstancePublic(BaseResourceNegativeValueCheck):
+    def __init__(self) -> None:
+        name = "Ensure Neptune Cluster instance is not publicly available"
+        id = "CKV_AWS_102"
+        supported_resources = ['aws_neptune_cluster_instance']
+        categories = [CheckCategories.GENERAL_SECURITY]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+
+    def get_inspected_key(self) -> str:
+        return 'publicly_accessible/[0]'
+
+    def get_forbidden_values(self) -> List[Any]:
+        return [True]
+----
+
+=== Run a New Scan
+
+To run a scan with the new policy, use the Checkov command: `checkov -d /user/tf`.
+
+=== Working with Custom Policies
+
+Checkov is delivered with a set of built-in policies that check for compliance and security best practices at its core. In addition, Checkov enables you to load additional checks, that give the user the ability to author and execute custom policies.
+
+[.task]
+
+==== Example
+
+This example uses the following directory structure:
+
+----
+├── main.tf
+├── variables.tf
+└── outputs.tf
+----
+
+The example assumes a unique need to enforce bucket ACL policies only when the tag `Scope=PCI` is present. That being the case, the following bucket definition must trigger a failed check result:
+
+[source,Terraform]
+----
+# Snippet from  main.tf
+resource "aws_s3_bucket" "credit_cards_bucket" {
+  region        = var.region
+  bucket        = local.bucket_name
+  acl           = "public-read"
+  force_destroy = true
+
+  tags = {
+    Scope = "PCI",
+    
+  }
+}
+----
+
+To trigger the failed check result, add a new check to ensure PCI related S3 buckets will stay private.
+
+[.procedure]
+
+. Create a new Python folder named *my_extra_checks* containing the new check:
++
+[source,python]
+----
+├── main.tf
+├── variables.tf
+└── outputs.tf
+└── my_extra_checks
+    └── __init__.py
+    └── S3PCIPrivateACL.py
+----
+
+.. The first time you setup the custom checks folder, you need to also create a file named *__init__.py*.
++
+[source,python]
+----
+from os.path import dirname, basename, isfile, join
+import glob
+modules = glob.glob(join(dirname(__file__), "*.py"))
+__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+----
+
+.. Complete the matching logic in *S3PCIPrivateACL.py*:
++
+[source,python]
+----
+from __future__ import annotations
+
+from typing import Any
+
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
+
+
+class S3PCIPrivateACL(BaseResourceCheck):
+    def __init__(self) -> None:
+        name = "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
+        id = "CKV_AWS_999"
+        supported_resources = ("aws_s3_bucket",)
+        # CheckCategories are defined in models/enums.py
+        categories = (CheckCategories.BACKUP_AND_RECOVERY,)
+        guideline = "Follow the link to get more info https://docs.prismacloud.io/en/enterprise-edition/policy-reference"
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
+
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        """
+            Looks for ACL configuration at aws_s3_bucket and Tag values:
+            https://www.terraform.io/docs/providers/aws/r/s3_bucket.html
+        :param conf: aws_s3_bucket configuration
+        :return: <CheckResult>
+        """
+        tags = conf.get("tags")
+        if tags and isinstance(tags, list):
+            tags = tags[0]
+            if tags.get("Scope") == "PCI":
+                acl_block = conf['acl']
+                if acl_block in [["public-read"], ["public-read-write"], ["website"]]:
+                    return CheckResult.FAILED
+        return CheckResult.PASSED
+
+
+check = S3PCIPrivateACL()
+----
+
+. Run Checkov.
++
+[source,bash]
+----
+# install from pypi using pip
+pip install checkov
+
+
+# select an input folder that contains your terraform files and enable loading of extra checks
+checkov -d . --external-checks-dir my_extra_checks
+----
+
+. Verify the results.
++
+[source,bash]
+----
+Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
+	FAILED for resource: aws_s3_bucket.credit_cards_bucket
+	File: /main.tf:80-90
+	Guide: Follow the link to get more information https://docs.prismacloud.io/en/enterprise-edition/policy-reference
+
+		80 | resource "aws_s3_bucket" "credit_cards_bucket" {
+		81 |   region        = var.region
+		82 |   bucket        = local.bucket_name
+		83 |   acl           = "public-read"
+		84 |   force_destroy = true
+		85 |
+		86 |   tags = {
+		87 |     Scope = "PCI",
+		88 |
+		89 |   }
+		90 | }
+----
+
