@@ -1,4 +1,4 @@
-== Amazon Sagemaker Data Quality Job not using KMS to encrypt data on attached storage volume
+== AWS Sagemaker Data Quality Job not using KMS to encrypt data on attached storage volume
 
 === Policy Details
 
@@ -6,7 +6,7 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| TBD
+| d9fd5ad2-b0ce-44e4-98c8-242499c852ee
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerDataQualityJobDefinitionVolumeEncryption.py[CKV_AWS_368]
@@ -24,7 +24,7 @@
 
 === Description
 
-This policy verifies that an Amazon Sagemaker Data Quality Job is using Key Management Service (KMS) to encrypt data on the attached storage volume. It is crucial because if this method is not used, sensitive information can remain unprotected and vulnerable to unauthorized access or cyber threats. The encryption helps to enhance data security, prevent data breaches, and comply with regulatory requirements that demand the protection of specific types of information.
+This policy checks whether Amazon SageMaker Data Quality Jobs leverage AWS Key Management Service (KMS) to encrypt data on the attached storage volume. KMS encryption is crucial to safeguard sensitive information as it encrypts data on storage volumes attached to the Sagemaker instance. This prevents unauthorized access and data breaches and helps ensure compliance with regulations requiring the protection of specific data types.
 
 === Fix - Buildtime
 
@@ -33,7 +33,7 @@ This policy verifies that an Amazon Sagemaker Data Quality Job is using Key Mana
 * *Resource:* aws_sagemaker_monitoring_schedule
 * *Arguments:* job_resources/cluster_config/volume_kms_key_id
 
-To fix the issue, you need to provide a `volume_kms_key_id` attribute in your `aws_sagemaker_monitoring_schedule` resource to enable encryption using AWS KMS. AWS manages the KMS key you specify and it is used to encrypt the data stored in the storage volume attached to the Sagemaker instance.
+Provide a `volume_kms_key_id` attribute in your `aws_sagemaker_monitoring_schedule` of your Terraform configuration file to enable encryption using AWS KMS, as displayed in the example below.
 
 [source,go]
 ----
@@ -53,7 +53,7 @@ resource "aws_sagemaker_data_quality_job_definition" "example" {
 * *Resource:* AWS::SageMaker::DataQualityJobDefinition
 * *Arguments:* JobResources/ClusterConfig/VolumeKmsKeyId
 
-To fix the issue, you need to provide a `VolumeKmsKeyId` attribute in your `AWS::SageMaker::DataQualityJobDefinition` resource to enable encryption using AWS KMS. AWS manages the KMS key you specify and it is used to encrypt the data stored in the storage volume attached to the Sagemaker instance.
+Provide a `VolumeKmsKeyId` attribute in your `AWS::SageMaker::DataQualityJobDefinition` of your CloudFormation configuration file, as displayed in the example below.
 
 [source,yaml]
 ----

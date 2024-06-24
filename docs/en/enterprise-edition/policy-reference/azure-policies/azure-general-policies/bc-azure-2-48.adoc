@@ -1,5 +1,5 @@
 
-== Databricks Workspaces not using customer-managed key for root DBFS encryption
+== Azure Databricks Workspaces not using customer-managed key for root DBFS encryption
 
 === Policy Details
 
@@ -7,7 +7,7 @@
 [cols="1,1"]
 |===
 |Prisma Cloud Policy ID
-| TBD
+| 5495b666-049c-496b-bfda-9ee9c2449d36
 
 |Checkov ID
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/DatabricksWorkspaceDBFSRootEncryptedWithCustomerManagedKey.yaml[CKV2_AZURE_48]
@@ -25,7 +25,7 @@
 
 === Description
 
-This policy is checking to ensure that Databricks Workspaces is using a customer-managed key for root DBFS encryption. DBFS, or Databricks File System, is a distributed file system installed on Databricks clusters. The encryption of this file system adds an extra layer of security, ensuring that even in the event of unauthorized access, the data remains inaccessible and secure. The use of a customer-managed key gives users more control and responsibility over their encryption strategy. The failure to use these keys can open up potential security risks, such as key mismanagement or unauthorized encryption key access. Therefore, it's essential to have this policy in place to maintain a robust security posture.
+This policy checks whether Databricks Workspaces leverage a customer-managed key for root DBFS encryption. DBFS (Databricks File System) is the distributed file system used by Databricks clusters. Encrypting the root DBFS adds an extra layer of security, ensuring that even in the event of unauthorized access, the data remains inaccessible and secure. Customer-managed keys enhance security by giving you control over encryption, strengthening your security posture.
 
 === Fix - Buildtime
 
@@ -34,7 +34,7 @@ This policy is checking to ensure that Databricks Workspaces is using a customer
 * *Resource:* azurerm_databricks_workspace,azurerm_databricks_workspace_root_dbfs_customer_managed_key
 * *Arguments:* sku,customer_managed_key_enabled
 
-To fix the issue, you have to specify the `customer_managed_key_enabled` attribute while creating the Azure Databricks workspace. This property indicates the customer-managed key to use for encrypting DBFS root data at rest.
+Set the `customer_managed_key_enabled` attribute to `true` during Azure Databricks workspace creation. This enables customer-managed key encryption for your DBFS root data at rest.
 
 [source,go]
 ----
@@ -54,7 +54,7 @@ resource "azurerm_databricks_workspace_root_dbfs_customer_managed_key" "databric
 * *Resource:* Microsoft.Databricks/workspaces
 * *Arguments:* prepareEncryption/value
 
-To fix the issue, you have to specify the `customer_managed_key_enabled` attribute while creating the Azure Databricks workspace. This property indicates the customer-managed key to use for encrypting DBFS root data at rest.
+Set the `customer_managed_key_enabled` attribute to `true` during Azure Databricks workspace creation. This enables customer-managed key encryption for your DBFS root data at rest.
 
 [source,json]
 ----
