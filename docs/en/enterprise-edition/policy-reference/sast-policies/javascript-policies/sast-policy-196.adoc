@@ -1,4 +1,4 @@
-== DOM updates should not lead to cross-site scripting (XSS) attacks
+== Unsafe DOM updates lead to cross-site scripting (XSS) risks
 
 === Policy Details
 
@@ -30,9 +30,9 @@
 
 === Description
 
-This policy detects unsafe DOM updates that can lead to Cross-Site Scripting (XSS) attacks in JavaScript and TypeScript applications. XSS vulnerabilities occur when untrusted data is written to the DOM without proper validation or sanitization, allowing attackers to inject malicious scripts.
+This policy detects whether JavaScript and TypeScript applications perform unsafe DOM updates that can introduce Cross-Site Scripting (XSS) vulnerabilities. XSS vulnerabilities occur when untrusted data is written to the DOM without proper validation or sanitization, allowing attackers to inject malicious scripts.
 
-Vulnerable code example:
+In this example, user input from document.location.search is directly written to the DOM using document.write and innerHTML without any validation or sanitization. This exposes the application to XSS attacks, potentially allowing attackers to inject malicious scripts through user input.
 
 [source,JavaScript]
 ----
@@ -41,13 +41,12 @@ document.write(userInput);
 document.getElementById('output').innerHTML = userInput;
 ----
 
-In this code snippet, user input from `document.location.search` is directly written to the DOM using `document.write` and `innerHTML` without any validation or sanitization. This exposes the application to XSS attacks, where an attacker could inject malicious scripts through the user input.
 
 === Fix - Buildtime
 
 To fix this issue, ensure that user input is not directly sent to `document.write` and `innerHTML`.  Instead, use safe DOM manipulation methods like `textContent` or `createTextNode` to update the DOM with user input.
 
-Secure code example:
+In this example, user input is sanitized using DOMPurify before being written to the DOM. This ensures that any potentially harmful scripts are removed from the user input, mitigating the risk of XSS attacks.
 
 [source,JavaScript]
 ----
@@ -59,5 +58,3 @@ if (outputElement) {
     outputElement.textContent = userInput;
 }
 ----
-
-In the fixed code, instead of using document.write or setting innerHTML, we're using textContent to set the content of the outputElement.

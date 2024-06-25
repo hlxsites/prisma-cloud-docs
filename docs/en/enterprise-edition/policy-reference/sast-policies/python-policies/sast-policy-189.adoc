@@ -1,4 +1,4 @@
-== Server side request forgery
+== Server-side request forgery with Python web frameworks
 
 
 === Policy Details 
@@ -33,9 +33,9 @@
 
 === Description 
 
-This policy detects instances where an application makes HTTP requests using untrusted user-controlled input, leading to Server-Side Request Forgery (SSRF) vulnerabilities. SSRF occurs when an attacker can influence the server to make requests to an unintended location, potentially accessing internal services, unauthorized data, or performing other malicious activities.
+This policy detects whether applications make HTTP requests using untrusted user-controlled input. This practice can introduce Server-Side Request Forgery (SSRF) vulnerabilities. In SSRF attacks, attackers exploit the application to make the server request unintended locations, potentially accessing internal services, unauthorized data, or performing other malicious actions.
 
-Vulnerable code example:
+In this example, user input from `request.args.get('url')` is used directly in an HTTP request with `requests.get(url)`, bypassing validation. This exposes the application to SSRF attacks, where an attacker could craft malicious input to manipulate the URL, potentially accessing internal services or sensitive information.
 
 [source,Python]
 ----
@@ -51,13 +51,12 @@ def fetch_data():
     return response.content
 ----
 
-In this code snippet, user input from `request.args.get('url')` is directly used in an HTTP request via `requests.get(url)` without validation. This exposes the application to SSRF attacks, where an attacker could manipulate the URL to access internal services or sensitive information.
 
 === Fix - Buildtime
 
-To fix this issue, validate and sanitize user input before using it to make HTTP requests. Implement an allowlist of acceptable URL schemes and hosts, and ensure proper authentication and transport-layer security for the proxied requests.
+Validate and sanitize user input before using it to make HTTP requests. Implement an allow list of acceptable URL schemes and hosts, and ensure proper authentication and transport-layer security for proxied requests.
 
-Secure code example:
+In this example, the URL is validated to ensure that the scheme and hostname are in the allow list before making the request. This restricts requests to trusted domains, reducing the risk of SSRF vulnerabilities.
 
 [source,Python]
 ----
@@ -83,4 +82,3 @@ def fetch_data():
     return response.content
 ----
 
-In the fixed code, the URL is validated to ensure that the scheme and hostname are in the allowlist before making the request. This reduces the risk of SSRF vulnerabilities by restricting requests to trusted domains.

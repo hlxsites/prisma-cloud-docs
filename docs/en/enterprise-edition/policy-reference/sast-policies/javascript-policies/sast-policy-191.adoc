@@ -1,4 +1,4 @@
-== The application builds a URL using user-controlled input which can lead to an open redirect vulnerability
+== Application builds a URL using user-controlled input
 
 === Policy Details
 
@@ -27,9 +27,9 @@
 
 === Description
 
-This policy detects instances where the application builds a URL using user-controlled input, potentially leading to open redirect vulnerabilities. Open redirects occur when an application accepts untrusted input that specifies a URL to which the application redirects the user. This can be exploited by attackers to redirect users to malicious sites.
+This policy detects whether applications construct URLs using user-controlled input. This practice can potentially lead to open redirect vulnerabilities, where attackers can manipulate the URL to redirect users to malicious websites.
 
-Vulnerable code example:
+In this example, user input from prompt is directly assigned to window.location.href, allowing an attacker to redirect the user to an arbitrary and potentially malicious URL.
 
 [source,JavaScript]
 ----
@@ -37,13 +37,11 @@ const userInput = prompt('Enter URL:');
 window.location.href = userInput;
 ----
 
-In this code snippet, user input from `prompt` is directly assigned to `window.location.href`, allowing an attacker to redirect the user to an arbitrary and potentially malicious URL.
-
 === Fix - Buildtime
 
-To fix this issue, validate and sanitize user input before using it to build URLs. Ensure that only trusted and expected URLs are used in redirects.
+To prevent open redirects, validate and sanitize user input before building URLs. Additionally, restrict redirects to a list of trusted and expected URLs.
 
-Secure code example:
+In this example, user input is validated to ensure that the redirect only goes to a trusted domain. This prevents open redirects, where attackers could trick users into visiting malicious sites.
 
 [source,JavaScript]
 ----
@@ -58,5 +56,3 @@ if (sanitizedInput) {
   alert('Invalid URL');
 }
 ----
-
-This example uses DOMPurify to sanitize the user input, ensuring that only URLs matching the allowed pattern are used in the redirect. This further mitigates the risk of open redirect vulnerabilities.

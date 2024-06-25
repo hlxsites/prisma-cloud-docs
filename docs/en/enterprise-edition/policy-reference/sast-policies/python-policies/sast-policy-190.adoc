@@ -1,4 +1,4 @@
-== Unsafe use of globals() function
+== Unsafe use of globals or locals function
 
 
 === Policy Details 
@@ -33,9 +33,9 @@
 
 === Description
 
-This policy detects unsafe usage of the `globals()` or `locals()` functions in Python, especially when used with user input. Using these functions without proper validation can lead to code injection and namespace pollution, potentially allowing attackers to execute arbitrary code or manipulate the application's behavior.
+This policy detects whether Python applications use the `globals()` or `locals()` functions with user input. Using these functions without proper validation can lead to code injection and namespace pollution, potentially allowing attackers to execute arbitrary code or manipulate the application's behavior.
 
-Vulnerable code example:
+In this example, user input from `request.form['data']` is directly used to update the `globals()` dictionary without any validation. This exposes the application to code injection attacks, where an attacker could potentially inject malicious code through user input.
 
 [source,Python]
 ----
@@ -50,13 +50,10 @@ def update_globals():
     return 'Globals updated'
 ----
 
-In this code snippet, user input from the `request.form['data']` is directly used to update the `globals()` dictionary without any validation. This exposes the application to code injection attacks, where an attacker could inject malicious code through the user input.
 
 === Fix - Buildtime
 
-To fix this issue, avoid using `globals()` or `locals()` with user input.
-
-Secure code example:
+In this example, the code replaces the use of `globals()` with a controlled dictionary to manage application data, enhancing security by preventing arbitrary modifications to the application's global namespace. This change improves maintainability and reduces the risk of security vulnerabilities associated with dynamic global state changes.
 
 [source,Python]
 ----
@@ -77,5 +74,3 @@ def update_data():
 if __name__ == '__main__':
     app.run()
 ----
-
-The revised code replaces the use of globals() with a controlled dictionary to manage application data, enhancing security by preventing arbitrary modifications to the application's global namespace. This change improves maintainability and reduces the risk of security vulnerabilities associated with dynamic global state changes.

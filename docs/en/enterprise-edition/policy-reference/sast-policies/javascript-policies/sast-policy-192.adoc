@@ -30,9 +30,9 @@
 
 === Description
 
-This policy detects instances of unsafe deserialization of untrusted data in JavaScript and TypeScript applications. Deserialization of untrusted data can lead to security vulnerabilities where maliciously crafted data can be used to execute arbitrary code.
+This policy detects whether JavaScript and TypeScript applications perform unsafe deserialization of untrusted data. Deserialization of untrusted data can lead to security vulnerabilities, as malicious actors can exploit it to execute arbitrary code within an application.
 
-Vulnerable code example:
+In this example, user input from req.body.data is directly deserialized using the node-serialize library without validation. This exposes the application to deserialization attacks. Attackers could exploit this by sending malicious serialized data, potentially allowing them to execute harmful instructions on the system.
 
 [source,JavaScript]
 ----
@@ -52,13 +52,12 @@ function processUserInput(req, res) {
 app.get('/user', processUserInput);
 ----
 
-In this code snippet, user input from `req.query.userdata` is directly deserialized using the `node-serialize` library without any validation. This exposes the application to deserialization attacks, where an attacker could provide malicious serialized data to execute arbitrary code.
 
 === Fix - Buildtime
 
-To fix this issue, avoid using unsafe deserialization methods. Instead, consider using safe serialization methods such as `JSON.parse()` and `Buffer.from()` for handling untrusted data.
+Avoid using unsafe deserialization methods for processing untrusted data. Instead, consider using safe serialization methods such as `JSON.parse()` and `Buffer.from()` for handling untrusted data.
 
-Secure code example:
+In this example, user input is safely parsed using JSON.parse(), ensuring that only valid JSON data is processed. This mitigates the risk of deserialization attacks.
 
 [source,JavaScript]
 ----
@@ -79,4 +78,3 @@ function processUserInput(req, res) {
 app.get('/user', processUserInput);
 ----
 
-In the fixed code, user input is safely parsed using `JSON.parse()`, which ensures that only valid JSON data is processed, mitigating the risk of deserialization attacks.

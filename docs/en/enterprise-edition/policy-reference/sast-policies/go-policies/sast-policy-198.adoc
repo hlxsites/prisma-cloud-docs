@@ -1,5 +1,5 @@
 
-== Use of SSH with insecure ignore host key
+== Insecure SSH ignoring host key validation
 
 === Policy Details
 
@@ -19,7 +19,7 @@
 |Build
 
 |Language
-|go
+|Go
 
 |CWEs
 |https://cwe.mitre.org/data/definitions/322.html[CWE-322: Key Exchange without Entity Authentication]
@@ -31,9 +31,9 @@
 
 === Description
 
-This policy detects instances where the `ssh.InsecureIgnoreHostKey()` function is used in Golang applications. Using `ssh.InsecureIgnoreHostKey()` bypasses the host key verification process, which is a critical step in establishing a secure SSH connection. Bypassing this verification can expose the application to Man-in-the-Middle (MitM) attacks and other security vulnerabilities.
+This policy detects whether the `ssh.InsecureIgnoreHostKey()` function is used in Go applications. Using `ssh.InsecureIgnoreHostKey()` bypasses the host key verification process, a critical step in establishing a secure SSH connection. Bypassing this verification can expose the application to Man-in-the-Middle (MitM) attacks and other security vulnerabilities.
 
-Vulnerable code example:
+In the following code snippet, ssh.InsecureIgnoreHostKey() which disables host key verification, is used, leaving the SSH connection vulnerable to MitM attacks.
 
 [source,Go]
 ----
@@ -59,13 +59,12 @@ func main() {
 }
 ----
 
-In this code snippet, `ssh.InsecureIgnoreHostKey()` is used, which disables host key verification, making the SSH connection vulnerable to MitM attacks.
 
 === Fix - Buildtime
 
-To fix this issue, implement proper host key verification by using a secure method to validate the host key.
+Implement proper host key verification by using a secure method to validate the host key.
 
-Secure code example:
+In this example, the host key is read from a known hosts file and used with ssh.FixedHostKey() to perform proper host key verification. This ensures the authenticity of the SSH server and mitigates the risk of Man-in-the-Middle (MitM) attacks.
 
 [source,Go]
 ----
@@ -98,4 +97,3 @@ func main() {
 }
 ----
 
-In the fixed code, the host key is read from a known hosts file and used with `ssh.FixedHostKey()` to perform proper host key verification. This ensures the authenticity of the SSH server and mitigates the risk of MitM attacks.

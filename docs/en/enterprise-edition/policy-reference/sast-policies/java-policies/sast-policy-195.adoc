@@ -1,4 +1,4 @@
-== Function Class.forName() returns a class object with the argument name
+== Class objects with argument name returned by Class.forName() function
 
 
 === Policy Details 
@@ -33,9 +33,9 @@
 
 === Description
 
-This policy detects instances where the `Class.forName()` function is used with user-controlled input in Java applications. The `Class.forName()` method returns a class object with the specified name, allowing users to dynamically load classes. However, using this method with unvalidated input can allow attackers to change the logic of the application in a dangerous way.
+This policy detects whether the `Class.forName()` function is used with user-controlled input in Java applications. `Class.forName()` lets applications load classes dynamically based on a provided name. However, using this method with unvalidated user input can be dangerous, as attackers might be able to manipulate the application's behavior.
 
-Vulnerable code example:
+In this example, user input from request.getParameter("className") is passed directly to Class.forName(), allowing an attacker to load arbitrary classes and potentially change the application logic.
 
 [source,Java]
 ----
@@ -49,13 +49,12 @@ public class UnsafeReflection {
 }
 ----
 
-In this code snippet, user input from `request.getParameter("className")` is directly passed to `Class.forName()`, allowing an attacker to load arbitrary classes and potentially change the application logic.
 
 === Fix - Buildtime
 
-To fix this issue, avoid using `Class.forName()` with untrusted input. If it is necessary to use this method, ensure that the input is properly validated and sanitized before use.
+Avoid using `Class.forName()` with untrusted input. If this method is required, validate and sanitize the input first.
 
-Secure code example:
+In this example, only a predefined set of allowed classes can be loaded with Class.forName(). This mitigates the risk of attackers injecting untrusted input to load arbitrary classes.
 
 [source,Java]
 ----
@@ -69,5 +68,3 @@ public class SafeReflection {
     }
 }
 ----
-
-In the fixed code, `ClassLoader.loadClass()` is used instead of `Class.forName()`.

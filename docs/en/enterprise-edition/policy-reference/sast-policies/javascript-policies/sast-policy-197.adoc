@@ -1,4 +1,4 @@
-== Cryptographic keys should be robust
+== Unrobust cryptographic keys
 
 === Policy Details
 
@@ -30,9 +30,9 @@
 
 === Description
 
-This policy detects instances where cryptographic keys generated using the Node.js `crypto` module are not robust enough, specifically focusing on RSA, DSA, and EC algorithms with insufficient key lengths or risky named curves. Using weak cryptographic keys can expose encrypted data to attacks aimed at recovering plaintext, compromising data security.
+This policy detects whether cryptographic keys generated using the Node.js crypto module are not robust, particularly for RSA, DSA, and EC algorithms. Insufficient key lengths or risky named curves in these algorithms can compromise data security by making encrypted data vulnerable to decryption attacks.
 
-Vulnerable code example:
+In this example, an RSA key pair is generated with a modulus length of 1024 bits, which is considered weak by modern cryptographic standards. Additionally, using insecure named curves in Elliptic Curve Cryptography (ECC) can also introduce vulnerabilities.
 
 [source,JavaScript]
 ----
@@ -42,13 +42,12 @@ const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
 });
 ----
 
-In this code snippet, an RSA key pair is generated with a modulus length of 1024 bits, which is considered weak by modern cryptographic standards. Similarly, using insecure named curves for elliptic curve cryptography (ECC) can also lead to vulnerabilities.
 
 === Fix - Buildtime
 
-To fix this issue, ensure that cryptographic keys are generated with sufficient strength. Use at least 2048-bit keys for RSA and secure named curves for ECC.
+Ensure that cryptographic keys are generated with sufficient strength. Use keys with at least 2048-bit modulus length for RSA. When using ECC, select secure named curves.
 
-Secure code example:
+In this example, the RSA key pair is generated with a modulus length of 2048 bits, improving its resistance to decryption attacks.
 
 [source,JavaScript]
 ----
@@ -58,9 +57,7 @@ const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
 });
 ----
 
-In the fixed code, the RSA key pair is generated with a modulus length of 2048 bits, providing stronger security.
-
-Additional secure code example for ECC:
+In this example an ECC key pair is generated using a secure named curve, ensuring robust cryptographic security.
 
 [source,JavaScript]
 ----
@@ -70,4 +67,3 @@ const { publicKey, privateKey } = crypto.generateKeyPair('ec', {
 });
 ----
 
-This example demonstrates generating an ECC key pair using a secure named curve, ensuring robust cryptographic security.
