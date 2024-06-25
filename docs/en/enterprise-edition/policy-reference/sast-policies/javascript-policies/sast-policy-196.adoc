@@ -45,16 +45,19 @@ In this code snippet, user input from `document.location.search` is directly wri
 
 === Fix - Buildtime
 
-To fix this issue, ensure that user input is properly sanitized before being written to the DOM. Use libraries such as DOMPurify to sanitize user input and prevent XSS attacks.
+To fix this issue, ensure that user input is not directly sent to `document.write` and `innerHTML`.  Instead, use safe DOM manipulation methods like `textContent` or `createTextNode` to update the DOM with user input.
 
 Secure code example:
 
 [source,JavaScript]
 ----
 const userInput = document.location.search;
-const sanitizedInput = DOMPurify.sanitize(userInput);
-document.write(sanitizedInput);
-document.getElementById('output').innerHTML = sanitizedInput;
+
+// Use safe DOM manipulation methods
+const outputElement = document.getElementById('output');
+if (outputElement) {
+    outputElement.textContent = userInput;
+}
 ----
 
-In the fixed code, user input is sanitized using DOMPurify before being written to the DOM. This ensures that any potentially harmful scripts are removed from the user input, mitigating the risk of XSS attacks.
+In the fixed code, instead of using document.write or setting innerHTML, we're using textContent to set the content of the outputElement.

@@ -10,7 +10,7 @@
 | 6122e9ac-e879-492d-81e9-d9d9f655bbac
 
 |Checkov ID 
-|CKV3_SAST_10
+|CKV3_SAST_190
 
 |Severity
 |MEDIUM
@@ -54,23 +54,28 @@ In this code snippet, user input from the `request.form['data']` is directly use
 
 === Fix - Buildtime
 
-To fix this issue, avoid using `globals()` or `locals()` with untrusted input. If it's necessary to use these functions, ensure that user input is properly validated and sanitized.
+To fix this issue, avoid using `globals()` or `locals()` with user input.
 
 Secure code example:
 
 [source,Python]
 ----
 from flask import Flask, request
-import re
 
 app = Flask(__name__)
 
-@app.route('/update_globals', methods=['POST'])
-def update_globals():
-    user_input = request.form['data']
-    if re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", user_input):  # Only allow valid variable names
-        globals()[user_input] = 'This is safer'
-    return 'Globals updated'
+# Using a dictionary to safely store and manage data
+app_data = {}
+
+@app.route('/update_data', methods=['POST'])
+def update_data():
+    key = request.form['key']
+    value = request.form['value']
+    app_data[key] = value
+    return 'Data updated successfully'
+
+if __name__ == '__main__':
+    app.run()
 ----
 
-In the fixed code, user input is validated using a regular expression to ensure that it only contains valid variable names before being used to update the `globals()` dictionary. This reduces the risk of code injection and namespace pollution.
+The revised code replaces the use of globals() with a controlled dictionary to manage application data, enhancing security by preventing arbitrary modifications to the application's global namespace. This change improves maintainability and reduces the risk of security vulnerabilities associated with dynamic global state changes.

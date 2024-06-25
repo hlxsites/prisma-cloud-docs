@@ -57,25 +57,45 @@ Secure code example:
 [source,Java]
 ----
 import javax.naming.directory.DirContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;
 
 public class LDAPExample {
-    public void searchUser(DirContext ctx, HttpServletRequest req) throws NamingException {
-        String username = req.getParameter("username");
-        if (isValid(username)) {
-            String filter = "(uid=" + sanitize(username) + ")";
-            ctx.search("ou=users,dc=example,dc=com", filter, new SearchControls());
+    // This method now accepts a username that should be verified and processed before being passed here.
+    public void searchUser(DirContext ctx, String verifiedUsername) throws NamingException {
+        if (verifiedUsername == null || !verifiedUsername.matches("^[a-zA-Z0-9]+$")) {
+            throw new IllegalArgumentException("Invalid username");
         }
+        String safeFilter = "(uid=" + escapeLDAPSearchFilter(verifiedUsername) + ")";
+        ctx.search("ou=users,dc=example,dc=com", safeFilter, new SearchControls());
     }
 
-    private boolean isValid(String input) {
-        // Implement validation logic
-        return input != null && input.matches("^[a-zA-Z0-9]*$");
-    }
-
-    private String sanitize(String input) {
-        // Implement sanitization logic
-        return input.replaceAll("[^a-zA-Z0-9]", "");
+    private String escapeLDAPSearchFilter(String filter) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filter.length(); i++) {
+            char curChar = filter.charAt(i);
+            switch (curChar) {
+                case '\\':
+                    sb.append("\\5c");
+                    break;
+                case '*':
+                    sb.append("\\2a");
+                    break;
+                case '(':
+                    sb.append("\\28");
+                    break;
+                case ')':
+                    sb.append("\\29");
+                    break;
+                case '\u0000': 
+                    sb.append("\\00");
+                    break;
+                default:
+                    sb.append(curChar);
+            }
+        }
+        return sb.toString();
     }
 }
 ----

@@ -36,18 +36,23 @@ Vulnerable code example:
 
 [source,JavaScript]
 ----
-const nodeSerialize = require('node-serialize');
-const express = require('express');
-const app = express();
+const serialize = require('node-serialize');
 
-app.post('/deserialize', (req, res) => {
-  const serializedData = req.body.data;
-  const deserializedData = nodeSerialize.unserialize(serializedData);
-  res.send(deserializedData);
-});
+// Example Express.js route handler
+function processUserInput(req, res) {
+    // Directly using data from the request's query parameters
+    const userData = req.query.userdata;
+
+    // Deserializing the data directly from user input
+    const deserializedData = serialize.unserialize(userData);
+
+    res.send("Data processed");
+}
+
+app.get('/user', processUserInput);
 ----
 
-In this code snippet, user input from `req.body.data` is directly deserialized using the `node-serialize` library without any validation. This exposes the application to deserialization attacks, where an attacker could provide malicious serialized data to execute arbitrary code.
+In this code snippet, user input from `req.query.userdata` is directly deserialized using the `node-serialize` library without any validation. This exposes the application to deserialization attacks, where an attacker could provide malicious serialized data to execute arbitrary code.
 
 === Fix - Buildtime
 
@@ -57,17 +62,21 @@ Secure code example:
 
 [source,JavaScript]
 ----
-const express = require('express');
-const app = express();
+// Example Express.js route handler
+function processUserInput(req, res) {
+    // Directly using data from the request's query parameters
+    const userData = req.query.userdata;
 
-app.post('/deserialize', (req, res) => {
-  try {
-    const jsonData = JSON.parse(req.body.data);
-    res.send(jsonData);
-  } catch (error) {
-    res.status(400).send('Invalid data');
-  }
-});
+    try {
+        // Safely parsing user data assuming it's in JSON format
+        const parsedData = JSON.parse(userData);
+        res.send("Data processed: " + JSON.stringify(parsedData));
+    } catch (e) {
+        res.status(400).send("Invalid JSON data");
+    }
+}
+
+app.get('/user', processUserInput);
 ----
 
 In the fixed code, user input is safely parsed using `JSON.parse()`, which ensures that only valid JSON data is processed, mitigating the risk of deserialization attacks.

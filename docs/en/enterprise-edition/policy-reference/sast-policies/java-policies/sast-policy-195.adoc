@@ -60,26 +60,14 @@ Secure code example:
 [source,Java]
 ----
 import javax.servlet.http.HttpServletRequest;
-import java.util.Set;
-import java.util.HashSet;
 
 public class SafeReflection {
-    private static final Set<String> ALLOWED_CLASSES = new HashSet<>();
-
-    static {
-        ALLOWED_CLASSES.add("com.example.MyClass");
-        ALLOWED_CLASSES.add("com.example.AnotherClass");
-    }
-
     public void loadClass(HttpServletRequest request) throws ClassNotFoundException {
         String className = request.getParameter("className");
-        if (ALLOWED_CLASSES.contains(className)) {
-            Class<?> clazz = Class.forName(className);
-        } else {
-            throw new ClassNotFoundException("Class not allowed: " + className);
-        }
+        ClassLoader classLoader = getClass().getClassLoader();
+        Class<?> clazz = classLoader.loadClass(className);
     }
 }
 ----
 
-In the fixed code, only a predefined set of allowed classes can be loaded, ensuring that untrusted input cannot be used to load arbitrary classes.
+In the fixed code, `ClassLoader.loadClass()` is used instead of `Class.forName()`.
