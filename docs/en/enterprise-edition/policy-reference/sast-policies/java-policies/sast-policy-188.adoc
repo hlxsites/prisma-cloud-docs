@@ -1,0 +1,83 @@
+== Improper input validation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 169ec063-b738-4963-8e73-6009f4f32be2
+
+|Checkov ID 
+|CKV3_SAST_188
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|Java
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/20.html[CWE-20: Improper Input Validation]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+
+=== Description
+This policy detects instances of improper input validation in Java applications, particularly focusing on LDAP statements containing user-controlled values. Without proper input validation, executing LDAP statements with user-controlled values can allow an attacker to manipulate the LDAP context, leading to potential security vulnerabilities.
+
+Vulnerable code example:
+
+[source,Java]
+----
+import javax.naming.directory.DirContext;
+
+public class LDAPExample {
+    public void searchUser(DirContext ctx, HttpServletRequest req) throws NamingException {
+        String filter = "(uid=" + req.getParameter("username") + ")";
+        ctx.search("ou=users,dc=example,dc=com", filter, new SearchControls());
+    }
+}
+----
+
+In this code snippet, user input from the HTTP request parameter `username` is directly used in an LDAP search filter without proper validation. This exposes the application to LDAP injection attacks, where an attacker could potentially manipulate the LDAP query.
+
+=== Fix - Buildtime
+
+To fix this issue, ensure that user input is properly validated and sanitized before being used in LDAP queries. Avoid directly incorporating user-controlled values into LDAP statements.
+
+Secure code example:
+
+[source,Java]
+----
+import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchControls;
+
+public class LDAPExample {
+    public void searchUser(DirContext ctx, HttpServletRequest req) throws NamingException {
+        String username = req.getParameter("username");
+        if (isValid(username)) {
+            String filter = "(uid=" + sanitize(username) + ")";
+            ctx.search("ou=users,dc=example,dc=com", filter, new SearchControls());
+        }
+    }
+
+    private boolean isValid(String input) {
+        // Implement validation logic
+        return input != null && input.matches("^[a-zA-Z0-9]*$");
+    }
+
+    private String sanitize(String input) {
+        // Implement sanitization logic
+        return input.replaceAll("[^a-zA-Z0-9]", "");
+    }
+}
+----
+
+In the fixed code, user input is validated and sanitized before being used in the LDAP search filter. This ensures that only valid and safe input is included in the LDAP query, mitigating the risk of LDAP injection attacks.

@@ -1,0 +1,85 @@
+== Function Class.forName() returns a class object with the argument name
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 951ff3dc-41fd-4284-b702-d0f6b77b8152
+
+|Checkov ID 
+|CKV3_SAST_195
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Language
+|Java
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/470.html[CWE-470: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021-Injection]
+
+|=== 
+
+
+
+=== Description
+
+This policy detects instances where the `Class.forName()` function is used with user-controlled input in Java applications. The `Class.forName()` method returns a class object with the specified name, allowing users to dynamically load classes. However, using this method with unvalidated input can allow attackers to change the logic of the application in a dangerous way.
+
+Vulnerable code example:
+
+[source,Java]
+----
+import javax.servlet.http.HttpServletRequest;
+
+public class UnsafeReflection {
+    public void loadClass(HttpServletRequest request) throws ClassNotFoundException {
+        String className = request.getParameter("className");
+        Class<?> clazz = Class.forName(className);
+    }
+}
+----
+
+In this code snippet, user input from `request.getParameter("className")` is directly passed to `Class.forName()`, allowing an attacker to load arbitrary classes and potentially change the application logic.
+
+=== Fix - Buildtime
+
+To fix this issue, avoid using `Class.forName()` with untrusted input. If it is necessary to use this method, ensure that the input is properly validated and sanitized before use.
+
+Secure code example:
+
+[source,Java]
+----
+import javax.servlet.http.HttpServletRequest;
+import java.util.Set;
+import java.util.HashSet;
+
+public class SafeReflection {
+    private static final Set<String> ALLOWED_CLASSES = new HashSet<>();
+
+    static {
+        ALLOWED_CLASSES.add("com.example.MyClass");
+        ALLOWED_CLASSES.add("com.example.AnotherClass");
+    }
+
+    public void loadClass(HttpServletRequest request) throws ClassNotFoundException {
+        String className = request.getParameter("className");
+        if (ALLOWED_CLASSES.contains(className)) {
+            Class<?> clazz = Class.forName(className);
+        } else {
+            throw new ClassNotFoundException("Class not allowed: " + className);
+        }
+    }
+}
+----
+
+In the fixed code, only a predefined set of allowed classes can be loaded, ensuring that untrusted input cannot be used to load arbitrary classes.

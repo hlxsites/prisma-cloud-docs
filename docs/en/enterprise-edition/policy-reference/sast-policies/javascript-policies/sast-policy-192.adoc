@@ -1,0 +1,73 @@
+== Untrusted data unsafely deserialized
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 63701fb1-00af-47d1-b127-0228553b1156
+
+|Checkov ID 
+|CKV3_SAST_192
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|JavaScript, TypeScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/502.html[CWE-502: Deserialization of Untrusted Data]
+
+|OWASP Categories
+|https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/[A08:2021-Software and Data Integrity Failures]
+
+|=== 
+
+=== Description
+
+This policy detects instances of unsafe deserialization of untrusted data in JavaScript and TypeScript applications. Deserialization of untrusted data can lead to security vulnerabilities where maliciously crafted data can be used to execute arbitrary code.
+
+Vulnerable code example:
+
+[source,JavaScript]
+----
+const nodeSerialize = require('node-serialize');
+const express = require('express');
+const app = express();
+
+app.post('/deserialize', (req, res) => {
+  const serializedData = req.body.data;
+  const deserializedData = nodeSerialize.unserialize(serializedData);
+  res.send(deserializedData);
+});
+----
+
+In this code snippet, user input from `req.body.data` is directly deserialized using the `node-serialize` library without any validation. This exposes the application to deserialization attacks, where an attacker could provide malicious serialized data to execute arbitrary code.
+
+=== Fix - Buildtime
+
+To fix this issue, avoid using unsafe deserialization methods. Instead, consider using safe serialization methods such as `JSON.parse()` and `Buffer.from()` for handling untrusted data.
+
+Secure code example:
+
+[source,JavaScript]
+----
+const express = require('express');
+const app = express();
+
+app.post('/deserialize', (req, res) => {
+  try {
+    const jsonData = JSON.parse(req.body.data);
+    res.send(jsonData);
+  } catch (error) {
+    res.status(400).send('Invalid data');
+  }
+});
+----
+
+In the fixed code, user input is safely parsed using `JSON.parse()`, which ensures that only valid JSON data is processed, mitigating the risk of deserialization attacks.

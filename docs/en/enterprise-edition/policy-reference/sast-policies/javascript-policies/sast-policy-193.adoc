@@ -1,0 +1,70 @@
+== Input validation is missing for critical functions like innerHTML, outerHTML and document.write can lead to XSS vulnerability
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 6a58b9ca-bc58-4077-adbf-19c643b95353
+
+|Checkov ID 
+|CKV3_SAST_193
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|JavaScript, TypeScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/79.html[CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+=== Description
+
+This policy detects instances where unvalidated input is written to the HTML page using methods such as `innerHTML`, `outerHTML`, and `document.write`, which can lead to Cross-Site Scripting (XSS) vulnerabilities. XSS vulnerabilities occur when attackers inject malicious scripts into webpages viewed by other users.
+
+Vulnerable code example:
+
+[source,JavaScript]
+----
+const userInput = prompt('Enter your name:');
+document.getElementById('display').innerHTML = userInput;
+----
+
+In this code snippet, user input is directly written to the HTML using `innerHTML` without any validation or sanitization. This exposes the application to XSS attacks, where an attacker could inject malicious scripts through the user input.
+
+=== Fix - Buildtime
+
+To fix this issue, ensure that user input is properly sanitized before being written to the HTML page. Use libraries such as `sanitize-html`, `xss-filters`, or `DOMPurify` to sanitize user input.
+
+Secure code example:
+
+[source,JavaScript]
+----
+const userInput = prompt('Enter your name:');
+const sanitizedInput = DOMPurify.sanitize(userInput);
+document.getElementById('display').innerHTML = sanitizedInput;
+----
+
+In the fixed code, user input is sanitized using `DOMPurify.sanitize()` before being written to the HTML. This ensures that any potentially harmful scripts are removed from the user input, mitigating the risk of XSS attacks.
+
+Additional secure code example with `sanitize-html`:
+
+[source,JavaScript]
+----
+const sanitizeHtml = require('sanitize-html');
+const userInput = prompt('Enter your name:');
+const sanitizedInput = sanitizeHtml(userInput);
+document.getElementById('display').innerHTML = sanitizedInput;
+----
+
+This example demonstrates using the `sanitize-html` library to sanitize user input before writing it to the HTML, ensuring that the input is safe from XSS attacks.

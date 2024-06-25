@@ -1,0 +1,73 @@
+== Cryptographic keys should be robust
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 81cc0536-af53-4e7c-bee0-40a618a1cc3d
+
+|Checkov ID 
+|CKV3_SAST_197
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|JavaScript, TypeScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/327.html[CWE-327: Use of a Broken or Risky Cryptographic Algorithm]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy detects instances where cryptographic keys generated using the Node.js `crypto` module are not robust enough, specifically focusing on RSA, DSA, and EC algorithms with insufficient key lengths or risky named curves. Using weak cryptographic keys can expose encrypted data to attacks aimed at recovering plaintext, compromising data security.
+
+Vulnerable code example:
+
+[source,JavaScript]
+----
+const crypto = require('crypto');
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+  modulusLength: 1024,
+});
+----
+
+In this code snippet, an RSA key pair is generated with a modulus length of 1024 bits, which is considered weak by modern cryptographic standards. Similarly, using insecure named curves for elliptic curve cryptography (ECC) can also lead to vulnerabilities.
+
+=== Fix - Buildtime
+
+To fix this issue, ensure that cryptographic keys are generated with sufficient strength. Use at least 2048-bit keys for RSA and secure named curves for ECC.
+
+Secure code example:
+
+[source,JavaScript]
+----
+const crypto = require('crypto');
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+});
+----
+
+In the fixed code, the RSA key pair is generated with a modulus length of 2048 bits, providing stronger security.
+
+Additional secure code example for ECC:
+
+[source,JavaScript]
+----
+const crypto = require('crypto');
+const { publicKey, privateKey } = crypto.generateKeyPair('ec', {
+  namedCurve: 'prime256v1',
+});
+----
+
+This example demonstrates generating an ECC key pair using a secure named curve, ensuring robust cryptographic security.

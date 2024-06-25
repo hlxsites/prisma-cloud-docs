@@ -1,0 +1,76 @@
+== Unsafe use of globals() function
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 6122e9ac-e879-492d-81e9-d9d9f655bbac
+
+|Checkov ID 
+|CKV3_SAST_10
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Python
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/96.html[CWE-96: Improper Neutralization of Directives in Statically Saved Code ('Static Code Injection')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+
+
+=== Description
+
+This policy detects unsafe usage of the `globals()` or `locals()` functions in Python, especially when used with user input. Using these functions without proper validation can lead to code injection and namespace pollution, potentially allowing attackers to execute arbitrary code or manipulate the application's behavior.
+
+Vulnerable code example:
+
+[source,Python]
+----
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/update_globals', methods=['POST'])
+def update_globals():
+    user_input = request.form['data']
+    globals()[user_input] = 'This is unsafe!'
+    return 'Globals updated'
+----
+
+In this code snippet, user input from the `request.form['data']` is directly used to update the `globals()` dictionary without any validation. This exposes the application to code injection attacks, where an attacker could inject malicious code through the user input.
+
+=== Fix - Buildtime
+
+To fix this issue, avoid using `globals()` or `locals()` with untrusted input. If it's necessary to use these functions, ensure that user input is properly validated and sanitized.
+
+Secure code example:
+
+[source,Python]
+----
+from flask import Flask, request
+import re
+
+app = Flask(__name__)
+
+@app.route('/update_globals', methods=['POST'])
+def update_globals():
+    user_input = request.form['data']
+    if re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", user_input):  # Only allow valid variable names
+        globals()[user_input] = 'This is safer'
+    return 'Globals updated'
+----
+
+In the fixed code, user input is validated using a regular expression to ensure that it only contains valid variable names before being used to update the `globals()` dictionary. This reduces the risk of code injection and namespace pollution.

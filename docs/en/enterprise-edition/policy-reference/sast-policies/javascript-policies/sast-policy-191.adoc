@@ -1,0 +1,79 @@
+== The application builds a URL using user-controlled input which can lead to an open redirect vulnerability
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 0abf4e5b-f8ab-48ac-9bf5-7c7f5cd0ec33
+
+|Checkov ID 
+|CKV3_SAST_191
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|JavaScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/601.html[CWE-601: URL Redirection to Untrusted Site ('Open Redirect')]
+
+|=== 
+
+=== Description
+
+This policy detects instances where the application builds a URL using user-controlled input, potentially leading to open redirect vulnerabilities. Open redirects occur when an application accepts untrusted input that specifies a URL to which the application redirects the user. This can be exploited by attackers to redirect users to malicious sites.
+
+Vulnerable code example:
+
+[source,JavaScript]
+----
+const userInput = prompt('Enter URL:');
+window.location.href = userInput;
+----
+
+In this code snippet, user input from `prompt` is directly assigned to `window.location.href`, allowing an attacker to redirect the user to an arbitrary and potentially malicious URL.
+
+=== Fix - Buildtime
+
+To fix this issue, validate and sanitize user input before using it to build URLs. Ensure that only trusted and expected URLs are used in redirects.
+
+Secure code example:
+
+[source,JavaScript]
+----
+const trustedDomains = ['example.com', 'trustedsite.com'];
+const userInput = prompt('Enter URL:');
+const url = new URL(userInput);
+
+if (trustedDomains.includes(url.hostname)) {
+  window.location.href = userInput;
+} else {
+  alert('Invalid URL');
+}
+----
+
+In the fixed code, the user input is validated to ensure that the hostname is in a list of trusted domains before redirecting. This prevents open redirect vulnerabilities by ensuring only trusted URLs are used.
+
+Additional secure code example with sanitization:
+
+[source,JavaScript]
+----
+import DOMPurify from 'dompurify';
+
+const userInput = prompt('Enter URL:');
+const sanitizedInput = DOMPurify.sanitize(userInput, {ALLOWED_URI_REGEXP: /^https?:\/\/(example\.com|trustedsite\.com)/});
+
+if (sanitizedInput) {
+  window.location.href = sanitizedInput;
+} else {
+  alert('Invalid URL');
+}
+----
+
+This example uses DOMPurify to sanitize the user input, ensuring that only URLs matching the allowed pattern are used in the redirect. This further mitigates the risk of open redirect vulnerabilities.
