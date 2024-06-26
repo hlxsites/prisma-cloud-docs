@@ -1,0 +1,53 @@
+== Azure Machine learning workspace configured with overly permissive network access
+
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 76b345ae-d738-4485-8cfc-ed0c265ea016
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMLWorkspacePublicNetwork.yaml[CKV2_AZURE_49]
+
+|Severity
+|HIGH
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan,ARM,Bicep
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the Azure Machine Learning workspace is not configured with overly permissive network access. Overly permissive network access could allow unauthorized individuals or systems to access and potentially manipulate the workspace, leading to potential data breaches or compromises in the machine learning process. This could further lead to flawed model results, data manipulation, or unauthorized data access. Thus, it's important to verify that the network access to the Azure Machine Learning workspace is properly restricted to prevent such risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_machine_learning_workspace
+* *Arguments:* public_network_access_enabled
+
+To fix the issue, ensure that the Azure Machine Learning workspace does not have permissive network access. Specifically, you should set the `public_network_access_enabled` property to `false`. By setting `public_network_access_enabled`` to `false`, you are denying public network access to the Azure Machine Learning Workspace. This restricts the access to the workspace from outside the virtual network, thereby making it secure.
+
+[source,go]
+```
+resource "azurerm_machine_learning_workspace" "workspace" {
+  name                        = "example"
+  location                    = azurerm_resource_group.example.location
+  resource_group_name         = azurerm_resource_group.example.name
+  application_insights_id     = azurerm_application_insights.example.id
+  key_vault_id                = azurerm_key_vault.example.id
+  storage_account_id          = azurerm_storage_account.example.id
+  identity {
+    type                      = "SystemAssigned"
+  }
+  public_network_access_enabled = false
+}
+```

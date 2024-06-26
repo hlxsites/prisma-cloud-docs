@@ -1,0 +1,62 @@
+== Azure Machine learning workspace is not configured with private endpoint
+
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| a8e6f787-f937-42eb-9f71-ffc4cb17ba8a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/arm/checks/resource/AzureMLWorkspacePrivateEndpoint.py[CKV_AZURE_239]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|ARM,Bicep
+
+|===
+
+=== Description
+
+This policy is checking to confirm that an Azure Machine learning workspace is not set up with a private endpoint. Using a private endpoint can pose a risk as it exposes the system to access via the private network only, hence limiting the accessibility, scalability, and flexibility of the system. Private endpoints further risk a single point of failure, which can directly affect the availability of the whole application or service.
+
+=== Fix - Buildtime
+
+*ARM*
+
+* *Resource:* Microsoft.MachineLearningServices/workspaces
+* *Arguments:* managedNetwork.outboundRules
+
+To fix the issue, you should configure the Azure Machine Learning workspace to use a private endpoint. This can be done by adding an outboundRule with type `PrivateEndpoint`.
+
+[source,json]
+----
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+      {
+        "type": "Microsoft.MachineLearningServices/workspaces",
+        "apiVersion": "2022-12-01",
+        "name": "fail1",
+        "location": "West US",
+        "properties": {
+          "managedNetwork": {
+            "outboundRules": {
+                "rule1": {
++                    "type": "PrivateEndpoint"
+                }
+            }
+          }
+        }
+      }
+    ]
+  }
+----
