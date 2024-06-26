@@ -1,0 +1,71 @@
+== Missing hash check in PyTorch
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| c2894ccb-3db7-4354-aef0-dfb58c908bdb
+
+|Checkov ID 
+|CKV3_SAST_194
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Python
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/347.html[CWE-347: Improper Verification of Cryptographic Signature]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy detects whether PyTorch functions are used to load remote files without hash verification. Downloading untrusted files without validating their hashes exposes applications to security risks, such as executing malicious code. Using the `hash_prefix` or `check_hash` arguments is crucial to ensure the integrity of downloaded files.
+
+In this example, files are downloaded and loaded without any hash verification, exposing the application to potential security risks.
+
+[source,Python]
+----
+import torch
+
+# Downloading a file without hash verification
+torch.hub.download_url_to_file('https://example.com/model.pth', 'model.pth')
+
+# Loading a model state dictionary without hash check
+state_dict = torch.hub.load_state_dict_from_url('https://example.com/model.pth')
+
+# Loading a model using model_zoo without hash check
+model = torch.utils.model_zoo.load_url('https://example.com/model.pth')
+----
+
+
+=== Fix - Buildtime
+
+To fix this issue, use the `hash_prefix` or `check_hash` arguments to ensure that the downloaded files are verified against known hash values.
+
+In these examples, the hash_prefix or check_hash arguments are used to verify the integrity of downloaded files, reducing the risk of executing malicious code.
+
+[source,Python]
+----
+import torch
+
+# Downloading a file with hash verification
+torch.hub.download_url_to_file('https://example.com/model.pth', 'model.pth', hash_prefix='1234567890abcdef')
+
+# Loading a model state dictionary with hash check
+state_dict = torch.hub.load_state_dict_from_url('https://example.com/model.pth', check_hash=True)
+
+# Loading a model using model_zoo with hash check
+model = torch.utils.model_zoo.load_url('https://example.com/model.pth', check_hash=True)
+----
+
