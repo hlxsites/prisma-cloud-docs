@@ -1,0 +1,48 @@
+
+== AWS SageMaker Flow Definition does not use KMS for output configurations
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4092b020-4b1e-465d-a1ad-f38d8e88dfb3
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerFlowDefinitionUsesKMS.py[CKV_AWS_372]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy checks whether Amazon SageMaker Flow Definitions leverage Key Management Service (KMS) for output configurations. Unencrypted outputs expose sensitive data, increasing the risk of unauthorized access and breaches. KMS ensures data security by encrypting it before storage and physically separating the storage of key material. This strengthens your security posture and adheres to data protection regulations.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_flow_definition
+* *Arguments:* output_config/kms_key_id
+
+Add a KMS key to your SageMaker Flow Definition output configurations, by defining a `kms_key_id` property in the `output_config` block of your AWS SageMaker Flow Definition.
+
+[source,hcl]
+----
+resource "aws_sagemaker_flow_definition" "example" {
+  ...
+  output_config {
++    kms_key_id = "example"
+  }
+}
+----
+
