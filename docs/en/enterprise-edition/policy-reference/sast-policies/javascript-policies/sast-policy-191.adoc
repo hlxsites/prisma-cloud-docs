@@ -1,0 +1,58 @@
+== Application builds a URL using user-controlled input
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 0abf4e5b-f8ab-48ac-9bf5-7c7f5cd0ec33
+
+|Checkov ID 
+|CKV3_SAST_191
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|JavaScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/601.html[CWE-601: URL Redirection to Untrusted Site ('Open Redirect')]
+
+|=== 
+
+=== Description
+
+This policy detects whether applications construct URLs using user-controlled input. This practice can potentially lead to open redirect vulnerabilities, where attackers can manipulate the URL to redirect users to malicious websites.
+
+In this example, user input from prompt is directly assigned to window.location.href, allowing an attacker to redirect the user to an arbitrary and potentially malicious URL.
+
+[source,JavaScript]
+----
+const userInput = prompt('Enter URL:');
+window.location.href = userInput;
+----
+
+=== Fix - Buildtime
+
+To prevent open redirects, validate and sanitize user input before building URLs. Additionally, restrict redirects to a list of trusted and expected URLs.
+
+In this example, user input is validated to ensure that the redirect only goes to a trusted domain. This prevents open redirects, where attackers could trick users into visiting malicious sites.
+
+[source,JavaScript]
+----
+import DOMPurify from 'dompurify';
+
+const userInput = prompt('Enter URL:');
+const sanitizedInput = DOMPurify.sanitize(userInput, {ALLOWED_URI_REGEXP: /^https?:\/\/(example\.com|trustedsite\.com)/});
+
+if (sanitizedInput) {
+  window.location.href = sanitizedInput;
+} else {
+  alert('Invalid URL');
+}
+----
