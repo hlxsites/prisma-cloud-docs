@@ -1,27 +1,26 @@
 == Look Ahead—Planned Updates to Secure the Runtime
 
-Review changes planned in the next Prisma Cloud release to ensure the security of your runtime.
+//Review changes planned in the next Prisma Cloud release to ensure the security of your runtime.
 
 //(Edited in the month of Feb 20 as per Manu's suggestion)There are no previews or look ahead announcements for the upcoming `32.03` release. Details on the updates included in the `32.03` release will be shared in the release notes that accompany the release.
 
 //The following text is a revert to the old content.
 
-//Read this section to learn about what is planned in the upcoming `32.06` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
+Read this section to learn about what is planned in the upcoming `32.07` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
 
+The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
-//The Look Ahead announcements are for an upcoming or next release and it is not a cumulative list of all announcements.
+// Currently, there are no previews or announcements for updates.
 
-Currently, there are no previews or announcements for updates.
-
-//[NOTE]
-//====
-//The details and functionality listed below are a preview of what is planned for the `v32.06` release; the changes listed herein and the actual release date, are subject to change.
-//====
+[NOTE]
+====
+The details and functionality listed below are a preview of what is planned for the `v32.07` release; the changes listed herein and the actual release date, are subject to change.
+====
 
 
 // * <<defender-upgrade>>
 // * <<new-ips-for-runtime>>
-//* <<enhancements>>
+* <<enhancements>>
 //* <<api-changes>>
 // * <<deprecation-notices>>
 // * <<eos-notices>>
@@ -37,46 +36,49 @@ Currently, there are no previews or announcements for updates.
 
 //|===
 
-//[#enhancements]
-//=== Enhancements
+[#enhancements]
+=== Enhancements
 
-//The following enhancements are planned. The details will be available at release:
+The following enhancements are planned. The details will be available at release:
 
-//[cols="30%a,70%a"]
-//|===
-//|*Feature*
-//|*Description*
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
 
-// https://redlock.atlassian.net/browse/CWP-58813
+// https://redlock.atlassian.net/browse/CWP-59337
 
-//|*Go Symbol extraction*
+|*Support for Red Hat's VEX format*
 
+|Starting with Version 32, Update 7, Prisma Cloud will adopt the new Vulnerability Exploitability eXchange (VEX) format for reporting Red Hat vulnerabilities. Red Hat will transition from the OVAL format to VEX by the end of 2024. 
 
-//|When scanning Golang binaries, Prisma Cloud now extracts Go symbols. This allows for accurate vulnerability evaluation with specific package names and symbols. Prisma Cloud also allows you to selectively disable symbol extraction, when it is not needed, to optimize the scan.
+As a result of the new VEX format, Prisma Cloud's vulnerability detection and reporting behavior too will change. Beginning with Update 7, Prisma Cloud will report Red Hat vulnerabilities exclusively based on the source package.
 
-// https://redlock.atlassian.net/browse/CWP-58812
+Customers must upgrade their Defender and console to the latest version to maintain a comprehensive view of Red Hat vulnerabilities under the new VEX format.
 
-//|*Software Bill of Materials (SBOM) files in CycloneDX format*
+The below screenshot shows the new reporting format.  
 
+image::docs/en/enterprise-edition/rn/_graphics/vex-format-reporting.png[width=400]
 
-//|Prisma Cloud supports exporting Software Bill of Materials (SBOM) files in CycloneDX format for image, host, and serverless function scans.
+The vulnerabilities will be reported only for the glibc package, with references to its usage in glibc-devel, glibc-common, and glibc-headers. 
 
-// https://redlock.atlassian.net/browse/CWP-58710
+Older Defenders on both the self-hosted and SaaS versions will experience a gap in reporting Red Hat vulnerabilities, because they do not extract the source packages for sub-projects. They will not report this vulnerability unless the sub-project name matches the source package name exactly, which is not common.
 
-//|*Improved Account Settings Management*
+In addition, the older consoles on the self-hosted version will no longer adjust the RH severity and CVSS scores, as the new RH data format is handled differently and only supported in Update 7 Console versions.
 
-//|Prisma CLoud allows you to edit account settings on the Accounts and Agentless page even when the account is disabled. This change makes it easier to modify the Agentless Scan settings, as previously, users had to first enable the account on the Prisma Account page to make changes.
+// https://redlock.atlassian.net/browse/CWP-59772
 
-// https://redlock.atlassian.net/browse/CWP-57629
-//|*Changes in Agentless Scanning Configuration*
+|*Enhancement to Photon OS and Amazon Linux OS Feeds*
 
-//|When agentless scanning is enabled for existing accounts, scanning will no longer happen immediately. These accounts are included in the next periodic scan cycle, which occurs every 24 hours.
+|Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
 
-//If agentless scanning is enabled for new onboarded accounts, it will trigger an immediate scan.
+// https://redlock.atlassian.net/browse/CWP-57626
 
-//This enhancement prioritizes privacy and supports different scanning configurations.
+|*Support for Azure Container Registry and VM image scanning*
 
-//|===
+|Prisma Cloud now supports scanning Azure Container Registry (ACR) and Virtual Machine (VM) images for Azure cloud accounts that are onboarded directly through the platform.
+
+|===
 
 
 // [#deprecation-notices]
