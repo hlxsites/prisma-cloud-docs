@@ -1,0 +1,390 @@
+:topic_type: タスク
+
+[.task]
+== コードエディタ
+
+Prisma Cloud は、 [コードエディタ] 機能をサポートしており、これによって、ビルド時のチェック中に、カスタム設定ポリシーのポリシールールを作成できます。[コードエディタ] はビルドポリシールールのデフォルトビューであり、例として、YAML ポリシーテンプレートは Prisma Cloud コンソールで常に使用できます。
+[コード エディター] は、AND/OR ロジックをサポートする属性と接続状態の両方を含む、複雑なカスタムポリシーを作成する場合に適したオプションです。ただし、カスタム シークレットの場合、コード エディターでは OR ロジックのみがサポートされます。
+
+* *属性*
++
+ポリシーで定義された属性は、リソースの属性設定を記述します。各リソースには、属性設定で指定された値を含めるか、属性設定の有無を表示する必要があります。YAML テンプレートで使用される構文と属性の設定は、Terraform に似ています。
++
+この例では、属性は Redshift クラスターのバックアップ設定を定義します。
++
+[source]
+definition:
+     cond_type: "attribute"
+     resource_types:
+     - "aws_redshift_cluster"
+     attribute: "automated_snapshot_retention_period"
+     operator: "not_equals"
+     value: "0"
+
+
+キーと値を使って、属性のタイプを使用する方法については、表を参照してください。
+
+[cols="1,2,3", options="header"]
+|===
+|キー
+|タイプ
+|値
+
+|cond_type
+|string
+|属性でなければなりません
+
+|resource_type
+|文字列のコレクション
+|`すべて` または `[リストのリソースの種類] の`いずれかを使用します
+
+|属性
+|string
+|定義されたリソース タイプの属性です。例:`automatic_snapshot_retention_period`
+
+|オペレーター
+|string
+|`equals`、`not_equals`、`regex_match`、`not_regex_match`、`exists`、`not exists`、`any`、`contains`、`not_contains`、`within`、`starting_with`、`not_starting_with`、`ending_with`、`not_ending_with`、`greater_than`、`greater_than_or_equal`、`less_than`、`less_than_or_equal`、`jsonpath_equals`、`jsonpath_exists`
+
+|値 (次の演算子には関係がありません:`exists`、`not_exists`)
+|string
+|ユーザー入力
+
+|===
+
+
+属性演算子の使用方法については、表を参照してください。
+
+[cols="1,2", options="header"]
+|===
+|属性演算子
+|YAML 値
+
+|Equals
+|`equals`
+
+|等しくない
+|`not_equals`
+
+|正規表現マッチ
+|`regex_match`
+
+|正規表現が一致しない
+|`not_regex_match`
+
+|Exists
+|`exists`
+
+|存在しない
+|`not_exists`
+
+|One Exists (存在する)
+|`one_exists`
+
+|[any]
+|`すべて`
+
+|Contains
+|`contains`
+
+|含めない
+|`not_contains`
+
+|範囲内
+|`within`
+
+|starts with
+|`starting_with`
+
+|Not Starts With (次で始まらない)
+|`not_starting_with`
+
+|ends with
+|`ending_with`
+
+|Not Ends With (次で終わらない)
+|`not_ending_with`
+
+|超過
+|`greater_than`
+
+|Greater Than Or Equal (次の値以上)
+|`greater_than_or_equal`
+
+|未満
+|`less_than`
+
+|Less Than Or Equal (次の値以下)
+|`less_than_or_equal`
+
+|サブセット
+|`subset`
+
+|Not Subset (サブセットではない)
+|`not_subset`
+
+|Json Path Equals (Json パスが等しい)
+|`jsonpath_equals`
+
+|Json Path Exists (Json パスが存在する)
+|`jsonpath_exists`
+
+|===
+
+* *接続状態*
++
+接続状態は、ポリシーで定義された場合、異なるタイプのリソース間の接続または切断を指定することになります。
++
+この例では、準拠するには、`aws_lb` と `aws_elb` が `aws_security_group` または `aws_default_secuirty_group` と接続している必要があります。
++
+[source]
+definition:
+       cond_type: "connection"
+       resource_types:
+           - "aws_elb"
+           - "aws_lb"
+       connected_resource_types:
+         - "aws_security_group"
+         - "aws_default_security_group"
+       operator: "exists"
+
+
+キーと値で接続状態のタイプを使用する方法については、表を参照してください。
+
+[cols="1,2,3", options="header"]
+|===
+|キー
+|タイプ
+|値
+
+|cond_type
+|string
+|接続する必要があります
+
+|resource_types
+|
+|`[すべて]` または `[リストの含まれたリソースの種類]`のいずれかを使用します
+
+|connected_resource_types
+|文字列のコレクション
+|`[すべて]` または `[リストの含まれたリソースの種類]`のいずれかを使用します
+
+|オペレーター
+|string
+|`存在する`/`存在しない`
+
+|===
+
+
+接続状態演算子の使用方法については、表を参照してください。
+
+[cols="1,2", options="header"]
+|===
+|接続状態演算子
+|YAML 値
+
+|Exists
+|`exists`
+
+|存在しない
+|`not_exists`
+
+|===
+
+* *AND/OR ロジック*
++
+ポリシーには、定義済みの属性のレイヤーと接続状態のレイヤー、またはその両方のレイヤーを含めることができます。2 つの間の接続を定義するために、AND/OR ロジックが使用されます。[コード エディター] を使用すると、複数のレイヤーで、属性、接続状態、またはその両方をカスタマイズできます。
++
+この例では、両方の AND/OR ロジックが属性に適用されていることがわかります。
++
+[source]
+metadata:
+ name: "Ensure all AWS databases have Backup Policy"
+ guidelines: "In case of non-compliant resource - add a backup policy configuration for the resource"
+ category: "storage"
+ severity: "medium"
+scope:
+  provider: "aws"
+definition:
+ or:
+   - cond_type: "attribute"
+     resource_types:
+     - "aws_rds_cluster"
+     - "aws_db_instance"
+     attribute: "backup_retention_period"
+     operator: "not_exists"
+   - cond_type: "attribute"
+     resource_types:
+     - "aws_rds_cluster"
+     - "aws_db_instance"
+     attribute: "backup_retention_period"
+     operator: "not_equals"
+     value: "0"
+   - cond_type: "attribute"
+     resource_types:
+     - "aws_redshift_cluster"
+     attribute: "automated_snapshot_retention_period"
+     operator: "not_equals"
+     value: "0"
+   - cond_type: "attribute"
+     resource_types:
+     - "aws_dynamodb_table"
+     attribute: "point_in_time_recovery"
+     operator: "not_equals"
+     value: "false"
+   - cond_type: "attribute"
+     resource_types:
+     - "aws_dynamodb_table"
+     attribute: "point_in_time_recovery"
+     operator: "exists"
+
+この例では、AND/OR ロジックが属性と接続状態の両方に適用されています。
+
+[source]
+metadata:
+  name: "Ensure all ALBs are connected only to HTTPS listeners"
+  guidelines: "In case of non-compliant resource - change the definition of the listener/listener_rul protocol value into HTTPS"
+  category: "networking"
+  severity: "high"
+scope:
+  provider: "aws"
+definition:
+  and:
+  - cond_type: "filter"
+    value:
+    - "aws_lb"
+    attribute: "resource_type"
+    operator: "within"
+  - cond_type: "attribute"
+    resource_types:
+    - "aws_lb"
+    attribute: "load_balancer_type"
+    operator: "equals"
+    value: "application"
+  - or:
+    - cond_type: "connection"
+      resource_types:
+      - "aws_lb"
+      connected_resource_types:
+      - "aws_lb_listener"
+      operator: "not_exists"
+    - and:
+      - cond_type: "connection"
+        resource_types:
+        - "aws_lb"
+        connected_resource_types:
+        - "aws_lb_listener"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_lb_listener"
+        attribute: "certificate_arn"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_lb_listener"
+        attribute: "ssl_policy"
+        operator: "exists"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_lb_listener"
+        attribute: "protocol"
+        operator: "equals"
+        value: "HTTPS"
+      - or:
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_lb_listener"
+          attribute: "default_action.redirect.protocol"
+          operator: "equals"
+          value: "HTTPS"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_lb_listener"
+          attribute: "default_action.redirect.protocol"
+          operator: "not_exists"
+      - or:
+        - cond_type: "connection"
+          resource_types:
+          - "aws_lb_listener_rule"
+          connected_resource_types:
+          - "aws_lb_listener"
+          operator: "not_exists"
+        - and:
+          - cond_type: "connection"
+            resource_types:
+            - "aws_lb_listener_rule"
+            connected_resource_types:
+            - "aws_lb_listener"
+            operator: "exists"
+          - or:
+            - cond_type: "attribute"
+              resource_types:
+              - "aws_lb_listener_rule"
+              attribute: "default_action.redirect.protocol"
+              operator: "equals"
+              value: "HTTPS"
+            - cond_type: "attribute"
+              resource_types:
+              - "aws_lb_listener_rule"
+              attribute: "default_action.redirect.protocol"
+              operator: "not_exists"
+
+この例では、カスタムシークレットに適用された OR ロジックが表示されます。
+
+[source]
+metadata:
+  name: "My Secret"
+  guidelines: "Don't add secrets"
+  category: "secrets"
+  severity: "high"
+definition:
+  cond_type: "secrets"
+  value:
+    - "[A-Za-z0-9]{8,}"
+    - "my-super-secret-password-regex"
+
+
+[.procedure]
+
+.. [ポリシー] > [ポリシーの *追加] > [設定] > [ポリシーの詳細の追加]* を選択し、[ *次へ*] を選択します。
+//+
+//image::governance/code-editor.png
++
+コード エディターは、YAML テンプレートの例が表示されます。
++
+この例では、`シークレット` が`カテゴリ`であるカスタム シークレットを含む YAML テンプレートが表示されます。
+//+
+//image::governance/code-editor-7.png
+
+.. [*その他のオプション]* を選択し、[ *エディターのクリア]* を選択して、YAML テンプレートの例を削除します。
+//+
+//image::governance/code-editor-1.png
+
+.. カスタム YAML コードを追加します。
+
+.. [*テスト]* を選択して、カスタム コードをテストします。
+//+
+//image::governance/code-editor-2.png
++
+テストごとに、コンソールには最大 30 件の結果が表示されます。コードをテストするたびに、Prisma Cloud はすべての統合リポジトリをスキャンして、このカスタム コードポリシーに一致する最大 30 個のリソースのリストを提供します。
+//+
+//image::governance/code-editor-3.png
++
+また、影響を受けるリソースと設定ミスの詳細について、結果を確認します。
++
+この例では、カスタムコードから影響を受けるリソースに関するコンテキスト化された情報が表示されます。
+//+
+//image::governance/code-editor-4.png
++
+テスト中にカスタムコードにエラーがある場合、コンソールに解決策が表示されます。
++
+この例では、コードからのエラーの解決策を示しています。
+//+
+//image::governance/code-editor-5.png
+
+.. [ *検証して次へ]* を選択して *コンプライアンス標準*にアクセスし、カスタムのビルド時チェックポリシーを完了します。
+//+
+//image::governance/code-editor-6.png
++
+NOTE: こちらは、ビルド時チェック用のカスタムポリシー作成の *ステップ 2* です。Prisma Cloud コンソールで新しいカスタムビルド時間チェック ポリシーを表示するには、残りのステップを完了する必要があります。

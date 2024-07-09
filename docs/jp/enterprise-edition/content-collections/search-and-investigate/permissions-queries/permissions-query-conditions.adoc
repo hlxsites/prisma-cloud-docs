@@ -1,0 +1,81 @@
+[#iddf81c4c2-eb03-46e9-9f70-8065ba08c4f7]
+== 権限クエリ条件
+
+RQL検索の`iam whereクエリから設定`に条件を適用することで、権限クエリでより詳細な検索結果を得ることができます。条件を使用して、組織または特定のアカウントのみが利用できるようにすることで、リソースベースのポリシーの公開を最小限に抑えることができます。または、条件を使用して、マシン（EC2インスタンスまたはLambda関数）へのアクセスを最小限に抑えることができます。たとえば、マシンに公開されているアクセス許可がある場合、特定のIPアドレスに対してのみアクションを有効にする条件を追加できます。
+
+xref:permissions-query-attributes.adoc[権限クエリ属性]には、ポリシーステートメントに条件が含まれている場合と含まれていない場合がある権限クエリを支援する`grantedby.cloud.condition`属性も含まれています。たとえば、以下の例では、すべての結果を送信元IPアドレスでフィルタリングします。
+
+`config from iam where grantedby.cloud.policy.condition('aws:sourceIP') does not exist`
+
+フィルターの適用方法をより柔軟に選択できるように、いくつかの演算子もサポートされています。以下の例では、`iam whereからの設定`クエリーを使用して条件を適用する方法を示しています。
+
+[cols="40%a,40%a,19%a"]
+|===
+|状態の意味
+|RQL
+|オペレーター
+
+
+|特定の条件が存在する場合に結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP') exists`
+|exists
+
+
+|特定の条件が存在しない場合に結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP') does not exist`
+|does not exist
+
+
+|特定の条件と演算子が存在する場合に結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') exists`
+|exists
+
+
+|特定の条件と演算子が存在しない場合の結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') does not exist`
+|does not exist
+
+
+|特定の値を持つ特定の条件が存在する場合の結果を表示します。
+|\`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP') = '1.1.1.1'`
+|=
+
+
+|異なる値の特定の条件が存在する場合の結果を表示します。
+|\`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP') != '1.1.1.1'`
+|!=
+
+
+|特定の条件と特定の値を持つ演算子が存在する場合の結果を表示します。
+|\`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') = '1.1.1.1'`
+|=
+
+
+|特定の条件と異なる値の演算子が存在する場合の結果を表示します。
+|\`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') != '1.1.1.1'`
+|!=
+
+
+|1つ以上の異なる値を持つ特定の条件と演算子が存在しない場合の結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP') NOT IN ('1.1.1.1', '2.2.2.2')`
+|NOT IN
+
+
+|1つ以上の異なる値を持つ特定の条件と演算子が存在する場合の結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition('aws:sourceIP', 'IpAddress') NOT IN ('1.1.1.1', '2.2.2.2')`
+|NOT IN
+
+
+|1つ以上の値を持つ特定の条件が存在する場合の結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP') IN ('1.1.1.1')`
+|IN
+
+
+|1つ以上の値を持つ特定の条件と演算子が存在する場合の結果を表示します。
+|`config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') IN ('1.1.1.1')`
+|IN
+
+|===
+
+
+

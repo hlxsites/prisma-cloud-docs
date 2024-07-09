@@ -1,0 +1,99 @@
+
+== Insecure SSH ignoring host key validation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 1e6e8fa3-41f4-464a-969e-8a23917724e7
+
+|Checkov ID 
+|CKV3_SAST_198
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/322.html[CWE-322: Key Exchange without Entity Authentication]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy detects whether the `ssh.InsecureIgnoreHostKey()` function is used in Go applications. Using `ssh.InsecureIgnoreHostKey()` bypasses the host key verification process, a critical step in establishing a secure SSH connection. Bypassing this verification can expose the application to Man-in-the-Middle (MitM) attacks and other security vulnerabilities.
+
+In the following code snippet, ssh.InsecureIgnoreHostKey() which disables host key verification, is used, leaving the SSH connection vulnerable to MitM attacks.
+
+[source,Go]
+----
+package main
+
+import (
+    "golang.org/x/crypto/ssh"
+)
+
+func main() {
+    config := &ssh.ClientConfig{
+        User: "user",
+        Auth: []ssh.AuthMethod{
+            ssh.Password("password"),
+        },
+        HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+    }
+
+    _, err := ssh.Dial("tcp", "example.com:22", config)
+    if err != nil {
+        panic("Failed to dial: " + err.Error())
+    }
+}
+----
+
+
+=== Fix - Buildtime
+
+Implement proper host key verification by using a secure method to validate the host key.
+
+In this example, the host key is read from a known hosts file and used with ssh.FixedHostKey() to perform proper host key verification. This ensures the authenticity of the SSH server and mitigates the risk of Man-in-the-Middle (MitM) attacks.
+
+[source,Go]
+----
+package main
+
+import (
+    "golang.org/x/crypto/ssh"
+    "io/ioutil"
+    "log"
+)
+
+func main() {
+    hostKey, err := ioutil.ReadFile("/path/to/known_hosts")
+    if err != nil {
+        log.Fatalf("unable to read known hosts: %v", err)
+    }
+
+    config := &ssh.ClientConfig{
+        User: "user",
+        Auth: []ssh.AuthMethod{
+            ssh.Password("password"),
+        },
+        HostKeyCallback: ssh.FixedHostKey(hostKey),
+    }
+
+    _, err = ssh.Dial("tcp", "example.com:22", config)
+    if err != nil {
+        log.Fatalf("Failed to dial: %v", err)
+    }
+}
+----
+

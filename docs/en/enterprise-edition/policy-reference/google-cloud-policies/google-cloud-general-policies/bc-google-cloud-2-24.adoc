@@ -1,0 +1,52 @@
+
+== Vertex AI endpoint is not using a Customer Managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 3f6940f3-6be4-4439-9991-16b96d801b05
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexAIEndpointEncryptedWithCMK.yaml[CKV2_GCP_24]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a Vertex AI endpoint uses a Customer Managed Key (CMK). This is significant because the use of a CMK allows organizations to maintain control over their encryption keys. This can help improve the security of data by adding an additional layer of protection - any data encrypted with a CMK can only be accessed with the appropriate decryption key. Without using a CMK, organizations would be relying solely on provider managed keys, which could potentially leave them more exposed to data breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_vertex_ai_endpoint
+* *Arguments:* encryption_spec
+
+To fix the issue you need to modify the terraform code for the Vertex AI endpoint to use a customer managed key (CMK) instead of the default Google-managed key. Set the "encryption_spec" field in the Vertex AI endpoint block to use a customer managed key.
+
+[source,go]
+----
+resource "google_vertex_ai_endpoint" "endpoint" {
+  ...
+  encryption_spec {
+    kms_key_name = "some_name"
+    ...
+  }
+  ...
+}
+----
+
+The above code instructs Google Cloud to use a customer managed encryption key (CMK) for the Vertex AI endpoint. In the "encryption_spec" block, "kms_key_name" is the resource ID of the customer managed key. This is secure as it gives you more control over the key management, as well as the ability to audit key use and issue key revocation.
+

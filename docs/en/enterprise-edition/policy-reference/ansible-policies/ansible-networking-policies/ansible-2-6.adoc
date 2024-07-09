@@ -1,0 +1,53 @@
+== Certificate validation disabled within Ansible DNF module
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| fe27743a-9593-4211-be01-117731dec115
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/DnfValidateCerts.yaml[CKV2_ANSIBLE_6]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether the dnf module in Ansible disables certificate validation when making HTTPS requests. Disabling certificate validation can potentially expose the system to various security vulnerabilities, including man-in-the-middle attacks.
+
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* dnf
+* *Attribute:* validate_certs
+
+To mitigate this risk, ensure that the `validate_certs`` attribute in your Ansible dnf tasks is either left at its default value (true) or explicitly set to 'true'. This ensures that SSL/TLS certificates are verified during connections, maintaining the security of HTTPS communication.
+
+
+Secure Code Example:
+
+
+[source,yaml]
+----
+- name: Example
+  ansible.builtin.dnf:
+    name: nginx
+    state: latest
+    validate_certs: true
+----
+
+In this example, setting validate_certs to 'true', ensures secure HTTPS communication during package management operations.
+

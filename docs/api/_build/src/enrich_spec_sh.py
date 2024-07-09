@@ -8,6 +8,8 @@ import yaml
 from yaml.representer import Representer
 import subprocess
 import time
+import errno
+import sys
 
 FIXUPS = (
   ("A P I", "API"),
@@ -87,7 +89,7 @@ def add_api_desc(config):
   if config.local:
     spec['info']['description']['$ref'] = "../descriptions/intro.md"
   else:
-    spec['info']['description']['$ref'] = f"https://raw.githubusercontent.com/hlxsites/prisma-cloud-docs/{config.branch}/docs/api/descriptions/intro.md"
+    spec['info']['description']['$ref'] = f"desc/intro.md"
 
 
 def add_resource_desc(config):
@@ -372,6 +374,7 @@ class IncludeFile(object):
   def __init__(self, path):
     #print(path)
     self.path = path
+    #print(path)
     if not self.validate(path):
       raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
@@ -386,8 +389,8 @@ class IncludeFile(object):
       link = self.path
     else:
       p = pathlib.PurePosixPath(self.path)
-      rel_p = p.relative_to('../')
-      link = f"https://raw.githubusercontent.com/hlxsites/prisma-cloud-docs/{config.branch}/docs/api/{rel_p}"
+      rel_p = p.relative_to('../descriptions')
+      link = f"desc/{rel_p}"
     return link
 
   def append_role(self, role):

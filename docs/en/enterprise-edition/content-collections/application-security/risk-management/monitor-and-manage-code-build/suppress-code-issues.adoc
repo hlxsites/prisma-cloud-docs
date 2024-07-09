@@ -6,6 +6,16 @@
 
 Suppression allows you to suppress issues specifically or globally. You can selectively ignore or suppress specific issues or violations detected during a scan while leaving the overall policy active. This means you can target and ignore the specific code issue for that individual source within the broader scope of the policy, reducing noise and enabling you to focus on critical issues that require attention within the broader scope of the policy. Global suppression disables a policy or rule for all cases within the scope it applies to. 
 
+=== Guidelines
+
+* Suppressions applied to the default branch dictate suppression behavior for both pull request (PR) comments and CI/CD runs
+* When a suppression is added to a PR, it will not take effect in the periodic scan until the PR is merged
+* When a PR containing a suppression is merged into the default branch, the suppression specific to that asset is applied to the default branch. As a result, subsequent pull requests and periodic scans will no longer flag the suppressed issue
+* Best Practice (*Mandatory* for SCA vulnerability suppression) when suppressing through *Checkov CLI*: Run Checkov within your current working directory (<current_directory_path>). It's recommended to use the absolute file path. Ensure that the *--repo-id* parameter includes the `<custom_text>/<repo_name>` structure, with the `<repo_name>` matching the exact name of the directory. 
++
+Example: Suppose the present working directory is `Users/test/<repo_name>`. In this case, the *--repo-id* parameter must be: `--repo-id <repo_owner_name>/<repo_name>`, ensuring that `<repo_name>` precisely matches the directory name within the structure.
+
+
 === Permissions 
 
 The table below describes suppression permissions for predefined permission groups.
@@ -157,32 +167,14 @@ image::application-security/suppress-create-rule.png[]
 * Select the type of suppression. Refer to <<#suppress-types,Types of Suppressions>> above for more information
 . Click *Save*.
 
-==== View Suppresses Issues
+==== View Suppressed Issues
 
 You can view suppressed issues on the *Projects* page: Select *Suppressed* from the *Issue Status* filter. Use category filters (such as IaC) to quickly find suppressed issues relating to a specific category.
-
-=== Suppress Issues through an IDE
-
-You can suppress issues directly in your IDE while coding. Applying a suppression will add an inline suppression comment in your code.
-
-image::application-security/suppress-ide.png[]
-
-NOTE: The scope of suppression varies depending on the scan type. For Infrastructure as Code (IaC), it applies per resource, while for Software Composition Analysis (SCA) and Static Application Security Testing (SAST), it applies to the entire file. Before using file-scoped suppression, ensure that <<#in-line-suppress,Developer suppressions>> are enabled. 
-
-For more information on Prisma Cloud Code Security's capabilities to address security issues directly in the IDE, refer to the xref:../../get-started/connect-code-and-build-providers/ides/ides.adoc[Prisma Cloud IDE documentation].
-
-=== Suppress Issues through a CLI
-
-The CLI supports Checkov scan capabilities, offering the flexibility to suppress individual checks for each resource or to explicitly choose to run or skip specific checks entirely. You can use inline code comments or annotations to skip individual checks for a particular resource. You can also fine-tune which checks run or do not run for the overall scan. 
-
-Example usage: To skip a check on a given Terraform definition block or CloudFormation resource, apply the following comment pattern inside its scope: `checkov:skip=<check_id>:<suppression_comment>`.
-
-For more information on suppressing code issues through your CLI, refer to the https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html[Checkov CLI Suppression] documentation.
 
 [.#in-line-suppress]
 === Developer Inline Suppressions
 
-Developers can use in-line code comments or annotations to skip specific scans for a particular resource. When these suppressions are applied, any subsequent scans will disregard the issues identified in the code: 
+Developers can use in-line code comments or annotations to skip specific scans for a particular resource. When these suppressions are applied, any subsequent scans will disregard the issues identified in the code. This can be helpful during development to avoid noise from known issues you're actively working on. Before using developer inline suppressions, you must enable this functionality through the Prisma Cloud console settings:
 
 . In *Application Security*, select *Settings* > *Application Security* under 'Configure' in the left menu.
 . Scroll down to *Developer Suppressions* > *Enable*.
@@ -190,6 +182,26 @@ Developers can use in-line code comments or annotations to skip specific scans f
 NOTE: You can override or ignore all developer suppressions by disabling *Developer Suppressions*, ensuring that the related resource undergoes scanning even when developer suppressions are in place.
 +
 image::application-security/suppressions-dev.png[]
+
+For development workflows, inline suppressions can be applied directly from the CLI or your IDE.
+
+=== Inline Suppressions through an IDE
+
+You can suppress issues directly in your IDE while coding, which adds an inline suppression comment in your code.
+
+image::application-security/suppress-ide.png[]
+
+NOTE: The scope of suppression varies depending on the scan type. For Infrastructure as Code (IaC), it applies per resource, while for Software Composition Analysis (SCA) and Static Application Security Testing (SAST), it applies to the entire file. Before using file-scoped suppression, ensure that <<#in-line-suppress,Developer suppressions>> are enabled. 
+
+For more information on Prisma Cloud Code Security's capabilities to address security issues directly in the IDE, refer to the xref:../../ides/ides.adoc[Prisma Cloud IDE documentation].
+
+=== Inline Suppressions through a CLI
+
+The CLI supports Checkov scan capabilities, offering the flexibility to suppress individual checks for each resource or to explicitly choose to run or skip specific checks entirely. You can use inline code comments or annotations to skip individual checks for a particular resource. You can also fine-tune which checks run or do not run for the overall scan. 
+
+Example usage: To skip a check on a given Terraform definition block or CloudFormation resource, apply the following comment pattern inside its scope: `checkov:skip=<check_id>:<suppression_comment>`.
+
+For more information on suppressing code issues through your CLI, refer to the https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html[Checkov CLI Suppression] documentation.
 
 
 === Global Suppression

@@ -1,3 +1,10 @@
+## [1.0.66](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.65...v1.0.66) (2024-03-27)
+
+
+### Reverts
+
+* Revert "Compute-RN-ONeal-update4" ([efbce4a](https://github.com/hlxsites/prisma-cloud-docs/commit/efbce4a90bb75d9608f9fd3804bb31308432d037))
+
 ## [1.0.65](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.64...v1.0.65) (2024-03-18)
 
 

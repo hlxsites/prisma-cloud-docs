@@ -90,7 +90,18 @@ To successfully onboard and monitor the resources within your Azure subscription
 .. The process of setting up Prisma Cloud on Azure Active Directory provides you with the keys and IDs required to establish an identity for sign-in and access to resources in your Azure subscription. 
 .. The Enterprise Application Object ID defines the permissions and scope assumed by Prisma Cloud.			 
 
-. Elevate access for a https://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin#elevate-access-for-a-global-administrator[Global Administrator] using Azure portal to enable Prisma Cloud access to Azure subscriptions or management groups. This is needed for ingesting resources associated with subscriptions and management groups only during the initial onboarding of your Azure accounts. You can disable this option after onboarding is complete.
+. Enable Prisma Cloud access to Azure users and groups by elevating access levels in accordance with your Azure environment as outlined below. This step is required only during initial Azure account onboarding, for ingesting resources associated with subscriptions and management groups. You can disable this option after onboarding is complete.
++
+* *Tenant Onboarding*
+** Active Directory role - Global Administrator
+** Tenant scope - User Access Administrator / Management Group Contributor
+* *Subscription Onboarding*
+** Active Directory role - Application Administrator
+** Subscription scope - Owner
+* *Active Directory Onboarding*
+** Active Directory role - Global Administrator
++
+tt:[NOTE:] Active Directory level permission (Application Administrator) is required to create application registration. This permission level is sufficient to run the Terraform script for Active Directory and Tenant accounts. However, to grant consent to Prisma to ingest users, groups, and policies Global Administrator permission is required.
 
 . Enable Prisma Cloud to ingest Azure Key Vault resources.  This step is required only if you are using the Azure Tenant or Subscription workflow.
 +
@@ -102,7 +113,7 @@ The following Azure resources need to have the *Get* and *List* permissions enab
 +
 Select *All services > Key vaults > (key vault name) > Access policies > + Add Access Policy*. For *Key permissions*, *Secret permissions*, and *Certificate permissions*, add the *Get* and *List* Key Management Operations.
 +
-tt:[NOTE] Get is required to support policies based on Azure Key Vault. Prisma Cloud requires this to ingest Key Vault Data. Keys or secrets are not ingested. Ingestion is limited to IDs and other metadata. Get is required to allow the creation of policies on RSA key strength, EC curve algorithm etc.
+tt:[NOTE:] Get is required to support policies based on Azure Key Vault. Prisma Cloud requires this to ingest Key Vault Data. Keys or secrets are not ingested. Ingestion is limited to IDs and other metadata. Get is required to allow the creation of policies on RSA key strength, EC curve algorithm etc.
 +
 image::connect/add-access-policy-azure.png[]
 

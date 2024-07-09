@@ -6,15 +6,32 @@ import shutil
 import fnmatch
 from pathlib import Path
 
+'''
+Copy the description folder from prism-cloud repo to the pan.dev /desc repo to 'compute' folder and move previous release desc to the release folder.
+'''
+
+def copy_desc_sh_folders(des_location, previous_rls_folder):
+  desc_path = "../descriptions"
+  if os.path.exists(des_location):
+    shutil.move(des_location,previous_rls_folder )
+  shutil.copytree(desc_path, des_location)
+
+'''
+Copy the description folder from prism-cloud repo to the pan.dev /desc repo for 'cwpp' folder
+'''
+def copy_desc_folders(des_location):
+  desc_path = "../descriptions"
+  if os.path.exists(des_location):
+    shutil.rmtree(des_location)
+  
+  shutil.copytree(desc_path, des_location)
 
 
-def copy_compute_cwpp(specfile, output_file_location):
- 
-  """
+'''
   Read the pan.dev location and copies the sorted spec files to pan.dev cwpp and compute folders and the previous release file into a new previous release folder.
 
-  """
-  
+'''
+def copy_compute_cwpp(specfile, output_file_location):
   if output_file_location:
     if fnmatch.fnmatch(specfile, '*saas.json'):
       
@@ -37,7 +54,7 @@ def copy_compute_cwpp(specfile, output_file_location):
             print(specfile+" file moved to " + saas_folder)
             shutil.move(previous_rls_saas_file_loc, previous_rls_saas_loc)
             print(previous_rls_saas_file+" file moved to " + previous_rls_saas_loc)
-           
+            copy_desc_folders(saas_folder+"/desc")
             
           except Exception as e:
             print(e)
@@ -62,7 +79,8 @@ def copy_compute_cwpp(specfile, output_file_location):
             print(specfile+" file moved to  " + sh_folder)
             shutil.move(previous_rls_sh_file_loc, previous_rls_sh_loc)
             print(previous_rls_sh_file+" file moved to " + previous_rls_sh_loc)
-            
+            copy_desc_sh_folders(sh_folder+"/desc", previous_rls_sh_loc)
+
           except Exception as e:
             print(e)
 

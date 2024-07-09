@@ -1,0 +1,45 @@
+:topic_type: タスク
+[.task]
+[#id61f76ceb-9311-4af0-b3f8-58ff6598c822]
+== Prisma CloudとAWS Inspectorの統合
+Prisma® CloudとAmazon Inspectorの統合方法を学習します。
+
+Prisma® Cloudは、Amazon Inspectorから脆弱性データとセキュリティ上のベストプラクティスの違いを取り込んで、クラウドのリスクに関する追加の情報を提供します。
++++<draft-comment>次の文章を「...センシティブなワークロードに向かう（あるいは向かう）トラフィック...」と変更したかったが、それも正しいかどうかわからない。データベースはまさに「機密性の高いワークロード」の一例でしょうか。 もっとよく理解したいので、チャットできますか？よろしく！</draft-comment>+++既知の脆弱性があるデータベースなど、センシティブなワークロードへの不審なトラフィックを識別することができます。
+
+
+
+
+[.procedure]
+. EC2インスタンスでAmazon Inspectorを有効にします。Amazon Inspectorの設定についてはhttps://aws.amazon.com/premiumsupport/knowledge-center/set-up-amazon-inspector/[Amazonのドキュメント]を参照してください。
+
+. IAMロールポリシーでAmazon Inspectorへの読み取りアクセス権を有効にします。
++
+AWS設定のオンボーディングに使用したPrisma Cloud IAMロールポリシーには、これらの権限が必要になります。
++
+screen:[inspector:Describe*, ] screen:[inspector:List*]AWSアカウントのオンボーディングにCFTテンプレートを使用した場合、Prisma Cloud IAMロールポリシーはすでにAmazon Inspectorに必要な権限を保有しています。
+
+. Prisma CloudがAmazon Inspectorデータの取り込みを開始すると、次のRQLクエリを使用してAWS Inspectorから収集されたホスト脆弱性に関する情報を把握することができます。
++
+image::administration/inspector-query-on-prisma-cloud.png[]
++
+** 構成クエリ:screen:[config from cloud.resource where finding.type = 'AWS Inspector Runtime Behavior Analysis' ]screen:[config from cloud.resource where finding.type = 'AWS Inspectorのセキュリティのベストプラクティス' ]
++
+image::administration/inspector-query-runtime-analysis.png[]
++
+*AWS Inspector Runtime Behavior Analysis（AWS Inspectorランタイム動作分析）*—AWS Runtime Behavior Analysisパッケージが報告した、1つまたは複数のルールに違反しているすべてのリソースを取得します。
++
+*AWS Inspector Security Best Practices（AWS Inspectorセキュリティベストプラクティス）*—AWS Inspector Security Best Practicesパッケージが報告した、1つまたは複数のルールに違反しているすべてのリソースを取得します。
+
+** ネットワーククエリ: screen:[network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS Inspector ランタイム行為分析 ) ]screen:[network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS Inspectorのセキュリティのベストプラクティス' ) ]
++
+リソースをクリックすると、Audit Trail（監査証跡）が表示されます。
++
+image::administration/inspector-audit-trail.png[]
++
+*Host Findings（ホスト検出事項）*をクリックすると、脆弱性に関連する情報が表示されます。
++
+image::administration/inspector-host-findings.png[]
+
+
+

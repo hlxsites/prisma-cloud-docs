@@ -128,7 +128,7 @@ Some additional options that you can access when you select the  *Asset Name* li
 
 * *Suppress*—Enables you to suppress a package CVE that does not impact your environments or compliance needs. This hides the issue from being reported as a finding in your monitored assets.
 
-* *Suggest Least Privilege Access*— When  an asset has an identity attached to it, for example an IAM role that grants access to an EC2 instance, on *IAM Details* you can configure least privilege access. You can define a time when unused permissions attached to the asset will be considered as over permissive, and get a suggestion for right-sizing permissions. The new set of permissions are based on existing configuration used by all identities attached to the asset. See xref:../administration/configure-iam-security/cloud-identity-inventory.adoc[suggest least privilege access].
+* *Suggest Least Privilege Access*— When  an asset has an identity attached to it, for example an IAM role that grants access to an EC2 instance, on *Identity* tab of the asset sidecar you can configure least privilege access. You can define a time when unused permissions attached to the asset will be considered as over permissive, and get a suggestion for right-sizing permissions. The new set of permissions are based on existing configuration used by all identities attached to the asset. See xref:../administration/configure-iam-security/cloud-identity-inventory.adoc[suggest least privilege access].
 
 image::alerts/alerts-darwin-actions.gif[]
 
@@ -287,3 +287,94 @@ You cannot delete or rename the *System* views.
 .. Select *Done* and *Confirm* to view your changes. The *Confirm* option displays only when you want to delete a view.
 +
 image::alerts/alerts-views-4.png[]
+
+
+=== Difference in Alerts Generated from a Policy versus Saved Search Query
+
+//Why are alerts generated from a policy different from the running the corresponding query (Saved Search) on the Investigate page?
+
+Prisma Cloud enables you to run a query on the *Investigate* page, and save the query as a *Saved Search* so that you can re-run the same search periodically. If you then use this saved search query as match criteria in a policy, the matched issues that trigger alerts can be different from the corresponding results for the same query on the Investigate page.
+
+The reason for this difference in results is that the policy engine functions slightly differently from the Investigate page. To understand the differences you need to know the following:
+
+*Criteria for creating a policy using a saved search*
+
+* Saved search must be valid to create a policy. For Config queries `config from cloud.resource where`, you may see the error *RQL invalid for policy creation*. This error indicates that the saved search RQL is not valid to create a policy.
+
+* To create a policy, the saved search must meet these guidelines:
++
+** Does not include the `azure.resource.group` attribute
+
+** When a `tag` attribute is within the json.rule, it does not include a resource list (reference with `{`  `}`)
+
+** Includes either the `api.name` attribute or the `finding.type` attribute
++
+*** When it includes the `api.name` attribute, it includes a `json.rule` or the `group by` or `count` function
+
+*** When it includes the `finding.type` attribute, the specified values for the attribute do not contain `Prisma Cloud Alert` 
++
+You can however, include the `Not Equal Prisma Cloud Alert` or `Not IN (Prisma Cloud Alert, boo, etc.)` operator.
+
+*Criteria for updating a saved search used in a policy*
+
+If you use a saved search to create a policy, you cannot update the following:
+
+*  `cloud.type` 
+
+*  `api.name` 
++
+** For non-join queries, `api.name` cannot be changed
+
+** For join queries, the `api.name` in the clause used for `Show` cannot be changed.
++
+Example query structure: `X; Y; Z; filter…; Show Y` 
++
+`api.name` in Y *cannot* be updated (because X is used for Show)
++
+`api.name` in X, Z *can* be updated
+
+*Criteria for what is ignored or replaced when displaying results*
+
+The values for the following attributes in a saved search are replaced by the scope you define in an alert rule:
+
+*  `cloud.account` or `cloud.accountgroup` 
+
+*  `cloud.region` 
+
+*  `tag` (tag filter used within the `json.rule` will be ignored)
+
+*  `cloud.type` , `cloud.service` 
+
+* When `resource.status` is not specified in the query, both the Investigate page and the policy engine will return active *and* deleted resources.
+
+However, the deleted resources for the policy engine include only the _resources deleted since the last scan_ within the search scope, while the Investigate page scans all deleted resources available in the database. Specifically:
+
+[cols="10%a,40%a,50%a"]
+|===
+|*Resource Status*
+|*Policy Engine*
+|*Investigate*
+
+
+|Active
+|Resources that are running at the time of scan only
+|Only resources that were running at the end time of the interval (creation time before time interval ends and deletion, if any, after the time interval)
+
+
+|Deleted
+|Resources deleted since the last scan only
+|Only resources that were deleted during the specified time interval (deletion time within the interval)
+
+
+|Not Specified
+|Running resources and resources deleted since the last scan
+|Any resources that existed during the specified time interval
+
+|===
+
+
+*JOIN queries*
+
+* For Investigate queries, cross-account join will be applied by default.
+
+* For policy engine, all queries are run on a specific account, which means JOIN will be done only within one account at a time.

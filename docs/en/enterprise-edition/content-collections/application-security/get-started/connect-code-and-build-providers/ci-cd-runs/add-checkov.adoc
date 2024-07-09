@@ -14,6 +14,12 @@ See https://www.checkov.io/2.Basics/Visualizing%20Checkov%20Output.html[Visualiz
 .. xref:../../../../administration/create-access-keys.adoc[Generate and copy the Prisma Cloud access key] to enable access to Prisma Cloud. The access key includes a key ID and secret.
 .. Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console. 
 .. Grant *Administrator* permissions in the relevant organization to the Prisma user installing Checkov.
+.. Best Practice (*Mandatory* for SCA vulnerability suppression): 
++
+* Run Checkov within your current working directory (<current_directory_path>). It is recommended to use the absolute file path for your current working directory
+* Ensure that the *--repo-id* parameter includes the `<repo_owner_name>/<repo_name>` structure, with the `<repo_name>` matching the exact name of the directory.
++
+Example: Suppose the present working directory is `Users/test/<repo_name>`. In this case, the *--repo-id* parameter must be: `--repo-id <repo_owner_name>/<repo_name>`, ensuring that `<repo_name>` precisely matches the directory name within the structure.
 
 . On the Prisma Cloud console.
 
@@ -50,7 +56,7 @@ NOTE: Replace `<PRISMA_ACCESS_KEY>::<PRISMA_SECRET_KEY>` with your corresponding
 +
 [source.shell]
 ----
-export PRISMA_API_URL=https://api2.prismacloud.io checkov -d Sa --bc-api-key PRISMA_ACCESS_KEY::PRISMA_SECRET_KEY --<repo_owner>/<repo_name> Sa --branch Sa
+export PRISMA_API_URL=https://api2.prismacloud.io checkov -d Sa --bc-api-key PRISMA_ACCESS_KEY::PRISMA_SECRET_KEY --repo-id <current_directory_path> --<repo_owner>/<repo_name> Sa --branch Sa
 ----
 +
 NOTE: See the Checkov https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[CLI Command Reference] for more advanced Checkov run settings, such  as `--file`, `--check`, `--framework`. 
@@ -73,7 +79,7 @@ The following example displays the Checkov configuration for scanning the root d
 ----
 export PRISMA_API_URL=https://api2.prismacloud.io
 export BC_API_KEY=prismaaccesskey::prismasecretkey
-checkov -d . --<repo_owner>/<repo_name> org/repo --use-enforcement-rules
+checkov -d . --repo-id --<repo_owner>/<repo_name> org/repo --use-enforcement-rules
 ----
 
 * Windows
@@ -82,5 +88,5 @@ checkov -d . --<repo_owner>/<repo_name> org/repo --use-enforcement-rules
 ----
 set PRISMA_API_URL=https://api2.prismacloud.io
 set BC_API_KEY=prismaaccesskey::prismasecretkey
-checkov -d . --<repo_owner>/<repo_name> org/repo --use-enforcement-rules
+checkov -d . --repo-id --<repo_owner>/<repo_name> org/repo --use-enforcement-rules
 ----

@@ -1,5 +1,5 @@
 == Known and Fixed Issues on Prisma Cloud
-// @Divya and @Rodrigo need to add their issues in docs/en/enterprise-edition/rn/known-issues/known-fixed-issues.adoc to this file as well. 
+// @Anagha and @Rodrigo need to add their issues in docs/en/enterprise-edition/rn/known-issues/known-fixed-issues.adoc to this file as well. 
 The following table lists the known and fixed issues on Prisma Cloud.
 
 [NOTE]
@@ -17,17 +17,57 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 |===
 |*ISSUE ID*
 |*DESCRIPTION*
-// CSPM AND CAS Known Issues
+//CSPM AND CAS Known Issues
 
 //*RLP-127621*
 //Added post-24.1.2, related to PCSUP-20665, retain in KIs list till engg confirms 
 //On *Inventory > Assets*, if you filter based on the _Key-Value_ *Asset Tag* and your environment has more that 1 million assets, the results will be inconclusive.
 //Contact your Prisma Cloud Customer Success representative for more details.
 
-|*RLP-118360*
-//Added in 24.1.2
+|*RLP-143404*
+//Added in 24.6.2
 
-|The Saved Filters option is no longer available in the Darwin UI. It will be replaced with Saved Views in an upcoming release.
+|On some Prisma Cloud stacks, the state of a few alerts generated for *Attack Path* policies was displayed as Open instead of Resolved. This was caused due to an issue, which is now fixed. However, currently the impacted alerts do not display the correct state.
+
+|*RLP-128421*
+//Added in 24.4.1
+
+|When you run an RQL query to filter assets associated with the `azure-active-directory-b2c-tenants` API in the Europe region, you may notice that assets listed on the *Investigate* page under *Region Name* incorrectly display as GCP Europe instead of Azure Europe. However, you can safely assume that the asset listed under *Region Name* is Azure Europe instead of GCP Europe.
+
+*Workaround*: To verify the correct region, search for the `location` field in the asset’s JSON.
+
+|*RLP-128421*
+//Added in 24.4.1
+
+|When you filter assets associated with the *Azure AD B2C tenants* in the Europe region, you may notice that assets listed on the *Inventory* page under *Region ID* and *Region* columns incorrectly display as GCP Europe instead of Azure Europe. However, you can safely assume that the assets listed under the *Region* and *Region ID* columns are Azure Europe instead of GCP Europe.
+
+*Workaround*: To verify the correct region, search for the `location` field in the asset’s JSON.
+
+|*RLP-133698*
+//Added in 24.3.2
+
+|If an Azure account being scanned is of account type Tenant, then Prisma cloud excludes AZURE_MONITOR_ACTIVITY_LOG_ALERT, AZURE_MONITOR_LOG_PROFILE, and ACCOUNT_AGGREGATE_ENTITY asset types from the scan.
+
+|*RLP-129856*
+//Added in 24.3.2
+
+|While testing integrations with third-party tools such as Jira, Webhook, Splunk, and Microsoft Teams in Prisma Cloud, "Unsecure url protocol" error may be displayed.
+
+*Workaround*: Update all URLs used during the setup process from *HTTP* to *HTTPS* to resolve the error. This update ensures a more secure connection without impacting your existing alert notifications.
+
+If you do not want to update the URLs from HTTP to HTTPS, you can choose to ignore the error. This will not have any impact on your existing alert notifications.
+
+|*RLP-132750*
+//Added in 24.3.2
+
+|The following errors may occur when you onboard your OCI tenant to Prisma Cloud:
+
+* *Either tenant ocid or user ocid or home region is incorrect or insufficient permissions.*
+* *Authentication Failed. Check Account Details.*
+
+You can safely ignore these errors. They occur due to the migration of OCI tenants from Oracle Identity Domains (IDCS) to the new OCI IAM on the OCI cloud services, resulting in a significant delay in activating the user API Keys used for OCI Cloud Account Onboarding.
+
+To verify successful onboarding, go to *Settings > Providers > Cloud Accounts* and ensure your account *Status* is *green* after 24 hours.
 
 |*RLP-123335*
 //Added in 23.12.1
@@ -35,7 +75,7 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 |When configuring Jira fields in the Prisma Cloud Notification template, it is important to note that the automatic population is limited to fields specifically of types `user` and `labels`. Other field types may not be populated as expected during the setup process. This is a known issue.
 
 |*RLP-113952*
-//Added in 24.1.1. Plan is to fix it in 24.2.2. This must be moved to fixed issues then.
+//Added in 24.1.1. Plan is to fix it in 24.5.2. This must be moved to fixed issues then.
 |While onboarding your Azure China tenant to Prisma Cloud, you might see an inaccurate warning within the *Review Status > Security Capabilities and Permissions* section, even if you have granted the necessary permissions.
 
 `Prisma Cloud application is not assigned following role(s): GroupMember.Read.All, Domain.Read.All, Reports.Read.All, Application.Read.All, Policy.Read.All;`
@@ -211,7 +251,6 @@ This issue requires a fix on AWS. When fixed on AWS, the issue will be automatic
 |*—* 
 //CWP-52736
  
-
 |In 31.02.133, the new 81 out-of-box admission control rules in Rego are not available by default. This issue is targeted to be addressed in the next release (32.00.xxx).
 
 |*—* 
@@ -241,6 +280,10 @@ This issue requires a fix on AWS. When fixed on AWS, the issue will be automatic
 // GH#42826
 |A `404 Not Found error` is displayed when performing a sandbox image analysis using older version of twistcli, such as v22.06, with the 22.12 console.
 
+|*PCSUP-22448*
+//CWP-58172, CWP-45452
+|DNS audit does not work on AWS app-embedded Fargate Defender. Also, DNS audit works only *Alpine* image and not on any other OS, such as Ubuntu, Debian, and Redhat.
+
 |*PCSUP-12197*
 // CWP-41449
 |For an application that originates from an OS package, the vulnerability data for CVEs is sourced from the relevant feed for the OS package. In some cases, like with Amazon Linux and Photon OS, this CVE information is provided in security advisories such as Amazon Linux Security Advisories (ALAS) for Amazon, and PHSA for Photon. In such cases, the correlation for the relevant vulnerabilities is limited.
@@ -265,6 +308,51 @@ In particular, for such roles currently data about the following types of assets
 - Private registry images
 - Build stage images
 - On-premises hosts/hosts managed by cloud providers unsupported by Compute
+
+//CWP-58896
+|*CWP-58896*
+|* With the support for ACI in cloud discovery, here are the two issues:
+
+** Status: The `status` field currently utilizes Properties > ProvisioningState, which does not reflect the container status. For more information, refer to https://learn.microsoft.com/en-us/azure/container-instances/container-state[Azure Container Instances states].
+
+** Defend: The Defend functionality does not support Azure Container Instances (ACI). The Defend is enabled across all accounts and services, and when selected, it redirects to Images > Registry Settings.
+
+|*CWP-58709*
+|*Duplicate Admission Rules*
+
+Six admission rules released in Version 32, Update 2 were found to be duplicates of older existing rules. If you need the functionality provided by these rules, we recommend disabling the old rules and using the new corresponding rules, as the older rules will be removed in an upcoming release.
+
+The old rules and their corresponding new rules are as follows:
+
+* *Old rule*: Twistlock Labs - CIS - Pod created in host process ID namespace. *New rule*: Twistlock Labs - PSS - Baseline - Pod with containers that share host process ID (hostPID) namespace
+
+* *Old rule*: Twistlock Labs - CIS - Pod created on host IPC namespace. *New rule*: Twistlock Labs - PSS - Baseline - Pod with containers that share host IPC namespace
+
+* *Old rule*: Twistlock Labs - CIS - Pod created on host network. *New rule*: Twistlock Labs - PSS - Baseline - Pod that allows containers to share the host network namespace
+
+* *Old rule*: Twistlock Labs - Pod created with sensitive host file system mount. *New rule*: Twistlock Labs - PSS - Baseline - Pod created with sensitive host file system mount
+
+* *Old rule*: Twistlock Labs - CIS - Privileged pod created. *New rule*: Twistlock Labs - PSS - Baseline - Pod should not run privileged containers
+
+* *Old rule*: Twistlock Labs - CIS - Privilege escalation pod created. *New rule*: Twistlock Labs - PSS - Restricted - Pod that allows container privilege escalation
+
+Note: Even though both the new and old rules are enabled by default, you will not receive duplicate alerts as only the first encountered rule is enforced.
+
+|*CWP-58350*
+|*CVE Exclusions Update*
+
+The following CVEs that are included in the Intelligence Stream feed are ignored:
+CVE-2022-29583 - GitHub Advisory Database as it is a disputed vulnerability.
+CVE-2024-3154 - Arbitrary Systemd Property Injection as Defender does not directly use this package.
+
+|*CWP-52710*
+|While upgrading consoles from the 30.03 release to a 32.xx release, the error log `failed to retrieve "size" specification option value` during the migration doesn't impact the migration process and can be ignored.
+
+// |*CWP-59104*
+// |A flaw in the https://github.com/containers/image[GitHub - containers/image: Work with containers' images] library, CVE-2024-3727 (HIGH severity) “allows attackers to trigger unexpected authenticated registry accesses on behalf of a victim user, causing resource exhaustion, local path traversal, and other attacks.” To exploit this flaw, the attacker should be able to upload malicious images to the registry and persuade a victim to pull them.
+// This container's image library is used in registry scanning use cases and is a fundamental building block of the registry scanning process. This issue will be resolved in a maintenance window that is currently scheduled for 9th June 2024. 
+ 
+
 |===
 
 
@@ -276,16 +364,73 @@ In particular, for such roles currently data about the following types of assets
 |*ISSUE ID*
 |*DESCRIPTION*
 
-|tt:[Fixed in 3.1]
-//RLP-133444
+//RLP-132008
+//tt:[Fixed in 24.6.1]
+//Fixed an issue where deleted assets were getting included in vulnerability searches.
 
-|The *Asset Tag* filter is only available for Limited General Availability enabled tenants. Previously, it was incorrectly added to Asset Inventory for all users of the Prisma Cloud console. 
+//RLP-141312
+//tt:[Fixed in 24.5.2]
+//Fixed an issue that was causing an increased time-to-alert (TTA) for few function-based Aggregate or Join policies where major resources had not been recently updated. 
+//The fix may cause a relatively higher number of alerts being generated for such policies shortly after deployment.
 
-As an affected user you may have experienced the following:
+//CWP-56554
+|tt:[Fixed in 32.05]
+|Resolved issue causing containerized scans to fail due to long scan data, particularly when encountering large Java dependency lists. You can now conduct scans without encountering this issue.
 
-* Asset Tag filter option available in the UI.
-* Using the filter results in no filtering of assets or an error displaying results.
+//CWP-56784
+|tt:[Fixed in 32.05]
+|With the transition to the CVE 5.0 dataset, NVD has updated the format of rejected CVE descriptions.
+Prisma Cloud now seamlessly identifies 'Rejected' and 'Disputed' statuses of CVEs. In NVD the status is *now* labeled as 'Rejected reason', while CVEs tagged as 'Disputed' are identified using http://cve.org/[cve.org] data source, ensuring accurate vulnerability assessment.
 
+//CWP-56788
+|tt:[Fixed in 32.05]
+|Previously, if modifications were done to a TAS application (such as renaming it), Defender failed to re-scan the application and update the results in the Console. This issue has been resolved. Defender now re-scans the TAS applications whenever changes are made to them.
+
+//CWP-58016
+|tt:[Fixed in 32.05]
+|Fix an issue where “risk factor” field was missed on Function and Host CSV results.
+
+//CWP-56786
+|tt:[Fixed in 32.05]
+|CVE-2023-6992 impacts the Cloudflare version of the zlib library. However, the zlib library included in Alpine Linux is not affected by this vulnerability. A formal https://gitlab.alpinelinux.org/alpine/aports/-/issues/15970[request] has been made to Alpine Linux to classify this CVE as a non-vulnerability for their zlib version. The necessary patch has been merged, and we anticipate its inclusion in the https://secdb.alpinelinux.org[Alpine Linux Security Database] soon.
+
+//CWP-58081
+|tt:[Fixed in 32.05]
+|Resolved parsing issues in vulnerable package versions.
+
+The fix resolves the following issues related to detection of vulnerable package versions: 
+
+* Correct parsing of vulnerable package versions.
+* Parsing of version ranges with different prefixes.
+* Handling of conditions for multiple versions to ensure they are added to the Intelligence feed. This resolves both false negative and false positive alerts.
+
+//CWP-57215 and CWP-57235(cloned doc ticket)
+|tt:[Fixed in 32.04]
+|Vulnerabilities identified as GHSA-xm99-6pv5-q363, also known as CVE-2022-29583, are now suppressed in Defender and Console images since they are disputed.
+
+//CWP-56697
+//Added this as per Manu's conversation with Orit.
+|tt:[Fixed in 32.04]
+|Fixed the error that blocked downloading of the serverless defender bundle for Azure C# functions.
+
+//CWP-56294
+|tt:[Fixed in 32.04]
+|Added the `incidentTime` macro for webhook alerts. The macro shows the time the incident occurred. For example, `Jan 21, 2018 UTC`.
+Go to https://docs.prismacloud.io/en/classic/compute-admin-guide/alerts/webhook[Alerts Webhook] to learn more about the macro.
+
+// CWP-56787
+// TODO: Pending Approval.
+// | tt:[Fixed in 32.04]
+// |Fixed the error that blocked downloading of the serverless defender bundle for Azure C# functions.
+
+//CWP-56818
+|tt:[Fixed in 32.04]
+|Previously, node count was not appearing for EKS clusters on *Manage > Cloud accounts* as a part of *Discovery* report. This is now addressed, and the accurate node count is displayed both on the Prisma Cloud console and in https://pan.dev/prisma-cloud/api/cwpp/get-cloud-discovery/[API Cloud Discovery scan results].
+
+//CWP-56589
+|tt:[Fixed in 32.04]
+|Resolved the issue where container images scanned with twistcli did not appear on the *Runtime Security > Inventory > Assets* and the *Cloud Security > Inventory > Compute Workloads* pages.
+*Note:* Use the `--build` and `--job` flags to include the build number and the job name to help identify the image as a build image that will be presented in the above screens.
 
 // CWP-54770
 |tt:[Fixed in 32.03]
@@ -379,8 +524,8 @@ As an affected user you may have experienced the following:
 
 //CWP-51321
 |tt:[Fixed in 32.01]
-|*Collections added using the [Add a New Collection](https://pan.dev/prisma-cloud/api/cwpp/post-collections/) endpoint:* Fixed the issue with collections that were added by invoking the [Add a New Collection](https://pan.dev/prisma-cloud/api/cwpp/post-collections/) endpoint with one or more empty fields: such collections did not display in the Console. 
-The Add a New Collection endpoint is updated to fix this issue. Now, all request body fields of this endpoint, except name, are optional. Any optional field that is not provided will default to the wildcard value '*'. 
+|*Collections added using the Add a New Collection endpoint:* Fixed the issue with collections that were added by invoking the https://pan.dev/prisma-cloud/api/cwpp/post-collections/[Add a New Collection] endpoint with one or more empty fields: such collections did not display in the Console. 
+The Add a New Collection endpoint is updated to fix this issue. Now, all request body fields of this endpoint, except name, are optional. Any optional field that is not provided will default to the wildcard value '*'.
 
 //CWP-49926
 |tt:[Fixed in 32.01]
@@ -480,6 +625,3 @@ The fix improves the scan process tolerance to errors during the retrieval of co
 // *Agentless Scanning - Missing OS labels of hosts scanned using agentless scanning*
 |Added missing OS labels, both `osDistro` and `osVersion`, to hosts scanned by agentless scanning.
 |===
-
-
-

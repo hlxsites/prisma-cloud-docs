@@ -1,0 +1,211 @@
+== ネットワークフロークエリ属性
+
+//Learn about Network Query attributes in RQL using VPC flow log records.
+
+クラウドデプロイ環境のVPCフローログからの情報を取得するようにPrisma Cloudを設定する場合、クエリで`network from vpc.flow_record` whereを使用して、それらのログに含まれているメタデータの結果を参照することができます。
+//image::network-from-options-query-2.png[scale=40]
+
+各属性を使って、検索基準を絞り込むことができます。これらの属性を使用する場合、自動提案機能が各属性に適した式やxref:../rql-operators.adoc[演算子]を表示します。
+
+*  `cloud.account`
++
+Prisma Cloudに接続した1つ以上のクラウドアカウントのネットワークアクティビティを検索するには、`cloud.account`属性を使用します。
++
+たとえば、1MBを超えるトラフィックを持つクラウドアカウントのネットワークアクティビティを表示できます：
++
+`network from vpc.flow_record where cloud.account = 'Developer Sandbox' AND bytes > 1048576`
+
+*  `cloud.region`
++
+クラウド地域内のネットワークアクティビティを検索するには、`cloud.region`属性を使用します。
++
+たとえば、AWSオレゴン地域の開発者サンドボックスアカウントのネットワークアクティビティを表示できます：
++
+`network from vpc.flow_record where cloud.account = 'Developer Sandbox' AND cloud.region = 'AWS Oregon' AND bytes > 0`
+
+*  `cloud.account.group`
++
+RedLockサービスに接続しているクラウドアカウントグループのネットワークアクティビティを検索するには、`cloud.account.group`属性を使用します。
++
+たとえば、100,000パケット以上が伝送されたオレゴン地域に所属するすべてのAWSアカウントのネットワークアクティビティを表示できます：
++
+`network from vpc.flow_record where cloud.account.group = 'All my AWS accounts' AND cloud.region = 'AWS Oregon' AND packets > 100000 `
+
+*  `dest.ip, source.ip`
++
+`dest.ip, source.ip`属性を使って、ネットワークをフィルタリングして、トラフィックの送信側/受信側IPアドレスを表示できます。カンマ区切り形式、またはCIDRフォーマットで、複数のIPアドレスを指定することも可能です。単一のIPアドレス—172.31.60.74、複数のIPアドレス—172.31.60.74, 10.0.0.5、単一のCIDRアドレス— 172.31.60.0/24、複数のCIDRアドレス— 172.31.60.0/24, 13.233.0.0/16, 10.3.2.2/32
++
+[NOTE]
+====
+** パブリックまたはRFC 1918アドレス空間から、単一のIPアドレスまたは複数のIPアドレスを指定できます。CIDRフォーマット手は、RFC 1918アドレス空間に対してのみサポートされています。属性リストには、IPアドレスをCIDRフォーマットおよび非CIDRフォーマットで指定することができます。
+
+** 値0.0.0.0は、特定のIPアドレスを意味している訳ではありません。任意のパブリックIPアドレスを表しています。
+
+
+====
++
+たとえば、1,000,000バイト以上伝送されたパブリックIPアドレスへのネットワークトラフィックを表示することができます：
++
+`network from vpc.flow_record where dest.ip = 0.0.0.0 AND bytes > 1000000`or traffic originating from a specific IP subnet:`network from vpc.flow_record where source.ip IN (10.2.1.0/24,10.3.1.0/24) AND bytes > 10000`For example, you can view SSH traffic from any public IP address on the internet:
++
+`network from vpc.flow_record where source.ip = 0.0.0.0 and dest.port = 22`
+
+*  `dest.port`
++
+`dest.port`属性は、宛先ポートカラのトラフィックを表示するための、ネットワークアクティビティのフィルタリングに使用します。
++
+たとえば、宛先ポートが27017の任意のパブリックIPアドレスからのネットワークトラフィックを表示できます：
++
+`network from vpc.flow_record where dest.port = 27017 AND source.ip = 0.0.0.0`
+
+*  `dest.outboundpeers, source.outboundpeers`
++
+`dest.outboundpeers`および`source.outboundpeers`属性は、このアセットが接続を確立した個別のIPアドレス数の算出に使用します。これらのネットワーク属性を利用して、入口/出口トラフィック接続数を集計することができます。アカウントの不正利用の検出や、1つまたは複数の外部IPアドレスから複数のSSH接続を行っているホストの識別を行うために役立ちます。
+
+*  `dest.outboundports, source.outboundports`
++
+`dest.outboundports`および`source.outboundports`属性は、このアセットが接続を確立した個別の宛先ポート数の算出に使用します。これらのネットワーク属性により、入口/出口トラフィックの接続数を集計することができます。たとえば、ポートスキャンやポートスイープの試みを検出したり、暗号ポートの出口接続数セットアップの試みを検出したりすることができます。
+
+*  `dest.publicnetwork, source.publicnetwork`
++
+`Source.publicnetwork`および`dest.publicnetwork`属性は、事前定義済みのネットワークからの、またはネットワークへのトラフィックをクエリするために使用します。たとえば、`Internet IPs`はすべてののパブリックIPを、`Suspicious IPs`はすべての不審なIPを表しています。
++
+[NOTE]
+====
+一連のIPアドレス/CIDRを使って独自のネットワークを定義して、内部ネットワーク[非RFC1918]への、または内部ネットワークからのトラフィックを表示する、およびそれらをネットワークRQLクエリで使用することもできます。システム管理者権限グループに属している場合は、*[設定] > [信頼]*できるxref:../../administration/trusted-ip-addresses-on-prisma-cloud.adoc[IPアドレス]で設定できます。
+====
++
+たとえば、宛先ポート3389の内部IPまたは不審なIPに分類されるトラフィックを表示できます：
++
+`network from vpc.flow_record where dest.port IN (3389) and dest.publicnetwork IN ('Internet IPs' , 'Suspicious IPs' ) and bytes > 0`
+
+*  `dest.resource, source.resource`
++
+`dest.resource, source.resource`属性は、宛先リソースまたはソースリソースでネットワークをフィルタリングして、ホストベースの問題、ロール、セキュリティグループ、タグ、仮想ネットワークを検索する場合に使用します。
++
+`dest.resource IN or source.resource IN; `displays more options:
+//+
+//image::dest-resource-in-resource-query-example-1.png[scale=40]
+
+*  `finding.severity、finding.type、finding.source`
++
+1つまたは複数のホスト関連セキュリティ検出事項を持つ、宛先または送信元リソースの脆弱性をクエリするには、finding 属性を使用します。Prisma Cloudは、お客様のクラウド環境に導入されているPrisma Cloud Defendersや、Qualys、Tenable.io、AWS Inspectorなどの外部ソースからホスト脆弱性データを取得し、Amazon GuardDutyからホストやIAMセキュリティ関連のアラートを取得します。
++
+[NOTE]
+====
+`finding`属性を活用するには、ホスト脆弱性プロバイダとの統合を有効にするか、またはホストおよびコンテナ上にPrisma Cloud Defendersをデプロイする必要があります。
+====
++
+たとえば、AWS GuardDutyから、重大度がcritical（重大）である宛先リソースのイベントを表示することができます。
++
+`network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS GuardDuty Host' AND finding.severity = 'critical' ) AND bytes > 0`たとえば、宛先リソースのホスト脆弱性イベントを表示することができます：
++
+`network from vpc.flow_record where dest.resource IN ( resource where finding.type IN ('Host Vulnerability' ) ) and bytes > 0`
+
+*  `securitygroup.name``securitygroup.name`属性は、セキュリティグループ名ごとにネットワークトラフィックをフィルタリングするときに使用します。
++
+たとえば、名前がAWS-OpsWorks-Java-App-ServerおよびAWS-OpsWorks-Blank-Serverであるセキュリティグループにアクセスしているネットワークトラフィックを表示できます：
++
+`network from vpc.flow_record where source.ip = 0.0.0.0 and dest.resource IN ( resource where securitygroup.name IN ( 'AWS-OpsWorks-Java-App-Server' , 'AWS-OpsWorks-Blank-Server' ))`
+
+*  `virtualnetwork.name`
++
+`virtualnetwork.name`属性は、ネットワークトラフィックを仮想ネットワーク名でフィルタリングする場合に使用します。
++
+たとえば、仮想ネットワークICHS_FLORENCEにアクセスしているネットワークトラフィックを表示することができます。
++
+`network from vpc.flow_record where dest.resource IN ( resource where virtualnetwork.name IN ( 'ICHS_FLORENCE' ))`
+
+*  `dest.state, source.state`
++
+`dest.state`または`source.state`属性は、国の特定の州/都道府県に端を発する、または宛先にしているトラフィックを表示する場合に使用します。
++
+たとえば、インドのカルナータカ州へのネットワークトラフィックを表示することができます：
++
+`network from vpc.flow_record where cloud.account = 'Developer Sandbox' AND dest.country = 'India' AND dest.state = 'Karnataka'`たとえば、インドのカルナータカ州からのネットワークトラフィックを表示することができます：
++
+`network from vpc.flow_record where cloud.account = 'Developer Sandbox' AND source.country = 'India' AND source.state = 'Karnataka' `
+
+*  `dest.country, source.country`
++
+`dest.country, source.country`属性は、ネットワークをフィルタリングして、ある国に端を発する、またはある国へ向けたトラフィックを表示する場合に使用します。
++
+たとえば、トラフィックの宛先が中国およびロシアであるネットワークアクティビティを表示できます：
++
+`network from vpc.flow_record where dest.country IN ( 'China' , 'Russia' ) and bytes > 0`トラフィックの送信元が中国であるネットワークアクティビティを表示するには:
++
+`network from vpc.flow_record where source.country = 'China' AND bytes > 0`
+
+*  `bytes`
++
+`bytes`属性は、伝送継続中のバイト量の集計による、ネットワーク関連情報の検索に使用します。
++
+たとえば、インターネットIP、不審なIP、またはバイト数でネットワークトラフィックを検索できます：
++
+`network from vpc.flow_record where source.publicnetwork IN ( 'Internet IPs' , 'Suspicious IPs' ) and bytes > 0`
+
+*  `response.bytes`
++
+`response.bytes`属性は、集計応答バイト量でネットワーク関連情報を検索する場合に使用します。
++
+たとえば、応答バイト数が100,000を超えるネットワークトラフィックを検索できます：
++
+`network from vpc.flow_record where response.bytes > 100000 AND cloud.account = 'Sandbox Account' `
+
+*  `accepted.bytes`
++
+`accepted.bytes`属性は、集計された受け付けバイト量でネットワーク関連情報を検索する場合に使用します。
++
+たとえば、受け付けバイト数が100,000を超えるネットワークトラフィックを検索できます。
++
+`network from vpc.flow_record where accepted.bytes > 100000 AND cloud.account = 'Sandbox Account' `
+
+*  `packets`
++
+`packets`属性は、伝送継続中の集計されたパケット量による、ネットワーク関連情報の検索に使用します。
++
+たとえば、内部ワークロードからインターネット IP アドレスへの、イーサリアムのマイニングで知られているポート8545、30303のトラフィックを識別するには：
++
+`network from vpc.flow_record where dest.port IN (8545,30303) and dest.publicnetwork IN ('Internet IPs' , 'Suspicious IPs' ) and packets> 0`
+
+*  `protocol`
++
+`protocol`属性は、ネットワークプロトコルに関連する、ネットワーク関連情報を検索する場合に使用します。
++
+たとえば、TCPプロトコルを使って宛先ポートが21のネットワーク情報を表示できます：
++
+`network from vpc.flow_record where src.ip=0.0.0.0 AND protocol='TCP' AND dest.port IN (21)`
+
+*  `role`
++
+`role`属性は、ネットワークトラフィックをロールでフィルタリングする場合に使用します。
++
+たとえば、RedLockアカウント内の、宛先リソースのロールがAWS NAT GatewayおよびAWS ELBではない、すべてのネットワークトラフィックを表示できます：
++
+`network from vpc.flow_record where cloud.account = 'RedLock' AND source.ip = 0.0.0.0 AND dest.resource IN ( resource where role NOT IN ( 'AWS NAT Gateway' , 'AWS ELB' ))`たとえば、リソースロールAWS RDSおよびDatabaseにアクセスしている、不審なIPおよびインターネットIPSからのトラフィックを表示できます：
++
+`network from vpc.flow_record where source.publicnetwork IN ( 'Suspicious IPs' , 'Internet IPs' ) and dest.resource IN ( resource where role IN ( 'AWS RDS' , 'Database' ))`
+
+*  `tag`
++
+`tag`属性は、ネットワークトラフィックをタグでフィルタリングする場合に使用します。
++
+たとえば、タグNISPが設定されているリソースにアクセスしているネットワークトラフィックを表示できます：
++
+`network from vpc.flow_record where dest.resource IN ( resource where tag ('name') = 'NISP')`
+
+*  `threat.source`
++
+サポートされている脅威インテリジェンスフィード（AutoFocusまたはFacebook ThreatExchange）の送信元をフィルタリングするには、`threat.source`属性を使用します。サポート対象の演算子には、`!=`、`=`、`IN（`、`NOT IN（`があります。
++
+例:`vpc.flow_record からのネットワークで、バイト数が 10000 を超えていて、threat.source IN ('AutoFocus')`
+
+*  `threat.tag.group``threat.source`がAutoFocuのとき、特定のhttps://docs.paloaltonetworks.com/autofocus/autofocus-admin/autofocus-tags/tag-concepts/tag-group[タググループ]をクエリするには、`threat.tag.group`を使用します。タググループは、https://unit42.paloaltonetworks.com/[Unit 42脅威調査チーム]が分類したマルウェアファミリーのジャンルです。
++
+例:`network from vpc.flow_record where bytes > 100 AND threat.source = 'AutoFocus' AND threat.tag.group IN ( 'BankingTrojan', 'LinuxMalware', 'Worm', 'Downloader', 'HackingTool', 'PotentiallyUnwantedProgram', 'InfoStealer', 'Ransomware', 'InternetofThingsMalware', 'ATMMalware')`
+
+*  `traffic.type IN ` 
++
+あなたのクラウド環境内のエンティティでトラフィックがどのように受け付けられ、どのように拒否されたかを表味するには、`traffic.type IN `属性を使用します。
++
+たとえば、括弧内でtraffic.type INの値を使用して、不審なIPまたはインターネットIPからのトラフィックを探すことができます。`network from vpc.flow_record where src.publicnetwork IN ('Suspicious IPs','Internet IPs') AND dest.resource IN (resource WHERE virtualnetwork.name IN ( 'vpc-323cda49' )) AND dest.ip IN (172.31.12.172 ) AND traffic.type IN ('REJECTED')`

@@ -1,0 +1,67 @@
+== Terraform module sources do not use a git url with a tag or commit hash revision
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 0c4f4a05-8ad2-42c1-9160-bc6df9b5ef8c
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/module/generic/RevisionVersionTag.py[CKV_TF_2]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform
+
+|=== 
+
+
+
+=== Description
+
+Terraform modules are a collection of multiple resource configuration to offer an easy way of repeatable and reusable code logic.
+The most common way is to consume them through the public Terraform registry, which are connected to a VCS, like GitHub.
+This approach is problematic, because the module versions are not immutable and the module can be changed without changing the version, which makes the code vulnerable to a Supply Chain Attack.
+To mitigate this risk, it is recommended to use Git URLs with a commit hash revision to guarantee immutability and consistency. Although Git tags can also be used, they are not as immutable as a hash and are therefore less preferred. This policy is a less restrictive version of the https://docs.prismacloud.io/en/enterprise-edition/policy-reference/supply-chain-policies/terraform-policies/ensure-terraform-module-sources-use-git-url-with-commit-hash-revision[Terraform module sources do not use a git url with a commit hash revision] policy that only allows for hashes.
+
+=== Fix - Buildtime
+
+
+*Terraform*
+
+
+* *Resource: module*
+* *Argument: source, condition*
+
+If you are using a remote module, use the Git URL with a git tag or commit hash.
+
+[source,go]
+----
+module "vpc" {
+- source = "git::https://github.com/example/module"
++ source = "git::https://github.com/example/module.git?ref=mytag-1.0.0"  # commit tag
+
+  name = "my-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+
+  enable_nat_gateway = true
+  enable_vpn_gateway = true
+
+  tags = {
+    Terraform = "true"
+    Environment = "dev"
+  }
+}
+----

@@ -300,7 +300,7 @@ class FranklinConverter implements AdocTypes.Converter {
       },
       inline_image: (node) => this.templates.image(node as AdocTypes.AbstractBlock),
       image: (node) => {
-        const src = node.getAttribute('target') as string | undefined;
+        const src = node.getImageUri(node.getAttribute('target', '') as string);
         if (!src) {
           return '';
         }

@@ -183,6 +183,14 @@ Otherwise, provide the appropriate path.
 +
 Evaluates packages listed only in manifests.
 
+* *`--disable-symbol-extraction`*
++
+Disables Go symbol extraction when scanning the image.
+
+* *`--SBOM [file_format]`*
++
+Exports Software Bill of Materials (SBOM) for the image in the CycloneDX v1.4 standard (https://cyclonedx.org/docs/1.4/json/[JSON] or https://cyclonedx.org/docs/1.4/xml/[XML]). The `file_format` values are `cyclonedx_json` or `cyclonedx_xml`.
+
 * *`--include-purl`*
 +
 Adds package URLs for packages and vulnerabilities.
@@ -394,6 +402,90 @@ Following is the output file schema:
 }
 ----
 
+=== List of vulnerabilities
+
+This section discusses the contents of the scan results when retrieved from the API.
+
+Once retrieving the results of a scan via an API call, the list of vulnerabilities in an image can be found under the "cveVulnerabilities" attribute. Each vulnerability has the following name-value pairs:
+
+- CVE identifier
+- CVSS (CVE score)
+- Description of the vulnerability.
+- Link to CVE report
+- Name of the package to which this CVE applies
+- Version of the package to which this CVE applies
+- Severity of this vulnerability
+  For example, here is a subset of the CVE information:
+
+```json
+{
+  "cve": "CVE-2015-3238",
+  "cvss": 5.8,
+  "description": "The _unix_run_helper_ ...",
+  "id": 46,
+  "link": "https://people.canonical.com/~ubuntu-security/cve/2015/CVE-2015-3238",
+  "packageName": "pam",
+  "packageVersion": "1.1.8-3.1ubuntu3",
+  "severity": "medium",
+  "type": "image"
+}
+```
+
+=== List of packages
+
+This section discusses the contents of the scan results when retrieved from the API.
+The list of content found in an image is found in the data attribute of the JSON. The API results lists all packages in the image under the `info/data/packages` attribute.
+
+Each package has the following name-value pairs:
+
+- Package name
+- Package version
+- CVE Count for the package
+  For example:
+
+```json
+{
+    "data": {
+      "Secrets": [],
+      "binaries": [
+        {
+            "cveCount": 104,
+            "layerTime": 0,
+            "md5": "5b62133afdcb9e96015f8679888f4434",
+            "name": "bash",
+            "path": "/bin/bash"
+        }, ...
+      ],
+      "distro": "Ubuntu 18.04.1 LTS",
+      "files": [],
+      "packages": [
+        {
+            "pkgs": [
+              {
+                  "cveCount": 0,
+                  "layerTime": 1539910074,
+                  "license": "GPL",
+                  "name": "ubuntu-keyring",
+                  "version": "2018.02.28"
+              }, ...
+            ],
+            "pkgsType": "package"
+          }
+      ],
+      "pkgDistro": "Ubuntu",
+      "pkgDistroRelease": "bionic",
+      "startupBinaries": [
+        {
+            "cveCount": 0,
+            "layerTime": 0,
+            "md5": "518882eba51b05a15463e639892dda37",
+            "name": "echo",
+            "path": "/bin/echo"
+        }, ...
+      ]
+    }
+}
+```
 === Projects
 
 When users from a tenant project run twistcli, they must set the `--project` option to specify the proper context for the command.
@@ -737,6 +829,51 @@ $ ./twistcli images scan \
   --docker-address unix:///<PATH/TO>/docker.sock \
   <IMAGE_NAME>
 ----
+
+==== Options
+
+- **--address URI**
+
+  Required. Complete URI for Console, including the protocol and port. Only the HTTPS protocol is supported. By default, Console listens to HTTPS on port 8083, although your administrator can configure Console to listen on a different port.
+
+  Example: --address https://console.example.com:8083
+
+- **-u, --user USERNAME**
+
+  Required. Username to access Console.
+
+- **-p, --password PASSWORD**
+
+  Password for the user specified with -u, --user. If not specified on the command-line, you are prompted for the user’s password before the scan runs.
+
+- **--output-file FILENAME**
+
+  Send the results of the scan to a file.
+  Example: --output-file examplescan
+
+- **--details**
+
+  Prints an itemized list of each vulnerability found by the scanner.
+
+- **--containerized**
+
+  Run the scan from inside the container.
+
+- **--docker-tlscacert PATH**
+
+  Path to Docker client CA certificate.
+
+- **--docker-tlscert PATH**
+
+  Path to Docker client Client certificate.
+
+- **--docker-tlskey PATH**
+
+  Path to Docker client Client private key.
+
+- **--tlscacert PATH**
+
+  Path to Prisma Cloud CA certificate file. If no CA certificate is specified, the connection to Console is insecure.
 
 
 [#podman]

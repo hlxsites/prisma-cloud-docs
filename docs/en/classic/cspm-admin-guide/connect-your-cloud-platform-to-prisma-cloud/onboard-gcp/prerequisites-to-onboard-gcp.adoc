@@ -1,10 +1,10 @@
 == Prerequisites to Onboard GCP Organizations and Projects
 
-Learn about the Service account and APIs that enable Prisma Cloud to ingest, analyze, and monitor the resources deployed within a GCP organization or project.
+Learn about the Service account and APIs that enable Prisma Cloud to ingest, analyze, and monitor the assets deployed within a GCP organization or project.
 
-In order to analyze and monitor your GCP account, Prisma Cloud requires access to specific APIs and a service account which is an authorized identity that enables authentication between Prisma Cloud and GCP. A combination of custom, predefined, and primitive roles grant the service account the permissions it needs to complete specific actions on the resources in your GCP organization or project.
+In order to analyze and monitor your GCP account, Prisma Cloud requires access to specific APIs and a service account which is an authorized identity that enables authentication between Prisma Cloud and GCP. A combination of custom, predefined, and primitive roles grant the service account the permissions it needs to complete specific actions on the assets in your GCP organization or project.
 
-To successfully onboard and monitor the resources within your GCP organization or project, make sure you have completed the following prerequisites:
+To successfully onboard and monitor the assets within your GCP organization or project, make sure you have completed the following prerequisites:
 
 * xref:#service-account-permissions[Service Account Permissions]
 * xref:#rate-limit-exception-for-gcp-apis[Rate Limit Exception for GCP APIs]
@@ -14,7 +14,7 @@ To successfully onboard and monitor the resources within your GCP organization o
 [#service-account-permissions]
 === Service Account Permissions
 
-The permissions that the Prisma Cloud service account needs to monitor your GCP resources depends on your cloud protection needs.
+The permissions that the Prisma Cloud service account needs to monitor your GCP assets depends on your cloud protection needs.
 
 * If you are onboarding a GCP organization, you must assign the roles to the IAM policy for the organization.
 * If you are onboarding a GCP project, you must assign the roles to the IAM policy for each project.
@@ -36,30 +36,34 @@ The https://cloud.google.com/iam/docs/understanding-roles#role_types[roles] for 
 === Rate Limit Exception for GCP APIs
 //RLP-73146
 
-The API calls from Prisma Cloud use quota from the GCP project that you've onboarded, which enables Prisma Cloud to ingest resource metadata across multiple projects without exceeding the GCP API rate limits. 
+The API calls from Prisma Cloud use quota from the GCP project that you've onboarded, which enables Prisma Cloud to ingest asset metadata across multiple projects without exceeding the GCP API rate limits. 
 
-To ensure continuous insights in to all your GCP resources and to prevent rate limit exception errors from occurring for Prisma Cloud's authorized API calls to GCP, make sure to:
+To ensure continuous insights in to all your GCP assets and to prevent rate limit exception errors from occurring for Prisma Cloud's authorized API calls to GCP, make sure to:
 
 * Grant either a new permission _serviceusage.services.use_ or add a new role *Service Usage Consumer* (_roles/serviceusage.serviceUsageConsumer_) to the service account that Prisma Cloud uses to access GCP APIs.
+
 * [Optional] For the GCP services (_appengine.googleapis.com, recommender.googleapis.com, sqladmin.googleapis.com, apikeys.googleapis.com, iam.googleapis.com,cloudresourcemanager.googleapis.com, orgpolicy.googleapis.com, cloudasset.googleapis.com, accessapproval.googleapis.com, essentialcontacts.googleapis.com_):
++
 ** Disable them on the source project where the service account is created, and 
-** Enable them on the target project from which Prisma Cloud gets resource metadata.
+** Enable them on the target project from which Prisma Cloud gets asset metadata.
 
 
 [#gcp-apis]
 === GCP APIs
 
-Prisma Cloud can ingest data from several https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-rql-reference/rql-reference/gcp-apis-ingested-by-prisma-cloud.html[GCP APIs]. 
+Prisma Cloud can ingest data from several xref:gcp-apis-ingested-by-prisma-cloud.adoc[GCP APIs]. 
 
 [NOTE]
 ====
 When you use the Terraform template that Prisma Cloud provides to automate the onboarding of your GCP organization or project, the required permissions are automatically enabled for you.
 ====
 
-* In the GCP project where you create the service account, you must enable the Stackdriver Logging API (logging.googleapis.com) to monitor audit logs, and any other GCP APIs for which you want Prisma Cloud to monitor resources.
-* If a cloud service API is not enabled on a GCP project, Prisma Cloud skips the ingestion for the respective service; you must, however, ensure that *Service Usage* API is enabled on each GCP project that you want Prisma Cloud to monitor under your GCP organization hierarchy.
+* In the GCP project where you create the service account, you must enable the Stackdriver Logging API (logging.googleapis.com) to monitor audit logs, and any other GCP APIs for which you want Prisma Cloud to monitor assets.
+
+*  If a cloud service API is not enabled on a GCP project, Prisma Cloud skips the ingestion for the respective service; you must, however, ensure that *Service Usage* API is enabled on each GCP project that you want Prisma Cloud to monitor under your GCP organization hierarchy.
 +
 To skip ingestion for a cycle, Prisma cloud watches the response from the Service Usage API for the details on which cloud services are enabled in a GCP project. For example, if you have not enabled cloud functions in one or more GCP projects within the GCP organization, Prisma cloud can learn about it and skip the ingestion cycle for this cloud service.
+
 * Prisma Cloud recommends you create the service account in a dedicated GCP project.
 +
 GCP enforces a limit on the API calls allowed to a GCP project/IAM service account. When you create the service account in a dedicated GCP project, you can ensure that the API calls that Prisma Cloud makes do not interfere with any quota limits against your production workloads and services hosted in the separate GCP project.
@@ -225,7 +229,6 @@ See xref:flow-logs-compression.adoc[Flow Logs Compression]
 `dataplex.content.list`
 `dataplex.content.getIamPolicy`
 `dataplex.entities.list`
-`dataplex.locations.list`
 `dataplex.lakes.list`
 `dataplex.lakes.getIamPolicy`
 `dataplex.tasks.list`
@@ -597,8 +600,7 @@ Every project that the service account can access
 |`alloydb.googleapis.com`
 |AlloyDB for PostgreSQL is a fully managed, PostgreSQL-compatible database service designed for most demanding workloads, including hybrid transactional and analytical processing. 
 |Project Viewer
-|`alloydb.locations.list`
-`alloydb.backups.list`
+|`alloydb.backups.list`
 `alloydb.clusters.list`
 `alloydb.instances.list`
 `alloydb.users.list`
@@ -677,15 +679,6 @@ Every project that the service account can access
 `vpcaccess.connectors.list`
 |Every project that the service account can access
 
-|Google Cloud Filestore
-|`file.instances.list`
-|Creates and manages cloud file servers.
-|Cloud Filestore Viewer
-|`file.instances.list`
-`file.snapshots.list`
-`file.backups.list`
-|Every project that the service account can access
-
 |Google Cloud VMware Engine
 |`vmwareengine.googleapis.com`
 |Google Cloud VMware Engine is a fully managed service to run the VMware platform including vSphere, vCenter, vSAN, NSX-T, HCX, and corresponding tools in Google Cloud.
@@ -695,6 +688,15 @@ Every project that the service account can access
 `vmwareengine.networkPolicies.list`
 |Every project that the service account can access
 
+
+|Google Cloud Filestore
+|`file.instances.list`
+|Creates and manages cloud file servers.
+|Cloud Filestore Viewer
+|`file.instances.list`
+`file.snapshots.list`
+`file.backups.list`
+|Every project that the service account can access
 
 |Google Cloud Firestore
 |`firestore.googleapis.com`
@@ -747,7 +749,8 @@ Every project that the service account can access
 |Google Cloud Deployment Manager is an infrastructure deployment service that automates the creation and management of Google Cloud resources.
 |Project Viewer
 
-NOTE:You must manually add the permission or update the Terraform template to enable `deploymentmanager.deployments.getIamPolicy`.
+NOTE:You must manually add the permission or update the Terraform template to enable 
+`deploymentmanager.deployments.getIamPolicy`.
 
 |`deploymentmanager.deployments.list`
 `deploymentmanager.deployments.getIamPolicy`
@@ -818,10 +821,19 @@ NOTE:You must manually add the permission or update the Terraform template to en
 |Project Viewer
 |`aiplatform.indexes.list`
 `aiplatform.datasets.list`
-|`aiplatform.featurestores.list`
+`aiplatform.featurestores.list`
 `aiplatform.entityTypes.list`
 `aiplatform.entityTypes.getIamPolicy`
 `aiplatform.hyperparameterTuningJobs.list`
+`aiplatform.deploymentResourcePools.list`
+`aiplatform.nasJobs.list`
+`aiplatform.batchPredictionJobs.list`
+`aiplatform.models.list`
+`aiplatform.specialistPools.list`
+`aiplatform.modelDeploymentMonitoringJobs.list`
+`aiplatform.persistentResources.list`
+`aiplatform.studies.list`
+`aiplatform.tuningJobs.list`
 |Every project that the service account can access
 
 

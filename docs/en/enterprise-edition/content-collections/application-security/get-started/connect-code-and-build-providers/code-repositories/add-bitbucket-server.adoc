@@ -2,32 +2,37 @@
 
 [.task]
 
-== Connect Bitbucket Server  
+== Connect Bitbucket Data Center/Bitbucket Server  
 
-Integrate Prisma Cloud with your Bitbucket Server version control system (VCS) to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up the Bitbucket Server platform.
+Integrate Prisma Cloud with your Bitbucket Data Center or Bitbucket Server version control systems (VCS) to gain visibility into, and monitor the systems, technologies, configurations, and pipelines that make up your Bitbucket Data Center/Bitbucket Server platforms.
+
 This integration enables security scans to identify Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) vulnerabilities, exposed secrets, license mis-compliance and CI/CD pipeline risks in your Bitbucket environment, allowing you to understand and fix issues as soon as they are detected, resulting in an enhanced security posture for your organization.
 
-NOTE: Integrating with Bitbucket Server extends support for Bitbucket Data Center and Server versions 6.7 and later.
-
-The Bitbucket Server integration creates a webhook that triggers periodic scans of your code. These scans run on all pull requests (PRs), and their results are displayed in both the PR comments and reports.
+The integration with Bitbucket Data Center/Bitbucket Server creates a webhook that triggers periodic scans of your code. These scans run on all pull requests (PRs), and their results are displayed in both the PR comments and reports.
 
 NOTE: Refer to <<#subscribed-events,Subscribed Events>> below for a list of events to which the integration is subscribed.
 
+=== Supported Versions
+
+* Integrating with Bitbucket Data Center or Bitbucket Server extends support for Bitbucket Data Center and Data Center Server versions 6.7 and later
+
+* The CI/CD Security module is compatible with Bitbucket Data Center and Bitbucket Server versions 8 and later
+
 === Prerequisites
 
-. Grant the Prisma Cloud user the necessary permissions for integrating Prisma Cloud with your Bitbucket Server, as specified in <<#user-permissions, User Permissions>> below.
+. Grant the Prisma Cloud user the necessary permissions for integrating Prisma Cloud with your Bitbucket Data Center or Bitbucket Server, as specified in <<#user-permissions, User Permissions>> below.
 
 . Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud Console. 
 
 . Ensure that the provided hostname or IP address is resolvable on public DNS servers.
 . Ensure the use of the default port 443 for the integration.
 
-. On *Bitbucket Server*, create and copy a Personal Access Token (PAT).
+. On *Bitbucket Server*, create and copy a *Personal Access Token* (PAT).
 .. Access *Bitbucket Server* > *Manage account* > *Account settings* > *Personal access tokens*.
 .. Provide a *Token name*.
 .. Select the *Permissions* scope.
 +
-* For Projects: *Read* permissions
+* For Projects: *Read* permissions. If you require for CI/CD scanning capabilities, select *Administrator* permissions
 * For Repositories: *Administrator* permissions
 +
 Providing read and write permissions to the necessary repositories enables Prisma Cloud to copy files for scanning, and access repository settings. This, in turn, facilitates the ability to subscribe to pull request (PR) webhooks, allowing for the initiation of fix PRs and comments on open PRs.
@@ -41,9 +46,10 @@ NOTE: For additional security, it is recommended to set an expiry automatically.
 .. Select *Create*.
 .. Copy the generated token from the dialog.
 +
-NOTE: See the https://confluence.atlassian.com/bitbucketserver072/personal-access-tokens-1005335924.html[Bitbucket] documentation on how to create a PAT.
+NOTE: Always refer to the https://confluence.atlassian.com/bitbucketserver072/personal-access-tokens-1005335924.html[Bitbucket] documentation for information relating to creating a PAT.
 
-=== Installation
+[#integration]
+=== Integration
 
 [.procedure]
 . On the Prisma Cloud Application Security console.
@@ -51,23 +57,27 @@ NOTE: See the https://confluence.atlassian.com/bitbucketserver072/personal-acces
 +
 image::application-security/connect-provider-menu.png[]
 
-.. Select *Bitbucket Server* (under Code Repositories) in the catalog that is displayed.
+.. Select *Bitbucket Server/Data Center* (under Code Repositories) in the catalog that is displayed.
 +
-image::application-security/connect-provider.png[]
+image::application-security/connect-provider2.0.png[]
 +
 The *Configure Domain* step of the installation wizard (wizard) is displayed.
 +
-image::application-security/bb-server-wiz-config-domain.png[]
+image::application-security/bb-w-z-config-domain2.1.png[]
 
-.. Paste the URL of your Bitbucket Server repository into the provided field > *Register*.
+.. Paste the URL of your Bitbucket Data Center/Server repository into the *Base Url* field > *Next*.
 +
 NOTE: The *Base URL* must include the *"HTTPS://"* prefix.
++
+The *Create a Personal Access Token* step of the wizard is displayed.
++
+image::application-security/bb-w-z-config-domain2.2.png[]
 
-. Paste the Bitbucket PAT generated in _step 4_ of the prerequisites above in the *Bitbucket Personal Access Token* field of the *Create Personal Access Token* step of the wizard > *Register*.
+. Paste the Bitbucket PAT generated in _step 5_ of the prerequisites above in the *Bitbucket Personal Access Token* field > *Register*.
 +
 The *Select Repositories* step of the wizard is displayed.
 +
-image::application-security/bb-server-wiz-config-domain.png[]
+image::application-security/bb-server-datacenter-wiz-repos2.0.png[]
 
 
 . Select which repositories will be scanned. 
@@ -81,7 +91,7 @@ The selected repositories associated with the PAT will be scanned
 
 . Verify integration.
 .. In *Application Security*, select *Home* > *Settings* > *Code & Build Providers* tab.
-.. Confirm that the status of the integrated *Bitbucket Server* repositories displays *Connected* under *Status*.
+.. Confirm that the status of the integrated *Bitbucket Server/ Data Center* repositories displays *Connected* under *Status*.
 +
 NOTE: It may take up to 3 minutes for the integration status to be updated.
 
@@ -89,20 +99,125 @@ NOTE: It may take up to 3 minutes for the integration status to be updated.
 +
 To view scan results and resolve issues, in *Application Security* select *Home* > *Projects*. See xref:../../../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Monitor and Manage Code Build Issues] for more information. 
 
+[.task]
+[#multi-integrate]
+=== Support for Multiple Integrations
+
+Prisma Cloud supports multiple integrations with Bitbucket Data Center/Server instances. Once you've initially integrated with Prisma Cloud, you can add more integrations using either the existing user or team token, if the current server has additional repositories requiring integration. Integrating with a new domain or server, such as a different Bitbucket Data Center/Server instance, will require a new integration process and token.
+
+Leveraging multiple integrations from a single Prisma Cloud account allows you to:
+
+* View a list of integrations on a single console
+* Add additional integrations
+* Delete an existing integration
+
+NOTE: Selecting a repository for a specific integration will restrict you from selecting the same repository for another integration.
+
+[.procedure]
+
+. In *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers* > *Bitbucket Server/Data Center* (under Code Repositories) in the catalog that is displayed.  
++
+A popup with a list of Bitbucket Data Center/Server integrations is displayed.
++
+image::application-security/bb-server-multi-int1.1.png[]
+
+. Select *Add Integration*.
++
+The Configure Domain step of the integration wizard is displayed.
+. Execute the <<#integration,Integration>> steps above, starting from step 1.3.
+. Next step: See xref:../../../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Monitor and Manage Code Build Issues].
+
+
+[.task]
+=== Manage Integrations
+
+Manage integrations from the integration wizard.
+
+[.procedure]
+
+. Access the list of Bitbucket Data Center/ Server integrations - see *steps 1,2* of <<#multi-integrate,Support for Multiple Integrations>> above.
+. Choose the corresponding option from the menu located under the *Actions* column.
+
+.. Select *Reselect repositories* to add or remove repositories
+.. Select *Delete Integration* to delete integrations
+
+=== Rotate Integration Tokens
+
+Rotate integration tokens to enhance security and prevent unauthorized access.
+
+Create a *PUT* request: `PUT /code/api/v1/integration/token/<integration_id>` with the following body:
+
+[source,JSON]
+----
+{
+"token": "new token"
+}
+----
+
+To find your <integration_id>: 
+
+. In *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers* > *Bitbucket Server/Data Center* (under Code Repositories) in the catalog that is displayed.  
+. Select the menu under the *Actions* column of an account.
+. Click *Reselect repositories*.
++
+The integration ID is displayed in the URL bar on the *Select Repositories* step of the integration wizard.
++
+image::application-security/bb-id1.1.png[]  
+
 [#user-permissions]
 === User Permissions
 
-Authorize the user integrating Prisma Cloud with your Bitbucket Server instance with the following permissions.
+Authorize the user integrating Prisma Cloud with your Bitbucket Server/Data Center instance with the following permissions.
 
+* *Organization owner* permissions
 * *Read* permissions for projects
 * *Administrator* permissions for repositories
 
-NOTE: The CI/CD module is not yet supported.
+[#ci-cd-permissions]
+==== CI/CD Module Permissions
+
+* *Administrator* permissions for projects
+* *Administrator* permissions for repositories
+
+==== CI/CD Module Subscribed Events
+
+Below is a list of events specific to the CI/CD module to which Prisma Cloud is subscribed. These events encompass various actions and changes occurring within your CI/CD environment that trigger notifications and integrations with Prisma Cloud.
+
+*Project*
+
+* *proj:modified*: This event occurs when a project undergoes modifications, such as changes to its name, description, or configuration settings
+
+*Repository*
+
+* *repo:refs_changed*: This event occurs when a push operation is performed, typically resulting in changes to the repository's references
+* *repo:forked*: This event occurs when a repository is forked, creating a separate copy of the repository under a different user or organization
+* *repo:repo:modified*: This event occurs when the repository itself undergoes modifications, such as changes to its settings or configuration
+* *repo:comment:added*: This event occurs when a new comment is added to a commit within the repository
+* *repo:comment:edited*: This event occurs when an existing comment on a commit is edited within the repository
+* *repo:comment:deleted*: This event occurs when a comment on a commit is deleted within the repository
+
+*Pull Request*
+
+* *pr:opened*: This event occurs when a pull request is opened, indicating the initiation of a request to merge changes into the repository 
+* *pr:from_ref_updated*: This event occurs when the source branch of a pull request is updated with new changes 
+* *pr:to_ref_updated*: This event occurs when the target branch of a pull request is updated with new changes 
+* *pr:modified*: This event occurs when a pull request undergoes modifications, such as changes to its title, description, or metadata  
+* *pr:reviewer:updated*: This event occurs when the list of reviewers assigned to a pull request is updated
+* *pr:reviewer:approved*: This event occurs when a reviewer approves a pull request
+* *pr:reviewer:unapproved*: This event occurs when a previously approved review on a pull request is revoked
+* *pr:reviewer:needs*: This event occurs when a reviewer requests changes to be made to a pull request before it can be approved
+* *pr:merged*: This event occurs when a pull request is successfully merged into the repository
+* *pr:declined*: This event occurs when a pull request is declined or rejected, typically due to not meeting certain criteria or requirements 
+* *pr:deleted*: This event occurs when a pull request is deleted, either intentionally by a user or automatically due to certain conditions 
+* *pr:comment:added*: This event occurs when a new comment is added to a pull request  
+* *pr:comment:edited*: This event occurs when an existing comment on a pull request is edited 
+* *pr:comment:deleted*: This event occurs when a comment on a pull request is deleted
+
 
 [#subscribed-events]
 === Subscribed Events
 
-Below is a comprehensive list of events to which Prisma Cloud is subscribed. These events encompass various actions and changes occurring within your Bitbucket Server environment that trigger notifications and integrations with Prisma Cloud.
+Below is a comprehensive list of events to which Prisma Cloud is subscribed, excluding those related to the CI/CD module. These events encompass various actions and changes occurring within your Bitbucket Server/Data Center environment that trigger notifications and integrations with Prisma Cloud.
 
 * *pr:merged*: This event occurs when a pull request is successfully merged into the repository
 * *pr:reviewer:updated*: This event happens when the reviewer list for a pull request is updated
