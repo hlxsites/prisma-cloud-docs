@@ -7,13 +7,13 @@
 [cols="1,1"]
 |=== 
 |Prisma Cloud Policy ID 
-| 66b124d3-20ba-4928-a4c8-7403c974ea6d
+| bc4e467f-10fa-471e-aa9b-28981dc73e93
 
 |Checkov ID 
 | https://github.com/bridgecrewio/checkov/blob/main/checkov/arm/checks/resource/StorageAccountsTransportEncryption.py[CKV_AZURE_3]
 
 |Severity
-|MEDIUM
+|LOW
 
 |Subtype
 |Run,Build
@@ -25,11 +25,9 @@
 
 === Description
 
-Azure Storage Accounts provide the capability to store a variety of data types, including blobs, files, queues, tables, and disks. Ensuring the secure transport of this data is crucial to prevent potential eavesdropping and man-in-the-middle attacks.
+This policy detects whether the `supportsHttpsTrafficOnly` property for Azure Storage Accounts is configured to `true`. Azure Storage Accounts offer the capability to store various data types such as blobs, files, queues, tables, and disks. By setting this property, only HTTPS traffic is permitted to access the storage service. Securing the transport of this data is crucial to prevent eavesdropping and man-in-the-middle attacks. HTTPS encryption ensures that the data transmitted between the client and server remains encrypted, thereby enhancing the security of data in transit.
 
-This policy ensures that the 'supportsHttpsTrafficOnly' property for Azure Storage Accounts is set to 'true'. By setting this property to 'true', only HTTPS traffic is allowed to the storage service. Notably, since the API version 2019-04-01, the default value for 'supportsHttpsTrafficOnly' has been set to 'true'. However, it's important to verify this for Storage Accounts, especially those created before this API version.
-
-HTTPS ensures that the data between the client and server is encrypted, adding a layer of security for data in transit.
+Note: Since API version 2019-04-01, the default value for `supportsHttpsTrafficOnly` is `true`. However, it's essential to verify this setting for Storage Accounts, particularly those created before this API version.
 
 === Fix - Buildtime
 
@@ -40,6 +38,8 @@ HTTPS ensures that the data between the client and server is encrypted, adding a
 
 *Arguments:* 
 - enable_https_traffic_only
+
+In this example, `enable_https_traffic_only` is explicitly set to `true` to force HTTPS only traffic.
 
 [source,go]
 ----
@@ -63,6 +63,8 @@ resource "azurerm_storage_account" "example" {
 
 *Arguments:* 
 - properties/supportsHttpsTrafficOnly
+
+In this example, `supportsHttpsTrafficOnly` is explicitly set to `true` to force HTTPS only traffic.
 
 [source,json]
 ----
