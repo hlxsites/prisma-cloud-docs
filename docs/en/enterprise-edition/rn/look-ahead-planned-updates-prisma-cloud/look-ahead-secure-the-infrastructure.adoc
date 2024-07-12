@@ -3,7 +3,7 @@
 
 Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.7.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.7.3 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -14,9 +14,10 @@ The details and functionality listed below are a preview and the actual release 
 
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
-* <<policy-updates>>
+//* <<policy-updates>>
+* <<iam-policy-updates>>
 * <<api-ingestions>>
-//* <<new-compliance-benchmarks-and-updates>>
+* <<new-compliance-benchmarks-and-updates>>
 //* <<rest-api-updates>>
 * <<deprecation-notices>>
 
@@ -28,28 +29,6 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|*Change to Compliance Trendline and Deprecation of Compliance Filters*
-//RLP-144230, RLP-144161
-//*Compliance Trendline Available Only up to Past One Year*
-
-|To provide better performance, starting with the 24.7.2 release, the Compliance trendline will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
-
-The Compliance-related filters (Compliance Requirement, Compliance Standard, and Compliance Section) will not be available on *Asset Inventory* (Inventory > Assets).
-
-//Starting with the 24.7.2 release, you will be able to access compliance trendline data only of the past 1 year. This change is implemented to optimize system performance and reduce data storage requirements.
-
-|*Tag-based Resource Lists*
-//RLP-140177
-
-|Starting with the 24.7.2 release, the following limits will be enforced for Tag-based Resource Lists:
-
-* Tag-based Resource Lists will be limited to 10 key-value pairs
-* Up to 5 Tag-based Resource Lists may be associated with a Role
-* Tag-based Resource List Tag key and value will be limited to 256 characters each
-
-*Impact—* These changes will affect Tag-based Resource Lists and Roles after the 24.7.2 release. Existing configurations will not be affected.
-//Commenting out per feedback from AO 5/24 - check for 24.7.1 inclusion
-
 
 |*Role-Based Access Control for Compliance and Alert Reports*
 //RLP-140182
@@ -57,6 +36,15 @@ The Compliance-related filters (Compliance Requirement, Compliance Standard, and
 |Starting with the 24.8.1 release, user-generated reports will only be visible to System Administrators and to users with the same role.
 
 Implementing Role-Based Access Control (RBAC) enhances data security by streamlining report access for users with the same role, while also preventing unauthorized access.
+
+|*Change in Amazon EC2 Ingestion*
+//RLP-145171
+
+|Starting with the 24.9.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+
+*Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
+
+If you have any questions, contact your Prisma Cloud Customer Success Representative.
 
 |===
 
@@ -78,7 +66,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.7.2.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.7.3.
 
 . Review the updates.
 +
@@ -87,27 +75,220 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-[#policy-updates]
-=== Policy Updates
+//[#policy-updates]
+//=== Policy Updates
 
-//There are no policy updates planned for 24.7.2 release.
+//There are no policy updates planned for 24.7.3 release.
+
+//[cols="50%a,50%a"]
+//|===
+
+//|*Policies*
+//|*Description*
+
+//|===
+
+[#iam-policy-updates]
+=== IAM Policy Updates
+
+The following IAM OOTB policies will be updated in 24.7.3 release.
 
 [cols="50%a,50%a"]
-
 |===
-
 |*Policies*
 |*Description*
 
-|*Azure AD MFA is not enabled for the user*
+|*AWS Users and Machine Identities with Excessive Policies*
+//RLP-145657
 
-//RLP-144781
+|*Changes—* The policy RQL will be updated to narrow down the resource based policies and remove false positives.
 
-|*Changes*— The policy will be deleted since the underlying API for this policy has been discontinued by Azure CSP and the compliance standards referred to by the policy are also deleted. A new policy with a similar name will be released to cover this use case and ensure compliance coverage.
+*Severity—* High
 
-*Impact*— Low. Alerts generated for this policy will be resolved as *Policy_Deleted*.
+*Cloud—* AWS
+
+*Updated RQL—*
+
+----
+config from iam where source.cloud.type = 'AWS' and grantedby.cloud.policy.isexcessive = true and source.cloud.resource.type IN ('user', 'instance', 'function')
+----
+
+|*Roles with high privileges can be assumed by a service in an external account*
+//RLP-145373
+
+|*Changes—* This policy descrption and recommendation steps will be updated to better match the policy.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Updated Description—*
+	
+Identifies roles which have administrative permissions and can be assumed by an identity in an "external account". An external account is one not known to Prisma cloud as part of your organization and not that of a known vendor. This policy relies on the default account group, therefore if the group is changed this policy will not reflect the environment entirely. The default account group is created upon onboarding to Prisma Cloud, and contains all instance-related accounts known to Prisma Cloud. External accounts are considered as such if Prisma are unaware of them in the context of your environment (i.e not part of the onboarded accounts). As we do not have visibility or control over the external entity, giving it the ability to gain administartive permissions in the environment is considered high risk.
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, select 'Investigate'
+2. Paste the following query into the investigation prompt, replacing the placeholder with the account ID you wish to verify: config from iam where dest.cloud.type = 'AWS' AND source.cloud.account='<account-id>' and dest.cloud.account='<account-id>'
+
+3a. If results are returned, this is an indicator that Prisma is scanning the account, and as such is aware of it
+If this is the case, select 'settings' and then 'Account Groups'
+Search for the default account group, under 'Actions' select 'Edit'. Search for the account in question and add it
+
+3b. If no results are returned, this means Prisma has no knowledge of the account in question (i.e it is not onboarded and in the eyes of Prisma, external)
+
+In order to continue the investigation, using the AWS CLI, run 'aws organizations list-accounts', and you will recieve a list of all the accounts within the AWS organization
+Repeat this process for every AWS organization you own. If the account in question does not appear, it can be concluded as external
+
+In order to remove its access, use the following remediation steps:
+
+Log in to your AWS account
+Navigate to the affected role, and select the 'Trusted entities' tab.
+Select 'Edit trust policy' and remove the entries allowing assumption from external sources.
+Ensure the remaining entries are required, and save your changes.
+
+
+|*AWS Role With Administrative Permissions Can Be Assumed By All Users*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, take note of the "Asset Name". Then select the "Alert ID", then "Investigate"
+2. In the results, you will see the policy granting the administrative permissions to the role ("Granted By Policy"), and the specific administrative permissions ("Destination")
+3. Sign in to the AWS Console
+4. Navigate to the affected role\n5. Examine the role's trust relationship and permissions as well as its use case
+
+In order to remove any administrative permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+
+Browse to the role in the AWS Console and select "Trust relationships"->"Edit trust policy". Modify the role's trust relationship as per requirements. Under the "Permissions" tab, select the relevant policy and remove unnecessary administrative permissions by either editing the policy or replacing it (notice: editing a managed policy could affect other roles).
+
+|*GCP Cloud Run with administrative permissions*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* Medium
+
+*Cloud—* GCP
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, select the "Asset Name", the "View JSON{}"
+2. Scroll down to the "data" field, and under "spec/template/spec" make note of the service account listed
+3. Still in the Prisma Cloud Console, select 'Investigate'\n2. Paste the following query into the investigation prompt, replacing the placeholder with the name of the service account you obtained in the previous steps: config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.name ='<service account name>'
+4. In the results, under "Granted By Policy", you will see the policies attached to the service account
+
+Once examining the policies and determining which permissions are unnecessary and can be removed based on the Cloud Run instance's intended use, sign in to your GCP account. In order to remove any unnecessary permissions , use the following remediation steps:
+
+Navigate to the IAM service, and search for the Service account. Select the pencil icon to edit it's permissions, removing the relevant policy for a less privileged one sufficient for the account intended purpose.
+
+|*User account with excessive admin privileges*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* Medium
+
+*Cloud—* All
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, take note of the "Asset Name". Then select the "Alert ID", then "Investigate"
+2. In the results, you will see the policy granting unused administrative permissions to the user ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access
+
+Once examining the permissions and determining which permissions are unnecessary and can be removed based on their last usage, in order to remove them, use the following remediation steps:
+
+Log in to your Cloud instance, navigate to the affected user, and edit the user's permissions following the principle of least privilege and based on the information collected.
+
+|*Cloud service account with excessive admin privileges*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* Medium
+
+*Cloud—* All
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, select "Asset Name" and take note of the "Name" and "Asset Type", then exit the tab. Select the "Alert ID", then "Investigate"
+2. In the results, you will see the service account attached to the asset ("Granted By Entity"), the policy granting unused administrative permissions to the service account ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access
+
+Once examining the permissions and determining which permissions are unnecessary and can be removed based on their last usage, in order to remove them, use the following remediation steps:
+
+Log in to your Cloud instance, and navigate to the affected service account, and edit the entity's permissions following the principle of least privilege and based on the information collected.
+
+|*Third-party service account can assume a service account with high privileges*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. Sign in to the AWS Console
+2. Navigate to the affected role
+3. Examine the role's trust relationship and permissions as well as its use case - if needed reach out to the vendor to validate which permissions are necessary for their functions and why
+
+In order to remove any unnecessary permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+
+To revoke the vendor's access to assume the role altogether, browse to the role in the AWS Console and select "Trust relationships"->"Edit trust policy". Modify the role's trust relationship as per requirements. To minimize the access the vendor has using the role, under the "Permissions" tab, select the relevant policy and remove unnecessary permissions by either editing the policy or replacing it (notice: editing a managed policy could affect other roles).
+
+|*GCP Cloud Run Job Public Execution via Default Compute SA Modification*
+//RLP-145655
+
+|*Changes—* The policy RQL will be updated to narrow down results (for example remove basic roles which are caught by other policies) and provide a more effective view.
+
+*Severity—* High
+
+*Cloud—* GCP
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.jobs.setIamPolicy', 'iam.serviceAccounts.actAs') AND grantedby.cloud.policy.type != 'GCP Basic Role'
+----
+
+|*GCP Lateral Access Expansion by Making Cloud Run Publicly Executable*
+//RLP-145655
+
+|*Changes—* The policy RQL will be updated to narrow down results (for example remove basic roles which are caught by other policies) and provide a more effective view.
+
+*Severity—* High
+
+*Cloud—* GCP
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.services.setIamPolicy', 'iam.serviceAccounts.actAs') AND grantedby.cloud.policy.type != 'GCP Basic Role'
+----
+
 
 |===
+
+
 
 [#api-ingestions]
 === API Ingestions
@@ -117,223 +298,216 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Service*
 |*API Details*
 
-|*AWS AppConfig*
-//RLP-142813 - Sandip Vishwakarma 6/18 in 6.2 draft - change the release version for this to 24.7.2
+|*Amazon S3*
 
-|*aws-appconfig-application*
+tt:[24.7.3]
+//RLP-142168
 
-Additional permissions required:
+|*aws-s3api-get-bucket-acl*
 
-* `appconfig:ListApplications`
-* `appconfig:ListEnvironments`
-* `appconfig:ListConfigurationProfiles`
+Additional permission required:
 
-The Security Audit role does not include the permissions. You must manually add the above permissions to the CFT template to enable them.
+* `s3:GetAccelerateConfiguration`
+
+The Security Audit role includes the permission.
+
+Also, this API has been updated to include the following new field in the resource JSON:
+
+* `bucketAccelerateConfiguration`
+
+|*AWS Application Migration Service*
+//RLP-145208
+
+|*aws-mgn-replication-configuration-template*
+
+Additional permission required:
+
+* `mgn:DescribeReplicationConfigurationTemplates`
+
+The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
+
 
 |*Amazon EMR*
-//RLP-144065 
+//RLP-145210 
 
-|*aws-emr-studio*
-
-Additional permissions required:
-
-* `elasticmapreduce:ListStudios`
-* `elasticmapreduce:DescribeStudio`
-
-The Security Audit role includes the `elasticmapreduce:DescribeStudio` permission. 
-
-The Security Audit role does not include the `elasticmapreduce:ListStudios` permission. You must manually add it to the CFT template to enable it.
-
-|*Amazon SageMaker*
-//RLP-144062
-
-|*aws-sagemaker-labeling-job*
+|*aws-emr-serverless-application*
 
 Additional permissions required:
 
-* `sagemaker:ListLabelingJobs`
-* `sagemaker:DescribeLabelingJob`
+* `emr-serverless:ListApplications`
+* `emr-serverless:GetApplication`
 
 The Security Audit role includes the permissions. 
 
-|*Amazon Comprehend*
-//RLP-144059
+|*AWS Systems Manager*
+//RLP-145209
 
-|*aws-comprehend-targeted-sentiment-detection-jobs*
-
-Additional permissions required:
-
-* `comprehend:ListTargetedSentimentDetectionJobs`
-* `comprehend:ListTagsForResource`
-
-The Security Audit role does not include the permissions. You must manually add the above permissions to the CFT template to enable them.
-
-|*AWS Step Functions*
-//RLP-144054
-
-|*aws-step-functions-activity*
+|*aws-ssm-activation*
 
 Additional permission required:
 
-* `states:ListActivities`
+* `ssm:DescribeActivations`
 
-The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
+The Security Audit role includes the permission. 
 
+|*AWS Systems Manager*
+//RLP-145206
 
-|*AWS Service Catalog*
-//RLP-144053
-
-|*aws-servicecatalog-product*
-
-Additional permission required:
-
-* `servicecatalog:SearchProducts`
-
-The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
-
-|*Azure DNS*
-//RLP-143835
-
-|*azure-dns-private-dns-zone-record-sets*
-
-Additional permissions required:
-
-* `Microsoft.Network/privateDnsZones/read`
-* `Microsoft.Network/privateDnsZones/read`
-
-The Reader role includes the permissions.
-
-
-|*Azure Log Analytics*
-//RLP-143827
-
-|*azure-log-analytics-workspace-tables*
-
-Additional permissions required:
-
-* `Microsoft.OperationalInsights/workspaces/read`
-* `Microsoft.OperationalInsights/workspaces/tables/read`
-
-The Reader role includes the permissions.
-
-
-|*Azure Machine Learning*
-//RLP-143348
-
-|*azure-machine-learning-workspace-managed-network-outbound-rules*
-
-Additional permissions required:
-
-* `Microsoft.MachineLearningServices/workspaces/read`
-* `Microsoft.MachineLearningServices/workspaces/outboundRules/read`
-
-The Reader role includes the permissions.
-
-|*Azure Event Grid*
-//RLP-143144
-
-|*azure-event-grid-partner-namespaces*
+|*aws-ssm-session*
 
 Additional permission required:
 
-* `Microsoft.EventGrid/partnerNamespaces/read`
+* `ssm:DescribeSessions`
+
+The Security Audit role includes the permission. 
+
+|*Azure Compute*
+//RLP-144994
+
+|*azure-compute-snapshots*
+
+Additional permission required:
+
+* `Microsoft.Compute/snapshots/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+//RLP-144988
+
+|*azure-monitor-smart-detector-alert-rules*
+
+Additional permission required:
+
+* `Microsoft.AlertsManagement/smartDetectorAlertRules/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+//RLP-144974
+
+|*azure-monitor-prometheus-rule-groups*
+
+Additional permission required:
+
+* `Microsoft.AlertsManagement/prometheusRuleGroups/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+//RLP-141429
+
+|*azure-monitor-query-packs*
+
+Additional permission required:
+
+* `Microsoft.OperationalInsights/querypacks/read`
 
 The Reader role includes the permission.
 
 
-|*Azure Notification Hubs*
-//RLP-137479
+|*Azure Resource Manager*
+//RLP-142469
 
-|*azure-notification-hub-namespace-diagnostic-settings*
-
-Additional permissions required:
-
-* `Microsoft.NotificationHubs/Namespaces/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader role includes the permissions.
-
-
-|*Google Cloud Build*
-//RLP-143899
-
-|*gcloud-cloud-build-trigger*
+|*azure-template-specs*
 
 Additional permission required:
 
-* `cloudbuild.builds.list`
+* `Microsoft.Resources/templateSpecs/read`
 
-The Viewer role includes the permission.
+The Reader role includes the permission.
 
-|*Google reCAPTCHA Enterprise*
-//RLP-143898
+|tt:[Update] *Google Anthos GKE Fleet Management*
+//RLP-138227, RLP-131184
 
-|*gcloud-recaptcha-enterprise-key*
+|To improve performance, the `gkehub.locations.list` permission is no longer required for the following APIs:
 
-Additional permission required:
-
-* `recaptchaenterprise.keys.list`
-
-The Viewer role includes the permission.
-
-|*Google Firebase Hosting*
-//RLP-143897
-
-|*gcloud-firebase-hosting-site-custom-domain*
-
-Additional permission required:
-
-* `firebasehosting.sites.get`
-
-The Viewer role includes the permission.
-
-|*Google Firebase Hosting*
-//RLP-143896
-
-|*gcloud-firebase-hosting-site-channel*
-
-Additional permission required:
-
-* `firebasehosting.sites.get`
-
-The Viewer role includes the permission.
-
-|*Google Firebase Hosting*
-//RLP-143895
-
-|*gcloud-firebase-hosting-site*
-
-Additional permission required:
-
-* `firebasehosting.sites.get`
-
-The Viewer role includes the permission.
+* *gcloud-anthos-gke-fleet-membership*
+* *gcloud-anthos-gke-fleet-feature*
 
 
-|tt:[Update] *Google Certificate Authority Service*
+|tt:[Update] *Google Certificate Manager*
+//RLP-144501, RLP-144500
 
-//RLP-138226, RLP-138208, RLP-138207, RLP-138185, RLP-138184
+|To improve performance, the `certificatemanager.locations.list` permission is no longer required for the following APIs:
 
-|To improve performance, the `privateca.locations.list` permission will no longer be required for the following APIs:
+* *gcloud-certificate-manager-dns-authorization*
+* *gcloud-certificate-manager-certificate*
 
-* *gcloud-certificate-authority-revocation-lists*
-* *gcloud-certificate-authority-pool*
-* *gcloud-certificate-authority-certificate-template*
-* *gcloud-certificate-authority-certificate*
-* *gcloud-certificate-authority-ca*
+|tt:[Update] *Google Cloud Deploy*
+//RLP-144504, RLP-144503
+
+|To improve performance, the `clouddeploy.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-cloud-deploy-target*
+* *gcloud-cloud-deploy-delivery-pipeline*
+
+|tt:[Update] *Google Cloud Memorystore for Memcached*
+//RLP-144510
+
+|To improve performance, the `networkconnectivity.locations.list` permission is no longer required for the *gcloud-memorystore-memcached-instance* API.
 
 
-|tt:[Update] *OCI Cloud Guard*
-//RLP-138217. Move this blurb to features introduced in 24.7.2
+|tt:[Update] *Google Cloud VMware Engine*
+//RLP-144519, RLP-144518, RLP-144517, RLP-144516, RLP-144515, RLP-144514
 
-|*oci-cloudguard-security-recipe*
+|To improve performance, the `vmwareengine.locations.list` permission is no longer required for the following APIs:
 
-The `oci-cloudguard-security-recipe` API will be updated to exclude the `timeCreated` and `timeUpdated` fields from JSON because it changes frequently causing too many resource snapshots.
+* *gcloud-vmware-engine-subnet*
+* *gcloud-vmware-engine-private-cloud*
+* *gcloud-vmware-engine-network*
+* *gcloud-vmware-engine-network-policy*
+* *gcloud-vmware-engine-hcx-activation-key*
+* *gcloud-vmware-engine-cluster*
+
+|tt:[Update] *Google Datastream*
+//RLP-144508, RLP-144507, RLP-144505
+
+|To improve performance, the `datastream.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-datastream-stream*
+* *gcloud-datastream-private-connection*
+* *gcloud-datastream-connection-profile*
+
+
+
+|tt:[Update] *Google Hybrid Connectivity*
+//RLP-144511
+
+|To improve performance, the `memcache.locations.list` permission is no longer required for the *gcloud-hybrid-connectivity-spoke* API.
+
+
+|tt:[Update] *Google Traffic Director*
+//RLP-144513, RLP-144512
+
+|To improve performance, the `networkservices.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-traffic-director-network-service-mesh*
+* *gcloud-traffic-director-network-service-gateway*
+
+|tt:[Update] *Google Workflows*
+//RLP-144520
+
+|To improve performance, the `workflows.locations.list` permission is no longer required for the *gcloud-workflows-workflow* API.
 
 |===
 
-//[#new-compliance-benchmarks-and-updates]
-//=== New Compliance Benchmarks and Updates
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*Policy Mapping Update for CIS GCP v2.0.0 Level 1/Level 2 and v3.0.0 Level 2*
+//RLP-145840
+
+|New Policy mappings will be added to CIS v2.0.0 (GCP) Level 1, CIS v2.0.0 (GCP) Level 2, and CIS v3.0.0 (GCP) Level 2 compliance standards.
+
+*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
+
+|===
 
 
 [#deprecation-notices]
@@ -373,7 +547,7 @@ The following legacy Compliance Standards are planned for deprecation at the end
 //RLP-140241
 
 |24.5.2
-|24.7.2
+|24.7.3
 |You must upgrade to the latest version of the Compliance Standards:
 
 * MITRE ATT&CK v14.0 Cloud IaaS for Enterprise
@@ -382,7 +556,7 @@ The following legacy Compliance Standards are planned for deprecation at the end
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
-//RLP-120514
+//RLP-120514, RLP-145823
 
 * https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
 * https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
