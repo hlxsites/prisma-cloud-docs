@@ -39,36 +39,65 @@ See xref:../../risk-management/monitor-and-manage-code-build/monitor-and-manage-
 
 === Software Composition Analysis
 
-For each vulnerability identified in an SCA scan, Prisma Cloud contextualizes it as a CVE (Common Vulnerabilities and Exposures) for open source package managers. CVE is publicly available information on cybersecurity vulnerabilities and exposures often listed by https://cve.mitre.org/index.html[Mitre corporation]. Each CVE has an ID that uniquely identifies one vulnerability from the list. In addition to the CVE ID, on Prisma Cloud you can view CVSS (Common Vulnerability Scoring System), an open framework for calculating the severity of software vulnerabilities defined by https://nvd.nist.gov/vuln-metrics/cvss#:~:text=The%20Common%20Vulnerability%20Scoring%20System,Base%2C%20Temporal%2C%20and%20Environmental[NIST]. With CVE ID, CVSS, package name and version, Prisma Cloud also gives you Risk Factors to help you with your vulnerability management that is associated with each scanned package and have seven defined categories..
+For each vulnerability identified in an SCA scan, Prisma Cloud contextualizes it as a Common Vulnerabilities and Exposures (CVE) for open source package managers. CVE is publicly available information on cybersecurity vulnerabilities and exposures often listed by https://cve.mitre.org/index.html[Mitre corporation]. Each CVE has an ID that uniquely identifies one vulnerability from the list. In addition to the CVE ID, on Prisma Cloud you can view CVSS (Common Vulnerability Scoring System), an open framework for calculating the severity of software vulnerabilities defined by https://nvd.nist.gov/vuln-metrics/cvss#:~:text=The%20Common%20Vulnerability%20Scoring%20System,Base%2C%20Temporal%2C%20and%20Environmental[NIST]. With CVE ID, CVSS, package name and version, Prisma Cloud also gives you Risk Factors to help you with your vulnerability management that is associated with each scanned package and have seven defined categories.
+
+[#runtime-vulnerabilities]
+=== Mitigate Runtime Vulnerabilities at Source
+
+Prisma Cloud's image-to-repository tracing capabilities allow you to contextualize CVE vulnerabilities detected in your runtime environment within Cloud Application Security (CAS), as well as to identify their source in the codebase. This enables you to mitigate these vulnerabilities at source, preventing them from impacting your runtime environment.
+
+On the *Application Security* > *Projects* page, you can leverage the *Vulnerability Risk Factors* filter to trace CVEs detected in runtime back to your codebase. This allows you to focus and mitigate vulnerabilities at their source, preventing them from reaching runtime environments. The following runtime risk factors are available to filter vulnerabilities in CAS.
+
+//This is achieved by leveraging data from Prisma Cloud's CWP and Hyperion modules.
 
 [cols="1,2", options="header"]
 |===
 
-|Risk Factor
+|Vulnerability Risk Factor
 |Description
 
-|Remote execution
-|This helps you understand if the vulnerability is exploitable to run arbitrary code.
+|Attack complexity
+|This helps you understand if the vulnerability is easily exploitable
 
 |DoS
-|This helps you understand if the package is vulnerable to Denial-of-Service attacks, like buffer overflow attacks, ICMP floods and so on.
+|Component is vulnerable to denial of service attacks, such as buffer overflow attacks, and ICMP floods. The risk is categorized as high or low based on impact
 
+|Attack vector
+|Vulnerability is remotely exploitable. The vulnerable component is bound to the network, and the attacker's path is through the network
+
+|Remote execution
+|Vulnerability can be exploited to run arbitrary code
+
+|Exploit POC
+|Code and procedures to exploit the vulnerability are publicly available
+
+|Exploit in the Wild
+|Exploit attempts of this vulnerability that have been seen in the wild. All vulnerabilities are from the [https://www.cisa.gov/known-exploited-vulnerabilities-catalog[CISA KEV Catalog].
+
+|Package in Runtime
+|The traced container image and the vulnerable package share a "package in use" risk factor (loaded to memory) identified by CWP
+
+|Repository in Runtime
+|The traced container image used to build the application is accessible within the runtime environment
+
+|Manifest in Runtime
+|The presence of a package manager file (such as `package.json`) is detected within the runtime environment
+
+|===
+
+NOTE: For more information on runtime risk factors, refer to xref:../../../../../runtime-security/vulnerability-management/vulnerability-explorer.adoc[Vulnerabiity Explorer].
+
+//THe following is not yet available: |Reachable from the internet
+//|This helps you understand if the vulnerability exists in a container that is exposed to the internet.
+////
+removed these factors as they are not in the current filter
 |Recent vulnerability
 |This helps you identify when the vulnerability was previously reported.
 
 |Exploit exists
 |Helps you recognize if the code and procedures to exploit the vulnerability are publicly available.
+////
 
-|Attack complexity
-|This helps you understand if the vulnerability is easily exploitable.
-
-|Attack vector
-|This helps you understand if the vulnerability is remotely exploitable for being bound to the network and identify if there are any threats through the network.
-
-|Reachable from the internet
-|This helps you understand if the vulnerability exists in a container that is exposed to the internet.
-
-|===
 
 You can view the SCA scan results on:
 
