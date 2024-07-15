@@ -856,6 +856,47 @@ It is recommended to enable at least PER_TOPIC_PER_BROKER monitoring on the MSK 
 config from cloud.resource where api.name = 'aws-msk-cluster' AND json.rule = state equal ignore case active and enhancedMonitoring is member of (DEFAULT, PER_BROKER)
 ----
 
+|*AWS Route53 public Hosted Zone query logging is not enabled*
+
+tt:[*24.7.3*]
+//RLP-145545
+
+|This policy identifies the AWS Route53 public hosted zones DNS query logging is not enabled.
+
+Enabling DNS query logging for an AWS Route 53 hosted zone enhances DNS security and compliance by providing visibility into DNS queries. When enabled, Route 53 sends these log files to Amazon CloudWatch Logs. Disabling DNS query logging for AWS Route 53 limits visibility into DNS traffic, hampering anomaly detection, compliance efforts, and effective incident response.
+
+It is recommended to enable logging for all public hosted zones to enhance the visibility and compliance requirements.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-route53-list-hosted-zones' AND json.rule = hostedZone.config.privateZone is false as X; config from cloud.resource where api.name = 'aws-route53-query-logging-config' as Y; filter ' not ($.X.hostedZone.id equals $.Y.HostedZoneId) ' ; show X; 
+----
+
+|*AWS Network ACLs allow ingress traffic on Admin ports 22/3389*
+
+tt:[*24.7.3*]
+//RLP-145530
+
+|This policy identifies the AWS Network Access Control List (NACL) which has a rule to allow ingress traffic to server administration ports.
+
+AWS NACL provides filtering of ingress and egress network traffic to AWS resources. Allowing ingress traffic on admin ports 22 (SSH) and 3389 (RDP) via AWS Network ACLs increases the vulnerability of EC2 instances and other network resources to unauthorized access and cyberattacks.
+
+It is recommended that no NACL allows unrestricted ingress access to server administration ports, such as SSH port 22 and RDP port 3389.
+
+NOTE: This policy may report NACLs, which include the deny policy in the rule set. Make sure while remediating the rule set does not consist of the Allow and Deny rule set together; which leads to overlap on each ruleset.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-network-acls' AND json.rule = "entries[?any(egress equals false and ((protocol equals 6 and ((portRange.to equals 22 or portRange.to equals 3389 or portRange.from equals 22 or portRange.from equals 3389) or (portRange.to > 22 and portRange.from < 22) or (portRange.to > 3389 and portRange.from < 3389))) or protocol equals -1) and (cidrBlock equals 0.0.0.0/0 or ipv6CidrBlock equals ::/0) and ruleAction equals allow)] exists"
+----
+
+
 |*Azure subscription permission for Microsoft Entra tenant is set to 'Allow everyone'*
 
 tt:[*24.7.3*]
@@ -932,6 +973,46 @@ As a best practice, it is recommended to configure NSGs to restrict HTTP(S) traf
 config from cloud.resource where cloud.type = 'azure' AND api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any((sourceAddressPrefix equal ignore case Internet or sourceAddressPrefix equals * or sourceAddressPrefix equals 0.0.0.0/0 or sourceAddressPrefix equals ::/0) and access equal ignore case Allow and direction equal ignore case Inbound and ((protocol equal ignore case Tcp and (destinationPortRange contains * or destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges any equal * or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) )) or (protocol contains * and (destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) ))) )] exists
 ----
 
+|*Privilege escalation and lateral movement risk due to a publicly exposed GCP Cloud Run Service with basic role assigned*
+
+tt:[*24.7.3*]
+//RLP-145548
+
+|This policy identifies GCP Cloud Run Services that are publicly exposed and have basic role attached.
+
+Basic roles are highly permissive roles that existed prior to the introduction of IAM. Basic roles on the Cloud Run Service helps the attackers to escalate their privileges, move laterally or perform other unauthorized actions in the cloud account.
+
+This policy checks for the following basic roles:
+'Viewer', 'Editor', 'Owner'
+
+Immediate attention is required to review role assignments and grant only the least privileges required. Remove unwanted roles assigned to the Cloud Run Service and restrict public exposure reported for the cloud run service as soon as possible.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Attack Path
+
+----
+asset WHERE asset.type IN ('gcloud-cloud-run-services-list') and finding.name contains all ('f4ff0156-ce21-42ab-aa20-490c3159ecb9', '0c1f97f6-8740-4561-bae7-d9216fb5e4a0')
+----
+
+|*Privilege escalation and lateral movement risk due to a publicly exposed GCP Cloud Run Service with administrative permissions*
+
+tt:[*24.7.3*]
+//RLP-145549
+
+|This policy identifies GCP Cloud Run Services that are publicly exposed and have administrative permissions.
+
+The administrative permissions on the cloud run service can be used by attackers for privilege escalation, lateral movement in the environment, creating backdoors, exfiltrating sensitive data, or performing other unauthorized actions in the cloud account.
+
+Immediate attention is required to review role assignments and grant only the least privileges required. Remove unwanted roles assigned to the Cloud Run Service and restrict public exposure reported for the cloud run service as soon as possible.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Attack Path
+
+----
+asset WHERE asset.type IN ('gcloud-cloud-run-services-list') and finding.name contains all ('f4ff0156-ce21-42ab-aa20-490c3159ecb9', '1bc93b36-2e15-4d1f-b2b6-23e1a646f4e6')
+----
 
 |*OCI Load balancer not configured with Network Security Groups*
 
