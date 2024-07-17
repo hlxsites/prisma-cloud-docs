@@ -93,8 +93,37 @@ You can upgrade the Prisma Cloud Console from a major release to the next major 
 
 [#addressed-issues]
 === Addressed Issues
-// [cols="1,1", options="header"]
-There are no Addressed Issues for this release.
+// There are no Addressed Issues for this release.
+
+[cols="1,1", options="header"]
+|===
+
+//CWP-57873
+|//TODO: Title needs to be approved [Fixed False Positives Caused by RPM and Third-Party Package Name Discrepancies]
+|Addressed the issue of false positives during vulnerability assessment  due discrepancies between RPM package names, , and third-party package names where the same CVE may be listed under different names for example, `urllib3` for Python versus `python3-urllib3` for RPM. This inconsistency led to potential false positives or missed vulnerabilities. In order to validate if the third-party package should be reported, Prisma Cloud now also assesses the origin package name.
+
+//CWP-51958
+|//TODO: Title needs to be approved [Fixed Parsing of Jenkins Security Advisory Fix Versions]
+|Corrected parsing of Jenkins security information in affected versions and fix versions due to a scheme change. For example, the Jenkins Security Advisory 2021-10-06 did not produce fixed versions, showing all versions as vulnerable  despite CVE-2014-3577 being fixed up to and including version 2.314.
+
+//CWP-57317
+|//TODO: Title needs to be approved [Fixed incorrect Image Name Retrieval for Non-RPM Containers in Openshift Clusters]
+|Addressed an issue with Openshift cluster where incorrect image names were fetched for non RPM container images due to the cluster having a generic name for example, openshift-release-dev/ocp-v4.0-art-dev. To resolve this, the mapping extracts the release and version from image labels and adjusts the name by combining registry, origin name, release, and version to be the image name. For example `<registry>/<image_name>:<version>-<release>`.
+
+//CWP-40044
+//TODO: Verify if approved
+|*Support for FIPS-enabled OpenSSL packages*
+|Previously, Prisma Cloud skipped scanning Federal Information Processing Standards (FIPS)-enabled OpenSSL packages to avoid overriding older releases, and instead matched against non-FIPS versions. This led to inaccurate vulnerability reporting.
+
+This issue has been resolved. Prisma Cloud now fully supports scanning FIPS-enabled OpenSSL versions, ensuring correct vulnerability detection and eliminating false positives.
+
+//CWP-49983
+//TODO: Verify if approved
+|*Errors added to Console log when scanning images by Defender*
+|Previously, errors encountered during image scans by Defender were not added to the console log. This issue has been fixed. Now, when Defender scans images, error messages are printed to the console log along with the image ID and the name of the Defender.
+
+|===
+
 
 
 // [#backward-compatibility]
