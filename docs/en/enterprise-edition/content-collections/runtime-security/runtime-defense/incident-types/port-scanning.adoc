@@ -1,11 +1,15 @@
 [#port-scanning]
 == Port Scanning
 
-Port scans are a method for finding which ports on a network are open and listening.
-It is a reconnaissance technique that gives attackers a map of where they can further probe for weaknesses.
+Port scans are a method for finding which ports on a network are open and listening. It is a reconnaissance technique that gives attackers a map of where they can further probe for weaknesses.
 
-Port scanning incidents indicate that a container is attempting to make an unusual number of outbound network connections to hosts and ports to which it does not normally connect.
-Port scanning could be a post-compromise attempt to use the container to find other resources on the network as a precursor to lateral movement.
+Port scanning incidents indicate that a container is attempting to make an unusual number of outbound network connections to hosts and ports to which it does not normally connect. Port scanning could be a post-compromise attempt to use the container to find other resources on the network as a precursor to lateral movement.
+
+Prisma Cloud performs two types of checks for port scanning: 
+
+* The first type specifically identifies scans done by 'nmap.' This is triggered by a process event, which can be blocked (both alert/block). 
+
+* The second type of check is triggered by a network event, which can’t be blocked (only alert). The second type of check doesn’t depend on the binary. The scan can be initiated by processes such as a Java process, which would be classified as an alert triggered by raw socket events. This means that even if port scans are done using tools other than 'nmap', they will be alerted as raw socket events. Incidents of this type will show all the target IPs and ports involved in the scan.
 
 === Investigation
 
@@ -22,6 +26,7 @@ Nmap is a popular network scanning tool.
 image::runtime-security/port-scanning-forensics.png[]
 
 The next step in the investigation is to determine how nmap was introduced and executed.
+
 Some plausible scenarios include:
 
 * A user account was used to execute nmap via a Docker command from the host.
@@ -37,3 +42,46 @@ Container runtime audits may show specific connection attempts.
 === Mitigation
 
 Mitigation and remediation for a port scanning incident should focus on resolving the issue that allowed execution of the responsible process.
+
+=== Blocking port scanning attempts using tools such as 'nmap' 'Hping3' and 'Masscan' 
+
+Prisma Cloud Runtime Policy supports detecting and blocking port scanning only by using the 'nmap' tool. 'nmap' is detected and blocked as a process, whereas other port scanning tools such as 'hping3' or 'masscan' are detected as raw socket events.
+
+*Example 1*
+
+image::runtime-security/port-detection-event-1.png[]
+
+* Message: Process /usr/bin/nmap performed suspicious raw network activity
+* Event type: Network / Suspicious Network Activity
+* ATT&CK technique: Network Service Scanning
+* Details: nmap -F -Pn 192.168.10.200 is detected as Port Scanning and is blocked.
+
+*Example 2*
+
+image::runtime-security/port-detection-event-2.png[]
+
+* Message: /usr/bin/nmap launched and is identified as a process used for port scanning
+* Event type: Processes / Port Scan Process
+* ATT&CK technique: Network Service Scanning
+* Details: The message "/usr/bin/nmap launched and is identified as a process used for port scanning" helps Prisma Cloud to block 'nmap'.
+
+*Example 3*
+
+image::runtime-security/port-detection-event-3.png[]
+
+* Message: Process /usr/sbin/hping3 performed suspicious raw network activity
+* Event type: Network / Suspicious Network Activity
+* ATT&CK technique: Network Service Scanning
+* Details: hping3 -8 1-1023 192.168.10.200 detects raw network activity, but does not block. Prisma Cloud just generates a raw socket event.
+
+*Example 4*
+
+image::runtime-security/port-detection-event-4.png[]
+
+* Message: Process /usr/bin/masscan performed suspicious raw network activity
+* Event type: Network / Suspicious Network Activity
+* ATT&CK technique: Man-in-the-Middle
+* Details: masscan 192.168.100.201 -p 1-1023 is detected as raw network activity, but Prisma Cloud does not block it.
+
+*Workaround*
+Other port scanning tools can be blocked using the "Explicitly Denied Processes" under the Runtime Rule. You can add processes such as "/usr/bin/masscan" or "/usr/sbin/hping3" for block action.
