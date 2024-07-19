@@ -6,7 +6,7 @@
 
 //The following text is a revert to the old content.
 
-Read this section to learn about what is planned in the upcoming `32.07` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
+Read this section to learn about what is planned in the upcoming `33.00` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
 
 The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
@@ -14,13 +14,14 @@ The Look Ahead announcements are for an upcoming release and it is not a cumulat
 
 [NOTE]
 ====
-The details and functionality listed below are a preview of what is planned for the `v32.07` release; the changes listed herein and the actual release date, are subject to change.
+The details and functionality listed below are a preview of what is planned for the `v33.00` release; the changes listed herein and the actual release date, are subject to change.
 ====
 
 
 // * <<defender-upgrade>>
 // * <<new-ips-for-runtime>>
-* <<enhancements>>
+//* <<enhancements>>
+* <<changes-to-existing-behavior>>
 //* <<api-changes>>
 // * <<deprecation-notices>>
 // * <<eos-notices>>
@@ -36,49 +37,49 @@ The details and functionality listed below are a preview of what is planned for 
 
 //|===
 
-[#enhancements]
-=== Enhancements
+//[#enhancements]
+//=== Enhancements
 
-The following enhancements are planned. The details will be available at release:
+//The following enhancements are planned. The details will be available at release:
 
-[cols="30%a,70%a"]
-|===
-|*Feature*
-|*Description*
+//[cols="30%a,70%a"]
+//|===
+//|*Feature*
+//|*Description*
 
 // https://redlock.atlassian.net/browse/CWP-59337
 
-|*Support for Red Hat's VEX format*
+//|*Support for Red Hat's VEX format*
 
-|Starting with Version 32, Update 7, Prisma Cloud will adopt the new Vulnerability Exploitability eXchange (VEX) format for reporting Red Hat vulnerabilities. Red Hat will transition from the OVAL format to VEX by the end of 2024. 
+//|Starting with Version 32, Update 7, Prisma Cloud will adopt the new Vulnerability Exploitability eXchange (VEX) format for reporting Red Hat vulnerabilities. Red Hat will transition from the OVAL format to VEX by the end of 2024. 
 
-As a result of the new VEX format, Prisma Cloud's vulnerability detection and reporting behavior too will change. Beginning with Update 7, Prisma Cloud will report Red Hat vulnerabilities exclusively based on the source package.
+//As a result of the new VEX format, Prisma Cloud's vulnerability detection and reporting behavior too will change. Beginning with Update 7, Prisma Cloud will report Red Hat vulnerabilities exclusively based on the source package.
 
-Customers must upgrade their Defender and console to the latest version to maintain a comprehensive view of Red Hat vulnerabilities under the new VEX format.
+//Customers must upgrade their Defender and console to the latest version to maintain a comprehensive view of Red Hat vulnerabilities under the new VEX format.
 
-The following screenshot shows the new reporting format.  
+//The following screenshot shows the new reporting format.  
 
-image::vex-format-reporting.png[width=400]
+//image::vex-format-reporting.png[width=400]
 
-The vulnerabilities will be reported only for the glibc package, with references to its usage in glibc-devel, glibc-common, and glibc-headers. 
+//The vulnerabilities will be reported only for the glibc package, with references to its usage in glibc-devel, glibc-common, and glibc-headers. 
 
-Older Defenders on both the self-hosted and SaaS versions will experience a gap in reporting Red Hat vulnerabilities, because they do not extract the source packages for sub-projects. They will not report this vulnerability unless the sub-project name matches the source package name exactly, which is not common.
+//Older Defenders on both the self-hosted and SaaS versions will experience a gap in reporting Red Hat vulnerabilities, because they do not extract the source packages for sub-projects. They will not report this vulnerability unless the sub-project name matches the source package name exactly, which is not common.
 
-In addition, the older consoles on the self-hosted version will no longer adjust the RH severity and CVSS scores, as the new RH data format is handled differently and only supported in Update 7 Console versions.
+//In addition, the older consoles on the self-hosted version will no longer adjust the RH severity and CVSS scores, as the new RH data format is handled differently and only supported in Update 7 Console versions.
 
 // https://redlock.atlassian.net/browse/CWP-59772
 
-|*Enhancement to Photon OS and Amazon Linux OS Feeds*
+//|*Enhancement to Photon OS and Amazon Linux OS Feeds*
 
-|Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
+//|Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
 
 // https://redlock.atlassian.net/browse/CWP-57626
 
-|*Support for Azure Container Registry and VM image scanning*
+//|*Support for Azure Container Registry and VM image scanning*
 
-|Prisma Cloud now supports scanning Azure Container Registry (ACR) and Virtual Machine (VM) images for Azure cloud accounts that are onboarded directly through the platform.
+//|Prisma Cloud now supports scanning Azure Container Registry (ACR) and Virtual Machine (VM) images for Azure cloud accounts that are onboarded directly through the platform.
 
-|===
+//|===
 
 // [#deprecation-notices]
 // === Deprecation Notices
@@ -122,6 +123,69 @@ In addition, the older consoles on the self-hosted version will no longer adjust
 //The permissible values for this field are `default`, `manual`, or `api-server` to support various offerings to resolve K8s Cluster names.  
 
 //|===
+
+[#changes-to-existing-behavior]
+=== Changes to Existing Behavior
+==== Changes in Reporting of Red Hat Vulnerabilities
+Red Hat security data is a critical source of truth for vulnerabilities in Red Hat products. Until recently, Red Hat was using the OVAL V2 format for reporting these vulnerabilities. On July 10, 2024, Red Hat announced the general availability of a new format called the Vulnerability Exploitability eXchange (VEX) for CVEs and shifted support for the OVAL V2 format to maintenance mode. This means that the OVAL V2 format will no longer receive new features and support will be limited to critical bug fixes. 
+
+To ensure access to the most up-to-date and maintained data, Prisma Cloud will transition to the new VEX format in the next release–version 33.00. 
+
+The new VEX format reports vulnerabilities differently. 
+
+This Look Ahead note briefly explains the differences between the two formats and how they may impact the vulnerability reports. It also explains what actions you need to take with the next release–version 33.00–when Prisma Cloud transitions to the new VEX format. 
+
+===== VEX format and their impact on Prisma Cloud vulnerability reporting
+
+The OVAL V2 format reported the vulnerabilities and their statuses (Fixed, Known Affected, Known Not Affected, and Under Investigation) in the affected RPM packages and as well the binaries built from the affected RPM packages. 
+The VEX format reports the vulnerabilities in the affected RPM packages as earlier, but includes detailed information on the affected binaries only when a vulnerability that affects the binary is "Fixed". 
+
+Previously, Prisma Cloud reported a CVE for each affected binary and RPM package found during a scan. For example, if a source RPM package that had a vulnerability was included in two binaries, Prisma Cloud would report two CVEs for the two binaries. With the transition to the VEX format, Prisma Cloud will adopt a new reporting mechanism aligned with the VEX format. Prisma Cloud will report one record for the RPM package as vulnerable, and will also provide information on all the detected binaries built from the affected RPM package.
+
+===== Upgrade path to ensure reliable reporting
+To ensure reliable reporting of Red Hat vulnerabilities:
+
+* Prisma Cloud Enterprise Edition administrators should plan for upgrading Defenders to version 33.00 with the release. 
+
+* Prisma Cloud Compute Edition administrators should plan for upgrading both the Console and Defenders to version 33.00 with the release. 
+Admins who complete the above-mentioned upgrades as described above will get a complete and accurate reporting of vulnerabilities–no false negatives. 
+
+Admins who do not complete the above-mentioned upgrades, will not get an accurate and complete list of vulnerabilities–some vulnerabilities with the statuses "Known Affected," "Known Not Affected," and "Under Investigation," will not be reported for binaries, as detailed in the table below.
+
+===== Vulnerability Reporting Matrix
+|===
+|Vulnerability Type in Red Hat Feed |Console upgraded to 33.00 but Defenders not upgraded to 33.00 |Both Console and Defenders not upgraded to 33.00
+
+| "Fixed" Vulnerabilities
+| No False Negative (FN) vulnerabilities
+Reports vulnerability for each detected binary separately
+| No False Negative (FN) vulnerabilities
+Reports vulnerability for each detected binary separately
+
+| "Known Affected," "Known Not Affected," and "Under Investigation" Vulnerabilities
+| Potential False Negative (FN) vulnerabilities
+
+Reports vulnerability only if:
+
+The source RPM package itself is installed on the image/host
+
+OR
+
+The binary has the same name as the source RPM package
+
+| Potential False Negative (FN) vulnerabilities
+
+Reports only if:
+
+The source RPM package itself is installed on the image/host
+
+OR
+
+The binary has the same name as the source RPM package
+|===
+
+
+
 
 // [#eos-notices]
 // === End of Support Notices
