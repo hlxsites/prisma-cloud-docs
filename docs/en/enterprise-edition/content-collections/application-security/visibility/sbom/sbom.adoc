@@ -12,37 +12,39 @@ See https://www.cisa.gov/sbom[CISA] for more on SBOMs.
 
 [.procedure]
 
-. Before you can access the 'SBOM' page and view its resources, you must subscribe to the SCA module. For more on SCA licenses, refer to xref:../get-started/application-security-license-types.adoc[Application Security Licenses].
+. Before you can access the 'SBOM' page and view its resources, you must subscribe to the SCA module. For more on SCA licenses, refer to xref:../../get-started/application-security-license-types.adoc[Application Security Licenses].
 //TODO: Update path
 
 . In *Application Security*, select > *Home* > *SBOM*.
 +
-image::application-security/sbom-intro3.1.png[]
+image::application-security/sbom-intro4.1.png[]
 
 The SBOM displays an inventory of dependencies or packages in your organization, including the following details:
 
-* *Package*: The name of the package.
-* *Version*: The version of the package.
-* *License*: The package license.
-* *Found In*: The repositories in which the package was detected. The number in the column represents the amount of repositories in which the package is found.
-* *Vulnerabilities*: The vulnerabilities detected in the package, with a link to a CVE database for further information. The number in the column represents the amount of multiple vulnerabilities detected in the package.
+* *Package*: The name of the package
+* *Version*: The version of the package
+* *License*: The package license
+* *Found In*: The repositories in which the package was detected. The number in the column represents the amount of repositories in which the package is found
+* *Vulnerabilities*: The vulnerabilities detected in the package, with a link to a CVE database for further information. The number in the column represents the amount of multiple vulnerabilities detected in the package
 +
 NOTE: For more details about the vulnerability, click on the package in the inventory table. See below for more on dependency vulnerability details.
-* *Highest Severity*: The highest severity of a vulnerability found in a package when multiple vulnerabilities are detected, or the severity of a single vulnerability.
+* *Highest Severity*: The highest severity of a vulnerability found in a package when multiple vulnerabilities are detected, or the severity of a single vulnerability
+* *AI/ML Categories*: Artificial Intelligence/Machine Learning (AI/ML) categories used by a package in your project. See <<#aispm,AISPM Identification of 3rd Party AI Libraries>> below for more information
 
-Selecting a package from the inventory table opens the *resource explorer* displaying additional information about the entity.
+Selecting a package from the inventory table opens the *Resource Explorer* displaying additional information about the entity.
 
-* The *Details* tab opens as the default view, providing metadata about the package including name, version, license, vulnerabilities and the amount of repositories in which the package is found. Selecting the amount of repositories opens the Repositories tab - see below for more
+* The *Details* tab opens as the default view, providing metadata about the package including name, version, license, vulnerabilities, AI/ML categories associated with the package, and the amount of repositories in which the package is found. Selecting the repositories link opens the Application Security Repositories page
 +
-image::application-security/sbom-details3.0.png[]
+image::application-security/sbom-details4.0.png[]
 
-* The *Issues* tab includes a list of all vulnerabilities detected in the package, including their description, the affected version, the version fix, the CVE policy/vulnerability with a link to the database for more details, severity, CVE ID, CVSS score and vector, risk factors, the fix version, and whether the fix is private or public.
-+
-To view the issue in more detail, select *View Issue*, which redirects to xref:../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Projects].
+* The *Issues* tab includes a list of all vulnerabilities detected in the package, including their description, package name and version, the CVE ID policy/vulnerability linking to the database for more details, the CVSS score and vector, and published date
 +
 image::application-security/sbom-issues-3.0.png[]
+//+
+//To view the issue in more detail, select *View Issue*, which redirects to xref:../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Projects].
 
-* The *Repositories* tab includes details of the repositories hosting the packages, their location and dependency tree, including both direct and indirect dependencies.
+
+* The *Repositories* tab includes details of the repositories hosting the packages, their location and dependency tree, including both direct and indirect dependencies
 +
 image::application-security/sbom-repositories3.1.png[]
 
@@ -53,23 +55,69 @@ image::application-security/sbom-repositories3.1.png[]
 
 You can apply the following filters to narrow down a search for a package.
 
-* *Repository*: Filter packages by repository.
+* *Repository*: Filter packages by repository
 
 NOTE: Only repositories that include packages are listed
 
-* *Ecosystem*: Filter by the package manager hosting the dependency*
+* *AI/ML Category*: Filter by AI/ML categories. See *AISPM Identification of 3rd Party AI Libraries* below for more information
 
-* *Images*: Filter by the image hosting the dependency.
+* *Ecosystem*: Filter by the package manager hosting the dependency
 
-* *License*: Filter by package license.
+* *License*: Filter packages by their license
 
-* *Vulnerabilities*: Filter the vulnerabilities by CVE ID.
+* *Vulnerabilities*: Filter vulnerabilities by their CVE ID
 
-* *Severity*: Filter the vulnerabilities by severity.
+* *Severity*: Filter vulnerabilities by their severity
 
-* *'Show only vulnerable'*: Toggle *ON* to display vulnerable packages only in the inventory table.
+* *'Show only vulnerable'*: Toggle *ON*  to display vulnerable packages only 
 
 [.task]
+
+[#aispm]
+=== AISPM Identification of 3rd Party AI Libraries
+
+Prisma Cloud detects AI/ML functionalities in third-party libraries used in your codebase. It then leverages this information to build a comprehensive inventory of the machine learning packages in your environment, allowing you to make informed security decisions and effectively mitigate associated risks.
+
+The SBOM table includes an *AI/ML Categories* column, displaying the associated AI/ML categories for each relevant package.
+//To view packages including AI/ML functionalities, navigate to *Application Security* > *SBOM*. The table listing the  packages include an *AI/ML Categories* column, displaying AI/ML categories associated with a package, where applicable.   
+
+//image::application-security/sbom-ai-ml1.1.png[] 
+
+//To view which AI/ML categories are used by a package in your project, navigate to *Application Security* > *SBOM*. The *AI/ML Categories* column displays AI/ML categories associated with a package.  
+
+NOTE: The *Details* sidecar also provides information about the AI/ML categories utilized by that package.
+
+//TODO add ::image:application-security/sbom-al-ml - discuss with guyg whether this image is necessary
+
+==== Filter by AI/ML Category
+
+The *AI/ML Category* filter lets you choose specific categories like deep learning or natural language processing. By selecting a category, you'll get a focused view of the packages in your project that are associated with that particular AI/ML functionality.
+
+AI/ML Category values include:
+
+* Generative AI
+* Artificial Intelligence (AI)
+* Machine Learning (ML)
+* Deep Learning
+* Natural Language Processing (NLP)
+* GPT
+* OpenAI
+* Gemini
+* ChatGPT
+* Large Language Models (LLM)
+* LLaMA
+* Neural Network
+* Computer Vision
+* Data Science
+* Reinforcement Learning (RL)
+
+//TODO add ::image:application-security/sbom-al-ml - discuss with guyg whether this image is necessary
+
+==== AI/ML Packages API
+
+The AI/ML Packages API empowers developers and tools to discover AI/ML categories programmatically. This API provides functionalities to retrieve comprehensive information about the AI/ML categories included within software packages used in your environment. For more information refer to the https://pan.dev/prisma-cloud/api/code/sbom/[SBOM] API documentation.
+
+// *Limitation*: The request can handle a maximum of 5000 repositories.
 
 === Generate SBOM
 
