@@ -1,0 +1,77 @@
+[.task]
+== Integrate Checkov CLI with Jenkins
+
+Below is a simple example integration with Jenkins using the Checkov container image. This will result in build failures whenever developers create and modify infrastructure as code with misconfigurations. To prevent developer frustration from failed builds, we recommend training and encouraging usage of Checkov's inline suppressions.
+
+[.procedure]
+
+. Create a new Jenkins Pipeline or integrate into an existing one.
++
+image::application-security/cli-jenkins1.png[]
+
+. Add new a stage into the pipeline definition using a pipeline script.
++
+[source,Groovy]
+----
+ pipeline {
+     agent any
+        
+     stages {
+         stage('Checkout') {
+             steps {
+                 git branch: 'master', url: 'https://github.com/bridgecrewio/terragoat'
+                 stash includes: '**/*', name: 'terragoat'
+             }
+         }
+         stage('Checkov') {
+             steps {
+                 script {
+                     docker.image('bridgecrew/checkov:latest').inside("--entrypoint=''") {
+                         unstash 'terragoat'
+                         try {
+                             sh 'checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master'
+                             junit skipPublishingChecks: true, testResults: 'results.xml'
+                         } catch (err) {
+                             junit skipPublishingChecks: true, testResults: 'results.xml'
+                             throw err
+                         }
+                     }
+                 }
+             }
+         }
+     }
+     options {
+         preserveStashes()
+         timestamps()
+     }
+ }
+----
++
+Alternatively, add the following script to install and run Checkov without an image:
++
+[source,bash]
+----
+sh "pipenv run pip install checkov"
+sh "pipenv run checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master"
+----
++
+Example:
++
+image::application-security/jenkins2.png[]
+
+. Run `Build Now`.
+
+. View build dashboard.
++
+image::application-security/jenkins3.png[]
+
+. View job status.
++
+image::application-security/jenkins4.png[]
+
+. Review test result.
++
+image::application-security/jenkins5.png[]
+
+
+
