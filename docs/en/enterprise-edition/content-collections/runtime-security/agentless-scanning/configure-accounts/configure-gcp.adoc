@@ -4,6 +4,7 @@
 Prisma Cloud gives you the flexibility to choose between agentless security and agent-based security using Defenders. Agentless scanning lets you inspect the risks and vulnerabilities of a cloud workload or container image without installing an agent or affecting the execution of your workload. Prisma Cloud supports agentless scanning for vulnerabilities and compliance on GCP hosts, containers, and clusters. To learn more about how agentless scanning works, see the xref:../agentless-scanning.adoc[How Agentless Scanning Works?][How Agentless Scanning Works?]
 
 When you xref:../../../connect/connect-cloud-accounts/onboard-gcp/onboard-gcp.adoc[onboard your GCP account], you can enable agentless scanning.
+
 Complete the steps below to configure agentless scanning based on the needs of your deployment.
 
 [.task]
@@ -132,20 +133,23 @@ Refer to the GCP documentation to https://cloud.google.com/vpc/docs/shared-vpc[l
 [#gcp-encrypted-volumes]
 === Scan Encrypted Volumes When Using Hub Mode
 
-If the following conditions are met:
+This section applies to scenarios where the following conditions are not met:
 
-* The hub project is part of a GCP organization
-* The key is NOT of type Customer-Managed Encryption Keys (CMEK)
-* Permissions were applied via organization onboarding
+. Your hub project is part of a GCP organization, and permissions were applied through organization onboarding.
 
-No further action is required.
+. Your encryption keys are not customer-managed encryption keys (CMEK)
+
+If both the above conditions are met, no further action is required.
 
 When you use xref:../agentless-scanning-modes.adoc[hub and target projects], you can configure your hub project to access the encrypted volumes of the target accounts.
-To use encrypted volumes the service account of Google Compute Engine needs to have the `cloudkms.cryptoKeyEncrypterDecrypter` role.
+
+To use encrypted volumes, the service account of Google Compute Engine needs to have the `cloudkms.cryptoKeyEncrypterDecrypter` role.
 Without it, the service agent of the the hub project can't access the KMS keys.
 
-The Compute Engine service agent for your hub project is labeled with the following convention.
+The Compute Engine service agent for your hub project is labeled with the following convention:
+
 `service-PROJECT_NUMBER@compute-system.iam.gserviceaccount.com`
+
 Replace `PROJECT_NUMBER` with the number of your hub project.
 
 [.procedure]
