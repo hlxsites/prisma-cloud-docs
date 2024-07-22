@@ -1,0 +1,58 @@
+== GitHub Actions pipeline uploads GITHUB_TOKEN in artifact
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+
+|Prisma Cloud Policy ID 
+|25287f9d-807c-4cac-927c-2033fe7d8fb6 
+
+|Severity
+|Critical
+// add severity level
+
+|Category
+|Credential Hygiene 
+// add category+link
+
+|Subtype
+|Build
+// add subtype-build/runtime
+
+|Frameworks
+|GitHub
+
+|=== 
+
+=== Description 
+
+The pipeline uploads artifacts that may contain the local `.git` folder which crucially includes a GitHub Actions runner token (GITHUB_TOKEN). These artifacts are accessible to any user with read permission against the repository. In public repositories, they are also publicly available.
+
+The *actions/checkout* GitHub Action stores the GITHUB_TOKEN in the local `.git` folder by default. Uploading this folder exposes the token along with the artifact.
+
+The GitHub Actions job token is a short-lived token that allows actions to be performed against the repository while the workflow job is running. However, attackers might be able to download artifacts storing the token, extract it and use it before the job ends. This vulnerability arises from v4 of actions/checkout, where the artifact is available for download even before the workflow ends. Depending on the pipeline permissions, attackers could potentially use the token to push malicious code to the repository, publish packages, and steal secrets.
+
+=== Recommended Solution - Buildtime
+
+* Do not upload the `.git` folder in artifacts 
+
+* Set the “persist-credentials” setting to `false` when using the actions/checkout GitHub action if credentials are not required in subsequent steps. This ensures that the GITHUB_TOKEN is not written to the runner’s filesystem in the local `.git` folder
+
+* Prevent future vulnerabilities by scanning artifacts for secrets before uploading them, as they are usually compiled in environments rich with sensitive information
+
+*To minimize the risk*:
+
+* Modify the default permissions granted to the GITHUB_TOKEN using the ‘permissions’ attribute in the workflow yaml file, allowing only the minimum permissions required to execute a pipeline.
++
+In addition, we recommend specifying permissions for each job in the pipeline. This minimizes the exposure of binaries and actions present in the pipeline to the repository.
++
+For more information refer to https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs[Assigning permissions to jobs] in the GitHub documentation. 
+
+* Modify the pipeline's default permissions to ‘read repository contents’ at the highest possible level (organization or enterprise, where applicable). 
++
+This reduces the potential attack surface for pipelines that lack explicit permission definitions.
++
+For more information refer to:
+https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-the-default-github_token-permissions[Configuring the default GITHUB_TOKEN permissions] in the GitHub documentation. 
