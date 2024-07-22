@@ -9,6 +9,14 @@ The Cloud Network Analyzer (CNA) engine of Prisma Cloud calculates the external 
 
 Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion capability shows the available expressions and xref:../rql-operators.adoc[operators] that are applicable for each attribute. In order for the network configuration query to be valid, you need to specify at least one `source` , one `dest` (destination), and one `cloud.type` attribute. You can only use the `and` operator in the RQL query. Use `=` to specify a single value and `in` to specify comma separated values (csv).
 
+Prisma Cloud includes improved handling of internet exposure caused by assets deployed in VPCs that use public CIDR blocks. It now generates new alerts in the following cases:
+
+* Inbound OOB policy to AWS EC2 instances are shown as directly exposed even if the ENI has no public IP.
+
+* Inbound OOB policy to an interface (with private IP that is a public IP) is shown as exposed even if the interface is not behind a load balancer as long as security considerations allow the packet.
+
+Alerts are resolved for outbound OOB policy which has a path: *Instance (with private IP that is a public IP in this case) > NatGW > IGW > Internet* because NATGW drops traffic for the packet which has the source IP as a public IP in the outbound path.
+
 [NOTE]
 ====
 Any IP addresses or CIDR that you have not defined as xref:../../administration/trusted-ip-addresses-on-prisma-cloud.adoc[Trusted IP Addresses on Prisma Cloud] and are not part of your cloud environment are considered as UNTRUST_INTERNET.
