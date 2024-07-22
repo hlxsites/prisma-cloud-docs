@@ -6,18 +6,18 @@ The following table outlines the release particulars:
 [cols="1,4"]
 |===
 |Build
-|//TODO: 32.06.113
+|32.07.123
 |Code name
 |O'Neal - Update 7, 32.07
 
 |Release date
-|//TODO: July 21st, 2024
+|July 22nd, 2024
 
 |Type
 |Maintenance Release
 
-|//TODO: SHA-256
-|//TODO: 540772e5de63f9d70d428152254a1d7de5417325e435d18a2b157295eefd6897
+|SHA-256
+|579c449ef5137673dcb2a81da6cdbdf2d1e754c1b5b4018f72821a065136df7d
 
 |===
 
@@ -75,12 +75,7 @@ You can upgrade the Prisma Cloud Console from a major release to the next major 
 === API Changes and New APIs
 [cols="1,1", options="header"]
 
-|===
-|FEATURE
-|DESCRIPTION
-
-
-|===
+There are no API changes for this release.
 
 [#addressed-issues]
 === Addressed Issues
@@ -113,6 +108,14 @@ This issue has been fixed. Prisma Cloud now fully supports scanning FIPS-enabled
 
 This issue has been fixed. Now, when Defender scans images, error messages are printed to the console log along with the image ID and the name of the Defender.
 
+|*[Container dump API] Allow to include labels for each container*
+|A new optional query parameter `includeLabels` is added to the https://pan.dev/prisma-cloud/api/cwpp/get-containers-download/[Download Container Scan Results] API. This change will add all the labels corresponding to each container in the API response.
+
+|*Ruby Pessimistic version constraint rules are not merged correctly with other rule ranges causing FPs*
+|Previously, Prisma Cloud did not handle cases involving unaffected and patched Ruby version ranges correctly. Additionally, cases, where patched Ruby version ranges, were included within unaffected Ruby versions using the pessimistic version constraint (~>),  those cases were also not handled correctly. 
+This issue has been resolved. 
+
+
 |===
 
 
@@ -135,6 +138,18 @@ There is no backward compatibility for new features in this release.
 |Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. 
 
 This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
+
+
+//CWP-57783
+| *[Vulnerabilities]: Severity mapping should be consistent to 4 severities: Low/Medium/High/Critical*
+
+| All the current vendor defined severity values for the Intelligence stream are mapped into 4 predefined normalized values “Low”, “Medium”,“ High”, and “Critical”.
+
+Note: The severity values are already normalized to create rules, the current change is only specific to the severity reporting name change.
+
+For more information, visit https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/vulnerability-management/cvss-scoring#mappings[CVSS Scoring].
+
+Note: All the unrecognized severity values from the different feeds will be assigned according to NVD severity.
 
 |===
 
