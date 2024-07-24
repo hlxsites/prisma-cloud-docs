@@ -898,7 +898,7 @@ It is recommended to enable deletion protection on AWS Elastic load balancers to
 *Policy Type—* Config
 
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = ['attributes'].['deletion_protection.enabled'] contains false and type is member of ('application','network','gateway')
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = ['attributes'].['deletion_protection.enabled'] contains "false"
 ----
 
 |*AWS MSK clusters not configured with enhanced monitoring*
@@ -1037,46 +1037,6 @@ As a best practice, it is recommended to configure NSGs to restrict HTTP(S) traf
 config from cloud.resource where cloud.type = 'azure' AND api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any((sourceAddressPrefix equal ignore case Internet or sourceAddressPrefix equals * or sourceAddressPrefix equals 0.0.0.0/0 or sourceAddressPrefix equals ::/0) and access equal ignore case Allow and direction equal ignore case Inbound and ((protocol equal ignore case Tcp and (destinationPortRange contains * or destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges any equal * or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) )) or (protocol contains * and (destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) ))) )] exists
 ----
 
-|*Privilege escalation and lateral movement risk due to a publicly exposed GCP Cloud Run Service with basic role assigned*
-
-tt:[*24.7.3*]
-//RLP-145548
-
-|This policy identifies GCP Cloud Run Services that are publicly exposed and have basic role attached.
-
-Basic roles are highly permissive roles that existed prior to the introduction of IAM. Basic roles on the Cloud Run Service helps the attackers to escalate their privileges, move laterally or perform other unauthorized actions in the cloud account.
-
-This policy checks for the following basic roles:
-'Viewer', 'Editor', 'Owner'
-
-Immediate attention is required to review role assignments and grant only the least privileges required. Remove unwanted roles assigned to the Cloud Run Service and restrict public exposure reported for the cloud run service as soon as possible.
-
-*Policy Severity—* Medium
-
-*Policy Type—* Attack Path
-
-----
-asset WHERE asset.type IN ('gcloud-cloud-run-services-list') and finding.name contains all ('f4ff0156-ce21-42ab-aa20-490c3159ecb9', '0c1f97f6-8740-4561-bae7-d9216fb5e4a0')
-----
-
-|*Privilege escalation and lateral movement risk due to a publicly exposed GCP Cloud Run Service with administrative permissions*
-
-tt:[*24.7.3*]
-//RLP-145549
-
-|This policy identifies GCP Cloud Run Services that are publicly exposed and have administrative permissions.
-
-The administrative permissions on the cloud run service can be used by attackers for privilege escalation, lateral movement in the environment, creating backdoors, exfiltrating sensitive data, or performing other unauthorized actions in the cloud account.
-
-Immediate attention is required to review role assignments and grant only the least privileges required. Remove unwanted roles assigned to the Cloud Run Service and restrict public exposure reported for the cloud run service as soon as possible.
-
-*Policy Severity—* Medium
-
-*Policy Type—* Attack Path
-
-----
-asset WHERE asset.type IN ('gcloud-cloud-run-services-list') and finding.name contains all ('f4ff0156-ce21-42ab-aa20-490c3159ecb9', '1bc93b36-2e15-4d1f-b2b6-23e1a646f4e6')
-----
 
 |*OCI Load balancer not configured with Network Security Groups*
 
@@ -1135,7 +1095,7 @@ As best practice, it is recommended to restrict access to the API Gateway by con
 config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-apimanagement-apigateway' AND json.rule = lifecycleState equal ignore case ACTIVE and (networkSecurityGroupIds[*] is empty or networkSecurityGroupIds[*] does not exist)
 ----
 
-|*OCI Function Application is not configured with Network Security Group*
+|*OCI Function Application is not configured with Network Security Groups*
 
 tt:[*24.7.3*]
 //RLP-68098
