@@ -1,0 +1,71 @@
+
+== Azure Synapse Spark Pool is not using isolated compute
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AzureSparkPoolIsolatedComputeEnabled.py[CKV_AZURE_242]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,ARM,Bicep
+
+|===
+
+=== Description
+
+This policy ensures that isolated compute is enabled for Synapse Spark pools in Azure. Isolated compute involves using dedicated resources that are not shared with other customers. This enhances security by minimizing the risk of data breaches or unauthorized access, as the compute resources are isolated to your environment. Enabling isolated compute is crucial for maintaining high security standards, especially when handling sensitive data or running critical applications in Synapse Spark pools.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_spark_pool
+* *Arguments:* compute_isolation_enabled
+
+In order to fix this issue, ensure that `compute_isolation_enabled` is set to `true`.
+
+[source,go]
+----
+resource "azurerm_synapse_spark_pool" "example" {
+  ...
+  compute_isolation_enabled = true
+}
+----
+
+
+*ARM*
+
+* *Resource:* Microsoft.Synapse/workspaces/bigDataPools
+* *Arguments:* properties/isComputeIsolationEnabled
+
+In order to fix this issue, ensure that `properties/isComputeIsolationEnabled` is set to `true`.
+
+[source,json]
+----
+{
+  ...
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces/bigDataPools",
+      ...
+      "properties": {
+        ...
+        "isComputeIsolationEnabled": true,
+      }
+    }
+  ]
+}
+----
+

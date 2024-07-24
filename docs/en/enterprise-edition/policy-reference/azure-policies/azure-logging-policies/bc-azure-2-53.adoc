@@ -1,0 +1,50 @@
+
+== Azure Synapse Workspace does not have extended audit logs
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/SynapseWorkspaceHasExtendedAuditLogs.yaml[CKV2_AZURE_53]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy ensures that an Azure Synapse Workspace has extended audit logs enabled. Extended audit logs are important because they provide detailed records of access and activity within the workspace. Without these logs, it can be challenging to monitor and investigate any unauthorized access or anomalies, thus posing a security risk. Logging mechanisms are essential for tracking user actions, policy breaches, data access, and troubleshooting issues, making it a critical practice for maintaining security and compliance within Azure environments.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_workspace
+* *Arguments:* azurerm_synapse_workspace_extended_auditing_policy
+
+In order to fix this issue, ensure that all `azurerm_synapse_workspace` resources are connected to a `azurerm_synapse_workspace_extended_auditing_policy`.
+
+[source,go]
+----
+resource "azurerm_synapse_workspace" "example" {
+  ...
+}
+
+resource "azurerm_synapse_workspace_extended_auditing_policy" "example" {
+  synapse_workspace_id                    = azurerm_synapse_workspace.example.id
+  ...
+}
+----
+

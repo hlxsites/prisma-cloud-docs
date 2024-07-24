@@ -1,0 +1,50 @@
+== Azure Synapse SQL Pool does not have a security alert policy
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/SynapseSQLPoolHasSecurityAlertPolicy.yaml[CKV2_AZURE_51]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that a Synapse SQL Pool has a security alert policy in place. A security alert policy is used to set up alerts for specific security incidents, abnormal activities, and threats in the SQL pool, which is crucial for real-time monitoring and maintaining the security posture of a Synapse workspace. If a Synapse SQL Pool does not have a security alert policy, it becomes more vulnerable to cyber threats and attacks, potentially leading to data loss or compromise, so not having this policy is seen as a bad security practice.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_sql_pool
+* *Arguments:* azurerm_synapse_sql_pool_security_alert_policy
+
+To fix this issue, you must configure a security alert policy for your Synapse SQL Pool. Any `azurerm_synapse_sql_pool` must be connected to a `azurerm_synapse_sql_pool_security_alert_policy` block that is used to define the security alert policies.
+
+[source,go]
+----
+resource "azurerm_synapse_sql_pool" "example" {
+  name                 = "examplesqlpool"
+  ...
+}
+
++ resource "azurerm_synapse_sql_pool_security_alert_policy" "example" {
++   sql_pool_id                = azurerm_synapse_sql_pool.example.id
++   policy_state               = "Enabled"
++   ...
++ }
+----

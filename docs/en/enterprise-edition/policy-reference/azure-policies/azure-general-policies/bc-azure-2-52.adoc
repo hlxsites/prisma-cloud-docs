@@ -1,0 +1,49 @@
+
+== Azure Synapse SQL Pool does not have vulnerability assessment enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/SynapseSQLPoolHasVulnerabilityAssessment.yaml[CKV2_AZURE_52]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy is looking to ensure that a Synapse SQL Pool in an Azure environment has a vulnerability assessment attached. This is important because a vulnerability assessment helps identify and mitigate potential security risks by detecting vulnerabilities and providing recommendations to address them. Not having such an assessment in place can leave your SQL Pool exposed to potential security threats, which could lead to data breaches, loss, or other types of cyberattacks. Monitoring and maintaining the security posture of your database services is crucial for protecting sensitive data and complying with regulatory standards.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_sql_pool
+* *Arguments:* azurerm_synapse_sql_pool_security_alert_policy, recurring_scans.*.enabled
+
+In order to fix this issue, ensure that all `azurerm_synapse_sql_pool` are linked to a `azurerm_synapse_sql_pool_security_alert_policy` with `recurring_scans` enabled.
+
+[source,go]
+----
+resource "azurerm_synapse_sql_pool_vulnerability_assessment" "example" {
++   sql_pool_security_alert_policy_id = azurerm_synapse_sql_pool_security_alert_policy.example.id
+  ...
+  recurring_scans {
++    enabled                           = true
+    ...
+  }
+}
+----

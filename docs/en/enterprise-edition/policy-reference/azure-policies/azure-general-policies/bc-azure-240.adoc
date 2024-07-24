@@ -1,0 +1,72 @@
+
+== Azure Synapse Workspace is not encrypted with a CMK
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/SynapseWorkspaceCMKEncryption.py[CKV_AZURE_240]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,ARM,Bicep
+
+|===
+
+=== Description
+
+This policy is designed to verify that an Azure Synapse Workspace is encrypted using a Customer Managed Key (CMK). Ensuring encryption with a CMK is crucial because it grants organizations greater control over the encryption keys used to protect their data. Using a CMK enhances security by allowing key rotation, revocation, and the ability to use an organization's own key management policies. If the workspace is not encrypted with a CMK, sensitive data stored and processed within the Synapse Workspace could be more vulnerable to unauthorized access and data breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_workspace
+* *Arguments:* customer_managed_key/key_name
+
+To fix this issue, add a `customer_managed_key` to your `azurerm_synapse_workspace`.
+
+[source,go]
+----
+resource "azurerm_synapse_workspace" "example" {
+  ...
+
++  customer_managed_key {
++    key_name           = "exKey"
++    ...
++  }
+}
+----
+
+*ARM*
+
+* *Resource:* Microsoft.Synapse/workspaces
+* *Arguments:* encryption
+
+To fix this issue, add a `encryption` to your `Microsoft.Synapse/workspaces`.
+
+[source,json]
+----
+{
+  "type": "Microsoft.Synapse/workspaces",
+  ...
+  "properties": {
++    "encryption": {
++      "cmk": {
++        ...
++      }
++    },
+    ...
+  }
+}
+----

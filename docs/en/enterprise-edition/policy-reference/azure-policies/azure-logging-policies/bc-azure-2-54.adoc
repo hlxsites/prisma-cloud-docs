@@ -1,0 +1,51 @@
+
+== Azure Synapse SQL Pool does not have log monitoring enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/SynapseLogMonitoringEnabledForSQLPool.yaml[CKV2_AZURE_54]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying whether log monitoring is active for Synapse SQL Pools in Microsoft Azure. This is an important security measure as it helps in tracking database activities, detecting suspicious behavior, and responding to potential security incidents. Without log monitoring, organizations may be unable to detect unauthorized access or misuse of data, making it harder to protect sensitive information and meet compliance requirements.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_sql_pool, azurerm_synapse_sql_pool_extended_auditing_policy
+* *Arguments:* log_monitoring_enabled
+
+In order to fix this issue, ensure that all `azurerm_synapse_sql_pool` are connected to `azurerm_synapse_sql_pool_extended_auditing_policy` and that `log_monitoring_enabled` is set to `true`.
+
+[source,go]
+----
+resource "azurerm_synapse_sql_pool" "example" {
+  ...
+}
+
+resource "azurerm_synapse_sql_pool_extended_auditing_policy" "example" {
+  sql_pool_id                             = azurerm_synapse_sql_pool.example.id
+-  log_monitoring_enabled = false
++  log_monitoring_enabled = true
+}
+----
+
