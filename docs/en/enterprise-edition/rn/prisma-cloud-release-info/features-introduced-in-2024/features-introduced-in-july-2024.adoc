@@ -1037,6 +1037,32 @@ As a best practice, it is recommended to configure NSGs to restrict HTTP(S) traf
 config from cloud.resource where cloud.type = 'azure' AND api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any((sourceAddressPrefix equal ignore case Internet or sourceAddressPrefix equals * or sourceAddressPrefix equals 0.0.0.0/0 or sourceAddressPrefix equals ::/0) and access equal ignore case Allow and direction equal ignore case Inbound and ((protocol equal ignore case Tcp and (destinationPortRange contains * or destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges any equal * or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) )) or (protocol contains * and (destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) ))) )] exists
 ----
 
+|*Azure Machine learning workspace configured with overly permissive network access*
+
+tt:[*24.7.3*]
+//IaC AppSec policies from Taylor Smith and Jonathan Bakst https://docs.google.com/document/d/17gS4i1Vj8ilpHfSQOcc1FHl7xzxb23PqiwvxZHm6tb4/edit
+
+|This policy identifies Load balancers that are not configured with Network Security Groups. 
+
+Without Network Security Groups, load balancers may be exposed to unwanted traffic, increasing the risk of security breaches and unauthorized access. NSGs allow administrators to define security rules that specify the types of traffic allowed to flow in and out of the load balancer, enhancing overall network security.
+
+As a best practice, it is recommended to restrict access to the load balancer by configuring network security groups.
+
+*Policy Severity—* High
+
+*Policy Type—* Config/Run/Build
+
+|*Azure Machine learning workspace is not configured with private endpoint*
+
+tt:[*24.7.3*]
+//IaC AppSec policies from Taylor Smith and Jonathan Bakst https://docs.google.com/document/d/17gS4i1Vj8ilpHfSQOcc1FHl7xzxb23PqiwvxZHm6tb4/edit
+
+|This policy detects whether an Azure Machine Learning workspace is configured with a private endpoint. Configuring a private endpoint for the Azure Machine Learning workspace is recommended to enhance security by restricting network access and preventing public internet access to the workspace.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config/Build
+
 
 |*OCI Load balancer not configured with Network Security Groups*
 

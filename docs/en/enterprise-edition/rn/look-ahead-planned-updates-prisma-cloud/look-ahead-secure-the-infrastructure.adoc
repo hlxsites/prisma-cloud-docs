@@ -15,7 +15,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<announcement>>
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
+* <<policy-updates>>
 * <<iam-policy-updates>>
 * <<api-ingestions>>
 //* <<new-compliance-benchmarks-and-updates>>
@@ -110,18 +110,46 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 
-//There are no policy updates planned for 24.7.3 release.
+[cols="50%a,50%a"]
+|===
 
-//[cols="50%a,50%a"]
-//|===
+|*Policies*
+|*Description*
 
-//|*Policies*
-//|*Description*
+2+|*Policy Name and Metadata Update*
 
-//|===
+|*Google Workspace User not enrolled with 2-step verification*
+
+//RLP-146693
+
+|*Changes—* New Policy Name: GCP Google Workspace User not enrolled with 2-step verification
+
+Policy metadata updated to provide more descriptive content.
+
+*Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* None. No impact on alerts.
+
+|*Google Workspace Super Admin not enrolled with 2-step verification*
+
+//RLP-146694
+
+|*Changes—* New Policy Name: GCP Google Workspace Super Admin not enrolled with 2-step verification
+
+Policy name and metadata updated to provide more descriptive content.
+
+*Severity—* High
+
+*Policy Type—* Config
+
+*Impact—* None. No impact on alerts.
+
+|===
 
 [#iam-policy-updates]
 === IAM Policy Updates
@@ -134,29 +162,51 @@ The following IAM OOTB policies will be updated in the 24.8.1 release.
 |*Policies*
 |*Description*
 
-|*Third-Party Service Account with High Privileges*
+|*User with Administrative Permissions Has Active Access Keys Which Are Unused Over 90 Days*
 //RLP-146497
 
-|*Description—* Identifies instances of third-party vendor owned service accounts which are granted high privileges and may obtain significant administrative access to your cloud environment. Such permissions can potentially lead to unauthorized access or escalation of privileges, compromising the security posture of your organization.
+|*Description—* Identifies user accounts with administrative permissions for which active access keys exist and have not been used in at least 90 days. Access keys are long-term credentials which allow AWS IAM users programmatic access to resources. When the user in question possesses administrative permissions, and their access keys are active but not in use, they can potentially be found by an adversary, granting them administrative permissions.
 
 *Severity—* Medium
 
-*Cloud—* GCP
+*Cloud—* AWS
 
-*Updated RQL—*
+*Updated RQL—* 
 
 ----
-config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.type = 'serviceaccount' AND action.access.isAdministrative = true AND source.cloud.account.isvendor = true AND grantedby.level.type IN ( 'GCP Organization', 'GCP Folder', 'GCP Project' )
+config from iam where dest.cloud.type = 'AWS' AND action.access.isAdministrative = true AND source.cloud.accesskey.lastused.days > 90 AND source.cloud.accesskey.activekeys > 0
 ----
 
-*Recommendation Steps—*
-
+*Recommendation Steps—* 
 How to investigate?
-1. Sign in to the GCP Console.
-2. Browse to the IAM service and search for the affected Service Account.
-3. Examine the Service Account's roles and permissions as well as its use case - if needed reach out to the vendor to validate which permissions are necessary for their functions and why. You can reference GCP's 'excess permissions' on the same screen. In order to remove any unnecessary permissions and minimize the role's access, use the following remediation steps:
+1. Sign in to the Cloud Console.
+2. Browse to the IAM service and search for the affected user.
+3. Examine the user's permissions as well as their role within your organization and determine whether the principle of least privilege is followed. 
+For remediation, use the following remediation steps:
+If access is still required, remove the user's access keys and transition them to AWS's temporary security credentials approach. If any access is deemed unnecessary, remove permissions to minimize the user's access, or remove the user altogether.
 
-To revoke the vendor's access altogether, select 'edit principal' and remove all the roles from the Service Account. To minimize the access the vendor has using the Service Account, remove all unnecessary roles and attach one with the minimal permissions needed by the vendor
+|*Cloud Service account with high privileges is inactive for 90 days and is assigned to a resource*
+//RLP-146497
+
+|*Description—* Identifies cloud service accounts in Azure, AWS and GCP which have administrative permissions that have not been used in the last 90 days and are attached to a resource. As opposed to user accounts, service accounts are predictable. Therefore, if a service account has administrative permissions which it has not used in the past 90 days, we can confidently say the resource it is attached to does not require them, and remove the permissions, decreasing the blast radius in case of a compromise of the service account.
+
+*Severity—* Medium
+
+*Cloud—* ALL
+
+*Updated RQL—* 
+
+----
+config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount', 'service principal', 'user assigned', 'system assigned' ) AND action.access.isAdministrative = true AND grantedby.cloud.entity.lastlogin.days > 90 AND source.cloud.resource.type in ( 'instance', 'function', 'oidc-provider', 'environment', 'task-definition', 'WebIdentity', 'virtualMachines', 'sites', 'App Registration', 'service', 'workflows', 'virtualMachineScaleSets/virtualMachines', 'instances', 'applications', 'services', 'functions', 'serviceAccounts')
+----
+
+*Recommendation Steps—* 
+How to investigate?
+1. In the Prisma Cloud Console, under the "Alerts" tab, select "Asset Name" and take note of the "Name" and "Asset Type", then exit the tab. Select the "Alert ID", then "Investigate".
+2. In the results, you will see the resource, the service account attached to it ("Granted By Entity"), the policy granting unused administrative permissions to the service account ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access.
+
+Once you examine the permissions and determine which permissions are unnecessary and can be removed based on their last usage. Use the following remediation steps to remove them:
+Log in to your Cloud instance, and navigate to the affected service account, edit the entity's permissions following the principle of least privilege and based on the information collected. If the service account is used by other resources, consider creating a new one with the minimal permissions required by the resource in question.
 
 |*User account with high privileges and MFA disabled*
 //RLP-146497
@@ -178,14 +228,152 @@ config from iam where action.access.isAdministrative = true AND source.cloud.res
 *Recommendation Steps—*
 
 How to investigate?
-
-How to investigate?
 1. Sign in to the Cloud Console.
 2. Browse to the IAM service and search for the affected user.
 3. Examine the user's permissions as well as their role within your organization and determine whether the principle of least privilege is followed.
 4. For remediation, use the following remediation steps:
 
-If deemed unnecessary, remove permissions to minimize the user's access. Additionally, enforce MFA on the user. Upon their next login, the user will be prompted to enroll, activating their MFA method
+If deemed unnecessary, remove permissions to minimize the user's access. Additionally, enforce MFA on the user. Upon their next login, the user will be prompted to enroll, activating their MFA method.
+
+|*Third-Party Service Account with High Privileges at the Folder or Organization Level*
+//RLP-146497
+
+|*Description—* Identifies instances of third-party vendor owned service accounts which are granted high privileges and may allow administrative access to your cloud environment. This increases the attack surface, as in case of a compromise of the vendor's environment, an attacker would gain elevated access to your account by abusing the service account permissions.
+
+*Severity—* Medium
+
+*Cloud—* GCP
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.type = 'serviceaccount' AND action.access.isAdministrative = true AND source.cloud.account.isvendor = true AND grantedby.level.type IN ( 'GCP Organization', 'GCP Folder' )
+----
+
+*Recommendation Steps—*
+
+How to investigate?
+1. Sign in to the GCP Console.
+2. Browse to the IAM service and search for the affected Service Account.
+3. Examine the Service Account's roles and permissions as well as its use case - if needed reach out to the vendor to validate which permissions are necessary for their functions and why. You can reference GCP's 'excess permissions' on the same screen as further information.
+In order to remove any unnecessary permissions and minimize the role's access, use the following remediation steps:
+To revoke the vendor's access altogether, select 'edit principal' and remove all the roles from the Service Account. To minimize the access the vendor has using the Service Account, remove all unnecessary roles and attach one with the minimal permissions needed by the vendor.
+
+|*Service Account with Cross Cloud Administrative Access*
+//RLP-146497
+
+|*Description—* Identifies service accounts with permissions to assume an administrative role in another account hosted in a different cloud vendor environment. Administrative permissions can result in the compromising of the security posture of your organization. As the service account resides in a separate cloud vendor's environment, a compromise of the source account could lead to lateral movement exposing the second account and enlarging the blast radius across cloud provider environments.
+
+*Severity—* Medium
+
+*Cloud—* AWS
+
+*Updated RQL—*
+
+----
+config from iam where source.cloud.type = 'GCP' AND dest.cloud.type = 'AWS' and action.access.isadministrative = True AND grantedby.cloud.entity.type = 'role'
+----
+
+*Recommendation Steps—*
+
+How to investigate?
+1. Sign in to the AWS Console.
+2. Navigate to the affected role.
+3. Examine the role's trust relationship and permissions as well as its use case.
+In order to remove any unnecessary permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+To revoke the cross cloud service account access to assume the role altogether, browse to the role in the AWS Console and select *Trust relationships > Edit trust policy*. Modify the role's trust relationship as per requirements. To minimize the access the service account has when using the role, under the "Permissions" tab, select the relevant policy granting administrative permissions and remove those which are unnecessary by either editing the policy or replacing it.
+Note: Editing a managed policy could affect other roles.
+
+
+|*AWS Secret Manager Secret is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS Secret Manager Secrets with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'secretsmanager' and dest.cloud.resource.type = 'Secret' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*AWS KMS Key is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS KMS Keys with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'kms' AND dest.cloud.resource.type = 'key' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*AWS Lambda Layer Version is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS Lambda Layer Versions with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'layerVersion' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*AWS SQS Queue is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS SQS Queues with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sqs' AND dest.cloud.resource.type = 'queue' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*AWS SNS Topic is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS SNS Topics with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sns' AND dest.cloud.resource.type = 'topic' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*AWS ECR Repository is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS ECR Repositories with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'ecr' AND dest.cloud.resource.type = 'repository' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*AWS S3 Bucket with Data Destruction Permissions is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS S3 Buckets with Resource-based policies which allow all principals and the 's3:DeleteBucket' permission. This configuration could grant anyone with access to the bucket the ability to delete it together with all objects inside, potentially leading to permanent loss of information stored in the bucket.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition does not exist AND action.name IN ( 's3:DeleteBucket' )
+----
+
+|*AWS S3 bucket is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
+
+|*Description—* This policy identifies AWS S3 Buckets with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition does not exist
+----
+
+|*Third-party service account can assume a service account with high privileges*
+//RLP-146497
+
+|*Description—* This policy identifies instances where third-party vendors are granted the ability to assume or impersonate roles with high privileges and may allow significant administrative access to your cloud environment. Such permissions can potentially lead to unauthorized access or escalation of privileges, compromising the security posture of your organization.
+
+*Updated RQL—*
+----
+config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount' ) AND action.access.isadministrative = true AND source.cloud.account.isvendor = true
+----
 
 |===
 
@@ -200,21 +388,19 @@ If deemed unnecessary, remove permissions to minimize the user's access. Additio
 
 |*AWS WAF*
 
-tt:[24.8.1]
 //RLP-134184
 
 |*aws-waf-v2-global-rule-group*
 
-Additional permission required:
+Additional permissions required:
 
 * `wafv2:ListRuleGroups`
 * `wafv2:GetRuleGroup`
 
-The Security Audit role includes the `wafv2:ListRuleGroups` permission. wafv2:GetRuleGroup is NOT present in Security Audit Policy
+The Security Audit role includes the `wafv2:ListRuleGroups` permission. You must manually add the wafv2:GetRuleGroup permission to the CFT template to enable it.
 
 |*AWS Systems Manager*
 
-tt:[24.8.1]
 //RLP-145206
 
 |*aws-ssm-session*
@@ -227,7 +413,6 @@ The Security Audit role includes the permission.
 
 |*AWS Systems Manager*
 
-tt:[24.8.1]
 //RLP-145960
 
 |*aws-ssm-service-setting*
@@ -240,16 +425,13 @@ The Security Audit role includes the permission.
 
 |tt:[Update] *Regional only scope for aws-waf-v2-rule-group API*
 
-tt:[24.8.1]
 //RLP-133328
 
-|‘REGIONAL' and 'CLOUDFRONT’ type resources will be ingested separately by the `aws-waf-v2-rule-groups` API.
-Any policy utilizing the `aws-waf-v2-rule-groups` API querying global resources will be impacted.
+|The `aws-waf-v2-rule-group` API will ingest resources of the type ‘REGIONAL' type. 'CLOUDFRONT’ type resources will ingested separately by the `aws-waf-v2-global-rule-group` API. Any policy utilizing the `aws-waf-v2-rule-groups` API querying global resources will be impacted.
 
 
 |*Azure Active Directory*
 
-tt:[24.8.1]
 //RLP-131021
 
 |*azure-active-directory-authentication-strength-policy*
@@ -262,7 +444,6 @@ The Reader role includes the permission.
 
 |*Azure SQL Database*
 
-tt:[24.8.1]
 //RLP-143840
 
 |*azure-sql-vm*
@@ -275,7 +456,6 @@ The Reader role includes the permission.
 
 |*Azure Monitor*
 
-tt:[24.8.1]
 //RLP-145820
 
 |*azure-monitor-data-collection-rules*
@@ -288,17 +468,16 @@ The Reader role includes the permission.
 
 |*Azure Kusto*
 
-tt:[24.8.1]
 //RLP-145859
 
 |*azure-kusto-databases*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.Kusto/Clusters/read`
 * `Microsoft.Kusto/Clusters/Databases/read`
 
-The Reader role includes the permission. 
+The Reader role includes the permissions. 
 
 |*Azure Virtual Desktop*
 
@@ -321,7 +500,7 @@ tt:[24.8.1]
 
 |*gcloud-application-integration*
 
-Additional permission required:
+Additional permissions required:
 
 * `integrations.integrations.list`
 * `integrations.integrationVersions.list`
@@ -335,7 +514,7 @@ tt:[24.8.1]
 
 |*gcloud-backup-dr-management-server*
 
-Additional permission required:
+Additional permissions required:
 
 * `backupdr.managementServers.list`
 * `backupdr.managementServers.getIamPolicy`
