@@ -16,6 +16,7 @@ The details and functionality listed below are a preview and the actual release 
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
+* <<cna-policy-updates>>
 * <<iam-policy-updates>>
 * <<api-ingestions>>
 //* <<new-compliance-benchmarks-and-updates>>
@@ -119,6 +120,66 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policies*
 |*Description*
 
+|*GCP GKE unsupported Master node version*
+
+//RLP-146735
+
+|This policy identifies the GKE master node version and generates an alert if the version running is unsupported.
+
+Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
+
+As a security best practice, it is always recommended to use the latest version of GKE.
+
+Note: This Policy is in line with the https://cloud.google.com/kubernetes-engine/docs/release-schedule#schedule-for-release-channels[GCP GKE release] version schedule 
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* Low. Open Alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isMasterVersionSupported exists AND isMasterVersionSupported does not equal "true"
+----
+
+*Proposed RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+----
+
+|*GCP GKE unsupported node version*
+
+//RLP-146735
+
+|This policy identifies the GKE node version and generates an alert if the version running is unsupported.
+
+Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
+
+As a security best practice, it is always recommended to use the latest version of GKE.
+
+Note: This Policy is in line with the https://cloud.google.com/kubernetes-engine/docs/release-schedule#schedule-for-release-channels[GCP GKE release] version schedule 
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* Low. Open Alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isNodeVersionSupported exists AND isNodeVersionSupported does not equal "true"
+----
+
+*Proposed RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
+----
+
 2+|*Policy Name and Metadata Update*
 
 |*Google Workspace User not enrolled with 2-step verification*
@@ -148,6 +209,392 @@ Policy name and metadata updated to provide more descriptive content.
 *Policy Type—* Config
 
 *Impact—* None. No impact on alerts.
+
+|===
+
+[#cna-policy-updates]
+=== CNA Policy Updates
+
+
+The Policy Name, Description and Recommendation for Remediation steps have been revised to better align with the behavior of the following Cloud Network Analyzer (CNA) policies.
+
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+//RLP-146591
+
+|*AWS EC2 instance with network path from the internet (0.0.0.0/0)*
+
+|*Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0). AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+
+*Recommendation Steps—* 
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit inbound rules*
+7. Update inbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path from the internet (0.0.0.0/0) on ports 80/443*
+
+|*Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit inbound rules*
+7. Update inbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path from the internet (0.0.0.0/0) on Admin ports*
+
+|*Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the 'Security group' section
+6. Select *Edit inbound rules*
+7. Update inbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path from the untrust internet source on ports with high risk*
+
+|*Description—* This policy identifies AWS EC2 instances with network path from the untrust internet source on ports with high risk.
+
+AWS EC2 instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Recommendation Steps—* 
+
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit inbound rules*
+7. Add the IP addresses from the trusted IP addresses.
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path to the internet (0.0.0.0/0)*
+
+|*Description—* This policy identifies AWS EC2 instances with network path to the internet (0.0.0.0/0).
+
+AWS EC2 instances with network path to the internet increases the risk of cyber attacks, crypto mining and data breaches which can be used by malicious actors. Such instances are especially prone to data exfiltration or mining exploits.
+
+As a best practice, restrict traffic to unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict EC2 instances with network path to the internet based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the 'Security group' section
+6. Select *Edit outbound rules*
+7. Update outbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*Azure Cosmos DB (PaaS) instance with network path from the untrust internet source*
+
+|*Description—* This policy identifies Azure Cosmos DB (PaaS) instances with network path from the untrust internet source.
+
+Cosmos DB (PaaS) instances with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure Cosmos DB instances from untrusted internet sources by configuring firewall rules.
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure Cosmos DB Dashboard
+3. Identify the reported Azure Cosmos DB instances that you want to restrict public access
+4. Navigate to the *Networking* section
+5. Under *Public network access* select *Selected networks*
+6. Under the *Firewall* section, add the IP addresses or IP address ranges of the trusted sources in CIDR form in 'IP (Single IPv4 or CIDR range)'
+7. Click *Save* to apply the changes
+
+
+|*Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306*
+
+|*Description—* This policy identifies Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306.
+
+Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure MySQL server instance from untrusted internet sources by configuring firewall rules
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure MySQL Server Dashboard
+3. Identify the reported Azure MySQL Server instance that you want to restrict from untrusted internet sources
+4. Navigate to the *Networking* section
+6. Under the *Firewall rules* section, add the IP addresses from Trusted IP Addresses
+7. Click *Save* to apply the changes
+
+
+|*Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432*
+
+|*Description—* This policy identifies Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432.
+
+Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure PostgreSQL server instance from untrusted internet sources by configuring firewall rules
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure PostgreSQL Server Dashboard
+3. Identify the reported Azure PostgreSQL Server instance that you want to restrict from untrusted internet sources
+4. Navigate to the *Networking* section
+6. Under the *Firewall rules* section, add the IP addresses from Trusted IP Addresses
+7. Click *Save* to apply the changes
+
+
+|*Azure SQL Server (PaaS) with network path from the untrust internet source*
+
+|*Description—* This policy identifies Azure SQL Server (PaaS) with network path from the untrust internet source.
+
+Azure SQL Server (PaaS) with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure SQL server instance from untrusted internet sources by configuring firewall rules
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure SQL Server Dashboard
+3. Identify the reported Azure SQL Server instance that you want to restrict from untrusted internet sources
+4. Navigate to the *Networking* section
+6. Under the *Firewall rules* section, add the IP addresses from Trusted IP Addresses
+7. Click *Save* to apply the changes
+
+
+|*Azure Virtual Machine with network path from the internet (0.0.0.0/0)*
+
+|*Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0).
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules:
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, select the rule that allow Internet access (0.0.0.0/0) to the trusted IP address 
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*Azure Virtual Machine with network path from the internet (0.0.0.0/0) on ports 80/443*
+
+|*Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules,
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, select the rule that allow Internet access (0.0.0.0/0) to the trusted IP address.  
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*Azure Virtual Machine with network path from the internet (0.0.0.0/0) on Admin ports*
+
+|*Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on Admin ports.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Admin ports can increase opportunities for malicious activities such as hacking, Man-In-The-Middle attacks (MITM), and brute-force attacks
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules,
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, select the rule that allow Internet access (0.0.0.0/0) to the trusted IP address.  
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the internet (0.0.0.0/0)*
+
+|*Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0).
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rule that allows Internet access (0.0.0.0/0) to a trusted IP address
+
+Refer to the following links for detailed steps to modify VPC firewall rules,
+- To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+- To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the internet (0.0.0.0/0) on ports 80/443*
+
+|*Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rule that allows Internet access (0.0.0.0/0) on ports 80/443 to a trusted IP address
+
+Refer to the following links for detailed steps to modify VPC firewall rules,
+- To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+- To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the internet (0.0.0.0/0) on Admin ports*
+
+|*Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rule that allows Internet access (0.0.0.0/0) on ports 22/3389 to a trusted IP address
+
+Refer to the following links for detailed steps to modify VPC firewall rules,
+- To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+- To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the untrust internet source on ports with high risk*
+
+|*Description—* This policy identifies GCP VM instances with network path from the untrust internet source on ports with high risk.
+
+GCP VM instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rules to allow IP addresses from Trusted IP Addresses
+
+Refer to the following links for detailed steps to modify VPC firewall rules,
+- To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+- To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
 
 |===
 
