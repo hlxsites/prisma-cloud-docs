@@ -120,23 +120,24 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policies*
 |*Description*
 
-|*GCP GKE unsupported Master node version*
+2+|Policy Updates—RQL
 
+|*GCP GKE unsupported Master node version*
 //RLP-146735
 
-|This policy identifies the GKE master node version and generates an alert if the version running is unsupported.
+|*Changes—* The policy description and RQL will be updated to narrow down resources based on currently supported GKE versions and remove false positives.
+
+*Current Policy Description—* Ensure your GKE Master node version is supported. This policy checks your GKE master node version and generates an alert if the version running is unsupported.
+
+*Updated Policy Description—* This policy identifies the GKE master node version and generates an alert if the version running is unsupported.
 
 Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
 
 As a security best practice, it is always recommended to use the latest version of GKE.
 
-Note: This Policy is in line with the https://cloud.google.com/kubernetes-engine/docs/release-schedule#schedule-for-release-channels[GCP GKE release] version schedule 
-
 *Policy Severity—* Medium
 
 *Policy Type—* Config
-
-*Impact—* Low. Open Alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
 
 *Current RQL—*
 
@@ -144,29 +145,31 @@ Note: This Policy is in line with the https://cloud.google.com/kubernetes-engine
 config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isMasterVersionSupported exists AND isMasterVersionSupported does not equal "true"
 ----
 
-*Proposed RQL—*
+*Updated RQL—*
 
 ----
 config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
 ----
 
-|*GCP GKE unsupported node version*
+*Impact—* Low. Existing alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
 
+
+|*GCP GKE unsupported node version*
 //RLP-146735
 
-|This policy identifies the GKE node version and generates an alert if the version running is unsupported.
+|*Changes—* The policy description and RQL will be updated to narrow down resources based on currently supported GKE versions and remove false positives.
+
+*Current Policy Description—* Ensure your GKE node version is supported. This policy checks your GKE node version and generates an alert if the version running is unsupported.
+
+*Updated Policy Description—* This policy identifies the GKE node version and generates an alert if the version running is unsupported.
 
 Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
 
 As a security best practice, it is always recommended to use the latest version of GKE.
 
-Note: This Policy is in line with the https://cloud.google.com/kubernetes-engine/docs/release-schedule#schedule-for-release-channels[GCP GKE release] version schedule 
-
 *Policy Severity—* Medium
 
 *Policy Type—* Config
-
-*Impact—* Low. Open Alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
 
 *Current RQL—*
 
@@ -174,41 +177,64 @@ Note: This Policy is in line with the https://cloud.google.com/kubernetes-engine
 config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isNodeVersionSupported exists AND isNodeVersionSupported does not equal "true"
 ----
 
-*Proposed RQL—*
+*Updated RQL—*
 
 ----
 config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
 ----
 
-2+|*Policy Name and Metadata Update*
+*Impact—* Low. Existing alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+
+2+|*Policy Updates—Metadata*
 
 |*Google Workspace User not enrolled with 2-step verification*
-
 //RLP-146693
 
-|*Changes—* New Policy Name: GCP Google Workspace User not enrolled with 2-step verification
+|*Changes—* The policy name, description and metadata will be revised as follows:
 
-Policy metadata updated to provide more descriptive content.
+*Current Policy Name—* Google Workspace User not enrolled with 2-step verification
 
-*Severity—* Medium
+*Updated Policy Name—* GCP Google Workspace User not enrolled with 2-step verification.
+
+*Current Policy Description—* This policy identifies Google Workspace Users who do not have 2-Step Verification enabled. 2-Step Verification is a simple best practice that adds an extra layer of protection on top of username and password combination. It is recommended to enable 2-Step Verification for all users as it provides increased security for user account settings and resources.
+
+*Updated Policy Description—* This policy identifies Google Workspace Super Admins that do not have 2-Step Verification enabled. 
+
+Super Admin accounts have access to all features in the Admin console and Admin API. This additional layer of 2SV significantly reduces the risk of unauthorized access, protecting administrative controls and sensitive data from potential breaches. Implementing 2-Step Verification safeguards your entire Google Workspace environment, maintaining robust security and compliance standards.
+
+It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Policy Severity—* Medium
 
 *Policy Type—* Config
 
-*Impact—* None. No impact on alerts.
+*Impact—* No impact on alerts.
+
 
 |*Google Workspace Super Admin not enrolled with 2-step verification*
-
 //RLP-146694
 
-|*Changes—* New Policy Name: GCP Google Workspace Super Admin not enrolled with 2-step verification
+|*Changes—* The policy name, description and metadata will be revised as follows:
 
-Policy name and metadata updated to provide more descriptive content.
+*Current Policy Name—* Google Workspace Super Admin not enrolled with 2-step verification
 
-*Severity—* High
+*Updated Policy Name—* GCP Google Workspace Super Admin not enrolled with 2-step verification
+
+*Current Policy Description—* This policy identifies Google Workspace Super Admin that do not have 2-Step Verification enabled. Super Admin accounts have access to all features in the Admin console and Admin API. It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Updated Policy Description—* This policy identifies Google Workspace Super Admins that do not have 2-Step Verification enabled.
+
+Super Admin accounts have access to all features in the Admin console and Admin API. This additional layer of 2SV significantly reduces the risk of unauthorized access, protecting administrative controls and sensitive data from potential breaches. Implementing 2-Step Verification safeguards your entire Google Workspace environment, maintaining robust security and compliance standards.
+
+It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Policy Severity—* High
 
 *Policy Type—* Config
 
-*Impact—* None. No impact on alerts.
+*Impact—* No impact on alerts.
+
 
 |===
 
@@ -227,7 +253,7 @@ The Policy Name, Description and Recommendation for Remediation steps have been 
 
 |*AWS EC2 instance with network path from the internet (0.0.0.0/0)*
 
-|*Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0). AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+|Identifies AWS EC2 instances with network path from the internet (0.0.0.0/0). AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
 
 As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
 
@@ -247,7 +273,7 @@ Restrict Internet exposure of reported EC2 instances based on your business requ
 
 |*AWS EC2 instance with network path from the internet (0.0.0.0/0) on ports 80/443*
 
-|*Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+|Identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 80/443.
 
 AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
 
@@ -269,7 +295,7 @@ Restrict Internet exposure of reported EC2 instances based on your business requ
 
 |*AWS EC2 instance with network path from the internet (0.0.0.0/0) on Admin ports*
 
-|*Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+|Identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
 
 AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
 
@@ -291,7 +317,7 @@ Restrict Internet exposure of reported EC2 instances based on your business requ
 
 |*AWS EC2 instance with network path from the untrust internet source on ports with high risk*
 
-|*Description—* This policy identifies AWS EC2 instances with network path from the untrust internet source on ports with high risk.
+|Identifies AWS EC2 instances with network path from the untrust internet source on ports with high risk.
 
 AWS EC2 instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
 
@@ -315,7 +341,7 @@ Restrict Internet exposure of reported EC2 instances based on your business requ
 
 |*AWS EC2 instance with network path to the internet (0.0.0.0/0)*
 
-|*Description—* This policy identifies AWS EC2 instances with network path to the internet (0.0.0.0/0).
+|Identifies AWS EC2 instances with network path to the internet (0.0.0.0/0).
 
 AWS EC2 instances with network path to the internet increases the risk of cyber attacks, crypto mining and data breaches which can be used by malicious actors. Such instances are especially prone to data exfiltration or mining exploits.
 
@@ -337,7 +363,7 @@ Restrict EC2 instances with network path to the internet based on your business 
 
 |*Azure Cosmos DB (PaaS) instance with network path from the untrust internet source*
 
-|*Description—* This policy identifies Azure Cosmos DB (PaaS) instances with network path from the untrust internet source.
+|Identifies Azure Cosmos DB (PaaS) instances with network path from the untrust internet source.
 
 Cosmos DB (PaaS) instances with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
 
@@ -359,7 +385,7 @@ Restrict access to Azure Cosmos DB instances from untrusted internet sources by 
 
 |*Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306*
 
-|*Description—* This policy identifies Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306.
+|Identifies Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306.
 
 Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
 
@@ -380,7 +406,7 @@ Restrict access to Azure MySQL server instance from untrusted internet sources b
 
 |*Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432*
 
-|*Description—* This policy identifies Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432.
+|Identifies Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432.
 
 Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
 
@@ -401,7 +427,7 @@ Restrict access to Azure PostgreSQL server instance from untrusted internet sour
 
 |*Azure SQL Server (PaaS) with network path from the untrust internet source*
 
-|*Description—* This policy identifies Azure SQL Server (PaaS) with network path from the untrust internet source.
+|Identifies Azure SQL Server (PaaS) with network path from the untrust internet source.
 
 Azure SQL Server (PaaS) with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
 
@@ -422,7 +448,7 @@ Restrict access to Azure SQL server instance from untrusted internet sources by 
 
 |*Azure Virtual Machine with network path from the internet (0.0.0.0/0)*
 
-|*Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0).
+|Identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0).
 
 Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
 
@@ -447,7 +473,7 @@ NOTE: When modifying Network security group rules, make sure that you don't lock
 
 |*Azure Virtual Machine with network path from the internet (0.0.0.0/0) on ports 80/443*
 
-|*Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on ports 80/443.
+|Identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on ports 80/443.
 
 Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
 
@@ -472,7 +498,7 @@ NOTE: When modifying Network security group rules, make sure that you don't lock
 
 |*Azure Virtual Machine with network path from the internet (0.0.0.0/0) on Admin ports*
 
-|*Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on Admin ports.
+|Identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on Admin ports.
 
 Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Admin ports can increase opportunities for malicious activities such as hacking, Man-In-The-Middle attacks (MITM), and brute-force attacks
 
@@ -497,7 +523,7 @@ NOTE: When modifying Network security group rules, make sure that you don't lock
 
 |*GCP VM instance with network path from the internet (0.0.0.0/0)*
 
-|*Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0).
+|Identifies GCP VM instances with network path from the internet (0.0.0.0/0).
 
 GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
 
@@ -522,7 +548,7 @@ NOTE: When modifying Network security group rules, ensure that you don't lock yo
 
 |*GCP VM instance with network path from the internet (0.0.0.0/0) on ports 80/443*
 
-|*Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+|Identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 80/443.
 
 GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
 
@@ -547,7 +573,7 @@ NOTE: When modifying Network security group rules, ensure that you don't lock yo
 
 |*GCP VM instance with network path from the internet (0.0.0.0/0) on Admin ports*
 
-|*Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+|Identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
 
 GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
 
@@ -572,7 +598,7 @@ NOTE: When modifying Network security group rules, ensure that you don't lock yo
 
 |*GCP VM instance with network path from the untrust internet source on ports with high risk*
 
-|*Description—* This policy identifies GCP VM instances with network path from the untrust internet source on ports with high risk.
+|Identifies GCP VM instances with network path from the untrust internet source on ports with high risk.
 
 GCP VM instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
 
