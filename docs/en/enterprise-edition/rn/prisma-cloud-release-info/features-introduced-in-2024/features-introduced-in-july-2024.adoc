@@ -3,6 +3,7 @@
 Learn what's new on Prisma® Cloud in July 2024.
 
 * <<new-features>>
+* <<intelligence-stream-updates>>
 * <<api-ingestions>>
 * <<new-policies>>
 * <<policy-updates>>
@@ -24,13 +25,19 @@ Learn what's new on Prisma® Cloud in July 2024.
 
 |*Support for Azure Container Registry and VM image scanning*
 //CWP-57626
+
 tt:[Secure the Runtime]
+
+tt:[32.07.123]
 
 |Prisma Cloud now supports scanning Azure Container Registry (ACR) and Virtual Machine (VM) images for Azure cloud accounts that are onboarded directly through the platform.
 
 |*A new registry scan status*
 //CWP-60158
+
 tt:[Secure the Runtime]
+
+tt:[32.07.123]
 
 |A new status, *Partially Completed*, has been added to the scan statuses for registry scans. This status is assigned when at least one image has been successfully scanned in the registry.
 
@@ -67,7 +74,8 @@ image::cdem-networkflowlog-filter.gif[]
 
 //UVE Enhancements-add link to topic
 
-|tt:[Update] *Vulnerabilities Dashboard*
+|tt:[Update] 
+*Vulnerabilities Dashboard*
 //PCUI-6499
 
 tt:[Secure the Infrastructure]
@@ -89,7 +97,8 @@ You can also *CVE Preview Card*, which highlights the most important information
 
 image::cve-preview-card.png[]
 
-|tt:[Update] *CSV Bulk Download in Table View*
+|tt:[Update]
+*CSV Bulk Download in Table View*
 //RLP-130840
 
 tt:[Secure the Infrastructure]
@@ -100,7 +109,8 @@ tt:[*24.7.1*]
 
 image::csv-bulk-download-table.png[]
 
-|tt:[Update] *Vulnerability Results in Table View*
+|tt:[Update] 
+*Vulnerability Results in Table View*
 
 tt:[Secure the Infrastructure]
 
@@ -112,6 +122,99 @@ image::vulnerability-results-table.png[]
 
 |===
 
+[#intelligence-stream-updates]
+=== Intelligence Stream Updates
+
+[cols="25%a,75%a"]
+|===
+|*Feature*
+|*Description*
+
+//CWP-57783
+|*Severity Mapping Update for Intelligence Stream*
+
+tt:[Secure the Runtime]
+
+tt:[32.07.123]
+
+|The severity values for the Intelligence stream are now mapped into 4 predefined values: “Low”, “Medium”,“ High”, and “Critical”. 
+
+Note: The severity values are already normalized to create rules. The current change is only specific to the severity reporting name change. 
+
+The following list defines the new vendor severity mapping:
+
+---
+
+* *Current Severity*: Important
+* *New Severity*: High
+* *Vendors*: Amazon, Oracle, RedHat, Rocky, Suse, Ubuntu
+
+---
+
+* *Current Severity*: Moderate
+* *New Severity*: Medium
+* *Vendors*: Oracle, RedHat, Rocky, Suse, Windows
+
+---
+
+* *Current Severity*: Negligible
+* *New Severity*: Low
+* *Vendors*: Ubuntu
+
+---
+
+* *Current Severity*: Unimportant
+* *New Severity*: Low
+* *Vendors*: Debian, Suse
+
+---
+
+* *Current Severity*: Untriaged
+* *New Severity*: Low
+* *Vendors*: Ubuntu
+
+---
+
+* *Current Severity*: End-of-life
+* *New Severity*: Low, Medium, High, or Critical based on NVD
+* *Vendors*: Debian
+
+*Note*: End-of-life will be set in the vulnerability status.
+
+---
+
+All the other unrecognized severity values from the different feeds will be assigned according to the NVD severity.
+
+For more information, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/vulnerability-management/cvss-scoring#mappings[CVSS Scoring].
+
+//CWP-60759
+|*Changes in Vulnerability Reporting for SUSE, Debian, and Ubuntu*
+
+tt:[Secure the Runtime]
+
+tt:[32.07.123]
+
+|Following the change in severity mapping for vulnerability reporting, the following changes are observed:
+
+* SUSE and Debian vulnerabilities previously categorized as "unimportant" will now be reported as "low" severity.
+
+* Ubuntu vulnerabilities formerly classified as "negligible" will also be reported as "low" severity.
+
+This change will lead to an increase in the number of vulnerabilities reported, as vulnerabilities classified as "low" severity would be included in the report. 
+
+//CWP-60870
+|*End of support for Debian 10 (Buster)*
+
+tt:[Secure the Runtime]
+
+tt:[32.07.123]
+
+|Debian 10 (Buster) reached end-of-life on June 30, 2024. Starting from July 2024, the Debian Long Term Support (LTS) team has stopped providing security information for Debian 10.
+
+Consequently, vulnerabilities related to Debian 10 (Buster) were removed from the Prisma Cloud Intelligence Stream.
+
+*Impact*: Starting from this version, customers using Debian Buster (LTS or ELTS) will no longer see vulnerability data related to this version.
+|===
 
 [#api-ingestions]
 === API Ingestions
@@ -1448,69 +1551,11 @@ tt:[*24.7.1*]
 |*Feature*
 |*Description*
 
-//CWP-57783
-|*[Vulnerabilities]: Severity mapping should be consistent to 4 severities: Low/Medium/High/Critical*
-
-tt:[Secure the Runtime]
-|All the current severity values for the Intelligence stream are mapped into 4 predefined values “Low”, “Medium”,“ High”, and “Critical”. 
-Note: The severity values are already normalized to create rules, the current change is only specific to the severity reporting name change.
-The following table defines the vendor severity mapping to the predefined severity values:
-
-[cols="1,1,1,1"]
-!===
-!Current Severity !New Severity!Vendor!Remarks
-
-!Important
-!High
-!Amazon
-Oracle
-RedHat
-Rocky
-Suse
-Ubuntu
-
-!
-
-
-!Moderate
-!Medium
-!Oracle
-RedHat
-Rocky
-Suse
-Windows
-!
-
-
-!negligible
-!Low
-!Ubuntu
-!
-
-!unimportant
-!Low
-!Debian
-Suse
-!
-
-!untriaged
-!Low
-!Ubuntu
-!
-
-
-!end-of-life
-!Low, Medium, High, or Critical based on NVD.
-!Debian
-!'end-of-life' will be set in the vulnerability status
-
-!===
-
-Note: All the unrecognized severity values from the different feeds will be assigned according to NVD severity.
-
 |*Enhancement to Photon OS and Amazon Linux OS Feeds*
 //CWP-59772
 tt:[Secure the Runtime]
+
+tt:[32.07.123]
 
 |Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
 
@@ -1666,11 +1711,4 @@ In RQL, the key will not be available in the `api.name` attribute auto-completio
 
 *Impact—* If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as *Policy_Deleted*.
 
-|*End of support for Debian 10 (Buster)*
-//CWP-60870
-|Debian 10 (Buster) reached end-of-life on June 30, 2024. Starting from July 2024, the Debian Long Term Support (LTS) team has stopped providing security information for Debian 10. 
-
-Consequently, vulnerabilities related to Debian 10 (Buster) were removed from the Prisma Cloud Intelligence Stream.
-
-*Impact—* Customers using Debian Buster (LTS or ELTS) will no longer see vulnerability data for this version.
 |===
