@@ -7,7 +7,7 @@ Learn what's new on Prisma® Cloud in July 2024.
 * <<api-ingestions>>
 * <<new-policies>>
 * <<policy-updates>>
-//* <<iam-policies>>
+// * <<iam-policies>>
 * <<iam-policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
 * <<changes-in-existing-behavior>>
@@ -22,6 +22,95 @@ Learn what's new on Prisma® Cloud in July 2024.
 |===
 |*Feature*
 |*Description*
+
+
+|*Identify Cloud Workload Identities*
+
+//IVG-15366
+tt:[Secure the Infrastructure]
+
+tt:[24.7.3]
+
+|Enhancements to Prisma Cloud's CIEM capabilities enable you to extract relevant information about GCP service accounts with access to your AWS environment. Configure IAM roles to proactively defend against cross-cloud lateral threat vectors. Use the RQL query below to investigate trust policies, to securely handle identities and permissions across your multicloud environments. 
+
+* `config from IAM where source.cloud.type = GCP and dest.cloud.type = AWS and dest.cloud.resource.access.isadministrative = True`
+
+
+|*Multicloud Support for Last Access Detection*
+
+//IVG-15363/IVG-15364/IVG-15365
+tt:[Secure the Infrastructure]
+
+tt:[24.7.3]
+
+|Prisma Cloud's IAM functionality now includes the ability to to detect inactive cloud service accounts, by querying the days passed since the last usage of the cloud service account. Available for AWS, Azure, and GCP, this RQL clause allows you to determine the days passed since last access. Add the RQL clause below to find last login information for AWS roles, Azure service principals or GCP service accounts.
+
+* `grantedby.cloud.entity.lastlogin`
+
+*Attribute Type*: Number (Days since the last login/activity)
+
+*Values*: - <, >, <=, >=, =, =!
+
+|*Source Vendor RQL Support for AWS and GCP*
+
+//IVG-14953
+tt:[Secure the Infrastructure]
+
+tt:[24.7.3]
+
+|RQL enhancements now provide greater visibility into validated vendor access including access type and usage in AWS and GCP environments. The following attribute is supported in both AWS and GCP:
+
+* `source.cloud.account.isvendor`
+
+
+|*Enhanced CVE Runtime Vulnerability Detection*
+
+//BCE-36529
+tt:[Secure the Source]
+
+tt:[24.7.3]
+
+|Mitigate vulnerabilities at their source, and proactively prevent them from reaching runtime environments, with Prisma Cloud's enhanced CVE vulnerability detection. Leverage the *Vulnerability Risk Factors* filter on the *Home > Application Security > Projects* page to identify vulnerabilities based on *Package in Runtime*, *Repository in Runtime*, and *Manifest in Runtime* filters. These https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/software-composition-analysis/software-composition-analysis[filters] allow you to hone in on the vulnerabilities at their source and prevent runtime access.   
+
+|*Support for .NET Central Package Management*
+
+//BCE-33821
+tt:[Secure the Source]
+
+tt:[24.7.3]
+
+|Prisma Cloud's Application Security enhancements now offers support for additional package managers that help you manage common dependencies for multiple projects in a single location. Additional support for NuGet’s Central Package Management lets you store your varied packaged projects in the `Directory.Packages.props` file. Learn more about this https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/supported-technologies[enhancement] to Software Composition Analysis (SCA) capabilities.
+
+
+|*Identify Third-Party AI Libraries*
+
+//BCE-36651
+tt:[Secure the Source]
+
+tt:[24.7.3]
+
+|Identify third-party AI Libraries with ease with Prisma Cloud's enhanced https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/visibility/sbom/sbom[Software Bill of Material] (SBOM) functionality. Naviagate to *Home > Application Security > Visibilty > SBOM* to detect Artificial Intelligence (AI) and Machine Learning (ML) functionaly incorporated into your codebase through third-party libraries. Use this information to build a comprehensive inventory of the machine learning packages, to help you effectively mitigate risks and make informed security decisions.
+
+
+|*Improve Package Management with Application Graph*
+
+//BCE-36940
+tt:[Secure the Source]
+
+tt:[24.7.3]
+
+|The https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/visibility/repositories#app-graph[Application Graph] now visualizes all packages in your repository, including the number of package files, and direct and indirect dependencies. This visual representation helps you identify potential dependency conflicts and manage package relationships effectively.Use the vulnerable packages filter to quickly find packages that include vulnerabilities.
+
+
+|*Effectively Allocate Security Resources with the Repository Importance Score*
+
+//BCE-33801
+tt:[Secure the Source]
+
+tt:[24.7.3]
+
+|Enhancements to the https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/visibility/repositories#repo-importance-score[Repository Importance Score] allow you to prioritize security efforts across multiple code repositories, by quantifying the significance of each repository. Leverage this data-driven scoring system, to categorize important repositories, and prioritize fixing issues in the most critical repositories first. You can also customize this score to accommodate your organization’s specific security priorities, and secure your business-critical assets.
+
 
 |*Support for Azure Container Registry and VM image scanning*
 //CWP-57626
@@ -46,6 +135,7 @@ The Partially Completed status appears as follows during the registry scan:
 image::partially-completed.png[width=50] 
 
 It also displays the number of images that have been scanned successfully.
+
 
 |*Support for New Regions on OCI*
 
@@ -223,6 +313,225 @@ Consequently, vulnerabilities related to Debian 10 (Buster) were removed from th
 |===
 |*Service*
 |*API Details*
+
+|*Amazon S3*
+
+tt:[24.7.3]
+//RLP-142168
+
+|*aws-s3api-get-bucket-acl*
+
+Additional permission required:
+
+* `s3:GetAccelerateConfiguration`
+
+The Security Audit role includes the permission.
+
+Also, this API has been updated to include the following new field in the resource JSON:
+
+* `bucketAccelerateConfiguration`
+
+|*AWS Application Migration Service*
+
+tt:[24.7.3]
+//RLP-145208
+
+|*aws-mgn-replication-configuration-template*
+
+Additional permission required:
+
+* `mgn:DescribeReplicationConfigurationTemplates`
+
+The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
+
+
+|*Amazon EMR*
+
+tt:[24.7.3]
+//RLP-145210 
+
+|*aws-emr-serverless-application*
+
+Additional permissions required:
+
+* `emr-serverless:ListApplications`
+* `emr-serverless:GetApplication`
+
+The Security Audit role includes the permissions.  
+ 
+
+|*Azure Compute*
+
+tt:[24.7.3]
+//RLP-144994
+
+|*azure-compute-snapshots*
+
+Additional permission required:
+
+* `Microsoft.Compute/snapshots/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+
+tt:[24.7.3]
+//RLP-144988
+
+|*azure-monitor-smart-detector-alert-rules*
+
+Additional permission required:
+
+* `Microsoft.AlertsManagement/smartDetectorAlertRules/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+
+tt:[24.7.3]
+//RLP-144974
+
+|*azure-monitor-prometheus-rule-groups*
+
+Additional permission required:
+
+* `Microsoft.AlertsManagement/prometheusRuleGroups/read`
+
+The Reader role includes the permission.
+
+|*Azure Monitor*
+
+tt:[24.7.3]
+//RLP-141429
+
+|*azure-monitor-query-packs*
+
+Additional permission required:
+
+* `Microsoft.OperationalInsights/querypacks/read`
+
+The Reader role includes the permission.
+
+
+|*Azure Resource Manager*
+
+tt:[24.7.3]
+//RLP-142469
+
+|*azure-template-specs*
+
+Additional permission required:
+
+* `Microsoft.Resources/templateSpecs/read`
+
+The Reader role includes the permission.
+
+|tt:[Update] *Google Anthos GKE Fleet Management*
+
+tt:[24.7.3]
+//RLP-138227, RLP-131184
+
+|To improve performance, the `gkehub.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-anthos-gke-fleet-membership*
+* *gcloud-anthos-gke-fleet-feature*
+
+
+|tt:[Update] *Google Certificate Manager*
+
+tt:[24.7.3]
+//RLP-144501, RLP-144500
+
+|To improve performance, the `certificatemanager.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-certificate-manager-dns-authorization*
+* *gcloud-certificate-manager-certificate*
+
+|tt:[Update] *Google Cloud Deploy*
+
+tt:[24.7.3]
+//RLP-144504, RLP-144503
+
+|To improve performance, the `clouddeploy.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-cloud-deploy-target*
+* *gcloud-cloud-deploy-delivery-pipeline*
+
+|tt:[Update] *Google Cloud Memorystore for Memcached*
+
+tt:[24.7.3]
+//RLP-144510
+
+|To improve performance, the `networkconnectivity.locations.list` permission is no longer required for the *gcloud-memorystore-memcached-instance* API.
+
+
+|tt:[Update] *Google Cloud VMware Engine*
+
+tt:[24.7.3]
+//RLP-144519, RLP-144518, RLP-144517, RLP-144516, RLP-144515, RLP-144514
+
+|To improve performance, the `vmwareengine.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-vmware-engine-subnet*
+* *gcloud-vmware-engine-private-cloud*
+* *gcloud-vmware-engine-network*
+* *gcloud-vmware-engine-network-policy*
+* *gcloud-vmware-engine-hcx-activation-key*
+* *gcloud-vmware-engine-cluster*
+
+|tt:[Update] *Google Datastream*
+
+tt:[24.7.3]
+//RLP-144508, RLP-144507, RLP-144505
+
+|To improve performance, the `datastream.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-datastream-stream*
+* *gcloud-datastream-private-connection*
+* *gcloud-datastream-connection-profile*
+
+
+|tt:[Update] *Google Hybrid Connectivity*
+
+tt:[24.7.3]
+//RLP-144511
+
+|To improve performance, the `memcache.locations.list` permission is no longer required for the *gcloud-hybrid-connectivity-spoke* API.
+
+
+|tt:[Update] *Google Traffic Director*
+
+tt:[24.7.3]
+//RLP-144513, RLP-144512
+
+|To improve performance, the `networkservices.locations.list` permission is no longer required for the following APIs:
+
+* *gcloud-traffic-director-network-service-mesh*
+* *gcloud-traffic-director-network-service-gateway*
+
+|tt:[Update] *Google Workflows*
+
+tt:[24.7.3]
+//RLP-144520
+
+|To improve performance, the `workflows.locations.list` permission is no longer required for the *gcloud-workflows-workflow* API.
+
+|*Amazon S3*
+
+tt:[24.7.3]
+//RLP-142168
+
+|*aws-s3api-get-bucket-acl*
+
+Additional permission required:
+
+* `s3:GetAccelerateConfiguration`
+
+The Security Audit role includes the permission.
+
+Also, this API has been updated to include the following new field in the resource JSON:
+
+* `bucketAccelerateConfiguration`
 
 |*Amazon Comprehend*
 //RLP-144059
@@ -694,6 +1003,283 @@ The following permission is no longer required:
 |===
 |*Policies*
 |*Description*
+
+|*AWS Elastic Load Balancer v2 (ELBv2) with deletion protection disabled*
+
+tt:[*24.7.3*]
+//RLP-145599
+
+|This policy identifies Elastic Load Balancers v2 (ELBv2), which are configured with the deletion protection feature disabled.
+
+AWS Elastic Load Balancing automatically distributes incoming application traffic across multiple targets, such as EC2 instances, containers, and IP addresses, to improve the availability and fault tolerance of applications. To prevent your load balancer from being deleted accidentally, you can enable deletion protection.
+
+It is recommended to enable deletion protection on AWS Elastic load balancers to protect them from being deleted accidentally.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = ['attributes'].['deletion_protection.enabled'] contains "false"
+----
+
+|*AWS MSK clusters not configured with enhanced monitoring*
+
+tt:[*24.7.3*]
+//RLP-145598
+
+|This policy identifies MSK clusters that are not configured with enhanced monitoring.
+
+Amazon MSK is a fully managed Apache Kafka service on AWS that handles the provisioning, setup, and maintenance of Kafka clusters. Amazon MSK's PER_TOPIC_PER_BROKER monitoring level provides granular insights into the audit, performance and resource utilization of individual topics and brokers, enabling you to identify and optimize bottlenecks in your Kafka cluster.
+
+It is recommended to enable at least PER_TOPIC_PER_BROKER monitoring on the MSK cluster to get enhanced monitoring capabilities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-msk-cluster' AND json.rule = state equal ignore case active and enhancedMonitoring is member of (DEFAULT, PER_BROKER)
+----
+
+|*AWS Route53 public Hosted Zone query logging is not enabled*
+
+tt:[*24.7.3*]
+//RLP-145545
+
+|This policy identifies the AWS Route53 public hosted zones DNS query logging is not enabled.
+
+Enabling DNS query logging for an AWS Route 53 hosted zone enhances DNS security and compliance by providing visibility into DNS queries. When enabled, Route 53 sends these log files to Amazon CloudWatch Logs. Disabling DNS query logging for AWS Route 53 limits visibility into DNS traffic, hampering anomaly detection, compliance efforts, and effective incident response.
+
+It is recommended to enable logging for all public hosted zones to enhance the visibility and compliance requirements.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-route53-list-hosted-zones' AND json.rule = hostedZone.config.privateZone is false as X; config from cloud.resource where api.name = 'aws-route53-query-logging-config' as Y; filter ' not ($.X.hostedZone.id equals $.Y.HostedZoneId) ' ; show X; 
+----
+
+|*AWS Network ACLs allow ingress traffic on Admin ports 22/3389*
+
+tt:[*24.7.3*]
+//RLP-145530
+
+|This policy identifies the AWS Network Access Control List (NACL) which has a rule to allow ingress traffic to server administration ports.
+
+AWS NACL provides filtering of ingress and egress network traffic to AWS resources. Allowing ingress traffic on admin ports 22 (SSH) and 3389 (RDP) via AWS Network ACLs increases the vulnerability of EC2 instances and other network resources to unauthorized access and cyberattacks.
+
+It is recommended that no NACL allows unrestricted ingress access to server administration ports, such as SSH port 22 and RDP port 3389.
+
+NOTE: This policy may report NACLs, which include the deny policy in the rule set. Make sure while remediating the rule set does not consist of the Allow and Deny rule set together; which leads to overlap on each ruleset.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-network-acls' AND json.rule = "entries[?any(egress equals false and ((protocol equals 6 and ((portRange.to equals 22 or portRange.to equals 3389 or portRange.from equals 22 or portRange.from equals 3389) or (portRange.to > 22 and portRange.from < 22) or (portRange.to > 3389 and portRange.from < 3389))) or protocol equals -1) and (cidrBlock equals 0.0.0.0/0 or ipv6CidrBlock equals ::/0) and ruleAction equals allow)] exists"
+----
+
+
+|*Azure subscription permission for Microsoft Entra tenant is set to 'Allow everyone'*
+
+tt:[*24.7.3*]
+//RLP-144591
+
+|This policy identifies Microsoft Entra tenant that are not configured with restrictions for 'Subscription entering Microsoft Entra tenant' and 'Subscription leaving Microsoft Entra tenant'.
+
+Users who are set as subscription owners can make administrative changes to the subscriptions and move them into and out of the Microsoft Entra tenant. Allowing subscriptions to enter or leave the Microsoft Entra tenant without restrictions can expose the organization to unauthorized access and potential security breaches.
+
+As a best practice, it is recommended to configure the settings for 'Subscription entering Microsoft Entra tenant' and 'Subscription leaving Microsoft Entra tenant' to 'Permit no one' to ensure only authorized subscriptions can interact with the tenant, thus enhancing the security of your Azure environment.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-subscription-tenantpolicy' AND json.rule = properties.blockSubscriptionsIntoTenant is false or properties.blockSubscriptionsLeavingTenant is false
+----
+
+|*Azure Key Vault Role Based Access control is disabled*
+
+tt:[*24.7.3*]
+//RLP-144592
+
+|This policy identifies Azure Key Vault instances where Role-Based Access Control (RBAC) is not enabled.
+
+Without RBAC, managing access is less secure and can lead to improper access permissions, increasing the risk of unauthorized access to sensitive data. RBAC provides finer-grained access control, enabling secure and manageable permissions for key vault secrets, keys, and certificates. This allows for detailed permissions and the use of privileged identity management for enhanced security with Just-In-Time (JIT) access management.
+
+As best practice, it is recommended to enable RBAC for all Azure Key Vaults to ensure secure and manageable access control.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.provisioningState equal ignore case Succeeded AND (properties.enableRbacAuthorization does not exist or properties.enableRbacAuthorization is false)
+----
+
+|*Azure Microsoft Defender for IoT Hub not enabled*
+
+tt:[*24.7.3*]
+//RLP-144594
+
+|This policy identifies Azure IoT Hubs without Microsoft Defender for IoT enabled.
+
+Azure IoT Hub is a managed service that acts as a central message hub for communication between IoT applications and IoT devices. Without Microsoft Defender for IoT enabled, IoT devices and hubs are more vulnerable to security threats. This increases the risk of unauthorized access, data breaches, and compromised IoT devices, which can lead to operational and security challenges.
+
+As best practice, it is recommended to enable Microsoft Defender for IoT on your Azure IoT Hub. This enhances the security posture of your IoT solutions by providing continuous monitoring, threat detection, and automated response capabilities to protect against cyber threats.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-devices-iot-hub-resource' AND json.rule = properties.provisioningState equal ignore case "Succeeded" as X; config from cloud.resource where api.name = 'azure-iot-security-solutions' AND json.rule = properties.status equal ignore case "Enabled" as Y; filter 'not $.Y.properties.iotHubs contains $.X.id'; show X;
+----
+
+|*Azure Network Security Group having Inbound rule overly permissive to HTTP(S) traffic*
+
+tt:[*24.7.3*]
+//RLP-144595
+
+|This policy identifies Network Security Groups (NSGs) that have inbound rules allowing overly permissive access to HTTP or HTTPS traffic.
+
+A network security group contains a list of security rules that allow or deny inbound or outbound network traffic based on source or destination IP address, port, and protocol. Overly permissive inbound rules for HTTP(S) traffic increase the risk of unauthorized access and potential attacks on your network resources. This can lead to data breaches, exposure of sensitive information, and other security incidents.
+
+As a best practice, it is recommended to configure NSGs to restrict HTTP(S) traffic to only necessary and trusted IP addresses.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any((sourceAddressPrefix equal ignore case Internet or sourceAddressPrefix equals * or sourceAddressPrefix equals 0.0.0.0/0 or sourceAddressPrefix equals ::/0) and access equal ignore case Allow and direction equal ignore case Inbound and ((protocol equal ignore case Tcp and (destinationPortRange contains * or destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges any equal * or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) )) or (protocol contains * and (destinationPortRange contains _Port.inRange(80,80) or destinationPortRange contains _Port.inRange(443,443) or destinationPortRanges[*] contains _Port.inRange(80,80) or destinationPortRanges contains _Port.inRange(443,443) ))) )] exists
+----
+
+|*Azure Machine learning workspace configured with overly permissive network access*
+
+tt:[*24.7.3*]
+//IaC AppSec policies from Taylor Smith and Jonathan Bakst https://docs.google.com/document/d/17gS4i1Vj8ilpHfSQOcc1FHl7xzxb23PqiwvxZHm6tb4/edit
+
+|This policy identifies Load balancers that are not configured with Network Security Groups. 
+
+Without Network Security Groups, load balancers may be exposed to unwanted traffic, increasing the risk of security breaches and unauthorized access. NSGs allow administrators to define security rules that specify the types of traffic allowed to flow in and out of the load balancer, enhancing overall network security.
+
+As a best practice, it is recommended to restrict access to the load balancer by configuring network security groups.
+
+*Policy Severity—* High
+
+*Policy Type—* Config/Run/Build
+
+|*Azure Machine learning workspace is not configured with private endpoint*
+
+tt:[*24.7.3*]
+//IaC AppSec policies from Taylor Smith and Jonathan Bakst https://docs.google.com/document/d/17gS4i1Vj8ilpHfSQOcc1FHl7xzxb23PqiwvxZHm6tb4/edit
+
+|This policy detects whether an Azure Machine Learning workspace is configured with a private endpoint. Configuring a private endpoint for the Azure Machine Learning workspace is recommended to enhance security by restricting network access and preventing public internet access to the workspace.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config/Build
+
+
+|*OCI Load balancer not configured with Network Security Groups*
+
+tt:[*24.7.3*]
+//RLP-46169
+
+|This policy identifies Load balancers that are not configured with Network Security Groups. 
+
+Without Network Security Groups, load balancers may be exposed to unwanted traffic, increasing the risk of security breaches and unauthorized access. NSGs allow administrators to define security rules that specify the types of traffic allowed to flow in and out of the load balancer, enhancing overall network security.
+
+As a best practice, it is recommended to restrict access to the load balancer by configuring network security groups.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-networking-loadbalancer' AND json.rule = lifecycleState equals ACTIVE and networkSecurityGroupIds[*] does not exist
+----
+
+|*OCI Load balancer backend set not configured with SSL certificate*
+
+tt:[*24.7.3*]
+//RLP-47613
+
+|This policy identifies Load balancers for which the backend set is not configured with an SSL certificate.
+
+Without an SSL certificate, data transferred between the load balancer and backend servers is not encrypted, making it vulnerable to interception and attacks. Proper SSL configuration ensures data integrity and privacy, protecting sensitive information from unauthorized access.
+
+As a best practice, it is recommended to implement SSL between the load balancer and your backend servers so that traffic between the load balancer and the backend servers is encrypted.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-networking-loadbalancer' AND json.rule = lifecycleState equals ACTIVE and backendSets.* is not empty and backendSets.*.sslConfiguration.certificateName is empty
+----
+
+|*OCI API Gateway is not configured with Network Security Groups*
+
+tt:[*24.7.3*]
+//RLP-68096
+
+|This policy identifies API Gateways that are not configured with Network Security Groups. 
+
+Network security groups give fine-grained control of resources and help in restricting network access to your Private API Gateway with specific ports or with specific IP address range. 
+
+As best practice, it is recommended to restrict access to the API Gateway by configuring network security groups.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-apimanagement-apigateway' AND json.rule = lifecycleState equal ignore case ACTIVE and (networkSecurityGroupIds[*] is empty or networkSecurityGroupIds[*] does not exist)
+----
+
+|*OCI Function Application is not configured with Network Security Groups*
+
+tt:[*24.7.3*]
+//RLP-68098
+
+|This policy identifies Function Applications that are not configured with Network Security Groups. 
+
+OCI Function Applications allow you to execute code in response to events without provisioning or managing infrastructure. When these function applications are not configured with NSGs, they are more vulnerable to unauthorized access and potential security breaches. NSGs help isolate and protect your functions by ensuring that only trusted sources can communicate with them.
+
+As a best practice, it is recommended to restrict access to the application traffic by configuring network security groups.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-functions-applications' AND json.rule = lifecycleState equal ignore case ACTIVE and (networkSecurityGroupIds does not exist or networkSecurityGroupIds[*] is empty)
+----
+
+|*OCI Data Catalog configured with overly permissive network access*
+
+tt:[*24.7.3*]
+//RLP-68271
+
+|This policy identifies Data Catalogs configured with overly permissive network access.
+
+The OCI Data Catalog service provides a centralized repository to manage and govern data assets, including their metadata. When network access settings are too permissive, it can expose sensitive metadata to unauthorized users or malicious actors, potentially leading to data breaches and compliance issues.
+
+As a best practice, it is recommended to configure the Data catalog with private endpoints; so that the Data catalog is accessible only to restricted entities.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-datacatalog-catalogs' AND json.rule = lifecycleState equal ignore case ACTIVE and (attachedCatalogPrivateEndpoints is empty or attachedCatalogPrivateEndpoints does not exist)
+----
 
 |*AWS CodeBuild project not configured with logging configuration*
 
@@ -1425,15 +2011,206 @@ tt:[*24.7.2*]
 
 |===
 
-//[#iam-policies]
-//=== IAM Policies
-//The 24.7.1 release includes the following OOTB IAM policies:
-//RLP-
-
 
 [#iam-policy-updates]
 === IAM Policy Updates
 
+The following IAM OOTB policies are updated in the 24.7.3 release.
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+
+|*AWS Users and Machine Identities with Excessive Policies*
+//RLP-145657
+
+|*Changes—* The policy RQL will be updated to narrow down the resource based policies and remove false positives.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Updated RQL—*
+
+----
+config from iam where source.cloud.type = 'AWS' and grantedby.cloud.policy.isexcessive = true and source.cloud.resource.type IN ('user', 'instance', 'function')
+----
+
+|*Roles with high privileges can be assumed by a service in an external account*
+//RLP-145373
+
+|*Changes—* This policy descrption and recommendation steps will be updated to better match the policy.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Updated Description—*
+	
+Identifies roles which have administrative permissions and can be assumed by an identity in an "external account". An external account is one not known to Prisma cloud as part of your organization and not that of a known vendor. This policy relies on the default account group, therefore if the group is changed this policy will not reflect the environment entirely. The default account group is created upon onboarding to Prisma Cloud, and contains all instance-related accounts known to Prisma Cloud. External accounts are considered as such if Prisma are unaware of them in the context of your environment (i.e not part of the onboarded accounts). As we do not have visibility or control over the external entity, giving it the ability to gain administartive permissions in the environment is considered high risk.
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, select 'Investigate'
+2. Paste the following query into the investigation prompt, replacing the placeholder with the account ID you wish to verify: config from iam where dest.cloud.type = 'AWS' AND source.cloud.account='<account-id>' and dest.cloud.account='<account-id>'
+
+3a. If results are returned, this is an indicator that Prisma is scanning the account, and as such is aware of it
+If this is the case, select 'settings' and then 'Account Groups'
+Search for the default account group, under 'Actions' select 'Edit'. Search for the account in question and add it
+
+3b. If no results are returned, this means Prisma has no knowledge of the account in question (i.e it is not onboarded and in the eyes of Prisma, external)
+
+In order to continue the investigation, using the AWS CLI, run 'aws organizations list-accounts', and you will recieve a list of all the accounts within the AWS organization
+Repeat this process for every AWS organization you own. If the account in question does not appear, it can be concluded as external
+
+In order to remove its access, use the following remediation steps:
+
+Log in to your AWS account
+Navigate to the affected role, and select the 'Trusted entities' tab.
+Select 'Edit trust policy' and remove the entries allowing assumption from external sources.
+Ensure the remaining entries are required, and save your changes.
+
+
+|*AWS Role With Administrative Permissions Can Be Assumed By All Users*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, take note of the "Asset Name". Then select the "Alert ID", then "Investigate"
+2. In the results, you will see the policy granting the administrative permissions to the role ("Granted By Policy"), and the specific administrative permissions ("Destination")
+3. Sign in to the AWS Console
+4. Navigate to the affected role\n5. Examine the role's trust relationship and permissions as well as its use case
+
+In order to remove any administrative permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+
+Browse to the role in the AWS Console and select "Trust relationships"->"Edit trust policy". Modify the role's trust relationship as per requirements. Under the "Permissions" tab, select the relevant policy and remove unnecessary administrative permissions by either editing the policy or replacing it (notice: editing a managed policy could affect other roles).
+
+|*GCP Cloud Run with administrative permissions*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* Medium
+
+*Cloud—* GCP
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, select the "Asset Name", the "View JSON{}"
+2. Scroll down to the "data" field, and under "spec/template/spec" make note of the service account listed
+3. Still in the Prisma Cloud Console, select 'Investigate'\n2. Paste the following query into the investigation prompt, replacing the placeholder with the name of the service account you obtained in the previous steps: config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.name ='<service account name>'
+4. In the results, under "Granted By Policy", you will see the policies attached to the service account
+
+Once examining the policies and determining which permissions are unnecessary and can be removed based on the Cloud Run instance's intended use, sign in to your GCP account. In order to remove any unnecessary permissions , use the following remediation steps:
+
+Navigate to the IAM service, and search for the Service account. Select the pencil icon to edit it's permissions, removing the relevant policy for a less privileged one sufficient for the account intended purpose.
+
+|*User account with excessive admin privileges*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* Medium
+
+*Cloud—* All
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, take note of the "Asset Name". Then select the "Alert ID", then "Investigate"
+2. In the results, you will see the policy granting unused administrative permissions to the user ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access
+
+Once examining the permissions and determining which permissions are unnecessary and can be removed based on their last usage, in order to remove them, use the following remediation steps:
+
+Log in to your Cloud instance, navigate to the affected user, and edit the user's permissions following the principle of least privilege and based on the information collected.
+
+|*Cloud service account with excessive admin privileges*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* Medium
+
+*Cloud—* All
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. In the Prisma Cloud Console, under the "Alerts" tab, select "Asset Name" and take note of the "Name" and "Asset Type", then exit the tab. Select the "Alert ID", then "Investigate"
+2. In the results, you will see the service account attached to the asset ("Granted By Entity"), the policy granting unused administrative permissions to the service account ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access
+
+Once examining the permissions and determining which permissions are unnecessary and can be removed based on their last usage, in order to remove them, use the following remediation steps:
+
+Log in to your Cloud instance, and navigate to the affected service account, and edit the entity's permissions following the principle of least privilege and based on the information collected.
+
+|*Third-party service account can assume a service account with high privileges*
+//RLP-145656
+
+|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+
+*Severity—* High
+
+*Cloud—* AWS
+
+*Recommendation Steps—*
+
+How to investigate?
+
+1. Sign in to the AWS Console
+2. Navigate to the affected role
+3. Examine the role's trust relationship and permissions as well as its use case - if needed reach out to the vendor to validate which permissions are necessary for their functions and why
+
+In order to remove any unnecessary permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+
+To revoke the vendor's access to assume the role altogether, browse to the role in the AWS Console and select "Trust relationships"->"Edit trust policy". Modify the role's trust relationship as per requirements. To minimize the access the vendor has using the role, under the "Permissions" tab, select the relevant policy and remove unnecessary permissions by either editing the policy or replacing it (notice: editing a managed policy could affect other roles).
+
+|*GCP Cloud Run Job Public Execution via Default Compute SA Modification*
+//RLP-145655
+
+|*Changes—* The policy RQL will be updated to narrow down results (for example remove basic roles which are caught by other policies) and provide a more effective view.
+
+*Severity—* High
+
+*Cloud—* GCP
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.jobs.setIamPolicy', 'iam.serviceAccounts.actAs') AND grantedby.cloud.policy.type != 'GCP Basic Role'
+----
+
+|*GCP Lateral Access Expansion by Making Cloud Run Publicly Executable*
+//RLP-145655
+
+|*Changes—* The policy RQL will be updated to narrow down results (for example remove basic roles which are caught by other policies) and provide a more effective view.
+
+*Severity—* High
+
+*Cloud—* GCP
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.services.setIamPolicy', 'iam.serviceAccounts.actAs') AND grantedby.cloud.policy.type != 'GCP Basic Role'
+----
+
+
+|===
 The 24.7.1 release includes updated descriptions for the following OOTB IAM policies:
 //RLP-143134
 
@@ -1494,6 +2271,16 @@ The 24.7.1 release includes updated descriptions for the following OOTB IAM poli
 |===
 |*Compliance Benchmark*
 |*Description*
+
+|*Policy Mapping Update for CIS GCP v2.0.0 Level 1/Level 2 and v3.0.0 Level 2*
+
+tt:[*24.7.3*]
+//RLP-145840
+
+|New Policy mappings will be added to CIS v2.0.0 (GCP) Level 1, CIS v2.0.0 (GCP) Level 2, and CIS v3.0.0 (GCP) Level 2 compliance standards.
+
+*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
+
 
 |*Support for Digital Operational Resilience Act*
 
@@ -1637,6 +2424,17 @@ tt:[*24.7.1*]
 |===
 |*Change*
 |*Description*
+
+|*Vulnerabilities Dashboard (UVE) APIs*
+
+tt:[Secure the Infrastructure]
+
+tt:[*24.7.3*]
+
+//RLP-146556
+
+|A new version of the https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-3/[Get Vulnerability Overview] endpoint is available to fetch additional details about vulnerabilities.
+
 
 |*Vulnerabilities Dashboard API*
 
