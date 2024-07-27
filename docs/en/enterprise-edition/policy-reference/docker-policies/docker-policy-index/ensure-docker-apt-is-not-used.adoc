@@ -25,28 +25,23 @@
 
 
 
-=== Description 
+=== Description
 
-
-It is generally a best practice to avoid using APT (Advanced Package Tool) when working with Docker containers.
-This is because APT is designed to work with traditional server-based environments, and may not be well-suited for use with containers.
-Using APT with Docker containers can create potential security risks, as it may allow packages to be installed that are not designed to work with containers.
-This can lead to compatibility issues and potentially compromise the security of your containers.
+This policy detects the usage of the 'apt' command within Dockerfile RUN instructions. The 'apt' command interface is considered less stable than 'apt-get' and is therefore not recommended. Using 'apt' can lead to unexpected behaviors and potential security vulnerabilities.
 
 === Fix - Buildtime
 
+*Dockerfile*
 
-*Docker* 
+To mitigate this risk, replace any instance of 'apt' with 'apt-get' in your Dockerfile RUN instructions. This ensures a more stable and secure package installation process within your Docker images.
 
-
-
+Replacing 'apt' with 'apt-get' in the example below ensures a more reliable and secure package installation process.
 
 [source,dockerfile]
 ----
-{
- "FROM busybox:1.0
-RUN apt-get install curl
-HEALTHCHECK CMD curl --fail http://localhost:3000 || exit 1",
-}
-----
+# Bad example
+RUN apt update && apt install -y nginx
 
+# Good example
+RUN apt-get update && apt-get install -y nginx
+----
