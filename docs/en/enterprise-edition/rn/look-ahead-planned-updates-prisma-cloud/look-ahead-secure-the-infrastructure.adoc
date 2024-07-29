@@ -12,14 +12,38 @@ The Look Ahead announcements are for an upcoming release and it is not a cumulat
 The details and functionality listed below are a preview and the actual release date is subject to change.
 ====
 
+* <<announcement>>
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
+* <<policy-updates>>
 * <<iam-policy-updates>>
 * <<api-ingestions>>
-* <<new-compliance-benchmarks-and-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
 //* <<rest-api-updates>>
 * <<deprecation-notices>>
+
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Prisma Cloud Data Security (PCDS) End of Sale*
+
+|Starting with the 24.8.1 release, Prisma Cloud Data Security Posture Management (DSPM) and Artificial Intelligence Security Posture Management (AISPM) will be generally available (GA).
+
+*End of Sale Notice*
+
+With the GA of DSPM and AISPM, Prisma Cloud Data Security (PCDS) module will be consigned to the End of Sale (EOS) status starting with the 24.8.1 release. Note the following important dates:
+
+* PCDS EOS will be effective on August 31, 2024.
+* Prisma Cloud tenants will no longer be able to subscribe to the PCDS module after September 1, 2024.
+* PCDS subscribed tenants can continue to use the PCDS module until its End of Life.
+* End of Life/End of Support will be effective on August 31, 2025 (one year post EOS).
+
+|===
 
 [#changes-in-existing-behavior]
 === Changes in Existing Behavior
@@ -40,14 +64,14 @@ Implementing Role-Based Access Control (RBAC) enhances data security by streamli
 |*Create or Update Policy Permissions*
 //RLP-139027
 
-|Starting with the 8.1 release, Create/Update Policy Permissions will be divided into the two granular permissions below:
+|Starting with the 24.8.1 release, Create/Update Policy Permissions will be divided into the two granular permissions below:
 
 * Policy
 * Manage Policy Compliance Mapping
 
 *Impact—* 
 
-* Starting with the 8.1 release release, users managing new custom permission groups will have to select both permissions explicitly if they want to assign compliance mappings during policy create/update operation.
+* Users managing new custom permission groups will have to select both permissions explicitly if they want to assign compliance mappings during policy create/update operation.
 * Manage policy compliance mapping will be added by default to all existing permission groups with policy create/update permissions.
 
 |*Change in Amazon EC2 Ingestion*
@@ -81,7 +105,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.7.3.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.8.1.
 
 . Review the updates.
 +
@@ -90,219 +114,1057 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 
-//There are no policy updates planned for 24.7.3 release.
+[cols="50%a,50%a"]
+|===
 
-//[cols="50%a,50%a"]
-//|===
+|*Policies*
+|*Description*
 
-//|*Policies*
-//|*Description*
+2+|Policy Updates—RQL
 
-//|===
+|*GCP GKE unsupported Master node version*
+//RLP-146735
+
+|*Changes—* The policy description and RQL will be updated to narrow down resources based on currently supported GKE versions and remove false positives.
+
+*Current Policy Description—* Ensure your GKE Master node version is supported. This policy checks your GKE master node version and generates an alert if the version running is unsupported.
+
+*Updated Policy Description—* This policy identifies the GKE master node version and generates an alert if the version running is unsupported.
+
+Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
+
+As a security best practice, it is always recommended to use the latest version of GKE.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isMasterVersionSupported exists AND isMasterVersionSupported does not equal "true"
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+----
+
+*Impact—* Low. Existing alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+
+|*GCP GKE unsupported node version*
+//RLP-146735
+
+|*Changes—* The policy description and RQL will be updated to narrow down resources based on currently supported GKE versions and remove false positives.
+
+*Current Policy Description—* Ensure your GKE node version is supported. This policy checks your GKE node version and generates an alert if the version running is unsupported.
+
+*Updated Policy Description—* This policy identifies the GKE node version and generates an alert if the version running is unsupported.
+
+Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
+
+As a security best practice, it is always recommended to use the latest version of GKE.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isNodeVersionSupported exists AND isNodeVersionSupported does not equal "true"
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
+----
+
+*Impact—* Low. Existing alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+
+2+|*Policy Updates—Metadata*
+
+|*Google Workspace User not enrolled with 2-step verification*
+//RLP-146693
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Google Workspace User not enrolled with 2-step verification
+
+*Updated Policy Name—* GCP Google Workspace User not enrolled with 2-step verification.
+
+*Current Policy Description—* This policy identifies Google Workspace Users who do not have 2-Step Verification enabled. 2-Step Verification is a simple best practice that adds an extra layer of protection on top of username and password combination. It is recommended to enable 2-Step Verification for all users as it provides increased security for user account settings and resources.
+
+*Updated Policy Description—* This policy identifies Google Workspace Super Admins that do not have 2-Step Verification enabled. 
+
+Super Admin accounts have access to all features in the Admin console and Admin API. This additional layer of 2SV significantly reduces the risk of unauthorized access, protecting administrative controls and sensitive data from potential breaches. Implementing 2-Step Verification safeguards your entire Google Workspace environment, maintaining robust security and compliance standards.
+
+It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* No impact on alerts.
+
+
+|*Google Workspace Super Admin not enrolled with 2-step verification*
+//RLP-146694
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Google Workspace Super Admin not enrolled with 2-step verification
+
+*Updated Policy Name—* GCP Google Workspace Super Admin not enrolled with 2-step verification
+
+*Current Policy Description—* This policy identifies Google Workspace Super Admin that do not have 2-Step Verification enabled. Super Admin accounts have access to all features in the Admin console and Admin API. It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Updated Policy Description—* This policy identifies Google Workspace Super Admins that do not have 2-Step Verification enabled.
+
+Super Admin accounts have access to all features in the Admin console and Admin API. This additional layer of 2SV significantly reduces the risk of unauthorized access, protecting administrative controls and sensitive data from potential breaches. Implementing 2-Step Verification safeguards your entire Google Workspace environment, maintaining robust security and compliance standards.
+
+It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance with network path from the internet (0.0.0.0/0)*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0). EC2 instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0). AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit inbound rules*
+7. Update inbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path from the internet (0.0.0.0/0) on ports 80/443*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). EC2 instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit inbound rules*
+7. Update inbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+|*AWS EC2 instance with network path from the internet (0.0.0.0/0) on Admin ports*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). EC2 instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the 'Security group' section
+6. Select *Edit inbound rules*
+7. Update inbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path from the untrust internet source on ports with high risk*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports
+
+*Updated Policy Name—* AWS EC2 instance with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with untrust internet source to ports with high risk. EC2 instances with unrestricted access to the internet for high risky port may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities. Learn more about https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html#ec2-19[AWS EC2 controls].
+
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the untrust internet source on ports with high risk.
+
+AWS EC2 instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict Internet exposure of reported EC2 instances based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit inbound rules*
+7. Add the IP addresses from the trusted IP addresses.
+8. Click *Save rules* to apply the changes
+
+
+|*AWS EC2 instance with network path to the internet (0.0.0.0/0)*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* AWS EC2 instance with unrestricted outbound access to internet
+
+*Updated Policy Name—* AWS EC2 instance with network path to the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies EC2 instances that allow unrestricted outbound traffic to the internet. As a best practice, restrict outbound traffic and limit the access to known hosts or services.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path to the internet (0.0.0.0/0).
+
+AWS EC2 instances with network path to the internet increases the risk of cyber attacks, crypto mining and data breaches which can be used by malicious actors. Such instances are especially prone to data exfiltration or mining exploits.
+
+As a best practice, restrict traffic to unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict EC2 instances with network path to the internet based on your business requirements by modifying security group rules to the trusted IP address
+
+1. Sign in to the AWS Console
+2. Navigate to EC2 Dashboard
+3. Identify the reported EC2 instances that you want to restrict public access
+4. Go to the *Security* tab
+5. For each security group listed under the *Security group* section
+6. Select *Edit outbound rules*
+7. Update outbound rules that allow unrestricted access (0.0.0.0/0) such that the CIDR range 0.0.0.0/0 does not exist
+8. Click *Save rules* to apply the changes
+
+
+|*Azure Cosmos DB (PaaS) instance with network path from the untrust internet source*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure Cosmos DB (PaaS) instance reachable from untrust internet source
+
+*Updated Policy Name—* Azure Cosmos DB (PaaS) instance with network path from the untrust internet source
+
+*Current Policy Description—* This policy identifies Azure Cosmos DB (PaaS) instances that are internet reachable from untrust internet source. Cosmos DB (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Cosmos DB (PaaS) instances with network path from the untrust internet source.
+
+Cosmos DB (PaaS) instances with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure Cosmos DB instances from untrusted internet sources by configuring firewall rules.
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure Cosmos DB Dashboard
+3. Identify the reported Azure Cosmos DB instances that you want to restrict public access
+4. Navigate to the *Networking* section
+5. Under *Public network access* select *Selected networks*
+6. Under the *Firewall* section, add the IP addresses or IP address ranges of the trusted sources in CIDR form in 'IP (Single IPv4 or CIDR range)'
+7. Click *Save* to apply the changes
+
+
+|*Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure MySQL (PaaS) instance reachable from untrust internet source on TCP port 3306
+
+*Updated Policy Name—* Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306
+
+*Current Policy Description—* This policy identifies Azure MySQL (PaaS) instances that are internet reachable from untrust internet source on TCP port 3306. MySQL (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306.
+
+Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure MySQL server instance from untrusted internet sources by configuring firewall rules
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure MySQL Server Dashboard
+3. Identify the reported Azure MySQL Server instance that you want to restrict from untrusted internet sources
+4. Navigate to the *Networking* section
+6. Under the *Firewall rules* section, add the IP addresses from Trusted IP Addresses
+7. Click *Save* to apply the changes
+
+
+|*Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure PostgreSQL (PaaS) instance reachable from untrust internet source on TCP port 5432
+
+*Updated Policy Name—* Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432
+
+*Current Policy Description—* This policy identifies Azure PostgreSQL (PaaS) instances that are internet reachable from untrust internet source on TCP port 5432. PostgreSQL (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432.
+
+Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure PostgreSQL server instance from untrusted internet sources by configuring firewall rules
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure PostgreSQL Server Dashboard
+3. Identify the reported Azure PostgreSQL Server instance that you want to restrict from untrusted internet sources
+4. Navigate to the *Networking* section
+6. Under the *Firewall rules* section, add the IP addresses from Trusted IP Addresses
+7. Click *Save* to apply the changes
+
+
+|*Azure SQL Server (PaaS) with network path from the untrust internet source*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure SQL Server(PaaS) instance reachable from untrust internet source.  
+
+*Updated Policy Name—* Azure SQL Server (PaaS) with network path from the untrust internet source.
+
+*Current Policy Description—* This policy identifies Azure SQL Servers (PaaS) that are internet reachable from any untrust internet source. SQL Server instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure SQL Server (PaaS) with network path from the untrust internet source.
+
+Azure SQL Server (PaaS) with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to Azure SQL server instance from untrusted internet sources by configuring firewall rules
+1. Sign in to the Azure Portal using your Azure account credentials
+2. Navigate to the Azure SQL Server Dashboard
+3. Identify the reported Azure SQL Server instance that you want to restrict from untrusted internet sources
+4. Navigate to the *Networking* section
+6. Under the *Firewall rules* section, add the IP addresses from Trusted IP Addresses
+7. Click *Save* to apply the changes
+
+
+|*Azure Virtual Machine with network path from the internet (0.0.0.0/0)*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine in running state that is internet reachable with unrestricted access (0.0.0.0/0).
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0).
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines in running state that are internet reachable with unrestricted access (0.0.0.0/0). Virtual Machines with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0).
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules:
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, select the rule that allow Internet access (0.0.0.0/0) to the trusted IP address 
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*Azure Virtual Machine with network path from the untrust internet source on ports with high risk*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine reachable from any untrust internet source to ports with high risk.
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the untrust internet source on ports with high risk.
+
+*Current Policy Description—* This policy identifies Azure Virtual machines that are reachable from any untrust internet source to ports with high risk. Azure VMs with untrust access to ports with high risk may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the untrust internet source on ports with high risk.
+
+Azure Virtual Machines with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules:
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, , add the IP addresses from Trusted IP Addresses.
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*Azure Virtual Machine with network path from the untrust internet source on ports with high risk*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine reachable from any untrust internet source to ports with high risk.
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the untrust internet source on ports with high risk.
+
+*Current Policy Description—* This policy identifies Azure Virtual machines that are reachable from any untrust internet source to ports with high risk. Azure VMs with untrust access to ports with high risk may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the untrust internet source on ports with high risk.
+
+Azure Virtual Machines with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules:
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, add the IP addresses from Trusted IP Addresses.
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*Azure Virtual Machine with network path from the internet (0.0.0.0/0) on ports 80/443*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443.
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). Azure Virtual Machines with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules:
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, select the rule that allow Internet access (0.0.0.0/0) to the trusted IP address. 
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*Azure Virtual Machine with network path from the internet (0.0.0.0/0) on Admin ports*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389.
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0) on Admin ports.
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines that are internet reachable with unrestricted access (0.0.0.0/0) to admin ports. Azure VMs with unrestricted internet access to admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on Admin ports.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Admin ports can increase opportunities for malicious activities such as hacking, Man-In-The-Middle attacks (MITM), and brute-force attacks
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict network path from the internet to reported Virtual machines based on your business requirement by modifying Network security group rules to the trusted IP address.
+
+To modify Network security group rules:
+1. Sign in to Azure Portal
+2. Select *All services*
+3. Select *Virtual Machines* under Compute
+4. Identify the Virtual machine that you want to restrict access to Internet
+4. Under *Settings* click on *Networking*
+5. In *Inbound port rules* section, select the rule that allow Internet access (0.0.0.0/0) to the trusted IP address.   
+
+Learn more about https://learn.microsoft.com/en-us/azure/virtual-network/manage-network-security-group?tabs=network-security-group-portal#change-a-security-rule[modifying] Network security group rules.
+
+NOTE: When modifying Network security group rules, make sure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the internet (0.0.0.0/0)*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0).
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0).
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0). VM instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0).
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rule that allows Internet access (0.0.0.0/0) to a trusted IP address
+
+Refer to the following links for detailed steps to modify VPC firewall rules: 
+
+* To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+* To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the internet (0.0.0.0/0) on ports 80/443*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443.
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). GCP VM instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rule that allows Internet access (0.0.0.0/0) on ports 80/443 to a trusted IP address
+
+Refer to the following links for detailed steps to modify VPC firewall rules:
+
+* To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+* To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the internet (0.0.0.0/0) on Admin ports*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389.
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0) on Admin ports.
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to Admin ports (22 / 3389). VM instances with unrestricted internet access to admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rule that allows Internet access (0.0.0.0/0) on ports 22/3389 to a trusted IP address
+
+Refer to the following links for detailed steps to modify VPC firewall rules:
+
+* To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+* To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|*GCP VM instance with network path from the untrust internet source on ports with high risk*
+//RLP-146591
+
+|*Changes—* The policy name, description and metadata will be revised as follows:
+
+*Current Policy Name—* GCP VM instance that is reachable from untrust internet source to ports with high risk.
+
+*Updated Policy Name—* GCP VM instance with network path from the untrust internet source on ports with high risk.
+
+*Current Policy Description—* This policy identifies GCP VM instances that are reachable from untrust internet source to ports with high risk. VM instances with unrestricted access to the internet for high risky port may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the untrust internet source on ports with high risk.
+
+GCP VM instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+*Recommendation Steps—* 
+
+Restrict access to GCP VM instance by modifying VPC Firewall rules
+1. Login to the GCP Console
+2. Go to *VM instance*
+3. Identify the VM instance that you want to restrict Internet access
+4. Update the VPC firewall rules to allow IP addresses from Trusted IP Addresses
+
+Refer to the following links for detailed steps to modify VPC firewall rules:
+
+* To List https://cloud.google.com/firewall/docs/using-firewalls#listing-rules-vm[VPC firewall rules] for a network interface of a VM instance
+
+* To https://cloud.google.com/firewall/docs/using-firewalls#updating_firewall_rules[Update VPC firewall rules]
+
+NOTE: When modifying Network security group rules, ensure that you don't lock yourself out of the instances. Always have a rule that allows you to access them for management purposes.
+
+
+|===
+
+
 
 [#iam-policy-updates]
 === IAM Policy Updates
 
-The following IAM OOTB policies will be updated in 24.7.3 release.
+
+The following IAM OOTB policies will be updated in the 24.8.1 release.
 
 [cols="50%a,50%a"]
 |===
 |*Policies*
 |*Description*
 
-|*AWS Users and Machine Identities with Excessive Policies*
-//RLP-145657
+|*User with Administrative Permissions Has Active Access Keys Which Are Unused Over 90 Days*
+//RLP-146497
 
-|*Changes—* The policy RQL will be updated to narrow down the resource based policies and remove false positives.
+|*Description—* Identifies user accounts with administrative permissions for which active access keys exist and have not been used in at least 90 days. Access keys are long-term credentials which allow AWS IAM users programmatic access to resources. When the user in question possesses administrative permissions, and their access keys are active but not in use, they can potentially be found by an adversary, granting them administrative permissions.
+
+*Severity—* Medium
+
+*Cloud—* AWS
+
+*Updated RQL—* 
+
+----
+config from iam where dest.cloud.type = 'AWS' AND action.access.isAdministrative = true AND source.cloud.accesskey.lastused.days > 90 AND source.cloud.accesskey.activekeys > 0
+----
+
+*Recommendation Steps—* 
+How to investigate?
+1. Sign in to the Cloud Console.
+2. Browse to the IAM service and search for the affected user.
+3. Examine the user's permissions as well as their role within your organization and determine whether the principle of least privilege is followed. 
+For remediation, use the following remediation steps:
+If access is still required, remove the user's access keys and transition them to AWS's temporary security credentials approach. If any access is deemed unnecessary, remove permissions to minimize the user's access, or remove the user altogether.
+
+|*Cloud Service account with high privileges is inactive for 90 days and is assigned to a resource*
+//RLP-146497
+
+|*Description—* Identifies cloud service accounts in Azure, AWS and GCP which have administrative permissions that have not been used in the last 90 days and are attached to a resource. As opposed to user accounts, service accounts are predictable. Therefore, if a service account has administrative permissions which it has not used in the past 90 days, we can confidently say the resource it is attached to does not require them, and remove the permissions, decreasing the blast radius in case of a compromise of the service account.
+
+*Severity—* Medium
+
+*Cloud—* ALL
+
+*Updated RQL—* 
+
+----
+config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount', 'service principal', 'user assigned', 'system assigned' ) AND action.access.isAdministrative = true AND grantedby.cloud.entity.lastlogin.days > 90 AND source.cloud.resource.type in ( 'instance', 'function', 'oidc-provider', 'environment', 'task-definition', 'WebIdentity', 'virtualMachines', 'sites', 'App Registration', 'service', 'workflows', 'virtualMachineScaleSets/virtualMachines', 'instances', 'applications', 'services', 'functions', 'serviceAccounts')
+----
+
+*Recommendation Steps—* 
+How to investigate?
+1. In the Prisma Cloud Console, under the "Alerts" tab, select "Asset Name" and take note of the "Name" and "Asset Type", then exit the tab. Select the "Alert ID", then "Investigate".
+2. In the results, you will see the resource, the service account attached to it ("Granted By Entity"), the policy granting unused administrative permissions to the service account ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access.
+
+Once you examine the permissions and determine which permissions are unnecessary and can be removed based on their last usage. Use the following remediation steps to remove them:
+Log in to your Cloud instance, and navigate to the affected service account, edit the entity's permissions following the principle of least privilege and based on the information collected. If the service account is used by other resources, consider creating a new one with the minimal permissions required by the resource in question.
+
+|*User account with high privileges and MFA disabled*
+//RLP-146497
+
+|*Description—*
+	
+Identifies user accounts with administrative permissions for which Multi-Factor Authentication (MFA) is not enabled. Sensitive accounts such as those with administrative permissions are considered high value to attackers and tend to be targeted. As such, these accounts, when not safeguarded by an additional authentication factor, have a higher chance of successful compromise, which would result in the adversary gaining administrative permissions within your ogranization.
 
 *Severity—* High
+
+*Cloud—* All Clouds
+
+*Updated RQL—*
+
+----
+config from iam where action.access.isAdministrative = true AND source.cloud.resource.type = 'user' AND source.mfaenabled = False
+----
+
+*Recommendation Steps—*
+
+How to investigate?
+1. Sign in to the Cloud Console.
+2. Browse to the IAM service and search for the affected user.
+3. Examine the user's permissions as well as their role within your organization and determine whether the principle of least privilege is followed.
+4. For remediation, use the following remediation steps:
+
+If deemed unnecessary, remove permissions to minimize the user's access. Additionally, enforce MFA on the user. Upon their next login, the user will be prompted to enroll, activating their MFA method.
+
+|*Third-Party Service Account with High Privileges at the Folder or Organization Level*
+//RLP-146497
+
+|*Description—* Identifies instances of third-party vendor owned service accounts which are granted high privileges and may allow administrative access to your cloud environment. This increases the attack surface, as in case of a compromise of the vendor's environment, an attacker would gain elevated access to your account by abusing the service account permissions.
+
+*Severity—* Medium
+
+*Cloud—* GCP
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.type = 'serviceaccount' AND action.access.isAdministrative = true AND source.cloud.account.isvendor = true AND grantedby.level.type IN ( 'GCP Organization', 'GCP Folder' )
+----
+
+*Recommendation Steps—*
+
+How to investigate?
+1. Sign in to the GCP Console.
+2. Browse to the IAM service and search for the affected Service Account.
+3. Examine the Service Account's roles and permissions as well as its use case - if needed reach out to the vendor to validate which permissions are necessary for their functions and why. You can reference GCP's 'excess permissions' on the same screen as further information.
+In order to remove any unnecessary permissions and minimize the role's access, use the following remediation steps:
+To revoke the vendor's access altogether, select 'edit principal' and remove all the roles from the Service Account. To minimize the access the vendor has using the Service Account, remove all unnecessary roles and attach one with the minimal permissions needed by the vendor.
+
+|*Service Account with Cross Cloud Administrative Access*
+//RLP-146497
+
+|*Description—* Identifies service accounts with permissions to assume an administrative role in another account hosted in a different cloud vendor environment. Administrative permissions can result in the compromising of the security posture of your organization. As the service account resides in a separate cloud vendor's environment, a compromise of the source account could lead to lateral movement exposing the second account and enlarging the blast radius across cloud provider environments.
+
+*Severity—* Medium
 
 *Cloud—* AWS
 
 *Updated RQL—*
 
 ----
-config from iam where source.cloud.type = 'AWS' and grantedby.cloud.policy.isexcessive = true and source.cloud.resource.type IN ('user', 'instance', 'function')
+config from iam where source.cloud.type = 'GCP' AND dest.cloud.type = 'AWS' and action.access.isadministrative = True AND grantedby.cloud.entity.type = 'role'
 ----
 
-|*Roles with high privileges can be assumed by a service in an external account*
-//RLP-145373
-
-|*Changes—* This policy descrption and recommendation steps will be updated to better match the policy.
-
-*Severity—* High
-
-*Cloud—* AWS
-
-*Updated Description—*
-	
-Identifies roles which have administrative permissions and can be assumed by an identity in an "external account". An external account is one not known to Prisma cloud as part of your organization and not that of a known vendor. This policy relies on the default account group, therefore if the group is changed this policy will not reflect the environment entirely. The default account group is created upon onboarding to Prisma Cloud, and contains all instance-related accounts known to Prisma Cloud. External accounts are considered as such if Prisma are unaware of them in the context of your environment (i.e not part of the onboarded accounts). As we do not have visibility or control over the external entity, giving it the ability to gain administartive permissions in the environment is considered high risk.
-
 *Recommendation Steps—*
 
 How to investigate?
-
-1. In the Prisma Cloud Console, select 'Investigate'
-2. Paste the following query into the investigation prompt, replacing the placeholder with the account ID you wish to verify: config from iam where dest.cloud.type = 'AWS' AND source.cloud.account='<account-id>' and dest.cloud.account='<account-id>'
-
-3a. If results are returned, this is an indicator that Prisma is scanning the account, and as such is aware of it
-If this is the case, select 'settings' and then 'Account Groups'
-Search for the default account group, under 'Actions' select 'Edit'. Search for the account in question and add it
-
-3b. If no results are returned, this means Prisma has no knowledge of the account in question (i.e it is not onboarded and in the eyes of Prisma, external)
-
-In order to continue the investigation, using the AWS CLI, run 'aws organizations list-accounts', and you will recieve a list of all the accounts within the AWS organization
-Repeat this process for every AWS organization you own. If the account in question does not appear, it can be concluded as external
-
-In order to remove its access, use the following remediation steps:
-
-Log in to your AWS account
-Navigate to the affected role, and select the 'Trusted entities' tab.
-Select 'Edit trust policy' and remove the entries allowing assumption from external sources.
-Ensure the remaining entries are required, and save your changes.
+1. Sign in to the AWS Console.
+2. Navigate to the affected role.
+3. Examine the role's trust relationship and permissions as well as its use case.
+In order to remove any unnecessary permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+To revoke the cross cloud service account access to assume the role altogether, browse to the role in the AWS Console and select *Trust relationships > Edit trust policy*. Modify the role's trust relationship as per requirements. To minimize the access the service account has when using the role, under the "Permissions" tab, select the relevant policy granting administrative permissions and remove those which are unnecessary by either editing the policy or replacing it.
+Note: Editing a managed policy could affect other roles.
 
 
-|*AWS Role With Administrative Permissions Can Be Assumed By All Users*
-//RLP-145656
+|*AWS Secret Manager Secret is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+|*Description—* This policy identifies AWS Secret Manager Secrets with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-*Severity—* High
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'secretsmanager' and dest.cloud.resource.type = 'Secret' AND grantedby.cloud.policy.condition does not exist
+----
 
-*Cloud—* AWS
+|*AWS KMS Key is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-*Recommendation Steps—*
+|*Description—* This policy identifies AWS KMS Keys with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-How to investigate?
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'kms' AND dest.cloud.resource.type = 'key' AND grantedby.cloud.policy.condition does not exist
+----
 
-1. In the Prisma Cloud Console, under the "Alerts" tab, take note of the "Asset Name". Then select the "Alert ID", then "Investigate"
-2. In the results, you will see the policy granting the administrative permissions to the role ("Granted By Policy"), and the specific administrative permissions ("Destination")
-3. Sign in to the AWS Console
-4. Navigate to the affected role\n5. Examine the role's trust relationship and permissions as well as its use case
+|*AWS Lambda Layer Version is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-In order to remove any administrative permissions and minimize trusted entities which can assume the role, use the following remediation steps:
+|*Description—* This policy identifies AWS Lambda Layer Versions with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-Browse to the role in the AWS Console and select "Trust relationships"->"Edit trust policy". Modify the role's trust relationship as per requirements. Under the "Permissions" tab, select the relevant policy and remove unnecessary administrative permissions by either editing the policy or replacing it (notice: editing a managed policy could affect other roles).
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'layerVersion' AND grantedby.cloud.policy.condition does not exist
+----
 
-|*GCP Cloud Run with administrative permissions*
-//RLP-145656
+|*AWS SQS Queue is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+|*Description—* This policy identifies AWS SQS Queues with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-*Severity—* Medium
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sqs' AND dest.cloud.resource.type = 'queue' AND grantedby.cloud.policy.condition does not exist
+----
 
-*Cloud—* GCP
+|*AWS SNS Topic is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-*Recommendation Steps—*
+|*Description—* This policy identifies AWS SNS Topics with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-How to investigate?
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sns' AND dest.cloud.resource.type = 'topic' AND grantedby.cloud.policy.condition does not exist
+----
 
-1. In the Prisma Cloud Console, under the "Alerts" tab, select the "Asset Name", the "View JSON{}"
-2. Scroll down to the "data" field, and under "spec/template/spec" make note of the service account listed
-3. Still in the Prisma Cloud Console, select 'Investigate'\n2. Paste the following query into the investigation prompt, replacing the placeholder with the name of the service account you obtained in the previous steps: config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.name ='<service account name>'
-4. In the results, under "Granted By Policy", you will see the policies attached to the service account
+|*AWS ECR Repository is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-Once examining the policies and determining which permissions are unnecessary and can be removed based on the Cloud Run instance's intended use, sign in to your GCP account. In order to remove any unnecessary permissions , use the following remediation steps:
+|*Description—* This policy identifies AWS ECR Repositories with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-Navigate to the IAM service, and search for the Service account. Select the pencil icon to edit it's permissions, removing the relevant policy for a less privileged one sufficient for the account intended purpose.
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'ecr' AND dest.cloud.resource.type = 'repository' AND grantedby.cloud.policy.condition does not exist
+----
 
-|*User account with excessive admin privileges*
-//RLP-145656
+|*AWS S3 Bucket with Data Destruction Permissions is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
+|*Description—* This policy identifies AWS S3 Buckets with Resource-based policies which allow all principals and the 's3:DeleteBucket' permission. This configuration could grant anyone with access to the bucket the ability to delete it together with all objects inside, potentially leading to permanent loss of information stored in the bucket.
 
-*Severity—* Medium
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition does not exist AND action.name IN ( 's3:DeleteBucket' )
+----
 
-*Cloud—* All
+|*AWS S3 bucket is Publicly Accessible Through Resource-Based Policies*
+//RLP-146497
 
-*Recommendation Steps—*
+|*Description—* This policy identifies AWS S3 Buckets with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
 
-How to investigate?
-
-1. In the Prisma Cloud Console, under the "Alerts" tab, take note of the "Asset Name". Then select the "Alert ID", then "Investigate"
-2. In the results, you will see the policy granting unused administrative permissions to the user ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access
-
-Once examining the permissions and determining which permissions are unnecessary and can be removed based on their last usage, in order to remove them, use the following remediation steps:
-
-Log in to your Cloud instance, navigate to the affected user, and edit the user's permissions following the principle of least privilege and based on the information collected.
-
-|*Cloud service account with excessive admin privileges*
-//RLP-145656
-
-|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
-
-*Severity—* Medium
-
-*Cloud—* All
-
-*Recommendation Steps—*
-
-How to investigate?
-
-1. In the Prisma Cloud Console, under the "Alerts" tab, select "Asset Name" and take note of the "Name" and "Asset Type", then exit the tab. Select the "Alert ID", then "Investigate"
-2. In the results, you will see the service account attached to the asset ("Granted By Entity"), the policy granting unused administrative permissions to the service account ("Granted By Policy"), the specific unused permissions ("Destination"), and the last recorded event when the permissions were used by the user ("Last Access"). Prisma Cloud's event tracking period begins upon onboarding. As such, depending on the onboarding date, further investigation may be required using the cloud provider logs to determine last access
-
-Once examining the permissions and determining which permissions are unnecessary and can be removed based on their last usage, in order to remove them, use the following remediation steps:
-
-Log in to your Cloud instance, and navigate to the affected service account, and edit the entity's permissions following the principle of least privilege and based on the information collected.
+*Updated RQL—*
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition does not exist
+----
 
 |*Third-party service account can assume a service account with high privileges*
-//RLP-145656
+//RLP-146497
 
-|*Changes—* This policy will be updated include recommendation steps on how to investigate and remediate isAdmin policies.
-
-*Severity—* High
-
-*Cloud—* AWS
-
-*Recommendation Steps—*
-
-How to investigate?
-
-1. Sign in to the AWS Console
-2. Navigate to the affected role
-3. Examine the role's trust relationship and permissions as well as its use case - if needed reach out to the vendor to validate which permissions are necessary for their functions and why
-
-In order to remove any unnecessary permissions and minimize trusted entities which can assume the role, use the following remediation steps:
-
-To revoke the vendor's access to assume the role altogether, browse to the role in the AWS Console and select "Trust relationships"->"Edit trust policy". Modify the role's trust relationship as per requirements. To minimize the access the vendor has using the role, under the "Permissions" tab, select the relevant policy and remove unnecessary permissions by either editing the policy or replacing it (notice: editing a managed policy could affect other roles).
-
-|*GCP Cloud Run Job Public Execution via Default Compute SA Modification*
-//RLP-145655
-
-|*Changes—* The policy RQL will be updated to narrow down results (for example remove basic roles which are caught by other policies) and provide a more effective view.
-
-*Severity—* High
-
-*Cloud—* GCP
+|*Description—* This policy identifies instances where third-party vendors are granted the ability to assume or impersonate roles with high privileges and may allow significant administrative access to your cloud environment. Such permissions can potentially lead to unauthorized access or escalation of privileges, compromising the security posture of your organization.
 
 *Updated RQL—*
-
 ----
-config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.jobs.setIamPolicy', 'iam.serviceAccounts.actAs') AND grantedby.cloud.policy.type != 'GCP Basic Role'
+config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount' ) AND action.access.isadministrative = true AND source.cloud.account.isvendor = true
 ----
-
-|*GCP Lateral Access Expansion by Making Cloud Run Publicly Executable*
-//RLP-145655
-
-|*Changes—* The policy RQL will be updated to narrow down results (for example remove basic roles which are caught by other policies) and provide a more effective view.
-
-*Severity—* High
-
-*Cloud—* GCP
-
-*Updated RQL—*
-
-----
-config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.services.setIamPolicy', 'iam.serviceAccounts.actAs') AND grantedby.cloud.policy.type != 'GCP Basic Role'
-----
-
 
 |===
-
 
 
 [#api-ingestions]
@@ -313,59 +1175,21 @@ config from iam where dest.cloud.type = 'GCP' AND action.name contains all('run.
 |*Service*
 |*API Details*
 
-|*Amazon S3*
+|*AWS WAF*
 
-tt:[24.7.3]
-//RLP-142168
+//RLP-134184
 
-|*aws-s3api-get-bucket-acl*
-
-Additional permission required:
-
-* `s3:GetAccelerateConfiguration`
-
-The Security Audit role includes the permission.
-
-Also, this API has been updated to include the following new field in the resource JSON:
-
-* `bucketAccelerateConfiguration`
-
-|*AWS Application Migration Service*
-//RLP-145208
-
-|*aws-mgn-replication-configuration-template*
-
-Additional permission required:
-
-* `mgn:DescribeReplicationConfigurationTemplates`
-
-The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
-
-
-|*Amazon EMR*
-//RLP-145210 
-
-|*aws-emr-serverless-application*
+|*aws-waf-v2-global-rule-group*
 
 Additional permissions required:
 
-* `emr-serverless:ListApplications`
-* `emr-serverless:GetApplication`
+* `wafv2:ListRuleGroups`
+* `wafv2:GetRuleGroup`
 
-The Security Audit role includes the permissions. 
-
-|*AWS Systems Manager*
-//RLP-145209
-
-|*aws-ssm-activation*
-
-Additional permission required:
-
-* `ssm:DescribeActivations`
-
-The Security Audit role includes the permission. 
+The Security Audit role includes the `wafv2:ListRuleGroups` permission. You must manually add the wafv2:GetRuleGroup permission to the CFT template to enable it.
 
 |*AWS Systems Manager*
+
 //RLP-145206
 
 |*aws-ssm-session*
@@ -376,153 +1200,141 @@ Additional permission required:
 
 The Security Audit role includes the permission. 
 
-|*Azure Compute*
-//RLP-144994
+|*AWS Systems Manager*
 
-|*azure-compute-snapshots*
+//RLP-145960
+
+|*aws-ssm-service-setting*
 
 Additional permission required:
 
-* `Microsoft.Compute/snapshots/read`
+* `ssm:GetServiceSetting`
 
-The Reader role includes the permission.
+The Security Audit role includes the permission. 
+
+|tt:[Update] *Regional only scope for aws-waf-v2-rule-group API*
+
+//RLP-133328
+
+|The `aws-waf-v2-rule-group` API will ingest resources of the type ‘REGIONAL' type. 'CLOUDFRONT’ type resources will ingested separately by the `aws-waf-v2-global-rule-group` API. Any policy utilizing the `aws-waf-v2-rule-groups` API querying global resources will be impacted.
+
+
+|*Azure Active Directory*
+
+//RLP-131021
+
+|*azure-active-directory-authentication-strength-policy*
+
+Additional permission required:
+
+* `Policy.Read.All`
+
+The Reader role includes the permission. 
+
+|*Azure SQL Database*
+
+//RLP-143840
+
+|*azure-sql-vm*
+
+Additional permission required:
+
+* `Microsoft.SqlVirtualMachine/sqlVirtualMachines/read`
+
+The Reader role includes the permission. 
 
 |*Azure Monitor*
-//RLP-144988
 
-|*azure-monitor-smart-detector-alert-rules*
+//RLP-145820
 
-Additional permission required:
-
-* `Microsoft.AlertsManagement/smartDetectorAlertRules/read`
-
-The Reader role includes the permission.
-
-|*Azure Monitor*
-//RLP-144974
-
-|*azure-monitor-prometheus-rule-groups*
+|*azure-monitor-data-collection-rules*
 
 Additional permission required:
 
-* `Microsoft.AlertsManagement/prometheusRuleGroups/read`
+* `Microsoft.Insights/DataCollectionRules/Read`
 
-The Reader role includes the permission.
+The Reader role includes the permission. 
 
-|*Azure Monitor*
-//RLP-141429
+|*Azure Kusto*
 
-|*azure-monitor-query-packs*
+//RLP-145859
+
+|*azure-kusto-databases*
+
+Additional permissions required:
+
+* `Microsoft.Kusto/Clusters/read`
+* `Microsoft.Kusto/Clusters/Databases/read`
+
+The Reader role includes the permissions. 
+
+|*Azure Virtual Desktop*
+
+tt:[24.8.1]
+//RLP-145868
+
+|*azure-virtual-desktop-application-groups*
 
 Additional permission required:
 
-* `Microsoft.OperationalInsights/querypacks/read`
+* `Microsoft.DesktopVirtualization/applicationgroups/read`
 
-The Reader role includes the permission.
+The Reader role includes the permission. 
 
 
-|*Azure Resource Manager*
-//RLP-142469
+|*Google Application Integration*
 
-|*azure-template-specs*
+tt:[24.8.1]
+//RLP-146020
+
+|*gcloud-application-integration*
+
+Additional permissions required:
+
+* `integrations.integrations.list`
+* `integrations.integrationVersions.list`
+
+The Viewer role includes the permissions.
+
+|*Google Backup and DR*
+
+tt:[24.8.1]
+//RLP-146021
+
+|*gcloud-backup-dr-management-server*
+
+Additional permissions required:
+
+* `backupdr.managementServers.list`
+* `backupdr.managementServers.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Cloud Scheduler*
+
+tt:[24.8.1]
+//RLP-146022
+
+|*gcloud-cloud-scheduler-job*
 
 Additional permission required:
 
-* `Microsoft.Resources/templateSpecs/read`
+* `cloudscheduler.jobs.list`
 
-The Reader role includes the permission.
-
-|tt:[Update] *Google Anthos GKE Fleet Management*
-//RLP-138227, RLP-131184
-
-|To improve performance, the `gkehub.locations.list` permission is no longer required for the following APIs:
-
-* *gcloud-anthos-gke-fleet-membership*
-* *gcloud-anthos-gke-fleet-feature*
-
-
-|tt:[Update] *Google Certificate Manager*
-//RLP-144501, RLP-144500
-
-|To improve performance, the `certificatemanager.locations.list` permission is no longer required for the following APIs:
-
-* *gcloud-certificate-manager-dns-authorization*
-* *gcloud-certificate-manager-certificate*
-
-|tt:[Update] *Google Cloud Deploy*
-//RLP-144504, RLP-144503
-
-|To improve performance, the `clouddeploy.locations.list` permission is no longer required for the following APIs:
-
-* *gcloud-cloud-deploy-target*
-* *gcloud-cloud-deploy-delivery-pipeline*
-
-|tt:[Update] *Google Cloud Memorystore for Memcached*
-//RLP-144510
-
-|To improve performance, the `networkconnectivity.locations.list` permission is no longer required for the *gcloud-memorystore-memcached-instance* API.
-
-
-|tt:[Update] *Google Cloud VMware Engine*
-//RLP-144519, RLP-144518, RLP-144517, RLP-144516, RLP-144515, RLP-144514
-
-|To improve performance, the `vmwareengine.locations.list` permission is no longer required for the following APIs:
-
-* *gcloud-vmware-engine-subnet*
-* *gcloud-vmware-engine-private-cloud*
-* *gcloud-vmware-engine-network*
-* *gcloud-vmware-engine-network-policy*
-* *gcloud-vmware-engine-hcx-activation-key*
-* *gcloud-vmware-engine-cluster*
-
-|tt:[Update] *Google Datastream*
-//RLP-144508, RLP-144507, RLP-144505
-
-|To improve performance, the `datastream.locations.list` permission is no longer required for the following APIs:
-
-* *gcloud-datastream-stream*
-* *gcloud-datastream-private-connection*
-* *gcloud-datastream-connection-profile*
-
-
-
-|tt:[Update] *Google Hybrid Connectivity*
-//RLP-144511
-
-|To improve performance, the `memcache.locations.list` permission is no longer required for the *gcloud-hybrid-connectivity-spoke* API.
-
-
-|tt:[Update] *Google Traffic Director*
-//RLP-144513, RLP-144512
-
-|To improve performance, the `networkservices.locations.list` permission is no longer required for the following APIs:
-
-* *gcloud-traffic-director-network-service-mesh*
-* *gcloud-traffic-director-network-service-gateway*
-
-|tt:[Update] *Google Workflows*
-//RLP-144520
-
-|To improve performance, the `workflows.locations.list` permission is no longer required for the *gcloud-workflows-workflow* API.
+The Viewer role includes the permission.
 
 |===
 
-[#new-compliance-benchmarks-and-updates]
-=== New Compliance Benchmarks and Updates
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
 
-[cols="50%a,50%a"]
-|===
-|*Compliance Benchmark*
-|*Description*
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
 
-|*Policy Mapping Update for CIS GCP v2.0.0 Level 1/Level 2 and v3.0.0 Level 2*
-//RLP-145840
 
-|New Policy mappings will be added to CIS v2.0.0 (GCP) Level 1, CIS v2.0.0 (GCP) Level 2, and CIS v3.0.0 (GCP) Level 2 compliance standards.
-
-*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
-
-|===
+//|===
 
 
 [#deprecation-notices]
@@ -562,7 +1374,7 @@ The following legacy Compliance Standards are planned for deprecation at the end
 //RLP-140241
 
 |24.5.2
-|24.7.3
+|24.8.2
 |You must upgrade to the latest version of the Compliance Standards:
 
 * MITRE ATT&CK v14.0 Cloud IaaS for Enterprise
