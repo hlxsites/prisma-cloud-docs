@@ -1,0 +1,75 @@
+== Use of weak MD5 hashing algorithm
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 7c48cc99-087b-4a47-9a06-54f44f5bf0d8
+
+|Checkov ID 
+|CKV3_SAST_240
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/328.html[CWE-328: Use of Weak Hash]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy identifies the use of the MD5 hashing algorithm from the `crypto/md5` package in Go applications. The MD5 algorithm is cryptographically broken and vulnerable to producing collisions, making it unsuitable for secure hashing. It is recommended to use stronger, modern hashing algorithms instead.
+
+In the following code snippet, the application imports the `crypto/md5` package and uses MD5 hashing, which is considered weak and insecure.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/md5"
+    "fmt"
+)
+
+func main() {
+    // Insecure use of MD5 hashing
+    data := []byte("sensitive data")
+    hash := md5.Sum(data)
+    fmt.Printf("%x\n", hash)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, use stronger, modern hashing algorithms like SHA-256 from the `crypto/sha256` package. SHA-256 provides better security due to its resistance to collision attacks.
+
+In this example, the application uses SHA-256 hashing instead of MD5.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/sha256"
+    "fmt"
+)
+
+func main() {
+    // Secure use of SHA-256 hashing
+    data := []byte("sensitive data")
+    hash := sha256.Sum256(data)
+    fmt.Printf("%x\n", hash)
+}
+----

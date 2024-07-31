@@ -1,0 +1,73 @@
+== Use of root directory in HTTP handler
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 8e7cada1-8ee8-4594-b3ce-cc4a209acf4e
+
+|Checkov ID 
+|CKV3_SAST_253
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/552.html[CWE-552: Files or Directories Accessible to External Parties]
+
+|OWASP Categories
+|https://owasp.org/Top10/A01_2021-Broken_Access_Control/[A01:2021-Broken Access Control]
+
+|=== 
+
+=== Description
+
+This policy identifies instances where Go applications expose the entire filesystem by mounting the root directory `/` to an HTTP handler function. This can allow anyone with access to the HTTP server to access any file that the server has access to. It is recommended to restrict the `http.Dir` path to a specific folder instead of the entire filesystem.
+
+In the following code snippet, the application mounts the root directory `/` to an HTTP handler, which can expose the entire filesystem to external parties.
+
+[source,Go]
+----
+package main
+
+import (
+    "net/http"
+)
+
+func main() {
+    // Insecure use of root directory in HTTP handler
+    fs := http.FileServer(http.Dir("/"))
+    http.Handle("/", fs)
+    http.ListenAndServe(":8080", nil)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, restrict the `http.Dir` path to a specific folder instead of the entire filesystem. This limits the exposure of files to only those within the specified directory.
+
+In this example, the application restricts the `http.Dir` path to a specific folder.
+
+[source,Go]
+----
+package main
+
+import (
+    "net/http"
+)
+
+func main() {
+    // Secure use of specific directory in HTTP handler
+    fs := http.FileServer(http.Dir("/path/to/specific/folder"))
+    http.Handle("/", fs)
+    http.ListenAndServe(":8080", nil)
+}
+----

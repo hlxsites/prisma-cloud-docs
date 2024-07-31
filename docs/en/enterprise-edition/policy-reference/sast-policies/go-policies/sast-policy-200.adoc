@@ -1,0 +1,81 @@
+== RSA key with less than 2048 bits
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+|CKV3_SAST_200
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/326.html[CWE-326: Inadequate Encryption Strength]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy identifies instances where RSA keys with less than 2048 bits are generated using the `crypto/rsa` package in Go applications. RSA keys with less than 2048 bits are considered insecure due to their inadequate encryption strength. It is recommended to use RSA keys with at least 2048 bits to ensure sufficient security.
+
+In the following code snippet, the application generates an RSA key with less than 2048 bits, which is considered insecure.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/rand"
+    "crypto/rsa"
+    "log"
+)
+
+func main() {
+    // Insecure RSA key generation with less than 2048 bits
+    key, err := rsa.GenerateKey(rand.Reader, 1024)
+    if err != nil {
+        log.Fatal(err)
+    }
+    log.Println("Generated RSA key with 1024 bits:", key)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, generate RSA keys with at least 2048 bits. This ensures adequate encryption strength and security.
+
+In this example, the application generates an RSA key with 2048 bits.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/rand"
+    "crypto/rsa"
+    "log"
+)
+
+func main() {
+    // Secure RSA key generation with 2048 bits
+    key, err := rsa.GenerateKey(rand.Reader, 2048)
+    if err != nil {
+        log.Fatal(err)
+    }
+    log.Println("Generated RSA key with 2048 bits:", key)
+}
+----

@@ -1,0 +1,79 @@
+== Insecure temporary file creation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| b956c612-c129-477f-849c-64826dc1f0a3
+
+|Checkov ID 
+|CKV3_SAST_255
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/378.html[CWE-378: Creation of Temporary File With Insecure Permissions]
+
+|OWASP Categories
+|https://owasp.org/Top10/A01_2021-Broken_Access_Control/[A01:2021-Broken Access Control]
+
+|=== 
+
+=== Description
+
+This policy identifies instances where Go applications create files in shared system temporary directories (`/tmp` or `/var/tmp`) without using the `os.CreateTemp` function. Creating temporary files in these directories without proper precautions can allow attackers to create symlinks that point to other files, potentially leading to unintended files being created or overwritten. It is recommended to use `os.CreateTemp` to securely create temporary files.
+
+In the following code snippet, the application creates a temporary file in `/tmp` using `os.Create`, which can expose the file to symlink attacks.
+
+[source,Go]
+----
+package main
+
+import (
+    "os"
+    "log"
+)
+
+func main() {
+    // Insecure temporary file creation
+    file, err := os.Create("/tmp/insecure_temp_file")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer file.Close()
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, use `os.CreateTemp` to securely create temporary files. This function ensures that the temporary file is created securely and is not susceptible to symlink attacks.
+
+In this example, the application uses `os.CreateTemp` to securely create a temporary file.
+
+[source,Go]
+----
+package main
+
+import (
+    "os"
+    "log"
+)
+
+func main() {
+    // Secure temporary file creation
+    file, err := os.CreateTemp("", "secure_temp_file")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer file.Close()
+}
+----

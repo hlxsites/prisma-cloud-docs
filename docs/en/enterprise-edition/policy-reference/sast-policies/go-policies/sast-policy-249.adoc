@@ -1,0 +1,75 @@
+== Use of overly permissive directory permissions
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 665fea5d-07c2-4b17-9e9e-b39a72e459b7
+
+|Checkov ID 
+|CKV3_SAST_249
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/732.html[CWE-732: Incorrect Permission Assignment for Critical Resource]
+
+|OWASP Categories
+|https://owasp.org/Top10/A01_2021-Broken_Access_Control/[A01:2021-Broken Access Control]
+
+|=== 
+
+=== Description
+
+This policy identifies instances where Go applications set overly permissive directory permissions using `os.Mkdir` or `os.MkdirAll`. Permissions greater than `0750` can expose directories to unauthorized access. It is recommended to use more restrictive permissions, such as `0700` for read/write access by the application user only, or `0750` to allow group users to read the files.
+
+In the following code snippet, the application sets overly permissive directory permissions using `os.MkdirAll` with a mask greater than `0750`, which can expose the directory to unauthorized access.
+
+[source,Go]
+----
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    // Insecure directory permissions
+    err := os.MkdirAll("/path/to/dir", 0777)
+    if err != nil {
+        panic(err)
+    }
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, use more restrictive permissions when creating directories. This limits access to the directory to only the necessary users.
+
+In this example, the application sets the directory permissions to `0700` to restrict access to the application user only.
+
+[source,Go]
+----
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    // Secure directory permissions
+    err := os.MkdirAll("/path/to/dir", 0700)
+    if err != nil {
+        panic(err)
+    }
+}
+----

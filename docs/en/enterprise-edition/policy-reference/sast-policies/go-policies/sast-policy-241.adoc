@@ -1,0 +1,89 @@
+== Use of insecure RC4 cipher
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 800e109a-4d17-4a11-9b8f-5cecb45566aa
+
+|Checkov ID 
+|CKV3_SAST_241
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/327.html[CWE-327: Use of a Broken or Risky Cryptographic Algorithm]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy identifies the use of the outdated RC4 encryption protocol from the `crypto/rc4` package in Go applications. RC4 is considered insecure and should be replaced with more secure encryption standards, such as AES.
+
+In the following code snippet, the application imports the `crypto/rc4` package and uses RC4 encryption, which is considered weak and insecure.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/rc4"
+    "log"
+)
+
+func main() {
+    // Insecure use of RC4 encryption
+    key := []byte("weakkey")
+    cipher, err := rc4.NewCipher(key)
+    if err != nil {
+        log.Fatal(err)
+    }
+    plaintext := []byte("sensitive data")
+    ciphertext := make([]byte, len(plaintext))
+    cipher.XORKeyStream(ciphertext, plaintext)
+    log.Printf("%x\n", ciphertext)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, use stronger, modern encryption algorithms like AES from the `crypto/aes` package. AES provides better security due to its larger key sizes and more robust encryption mechanisms.
+
+In this example, the application uses AES encryption instead of RC4.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/aes"
+    "crypto/cipher"
+    "log"
+)
+
+func main() {
+    // Secure use of AES encryption
+    key := []byte("a very very very very secret key") // 32 bytes for AES-256
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        log.Fatal(err)
+    }
+    plaintext := []byte("sensitive data")
+    ciphertext := make([]byte, len(plaintext))
+    stream := cipher.NewCFBEncrypter(block, key[:block.BlockSize()])
+    stream.XORKeyStream(ciphertext, plaintext)
+    log.Printf("%x\n", ciphertext)
+}
+----

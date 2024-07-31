@@ -1,0 +1,85 @@
+== Use of binding to all network interfaces
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 6f0a5b73-f697-4cc8-9497-e8056dc830dc
+
+|Checkov ID 
+|CKV3_SAST_262
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/200.html[CWE-200: Exposure of Sensitive Information to an Unauthorized Actor]
+
+|OWASP Categories
+|https://owasp.org/Top10/A05_2021-Security_Misconfiguration/[A05:2021-Security Misconfiguration]
+
+|=== 
+
+=== Description
+
+This policy identifies instances where Go applications bind to all network interfaces using `0.0.0.0` or `[::]`. Binding to all interfaces can expose services to unintended and potentially insecure traffic. It is recommended to bind to specific interfaces by passing the interface IP address through an environment variable, configuration file, or by determining the primary interface(s) IP address.
+
+In the following code snippet, the application binds to all network interfaces using `0.0.0.0`, which can expose the service to unintended traffic.
+
+[source,Go]
+----
+package main
+
+import (
+    "net"
+    "net/http"
+)
+
+func main() {
+    // Insecure binding to all network interfaces
+    listener, err := net.Listen("tcp", "0.0.0.0:8080")
+    if err != nil {
+        panic(err)
+    }
+    http.Serve(listener, nil)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, bind the application to a specific network interface by using the interface's IP address. This can be done by passing the IP address through an environment variable, configuration file, or by determining the primary interface(s) IP address.
+
+In this example, the application binds to a specific network interface using an environment variable.
+
+[source,Go]
+----
+package main
+
+import (
+    "net"
+    "net/http"
+    "os"
+)
+
+func main() {
+    // Secure binding to a specific network interface
+    addr := os.Getenv("BIND_ADDR")
+    if addr == "" {
+        addr = "127.0.0.1:8080" // Default to localhost if no environment variable is set
+    }
+
+    listener, err := net.Listen("tcp", addr)
+    if err != nil {
+        panic(err)
+    }
+    http.Serve(listener, nil)
+}
+----

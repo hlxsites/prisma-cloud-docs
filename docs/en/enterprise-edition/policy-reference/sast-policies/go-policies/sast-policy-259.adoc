@@ -1,0 +1,70 @@
+== Use of profiling endpoint in production
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| add04252-b1af-4626-ba68-f90d461949ee
+
+|Checkov ID 
+|CKV3_SAST_259
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/489.html[CWE-489: Active Debug Code]
+
+|OWASP Categories
+|https://owasp.org/Top10/A05_2021-Security_Misconfiguration/[A05:2021-Security Misconfiguration]
+
+|=== 
+
+=== Description
+
+This policy detects the use of Go's built-in profiling service by identifying imports of `net/http/pprof`. The `/debug/pprof` endpoint, enabled by this import, does not require authentication and can be accessed by anonymous users, potentially leaking sensitive information. It is recommended to remove the `net/http/pprof` import to prevent this profiling endpoint from being enabled in production environments.
+
+In the following code snippet, the application imports `net/http/pprof`, which enables the profiling endpoint and can expose sensitive information.
+
+[source,Go]
+----
+package main
+
+import (
+    "net/http"
+    _ "net/http/pprof"
+)
+
+func main() {
+    // Insecure use of profiling endpoint
+    http.ListenAndServe(":8080", nil)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, remove the import of `net/http/pprof` to prevent the profiling endpoint from being enabled in production environments.
+
+In this example, the import of `net/http/pprof` is removed to secure the application.
+
+[source,Go]
+----
+package main
+
+import (
+    "net/http"
+)
+
+func main() {
+    // Secure application without profiling endpoint
+    http.ListenAndServe(":8080", nil)
+}
+----

@@ -1,0 +1,77 @@
+== Use of weak random key generation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| caefc5f5-b6a9-4cb7-a5d7-c1e21f8175aa
+
+|Checkov ID 
+|CKV3_SAST_248
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/338.html[CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)]
+
+|OWASP Categories
+|https://owasp.org/Top10/A02_2021-Cryptographic_Failures/[A02:2021-Cryptographic Failures]
+
+|=== 
+
+=== Description
+
+This policy identifies the use of Go's `math/rand` package for generating random numbers in contexts that require cryptographic security. The `math/rand` package is not suitable for cryptographic or security-sensitive contexts, such as generating user-specific identifiers or secret random numbers. It is recommended to replace all imports of `math/rand` with `crypto/rand` to ensure the use of a cryptographically secure random number generator.
+
+In the following code snippet, the application uses `math/rand` to generate random numbers, which is not suitable for cryptographic purposes.
+
+[source,Go]
+----
+package main
+
+import (
+    "log"
+    "math/rand"
+)
+
+func main() {
+    // Insecure random number generation using math/rand
+    randomNumber := rand.Int63()
+    log.Println("Generated random number:", randomNumber)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, use the `crypto/rand` package to generate cryptographically secure random numbers. This ensures that the random numbers are suitable for security-sensitive contexts.
+
+In this example, the application uses `crypto/rand` to generate a secure random number.
+
+[source,Go]
+----
+package main
+
+import (
+    "crypto/rand"
+    "log"
+    "math/big"
+)
+
+func main() {
+    // Secure random number generation using crypto/rand
+    randomNumber, err := rand.Int(rand.Reader, big.NewInt(1000000))
+    if err != nil {
+        log.Fatal(err)
+    }
+    log.Println("Generated secure random number:", randomNumber)
+}
+----

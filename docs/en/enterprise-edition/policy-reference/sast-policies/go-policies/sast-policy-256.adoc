@@ -1,0 +1,76 @@
+== Missing HTTP server timeouts
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| be396736-3120-4990-af91-2b536e8ca036
+
+|Checkov ID 
+|CKV3_SAST_256
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/400.html[CWE-400: Uncontrolled Resource Consumption]
+
+|OWASP Categories
+|https://owasp.org/Top10/A05_2021-Security_Misconfiguration/[A05:2021-Security Misconfiguration]
+
+|=== 
+
+=== Description
+
+This policy identifies instances where Go's `net/http` serve functions are used without properly configured timeouts. Without timeouts, the server may be vulnerable to resource consumption attacks, where an adversary opens numerous connections without completing data transmission or terminating the connections. This can lead to the server being unable to accept new connections. It is recommended to set appropriate timeouts in the `net/http` server to mitigate this risk.
+
+In the following code snippet, the application uses `http.ListenAndServe` without setting appropriate timeouts, making it vulnerable to resource consumption attacks.
+
+[source,Go]
+----
+package main
+
+import (
+    "net/http"
+)
+
+func main() {
+    // Insecure HTTP server without timeouts
+    http.ListenAndServe(":8080", nil)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, configure the `http.Server` with appropriate timeouts. This limits the duration of connections and helps protect the server from resource consumption attacks.
+
+In this example, the application sets `ReadTimeout` and `ReadHeaderTimeout` to secure the HTTP server.
+
+[source,Go]
+----
+package main
+
+import (
+    "net/http"
+    "time"
+)
+
+func main() {
+    // Secure HTTP server with timeouts
+    server := &http.Server{
+        Addr:              ":8080",
+        Handler:           nil,
+        ReadTimeout:       10 * time.Second,
+        ReadHeaderTimeout: 5 * time.Second,
+    }
+    server.ListenAndServe()
+}
+----

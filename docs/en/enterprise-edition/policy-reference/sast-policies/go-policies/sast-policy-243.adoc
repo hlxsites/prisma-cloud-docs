@@ -1,0 +1,74 @@
+== Use of the unsafe Go package
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 162db9e5-e042-4a20-9037-40bbbaf53b9d
+
+|Checkov ID 
+|CKV3_SAST_243
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Language
+|Go
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/242.html[CWE-242: Use of Inherently Dangerous Function]
+
+|OWASP Categories
+|N/A
+
+|=== 
+
+=== Description
+
+This policy identifies the use of the `unsafe` package in Go applications. The `unsafe` package allows operations that can break type safety, memory safety, and cause unpredictable behavior, undermining the language's guarantees and potentially leading to difficult-to-debug errors. It is recommended to avoid using the `unsafe` package to maintain the safety and reliability of the code.
+
+In the following code snippet, the application imports the `unsafe` package and uses it, which can lead to unsafe operations and unpredictable behavior.
+
+[source,Go]
+----
+package main
+
+import (
+    "fmt"
+    "unsafe"
+)
+
+func main() {
+    // Insecure use of the unsafe package
+    var i int = 42
+    var f float64 = *(*float64)(unsafe.Pointer(&i))
+    fmt.Println(f)
+}
+----
+
+=== Fix - Buildtime
+
+To mitigate this issue, avoid using the `unsafe` package and rely on safe, idiomatic Go code. This helps maintain the safety and reliability of the application.
+
+In this example, the application avoids using the `unsafe` package and uses safe, idiomatic Go code instead.
+
+[source,Go]
+----
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    // Secure and idiomatic Go code
+    var i int = 42
+    var f float64 = float64(i)
+    fmt.Println(f)
+}
+----
