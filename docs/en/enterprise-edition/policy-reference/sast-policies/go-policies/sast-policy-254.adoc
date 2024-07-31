@@ -1,4 +1,4 @@
-== Use of overly permissive file write permissions
+== Excessive file write permissions
 
 === Policy Details
 
@@ -30,9 +30,10 @@
 
 === Description
 
-This policy identifies instances where Go applications set overly permissive file permissions using `io/ioutil.WriteFile`. Permissions greater than `0600` can expose files to unauthorized access. It is recommended to use more restrictive permissions, such as `0200` for write-only access, `0400` for read-only access, or `0600` for read/write access by the application user only.
+This policy checks whether Go applications set excessive file permissions using io/ioutil.WriteFile. Permissions greater than 0600 can expose files to unauthorized access.
 
-In the following code snippet, the application sets overly permissive file permissions using `ioutil.WriteFile` with a mask greater than `0600`, which can expose the file to unauthorized access.
+In this example, the application sets excessive file permissions using ioutil.WriteFile with a mask greater than 0600. This could potentially expose the file to unauthorized access.
+
 
 [source,Go]
 ----
@@ -55,9 +56,9 @@ func main() {
 
 === Fix - Buildtime
 
-To mitigate this issue, use more restrictive permissions when writing files. This limits access to the file to only the necessary users.
+To mitigate this issue, apply more restrictive file permissions when writing files. This ensures that access is limited to only the necessary users. Recommended permissions include `0200` for write-only access, `0400` for read-only access, or `0600` for read/write access by the application user only.
 
-In this example, the application sets the file permissions to `0600` to restrict access to the application user only.
+In this example, the application configures the file permissions to `0600`, ensuring that only the application user has access.
 
 [source,Go]
 ----

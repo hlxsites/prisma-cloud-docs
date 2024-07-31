@@ -1,4 +1,4 @@
-== Use of overly permissive directory permissions
+== Excessive directory permissions in Go applications
 
 === Policy Details
 
@@ -32,7 +32,7 @@
 
 This policy identifies instances where Go applications set overly permissive directory permissions using `os.Mkdir` or `os.MkdirAll`. Permissions greater than `0750` can expose directories to unauthorized access. It is recommended to use more restrictive permissions, such as `0700` for read/write access by the application user only, or `0750` to allow group users to read the files.
 
-In the following code snippet, the application sets overly permissive directory permissions using `os.MkdirAll` with a mask greater than `0750`, which can expose the directory to unauthorized access.
+In this example, the application sets overly permissive directory permissions using os.MkdirAll with a mask greater than 0750. This can potentially can expose the directory to unauthorized access.
 
 [source,Go]
 ----
@@ -53,9 +53,9 @@ func main() {
 
 === Fix - Buildtime
 
-To mitigate this issue, use more restrictive permissions when creating directories. This limits access to the directory to only the necessary users.
+To mitigate this issue, use more restrictive permissions when creating directories. Set os.Mkdir and os.MkdirAll mode to 0700 for exclusive owner access or 0750 for group read access.
 
-In this example, the application sets the directory permissions to `0700` to restrict access to the application user only.
+In this example, the application sets the directory permissions to 0700, ensuring that only the application user has access.
 
 [source,Go]
 ----

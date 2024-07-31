@@ -1,4 +1,4 @@
-== Use of overly permissive file modification permissions
+== Excessive file modification permissions
 
 === Policy Details
 
@@ -30,9 +30,10 @@
 
 === Description
 
-This policy identifies instances where Go applications set overly permissive file permissions using `os.Chmod`, `os.OpenFile`, or `os.WriteFile`. Permissions greater than `0640` can expose files to unauthorized access. It is recommended to use more restrictive permissions, such as `0200` for write-only access, `0400` for read-only access, or `0600` for read/write access by the application user only.
+This policy detects whether Go applications set excessive file permissions using os.Chmod, os.OpenFile, or os.WriteFile. Permissions greater than 0640 can potentially expose files to unauthorized access.
 
-In the following code snippet, the application sets overly permissive file permissions using `os.Chmod` with a mask greater than `0640`, which can expose the file to unauthorized access.
+In the following example, the application sets overly permissive file permissions using os.Chmod with a mask greater than 0640. This potentially exposes the file to unauthorized access.
+
 
 [source,Go]
 ----
@@ -54,9 +55,9 @@ func main() {
 
 === Fix - Buildtime
 
-To mitigate this issue, use more restrictive permissions when modifying files. This limits access to the file to only the necessary users.
+To mitigate this issue, implement strict permissions for modifying files. This prevents unauthorized access by limiting access to only the necessary users. It is recommended to use `0200` for write-only access, `0400` for read-only access, or `0600` for read/write access by the application user only.
 
-In this example, the application sets the file permissions to `0600` to restrict access to the application user only.
+In this example, the application sets the file permissions to `0600`, ensuring that only the application user has access.
 
 [source,Go]
 ----
