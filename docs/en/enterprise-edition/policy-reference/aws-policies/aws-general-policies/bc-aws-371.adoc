@@ -1,0 +1,64 @@
+== AWS SageMaker Notebook Instance allows for IMDSv1
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| b74937ca-e6e5-463e-ac83-9476a90cac40
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerNotebookInstanceAllowsIMDSv2.py[CKV_AWS_371]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy checks whether SageMaker Notebook Instances are configured to use Instance Metadata Service version 2 (IMDSv2). MDSv2 reduces security risks by requiring session-oriented requests, unlike the vulnerable IMDSv1 which is susceptible to server-side request forgery (SSRF) attacks and potential unauthorized access. This improves the overall security posture of your AWS resources.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_notebook_instance
+* *Arguments:* instance_metadata_service_configuration/minimum_instance_metadata_service_version
+
+Ensure that the Amazon Sagemaker Notebook Instance is configured to only allow Instance Metadata Service Version 2 (IMDSv2), by setting the `minimum_instance_metadata_service_version` to `2`, as displayed in the example below.
+
+[source,go]
+----
+resource "aws_sagemaker_notebook_instance" "my_notebook_instance_pass" {
+  ...
+  instance_metadata_service_configuration {
++    minimum_instance_metadata_service_version = "2"
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::NotebookInstance
+* *Arguments:* Properties/InstanceMetadataServiceConfiguration/MinimumInstanceMetadataServiceVersion
+
+Ensure that the Amazon Sagemaker Notebook Instance is configured to only allow Instance Metadata Service Version 2 (IMDSv2), by setting the `MinimumInstanceMetadataServiceVersion` to `2`, as displayed in the example below.
+
+[source,yaml]
+----
+Resources:
+  Example:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      ...
+      InstanceMetadataServiceConfiguration:
+        MinimumInstanceMetadataServiceVersion: "2"
+----
