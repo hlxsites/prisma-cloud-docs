@@ -1,6 +1,6 @@
 == Traceability and Tagging
 
-Traceability tags allow you to locate run-time resources that were created based on a specific IaC resource, xref:docs/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/drift-detection.adoc[detect drifts] from IaC templates and trace the differences between code and cloud infrastructure. You can add tags to all resource blocks in your repository using https://github.com/bridgecrewio/yor[Yor], an open-source auto-tagging tool that supports Terraform, CloudFormation, and Serverless frameworks. These tags are unique to a repository and resource, and  contain details such as: 
+Traceability tags allow you to locate run-time resources that were created based on a specific IaC resource, xref:drift-detection.adoc[detect drifts] from IaC templates and trace the differences between code and cloud infrastructure. You can add tags to all resource blocks in your repository using https://github.com/bridgecrewio/yor[Yor], an open-source auto-tagging tool that supports Terraform, CloudFormation, and Serverless frameworks. These tags are unique to a repository and resource, and  contain details such as: 
 
 * Git organization, repository, and the exact file containing the IaC template used to create the cloud resource. 
 * Timestamp of Git commits for supported cloud resources, including a list of all editors and contributors who modified the file. 
@@ -8,8 +8,8 @@ Traceability tags allow you to locate run-time resources that were created based
 
 === Yor Trace Tags and Compliance Management
 
-In addition to auto-tags and custom tags, each runtime resource has a unique `yor_trace` tag to trace alerts, detect drift in code and locate the specific resource within a commit. Yor trace tags are accessible in the Prisma Cloud console. 
-Yor scans run for every resource. If any resource is not compliant with a tag rule, Yor automatically creates a PR (pull request) for the repository. This PR includes the appropriate tags for each non-compliant resource. You can access your version control system to merge the tag PR and add the tags to the resource. 
+In addition to auto-tags and custom tags, each runtime resource has a unique `yor_trace` tag to trace alerts, detect drift in code and locate the specific resource within a commit.
+Yor scans run for every resource. If any resource is not compliant with a tag rule, Yor automatically creates a PR (pull request) for the repository. This PR includes the appropriate tags for each non-compliant resource. You can access your version control system to merge the tag PR and add the tags to the resource. Yor trace tags are accessible in the Prisma Cloud console. 
 
 NOTE: Only one tag PR can be open per repository at a time. If there is already an open tag PR, Prisma Cloud will not create another.
 
@@ -28,19 +28,17 @@ Example #1: Tag specific GitHub users to a devops team. All other users will be 
 'Key': 'team' 
 'Value': 'platform' (default) All GitHub users that are not assigned to devops 
 'Value': devops' Assign the following GitHub users to the devops team GitHub by selecting the following tags under the 'if has tags (optional)' field: 'git_modifier: jhonf', 'git_modifier: janed' 
-----
+---- 
++
 Example #2: Define tags for internal teams (“devops” and “platform”) based on specific GitHub users on each team. 
 ----
 'Key': 'team' 
 'Value': 'devops' if resource has certain tag name-value pairs: 'git_modifier: jhonf', 'git_modifier: janed'  
 'Value':'platform' if resource has tag name-value pair: 'git_modifier: jamesd', 'git_modifier: juliem'` 
 ----
++
 image::application-security/tag-eg-team1.1.png[]
-
-//Example #1: Assign a rule that adds `team:dev_use` to all selected repositories that meet condition _a_ and `team:dev_europe` for those resources that meet condition _b_.
-//+
-
-
++
 Example #3: Define tags for internal teams based on Github users, as well as a default tag value. +
 ----
 'Key': 'team'
@@ -49,7 +47,11 @@ Example #3: Define tags for internal teams based on Github users, as well as a d
 'platform' if resource has one of these tag name-value pair: 'git_modifier: jamesd', 'git_modifier: juliem'`.
 ----
 
-//* *Conditional with default*: Define a rule that applies a name-value pair if a certain condition is met and a different, default name-value pair to any IaC resource that does not meet any of the defined conditions
+////
+Example #1: Assign a rule that adds `team:dev_use` to all selected repositories that meet condition _a_ and `team:dev_europe` for those resources that meet condition _b_.
+* *Conditional with default*: Define a rule that applies a name-value pair if a certain condition is met and a different, default name-value pair to any IaC resource that does not meet any of the defined conditions
+Example #1: Assign a rule that adds `team:dev_use` to all selected repositories that meet condition _a_ and `team:dev_europe` for those resources that meet condition _b_.
+////
 
 === View Tags associated with Resources
 
@@ -69,7 +71,7 @@ A list of frameworks which include assets that have tags associated with IaC res
 
 . Click on an asset to view the tags in the *Overview* tab of the sidecar. 
 
-For more information, refer to xref:../../cloud-and-software-inventory/iac-resources.adoc[IaC Resources].
+For more information, refer to xref:../../../cloud-and-software-inventory/iac-resources.adoc[IaC Resources].
 
 [.task]
 
@@ -91,37 +93,52 @@ image::application-security/tags2.1.png[]
 +
 NOTE: A list of tags will be displayed if Yor has already processed your repositories. This includes yor_trace tags, out-of-the-box tags, and any custom tags that you have defined.
 
-. *Enable/Disable* tags: Under the *Actions* menu, select *Play* to enable or *Pause* to disable a tag.
+* Create *custom tag rules*.
++
+. Click *Add Tag Rule* in the 'Tag Rules' popup.
+. Assign repositories or all repositories.
+. Add a key/value condition/s.
+. Select *Save*.
++
+The created custom tag rule is displayed in the tag list on the Tag Rule popup.
+
+* *Enable/Disable* tags: Under the *Actions* menu, select *Play* to enable or *Pause* to disable a tag.
 +
 image::application-security/tag-enable2.1.png[]
 +
-NOTE: You can enable or disable all types of tags. Enabling a tag triggers a scan across all resources in the repositories you have assigned to it. Remember to assign repositories before enabling a tag. Disabling a tag prevents future scans from being triggered by the disabled tag. Past actions, such as automated pull requests, will not be reverted.
+NOTE: You can enable or disable all types of tags. Enabling a tag triggers a scan across all resources in the repositories you have assigned to it. Disabling a tag prevents future scans from being triggered by the disabled tag. Past actions, such as automated pull requests, will not be reverted.
 
-. *Edit* custom tag rules: 
-.. Under the *Actions* menu, select *Edit*.
+* *Edit* custom tag rules: 
+. Under the *Actions* menu, select *Edit* for the the required tag.
 +
-The *Edit a Tag Rule* popup is displayed.
-.. Modify values.
-* Select the Repositories menu to apply the tag rule to selected repositories or click *Select All Repositories* to apply the tag rule to all your repositories 
+The *Edit a Tag Rule* popup is displayed > Modify the required values > *Save*.
+
+////
+.. Select the Repositories menu to apply the tag rule to selected repositories or click *Select All Repositories* to apply the tag rule to all your repositories 
 +
 NOTE: Assigning a repository affects the number of resources. This number is displayed in the popup. You can monitor the affected resources on the Prisma Cloud console.
 
-* (Optional): Add a *Description* for the tag rule.
+.. (Optional): Add a *Description* for the tag rule.
 
-* Modify the key/value fields as required. A key is the tag name. You can only edit the names of custom tags. 
+.. Modify the key/value fields as required. A key is the tag name. You can only edit the names of custom tags. 
 
 * Click *Add Conditional Value* to add an additional condition to the tag. 
+////
 
-. *Clone* tag rules.
-.. Under the *Actions* menu, select *Edit* > *Clone*.
-.. Fill in required values in the *Edit a Tag Rule* popup (see above).
+* *Clone* tag rules.
++
+Example usage: A large-scale project with multiple teams and environments (development, staging, production). You have a base tag rule that applies to all environments. However, the production environment requires additional specific tags for compliance or security reasons. In this case, cloning the base rule and adding the necessary tags for the production environment might be a viable approach, provided it's carefully managed.
++
+. Under the *Actions* menu, select *Edit* > *Clone*.
+. Fill in required values in the *Edit a Tag Rule* popup (see above) > *Save*.
 
-. *Delete* tag rules: Under the *Actions* menu, select *Edit* > *Delete*.
+* *Delete* tag rules: Under the *Actions* menu, select *Edit* > *Delete*.
 +
 NOTE: Deleting a tag rule won't affect existing actions triggered by the rule. This includes automated pull requests (PRs) generated for non-compliant resources or any resources that were previously cloned using the deleted tag.
 
-. Select *Save*
 
+
+////
 . Create *custom tag rules*.
 .. In *Projects*, select the *Actions* menu > *Manage IaC Tags*.  
 .. Click *Add Tag Rule* in the 'Tag Rules' popup.
@@ -130,4 +147,4 @@ NOTE: Deleting a tag rule won't affect existing actions triggered by the rule. T
 +
 The created custom tag rule is displayed in the tag list on the Tag Rule popup.
 
-
+////
