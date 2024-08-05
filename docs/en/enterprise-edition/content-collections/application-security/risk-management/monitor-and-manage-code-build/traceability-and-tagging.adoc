@@ -1,5 +1,135 @@
 == Traceability and Tagging
 
+IaC resource tags allow you to manage and organize resources in cloud environments. They are a flexible and efficient way to provide cost allocation, streamline resource management, enhance security, provide access control, and improve root cause analysis. Tags added to IaC resources are carried through to their corresponding cloud assets, enabling traceability and efficient management. Prisma Cloud's tagging bot and https://github.com/bridgecrewio/yor[Yor], an open source tool,automatically tag Terraform, CloudFormation, and Serverless resources with the following groups of tags to help with these use cases:
+
+* Git organization, repository, and the exact file containing the IaC template used to create the cloud resource
+* Timestamp of Git commits for supported cloud resources, including a list of all editors and contributors who modified the file
+* Custom tags that you create for your resources. Custom tags can be simple key-value pairs or a complex combination of values. For even more complex tagging capabilities, you can leverage Yor CLI/GitHub Action (GHA) directly. For more on custom tags, see <<manage-tag,Manage Tags>> below.
+
+=== Auto-Tagging with Prisma Cloud Bot
+
+Prisma Cloud automatically scans resources and applies tags based on predefined rules. If a resource is not compliant with a tag rule, Prisma Cloud automatically creates a PR (pull request) to incorporate necessary tags. This PR includes the appropriate tags for each non-compliant resource. This automated process ensures tag consistency and compliance across the environment. To add tags to the resource, access your version control system and merge the tag PR.
+
+NOTE: Only one tag PR can be open per repository at a time. If there is already an open tag PR, Prisma Cloud will not create another.
+
+=== Yor Trace Tag
+
+In addition to auto-tags and custom tags, each runtime resource is uniquely identified by a `yor_trace` tag, enabling you to manually identify the IaC resource that is the source of the cloud asset. 
+//Each runtime resource is uniquely identified by a yor_trace tag, linking it back to its IaC origin. 
+For Terraform, Prisma Cloud uses this tag to trace alerts, xref:drift-detection.adoc[detect drift] in code, and locate the specific resource within a commit. CloudFormation uses methods that do not require tags to automatically trace resources.
+
+By combining auto-tagging, custom tagging, and the yor_trace tag, you can achieve comprehensive visibility and control over your cloud infrastructure.
+
+////
+Prisma Cloud Application Security supports infrastructure-as-code (IaC) tags that help you trace the link for your resources deployed from code to cloud infrastructure.
+Using https://yor.io/1.Welcome/welcome.html#overview[Yor], an open-source auto-tagging tool that supports Terraform, CloudFormation, and Serverless, you can add tags to all resource blocks in your repository.
+Yor uses YAML configuration to tag and trace resources, and these automated tags are unique to a repository.
+Yor automatically creates additional tags that contain details such as:
+
+
+* Git organization, repository, and the exact file that contains the infrastructure-as-code (IaC) template used to create the cloud resource.
+* Timestamp of Git commits for supported cloud resources includes a list of all editors and contributors who modified the file.
+* Custom tags that you create for your resource.
+
+These tags can be as simple as key and value pairs or a complex combination of values, yet Yor can auto-detect them. You can edit custom tags by adding a tag rule on the Prisma Cloud console. Tag rule is helpful to define resources that impact the cost and ownership of any third-party resources within your environment, including managing the out-of-the-box tags.
+
+If you do have an existing tag management strategy, you can choose to replicate it using tag rules on the Prisma Cloud console.
+
+In addition to auto-tag and custom tag, each runtime resource has a unique yor_trace tag to detect drift in code and locate the specific resource within a commit that identifies teams and resource owners to help triage a fix in the most time and cost-effective way.
+Yor trace tags are accessible for you on the Prisma Cloud console, where you can choose to enable or disable them. Yor scan runs for every resource, and if any resource is not compliant with a tag rule, Yor automatically creates a PR (pull request) for the repository. You can access your version control system to fix the tag violation. The new defined tag and tag rules apply to all existing and new resources for selected repositories.
+////
+[.task]
+
+[#manage-tag]
+=== Manage Tags
+
+You can manage tags and tag rules for all resources with assigned repositories integrated on Prisma Cloud for governance and monitoring or enforcement of policies for provisioned resources. You can enable, disable, and edit tags for any cloud resource, except auto-generated trace tags (yor_trace) on the Prisma Cloud console.
+
+[.procedure]
+
+. Access manage tags for resources.
+.. Select *Application Security > Projects*.
+.. Select *Actions* menu and then select *Manage tags*.
++
+image::application-security/tag.png[]
++
+If Yor has already run for your repositories, a list of yor_trace tags, out-of-the-box tags, and custom tags will appear. Otherwise, you will not see a list of tags for your resources.
+
+* For both auto-generated tags, out-of-the-box tags and custom tags.
++
+** *Enable*
++
+Enable a tag to run a scan on all resources in the assigned repositories.
++
+image::application-security/tag-3.png[]
++
+NOTE: It is a must to assign repositories for a tag before the tag is enabled.
+** *Disable*
++
+Disable a tag for future resource scans in the repositories. A disabled tag continues to appear on the list of the Prisma Cloud console, and any previous change made using the tag, such as an automated Pull request (PR), will not be reverted.
++
+image::application-security/tag-4.png[]
+
+* Only for custom tags.
++
+** *Edit*
++
+Edit a custom tag for all your resources in the assigned repositories.
++
+image::application-security/tag-6.png[]
+
+*** Assign repositories to the tag rule.
++
+You can add or remove assigned repositories to the tag. Each assigned repository affects the number of resources. You can monitor the affected resources on the Prisma Cloud console.
++
+image::application-security/tag-8.png[]
+
+*** Edit values.
++
+You can edit existing values of *Key* and *Value*.
+
+*** Add Conditional Value.
++
+You can optionally choose to add or delete conditional values to the tag.
++
+image::application-security/tag-7.png[]
++
+You must save an edit made to the tag rule and then enable it for Yor to run the scan for all resources.
+//** *Clone*
+//+
+//Clone tag and tag rules for selected repositories.
+
+** *Delete*
++
+Delete tags from the Prisma Cloud console. Any previous change made using the tag, such as an automated Pull request (PR) or Clone, will not be reverted.
++
+image::application-security/tag-5.png[]
+
+. Add a custom tag rule to resources in assigned repositories.
+.. Select *Add Tag Rule*.
++
+image::application-security/tag-1.png[]
+.. Select repositories to assign the tag rule.
++
+image::application-security/tag-9.png[]
++
+You can optionally choose to add *Description* for the tag rule.
+.. Enter *Key* and *Value*.
++
+image::application-security/tag-10.png[]
++
+You can optionally choose to *Add Conditional Value* to the tag rule.
++
+image::application-security/tag-11.png[]
+.. Select *Save* and then select *Done*.
++
+Your new custom tag rule appears in the tag list of the Prisma Cloud console.
+
+
+
+////
+== Traceability and Tagging
+
 Traceability tags allow you to locate run-time resources that were created based on a specific IaC resource, xref:drift-detection.adoc[detect drifts] from IaC templates and trace the differences between code and cloud infrastructure. You can add tags to all resource blocks in your repository using https://github.com/bridgecrewio/yor[Yor], an open-source auto-tagging tool that supports Terraform, CloudFormation, and Serverless frameworks. These tags are unique to a repository and resource, and  contain details such as: 
 
 * Git organization, repository, and the exact file containing the IaC template used to create the cloud resource. 
@@ -10,10 +140,10 @@ Traceability tags allow you to locate run-time resources that were created based
 
 Each runtime resource is uniquely identified by a `yor_trace` tag, enabling traceability from code to cloud. This tag facilitates alert investigation, drift detection, and resource localization within a specific commit. Yor automatically creates pull requests (PRs) for resources lacking required tags, ensuring consistent tagging practices. Merge these PRs to add the tags to the resource. Tag information is accessible within the Prisma Cloud console.
 
-////
+
 In addition to auto-tags and custom tags, each runtime resource has a unique `yor_trace` tag to trace alerts, detect drift in code and locate the specific resource within a commit.
 Yor scans run for every resource. If any resource is not compliant with a tag rule, Yor automatically creates a PR (pull request) for the repository. This PR includes the appropriate tags for each non-compliant resource. You can access your version control system to merge the tag PR and add the tags to the resource. Yor trace tags are accessible in the Prisma Cloud console. 
-////
+
 
 NOTE: Only one tag PR can be open per repository at a time. If there is already an open tag PR, Prisma Cloud will not create another.
 
@@ -55,11 +185,11 @@ Example #4: Define tags for internal teams based on Github users, as well as a d
 'platform' if resource has one of these tag name-value pair: 'git_modifier: jamesd', 'git_modifier: juliem'`.
 ----
 
-////
+
 Example #1: Assign a rule that adds `team:dev_use` to all selected repositories that meet condition _a_ and `team:dev_europe` for those resources that meet condition _b_.
 * *Conditional with default*: Define a rule that applies a name-value pair if a certain condition is met and a different, default name-value pair to any IaC resource that does not meet any of the defined conditions
 Example #1: Assign a rule that adds `team:dev_use` to all selected repositories that meet condition _a_ and `team:dev_europe` for those resources that meet condition _b_.
-////
+
 
 === View Tags associated with Resources
 
@@ -123,7 +253,7 @@ NOTE: You can enable or disable all types of tags. Enabling a tag triggers a sca
 . Locate the desired tag in the tags table and click the "Edit" action button.
 . Modify the required values in the *Edit a Tag Rule* popup > *Save*.
 
-////
+
 .. Select the Repositories menu to apply the tag rule to selected repositories or click *Select All Repositories* to apply the tag rule to all your repositories 
 +
 NOTE: Assigning a repository affects the number of resources. This number is displayed in the popup. You can monitor the affected resources on the Prisma Cloud console.
@@ -133,7 +263,7 @@ NOTE: Assigning a repository affects the number of resources. This number is dis
 .. Modify the key/value fields as required. A key is the tag name. You can only edit the names of custom tags. 
 
 * Click *Add Conditional Value* to add an additional condition to the tag. 
-////
+
 
 ==== Clone Tags
 
@@ -152,7 +282,7 @@ NOTE: Deleting a tag rule will not affect existing actions triggered by the rule
 
 
 
-////
+
 . Create *custom tag rules*.
 .. In *Projects*, select the *Actions* menu > *Manage IaC Tags*.  
 .. Click *Add Tag Rule* in the 'Tag Rules' popup.
