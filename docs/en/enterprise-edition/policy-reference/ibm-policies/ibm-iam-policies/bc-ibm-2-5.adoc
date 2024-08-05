@@ -1,0 +1,47 @@
+// Metadata is all subject to change based on RUN policies
+== IBM Cloud Service ID creation is not restricted in account settings
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| c1afa0d4-93de-48d0-ac79-c66232f1710d
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/ibm/IBM_RestrictServiceIDCreationInAccountSettings.yaml[CKV2_IBM_5]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks to ensure that the creation of Service IDs is restricted within account settings. Service IDs are used to identify and authenticate services or applications in order to allow them to interact with other services or resources. Ensuring that their creation is restricted helps to prevent unauthorized access or mismanagement of service identities, which could lead to security vulnerabilities. By limiting who can create Service IDs, you are enhancing the overall security posture of the account and mitigating the risk of potential breaches or misconfigurations.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* ibm_iam_account_settings
+* *Arguments:* restrict_create_service_id
+
+By setting `restrict_create_service_id` to `RESTRICTED` in the IBM IAM account settings, you ensure that only authorized users or services can create new service IDs. This reduces the risk of unauthorized service IDs being created, which could lead to potential security breaches or misuse of services.
+
+In this example, the `ibm_iam_account_settings` resource is used to configure the account settings, and the `restrict_create_service_id` attribute is set to `RESTRICTED` to restrict the creation of service IDs.
+
+[source,hcl]
+----
+resource "ibm_iam_account_settings" "example" {
+  ...
++  restrict_create_service_id = "RESTRICTED"
+}
+----
