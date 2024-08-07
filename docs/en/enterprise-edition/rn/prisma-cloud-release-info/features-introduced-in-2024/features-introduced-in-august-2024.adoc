@@ -7,11 +7,10 @@ Learn what's new on Prisma® Cloud in August 2024.
 * <<api-ingestions>>
 * <<new-policies>>
 * <<policy-updates>>
-* <<iam-policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
 * <<changes-in-existing-behavior>>
 * <<rest-api-updates>>
-* <<deprecation-notices>>
+//* <<deprecation-notices>>
 
 [#announcement]
 === Announcement
@@ -48,18 +47,68 @@ With the GA of DSPM and AISPM, Prisma Cloud Data Security (PCDS) module is consi
 |*AI Assisted Queries*
 
 tt:[Secure the Infrastructure]
+
+tt:[24.8.1] 
+
 //RLP-146585, - To Do, JJ to share the doc link
 
-|Enhancements to Prisma Cloud's query launcher allow you to use AI assisted queries to retrieve saved searches from your current tenant. Going beyond keyword matching, AI powered semantic searches provide ease of use when launching investigations in Prisma Cloud. For instance, typing “public facing” as a query, returns results with “reachable from untrusted internet sources” as well, because the saved search matches the meaning of the query "public facing". AI assisted search can be toggled on and off as needed. Use the feedback buttons as shown in the image below to provide your feedback on this feature. 
+|Enhancements to Prisma Cloud's query launcher allow you to use https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/launch-your-query[AI assisted queries] to retrieve saved searches from your current tenant. Going beyond keyword matching, AI powered semantic searches provide ease of use when launching investigations in Prisma Cloud. For instance, typing “public facing” as a query, returns results with “reachable from untrusted internet sources” as well, because the saved search matches the meaning of the query "public facing". AI assisted search can be toggled on and off as needed. Use the feedback buttons as shown in the image below to provide your feedback on this feature. 
 
 image::ai-assisted-search.gif[]
 
-|*AWS Access Key Discovery*
+|*RQL for AWS Access Key Discovery*
 
 tt:[Secure the Infrastructure]
+
+tt:[24.8.1] 
+
 //RLP-146594
 
-|*Placeholder*
+|Prisma Cloud's RQL enhancements help you discover detailed information about Access Keys held by users, their activity, rotation, and usage. Available for AWS, the following RQL query helps you enforce zero trust best practices in your cloud environment:
+
+* Queries the number of days passed since the last usage of an access key
+`Source.cloud.accesskey.lastused.days (>, <= )`
+
+* Queries the number of active access keys held by a user
+`Source.cloud.accesskey.activekeys (<, >, =) (0, 1, 2) -`
+
+
+|*New AI and Machine Learning Category in Custom Build Policies*
+
+tt:[Secure the Source]
+
+tt:[24.8.1] 
+
+//CAS feature enhancement update. received from J.Bakst
+
+|When creating or editing custom *Build* policies under *Application Security > Governance*, you will now find a new category— *AI and Machine Learning*. This category is available in the YAML policy templates within the *Code Editor* and under the *Category Type* option in the *Visual Editor*.
+
+The  *AI and Machine Learning* category offers granular control over *Build* configurations for machine learning and artificial intelligence workloads. You can use it into your custom policies and relevant dashboards through the *IaC Category* filter, which streamlines policy management for AI resources. For more details, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/governance/custom-build-policies/custom-build-policies[Custom Build Policies].
+
+image::cas-ai-ml-learning-category.png[]
+
+|*New Resource Classes Filter*
+
+tt:[Secure the Source]
+
+tt:[24.8.1] 
+//BCE-37242
+
+|A new filter, *Resource Classes*, is now available under *Application Security > Inventory > IaC Resources*. This filter becomes active after you select a *Framework* from the inventory table.
+
+*Resource Classes* provide a structured method for categorizing infrastructure resources based on their type, function, or other relevant criteria. This helps streamline the filtering and management of assets within the IaC inventory. Supported options for *Resource Classes* include— *Compute, Storage, Network, Identity & Security, Database, AI and Machine Learning, Analytics, Code*, and *Others*. For more details, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/cloud-and-software-inventory/iac-resources#resource-class[Resource Class.]
+
+image::resource-classes-filter-apsec.png[]
+
+|*Blocklist Resource Control*
+
+tt:[Secure the Source]
+
+tt:[24.8.1] 
+//BCE-37258
+
+|You can now define granular resource controls to allow or block any use of specific resource types defined in Terraform, enabling you to create blocklists that specify which resources are restricted within your environment, enhancing security and compliance by preventing unauthorized resource usage. For more details, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/governance/custom-build-policies/custom-build-policy-examples#resource-blocklist[example blocklist].
+
 
 |===
 
@@ -310,16 +359,18 @@ It is recommended to configure automatic rotation in AWS Secrets Manager to repl
 config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-secretsmanager-describe-secret' AND json.rule = rotationEnabled is true and owningService is not member of (appflow, databrew, datasync, directconnect, events, opsworks-cm, rds, sqlworkbench) and rotationRules.automaticallyAfterDays exists and rotationRules.automaticallyAfterDays greater than 90
 ----
 
-|*AWS RDS database reachable from any untrust internet source*
+|*AWS RDS instance with network path from the untrust internet source*
 
 tt:[24.8.1]
 //RLP-145572
 
-|This policy identifies AWS RDS instances that are exposed to inbound traffic from any untrust internet source. 
+|This policy identifies AWS RDS instances with network path from untrusted internet source.
 
-AWS RDS is Amazon managed service for running relational databases in the cloud. Allowing an AWS RDS database to be reachable from any untrusted internet source increases the risk of unauthorized access and potential security breaches due to expanded attack surface.
+AWS RDS is AWS managed service for running relational databases in the cloud. Allowing an AWS RDS instance to be reachable from any untrusted internet source increases the risk of unauthorized access and potential security breaches due to expanded attack surface.
 
 It is recommended to restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities for the RDS Database instances.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
 
 *Policy Severity—* High
 
@@ -329,16 +380,18 @@ It is recommended to restrict traffic from untrusted IP addresses and limit the 
 config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'PaaS' and dest.cloud.type = 'AWS' and dest.paas.service.type = 'AWS RDS' 
 ----
 
-|*AWS Redshift database reachable from any untrust internet source*
+|*AWS Redshift cluster with network path from the untrust internet source*
 
 tt:[24.8.1]
 //RLP-145570
 
-|This policy identifies the AWS Redshift clusters that are exposed to inbound traffic from any untrust internet source. 
+|This policy identifies the AWS Redshift clusters with network path from the untrusted internet source.
 
 Redshift clusters are AWS cloud-based data warehouses designed for data analysis and querying of large datasets. Allowing an AWS Redshift cluster to be reachable from any untrusted internet source increases the risk of unauthorized access and potential security breaches due to expanded attack surface.
 
 It is recommended to restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities for the Redshift clusters.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
 
 *Policy Severity—* High
 
@@ -1050,6 +1103,430 @@ config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount' 
 
 2+|*Policy Updates—Metadata*
 
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0). EC2 instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0).
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). EC2 instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports
+
+*Updated Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to Admin ports (22 / 3389). EC2 instances with unrestricted access to the internet for admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance that is reachable from untrust internet source to ports with high risk*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is reachable from untrust internet source to ports with high risk
+
+*Updated Policy Name—* AWS EC2 instance with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with untrust internet source to ports with high risk. EC2 instances with unrestricted access to the internet for high risky port may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the untrust internet source on ports with high risk.
+
+AWS EC2 instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance with unrestricted outbound access to internet*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance with unrestricted outbound access to internet
+
+*Updated Policy Name—* AWS EC2 instance with network path to the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies EC2 instances that allow unrestricted outbound traffic to the internet. As a best practice, restrict outbound traffic and limit the access to known hosts or services.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path to the internet (0.0.0.0/0).
+
+AWS EC2 instances with network path to the internet increases the risk of cyber attacks, crypto mining and data breaches which can be used by malicious actors. Such instances are especially prone to data exfiltration or mining exploits.
+
+As a best practice, restrict traffic to unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Cosmos DB (PaaS) instance reachable from untrust internet source*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Cosmos DB (PaaS) instance reachable from untrust internet source
+
+*Updated Policy Name—* Azure Cosmos DB (PaaS) instance with network path from the untrust internet source
+
+*Current Policy Description—* This policy identifies Azure Cosmos DB (PaaS) instances that are internet reachable from untrust internet source. Cosmos DB (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Cosmos DB (PaaS) instances with network path from the untrust internet source.
+
+Cosmos DB (PaaS) instances with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure MySQL (PaaS) instance reachable from untrust internet source on TCP port 3306*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure MySQL (PaaS) instance reachable from untrust internet source on TCP port 3306
+
+*Updated Policy Name—* Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306
+
+*Current Policy Description—* This policy identifies Azure MySQL (PaaS) instances that are internet reachable from untrust internet source on TCP port 3306. MySQL (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306.
+
+Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure PostgreSQL (PaaS) instance reachable from untrust internet source on TCP port 5432*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure PostgreSQL (PaaS) instance reachable from untrust internet source on TCP port 5432
+
+*Updated Policy Name—* Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432
+
+*Current Policy Description—* This policy identifies Azure PostgreSQL (PaaS) instances that are internet reachable from untrust internet source on TCP port 5432. PostgreSQL (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432.
+
+Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure SQL Server (PaaS) reachable from any untrust internet source*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure SQL Server (PaaS) reachable from any untrust internet source
+
+*Updated Policy Name—* Azure SQL Server (PaaS) with network path from the untrust internet source
+
+*Current Policy Description—* This policy identifies Azure SQL Servers (PaaS) that are internet reachable from any untrust internet source. SQL Server instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure SQL Server (PaaS) with network path from the untrust internet source.
+
+Azure SQL Server (PaaS) with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine in running state that is internet reachable with unrestricted access (0.0.0.0/0)*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine in running state that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines in running state that are internet reachable with unrestricted access (0.0.0.0/0). Virtual Machines with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0).
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine reachable from any untrust internet source to ports with high risk*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine reachable from any untrust internet source to ports with high risk
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies Azure Virtual machines that are reachable from any untrust internet source to ports with high risk. Azure VMs with untrust access to ports with high risk may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the untrust internet source on ports with high risk.
+
+Azure Virtual Machines with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). Azure Virtual Machines with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines that are internet reachable with unrestricted access (0.0.0.0/0) to admin ports. Azure VMs with unrestricted internet access to admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on Admin ports.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Admin ports can increase opportunities for malicious activities such as hacking, Man-In-The-Middle attacks (MITM), and brute-force attacks
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0)*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0). VM instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0).
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). GCP VM instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to Admin ports (22 / 3389). VM instances with unrestricted internet access to admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*GCP VM instance that is reachable from untrust internet source to ports with high risk*
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is reachable from untrust internet source to ports with high risk
+
+*Updated Policy Name—* GCP VM instance with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies GCP VM instances that are reachable from untrust internet source to ports with high risk. VM instances with unrestricted access to the internet for high risky port may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the untrust internet source on ports with high risk.
+
+GCP VM instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+
 |*Google Workspace Super Admin not enrolled with 2-step verification*
 //RLP-146694
 
@@ -1101,8 +1578,6 @@ It is recommended to enable 2-Step Verification for all Super Admins as it provi
 *Impact—* No impact on alerts.
 
 |===
-
-
 
 [#new-compliance-benchmarks-and-updates]
 === New Compliance Benchmarks and Updates
@@ -1167,43 +1642,39 @@ tt:[24.8.1]
 |*Change*
 |*Description*
 
-|*[MSSP] Policy and SearchModel Changes - Added readOnly Field*
+|*Policy API*
 
 tt:[24.8.1]
 //RLP-143483
 
-|*Placeholder*
+|The following endpoints now have a `readOnly` response parameter to protect policies from unwanted edits.
 
-|*Update Evidence Graph API documentation to accommodate new node type.*
+* https://pan.dev/prisma-cloud/api/cspm/get-policy/[Policy Info] - GET /policy/{id}
+
+* https://pan.dev/prisma-cloud/api/cspm/get-policies/[List Policies] - GET /policy/
+
+* https://pan.dev/prisma-cloud/api/cspm/get-policies-v-2/[List Policies V2] - GET /v2/policy
+
+|*Search Manager API*
 
 tt:[24.8.1]
-//RLP-137594
+//RLP-143483
 
-|*Placeholder*
+|The following endpoints now have a `readOnly` response parameter to protect associated saved searches from unwanted edits.
 
-|*RTM Relationship APIs*
+* https://pan.dev/prisma-cloud/api/cspm/search-history/[View Search History] - GET /search/history
 
-tt:[24.8.1]
-//RLP-132362
-
-|*Placeholder*
+* https://pan.dev/prisma-cloud/api/cspm/search-history-by-id/[Get Search Query by ID] - GET /search/history/{id}
 
 
 |===
 
-[#deprecation-notices]
-=== Deprecation Notices
+//[#deprecation-notices]
+//=== Deprecation Notices
 
-[cols="37%a,63%a"]
-|===
-|*Change*
-|*Description*
+//[cols="37%a,63%a"]
+//|===
+//|*Change*
+//|*Description*
 
-|*Asset Explorer APIs*
-
-tt:[24.8.1]
-//RLP-139337
-
-|The `accountGroup` response parameter has been deprecated in Get Asset - https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[GET - uai/v1/asset] API endpoint.
-
-|===
+//|===
