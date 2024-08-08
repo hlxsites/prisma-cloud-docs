@@ -1,0 +1,1715 @@
+== Features Introduced in August 2024
+
+Learn what's new on Prisma® Cloud in August 2024.
+
+* <<announcement>>
+* <<end-of-sale>>
+* <<new-features>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<changes-in-existing-behavior>>
+* <<rest-api-updates>>
+//* <<deprecation-notices>>
+
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Data Security Posture Management and Artificial Intelligence Security Posture Management*
+
+|Prisma Cloud Data Security Posture Management (DSPM) and Artificial Intelligence Security Posture Management (AI-SPM) are now generally available.
+
+* https://docs.prismacloud.io/en/enterprise-edition/content-collections/data-security-posture-management/welcome/welcome[DSPM] enables you to discover, classify, protect, and govern data across your cloud environments.
+
+* AI-SPM provides complete visibility in to your AI pipelines. It prioritizes misconfigurations and strengthens the overall integrity of your AI framework and minimizes the risk of data exposure and compliance breaches.
+
+|===
+
+[#end-of-sale]
+=== End of Sale Notice
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Prisma Cloud Data Security*
+
+|With the GA of DSPM and AI-SPM, Prisma Cloud Data Security (PCDS) module is now in the End of Sale (EOS) status. Note the following important dates:
+
+* PCDS EOS will be effective on August 31, 2024.
+* Prisma Cloud tenants will no longer be able to subscribe to the PCDS module after September 1, 2024.
+* PCDS subscribed tenants can continue to use the PCDS module until its End of Life.
+* End of Life/End of Support will be effective on August 31, 2025 (one year post EOS).
+
+|===
+
+
+[#new-features]
+=== New Features
+
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|*AI Assisted Queries*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.8.1] 
+
+//RLP-146585, - To Do, JJ to share the doc link
+
+|Enhancements to Prisma Cloud's query launcher allow you to use https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/launch-your-query[AI assisted queries] to retrieve saved searches from your current tenant. Going beyond keyword matching, AI powered semantic searches provide ease of use when launching investigations in Prisma Cloud. For instance, typing “public facing” as a query, returns results with “reachable from untrusted internet sources” as well, because the saved search matches the meaning of the query "public facing". AI assisted search can be toggled on and off as needed. Use the feedback buttons as shown in the image below to provide your feedback on this feature. 
+
+image::ai-assisted-search.gif[]
+
+|*RQL for AWS Access Key Discovery*
+
+tt:[Secure the Infrastructure]
+
+tt:[24.8.1] 
+
+//RLP-146594
+
+|Prisma Cloud's RQL enhancements help you discover detailed information about Access Keys held by users, their activity, rotation, and usage. Available for AWS, the following RQL query helps you enforce zero trust best practices in your cloud environment:
+
+* Queries the number of days passed since the last usage of an access key
+
+`source.cloud.accesskey.lastused.days (>, <, = )`
+
+* Queries the number of active access keys held by a user
+
+`source.cloud.accesskey.activekeys (<, >, =) (0, 1, 2)`
+
+
+|*New AI and Machine Learning Category in Custom Build Policies*
+
+tt:[Secure the Source]
+
+tt:[24.8.1] 
+
+//CAS feature enhancement update. received from J.Bakst
+
+|When creating or editing custom *Build* policies under *Application Security > Governance*, you will now find a new category— *AI and Machine Learning*. This category is available in the YAML policy templates within the *Code Editor* and under the *Category Type* option in the *Visual Editor*.
+
+The  *AI and Machine Learning* category offers granular control over *Build* configurations for machine learning and artificial intelligence workloads. You can use it into your custom policies and relevant dashboards through the *IaC Category* filter, which streamlines policy management for AI resources. For more details, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/governance/custom-build-policies/custom-build-policies[Custom Build Policies].
+
+image::cas-ai-ml-learning-category.png[]
+
+|*New Resource Classes Filter*
+
+tt:[Secure the Source]
+
+tt:[24.8.1] 
+//BCE-37242
+
+|A new filter, *Resource Classes*, is now available under *Application Security > Inventory > IaC Resources*. This filter becomes active after you select a *Framework* from the inventory table.
+
+*Resource Classes* provide a structured method for categorizing infrastructure resources based on their type, function, or other relevant criteria. This helps streamline the filtering and management of assets within the IaC inventory. Supported options for *Resource Classes* include— *Compute, Storage, Network, Identity & Security, Database, AI and Machine Learning, Analytics, Code*, and *Others*. For more details, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/cloud-and-software-inventory/iac-resources#resource-class[Resource Class.]
+
+image::resource-classes-filter-apsec.png[]
+
+|*Blocklist Resource Control*
+
+tt:[Secure the Source]
+
+tt:[24.8.1] 
+//BCE-37258
+
+|You can now define granular resource controls to allow or block any use of specific resource types defined in Terraform, enabling you to create blocklists that specify which resources are restricted within your environment, enhancing security and compliance by preventing unauthorized resource usage. For more details, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/governance/custom-build-policies/custom-build-policy-examples#resource-blocklist[example blocklist].
+
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="30%a,70%a"]
+|===
+|*Service*
+|*API Details*
+
+|*AWS Systems Manager*
+
+tt:[24.8.1] 
+//RLP-145960
+
+|*aws-ssm-service-setting*
+
+Additional permission required:
+
+* `ssm:GetServiceSetting`
+
+The Security Audit role includes the permission. 
+
+|*AWS Systems Manager*
+
+tt:[24.8.1] 
+//RLP-145206
+
+|*aws-ssm-session*
+
+Additional permission required:
+
+* `ssm:DescribeSessions`
+
+The Security Audit role includes the permission. 
+
+|*AWS Web Application Firewall (WAF)*
+
+tt:[24.8.1] 
+//RLP-134184
+
+|*aws-waf-v2-global-rule-group*
+
+Additional permissions required:
+
+* `wafv2:ListRuleGroups`
+* `wafv2:GetRuleGroup`
+
+The Security Audit role includes the `wafv2:ListRuleGroups` permission.
+
+The Security Audit role does not include the `wafv2:GetRuleGroup` permission. You must manually add it to the CFT template to enable it.
+
+|*Azure Kusto*
+//RLP-145859
+
+tt:[24.8.1]
+
+|*azure-kusto-databases*
+
+Additional permissions required:
+
+* `Microsoft.Kusto/Clusters/read`
+* `Microsoft.Kusto/Clusters/Databases/read`
+
+The Reader role includes the permissions.
+
+|*Azure Active Directory*
+//RLP-131021
+
+tt:[24.8.1]
+
+|*azure-active-directory-authentication-strength-policy*
+
+Additional permission required:
+
+* `Policy.Read.All`
+
+The Reader role includes the permission.
+
+
+|*Azure Monitor*
+//RLP-145820
+
+tt:[24.8.1] 
+
+|*azure-monitor-data-collection-rules*
+
+Additional permission required:
+
+* `Microsoft.Insights/DataCollectionRules/Read`
+
+The Reader role includes the permission.
+
+|*Azure SQL Database*
+//RLP-143840
+
+tt:[24.8.1] 
+
+|*azure-sql-vm*
+
+Additional permission required:
+
+* `Microsoft.SqlVirtualMachine/sqlVirtualMachines/read`
+
+The Reader role includes the permission.
+
+|*Azure Virtual Desktop*
+//RLP-145868
+
+tt:[24.8.1]
+
+|*azure-virtual-desktop-application-groups*
+
+Additional permission required:
+
+* `Microsoft.DesktopVirtualization/applicationgroups/read`
+
+The Reader role includes the permission.
+
+|*Google Application Integration*
+//RLP-146020
+
+tt:[24.8.1]
+
+|*gcloud-application-integration*
+
+Additional permissions required:
+
+* `integrations.integrations.list`
+* `integrations.integrationVersions.list`
+
+The Viewer role includes the permissions.
+
+|*Google Backup and DR*
+//RLP-146021
+
+tt:[24.8.1]
+
+|*gcloud-backup-dr-management-server*
+
+Additional permissions required:
+
+* `backupdr.managementServers.list`
+* `backupdr.managementServers.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|*Google Cloud Scheduler*
+//RLP-146022
+
+tt:[24.8.1]
+
+|*gcloud-cloud-scheduler-job*
+
+Additional permission required:
+
+* `cloudscheduler.jobs.list`
+
+The Viewer role includes the permission.
+
+|===
+
+
+[#new-policies]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+
+|*AWS FSx for OpenZFS file systems not configured to copy tags to backups or volumes*
+
+tt:[24.8.1]
+//RLP-146695
+
+|This policy identifies the AWS FSx for OpenZFS file system is configured to copy tags to backups or volumes.
+
+AWS FSx for OpenZFS is a managed service for deploying and scaling OpenZFS file systems on AWS. Tags make resource identification and management easier, ensuring consistent security policies across file systems. Without copying tags to backups and volumes in AWS FSx for OpenZFS, enforcing consistent access control and tracking sensitive data in these resources becomes challenging.
+
+It is recommended to configure an FSx for the OpenZFS file system to copy tags to backups and volumes.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-fsx-file-system' AND json.rule = FileSystemType equals "OPENZFS" and Lifecycle equals "AVAILABLE" and (OpenZFSConfiguration.CopyTagsToBackups is false or OpenZFSConfiguration.CopyTagsToVolumes is false )
+----
+
+|*AWS Private CA root certificate authority is enabled*
+
+tt:[24.8.1]
+//RLP-146681
+
+|This policy identifies enabled AWS Private CA root certificate authorities.
+
+AWS Private CA enables creating a root CA to issue private certificates for securing internal resources like servers, applications, users, devices, and containers. The root CA should be disabled for daily tasks to minimize risk, as it should only issue certificates for intermediate CAs, allowing it to remain secure while intermediate CAs handle the issuance of end-entity certificates.
+
+It is recommended to disable the AWS Private CA root certificate authority to secure.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-acm-pca-certificate-authority' AND json.rule = Type equal ignore case ROOT and Status equal ignore case active
+----
+
+|*AWS EC2 instance is assigned with public IP*
+
+tt:[24.8.1]
+//RLP-146630
+
+|This policy identifies the AWS EC2 instance having a public IP address assigned.
+
+AWS EC2 instances with public IPs are virtual servers hosted in the Amazon Web Services (AWS) cloud that can be accessed over the internet. Public IPs increase an EC2 instance's attack surface, necessitating robust security configurations to prevent unauthorized access and attacks.
+
+It is recommended to use private IPv4 addresses for communication between EC2 instances and disassociate the public IP address from an instance or disable auto-assign public IP addresses in the subnet.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].association.publicIp exists
+----
+
+|*AWS Secrets Manager secret not configured to rotate within 90 days*
+
+tt:[24.8.1]
+//RLP-146436
+
+|This policy identifies the AWS Secrets Manager secret is not configured to automatically rotate the secret within 90 days.
+
+Rotating secrets minimizes the risk of compromised credentials and reduces exposure to potential threats. Failing to rotate secrets increases the risk of security breaches and prolonged exposure to threats.
+
+It is recommended to configure automatic rotation in AWS Secrets Manager to replace long-term secrets with short-term ones, reducing the risk of compromise.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-secretsmanager-describe-secret' AND json.rule = rotationEnabled is true and owningService is not member of (appflow, databrew, datasync, directconnect, events, opsworks-cm, rds, sqlworkbench) and rotationRules.automaticallyAfterDays exists and rotationRules.automaticallyAfterDays greater than 90
+----
+
+|*AWS RDS instance with network path from the untrust internet source*
+
+tt:[24.8.1]
+//RLP-145572
+
+|This policy identifies AWS RDS instances with network path from untrusted internet source.
+
+AWS RDS is AWS managed service for running relational databases in the cloud. Allowing an AWS RDS instance to be reachable from any untrusted internet source increases the risk of unauthorized access and potential security breaches due to expanded attack surface.
+
+It is recommended to restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities for the RDS Database instances.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network Config
+
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'PaaS' and dest.cloud.type = 'AWS' and dest.paas.service.type = 'AWS RDS' 
+----
+
+|*AWS Redshift cluster with network path from the untrust internet source*
+
+tt:[24.8.1]
+//RLP-145570
+
+|This policy identifies the AWS Redshift clusters with network path from the untrusted internet source.
+
+Redshift clusters are AWS cloud-based data warehouses designed for data analysis and querying of large datasets. Allowing an AWS Redshift cluster to be reachable from any untrusted internet source increases the risk of unauthorized access and potential security breaches due to expanded attack surface.
+
+It is recommended to restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities for the Redshift clusters.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network Config
+
+----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'PaaS' and dest.cloud.type = 'AWS' and dest.paas.service.type = 'AWS Redshift'
+----
+
+|*Azure Microsoft Entra ID users can consent to apps accessing company data on their behalf not set to verified publishers*
+
+tt:[24.8.1]
+//RLP-146433
+
+|This policy identifies instances in the Microsoft Entra ID configuration where users in your Azure Microsoft Entra ID (formerly Azure Active Directory) can consent to applications accessing company data on their behalf, even if the applications are not from verified publishers.
+
+Allowing unverified applications to access company data increases the likelihood of data breaches and unauthorized access, which could lead to the exposure of confidential information. Using unverified applications can lead to non-compliance with data protection regulations and undermine trust in the organization's data handling practices.
+
+As a best practice, it is recommended to configure the user consent settings to restrict access only to applications from verified publishers.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-active-directory-authorization-policy' AND json.rule = defaultUserRolePermissions.permissionGrantPoliciesAssigned[*] does not contain "ManagePermissionGrantsForSelf.microsoft-user-default-low"
+----
+
+|*Azure Machine Learning compute instance not running latest OS Image Version*
+
+tt:[24.8.1]
+//RLP-146432
+
+|This policy identifies Azure Machine Learning compute instances not running on the latest available image version.
+
+Running compute instances on outdated image versions increases security risks. Without the latest security patches and updates, these instances are more vulnerable to attacks, which can compromise machine learning models and data.
+
+As a best practice, it is recommended to recreate or update Azure Machine Learning compute instances to the latest image version, ensuring they have the most recent security patches and updates.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-machine-learning-compute' AND json.rule = properties.provisioningState equal ignore case "Succeeded" and properties.properties.state equal ignore case "Running" and properties.properties.osImageMetadata.isLatestOsImageVersion is false
+----
+
+|*Azure Network Watcher not enabled*
+
+tt:[24.8.1]
+//RLP-146431
+
+|This policy identifies Azure subscription regions where Network Watcher is not enabled. 
+
+Azure Network Watcher provides tools to monitor, diagnose, view metrics, and enable or disable logs for resources in an Azure virtual network. Without Network Watcher enabled, you lose critical capabilities to monitor and diagnose network issues, making it difficult to identify and resolve performance bottlenecks, network security rules, and connectivity issues.
+
+As a best practice, it is recommended to enable Azure Network Watcher for your region to leverage its monitoring and diagnostic capabilities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-watcher-list' AND json.rule = provisioningState equals Succeeded as X; count(X) less than 1
+----
+
+|*Azure SQL server public network access setting is enabled*
+
+tt:[24.8.1]
+//RLP-39590
+
+|This policy identifies Azure SQL servers which have public network access setting enabled. 
+
+Publicly accessible SQL servers are vulnerable to external threats with risk of unauthorized access or may remotely exploit any vulnerabilities.
+
+It is recommended to configure the SQL servers with IP-based strict server-level firewall rules or virtual-network rules or private endpoints so that servers are accessible only to restricted entities.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case Ready and ['sqlServer'].['properties.publicNetworkAccess'] equal ignore case Enabled and ['sqlServer'].['properties.privateEndpointConnections'] is empty and firewallRules[*] is empty
+----
+
+|*Azure PostgreSQL flexible server secure transport parameter is disabled*
+
+tt:[24.8.1]
+//RLP-39432
+
+|This policy identifies PostgreSQL flexible servers for which secure transport (SSL connectivity) parameter is disabled. 
+
+Secure transport (SSL connectivity) helps to provide a new layer of security, by connecting server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between server and client applications helps protect against ‘man in the middle’ attacks by encrypting the data stream between the server and application.
+
+As a security best practice, it is recommended to enable secure transport parameter for Azure PostgreSQL flexible server.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-postgresql-flexible-server' AND json.rule = properties.state equal ignore case Ready and require_secure_transport.value does not equal ignore case on
+----
+
+|*Azure SQL server using insecure TLS version*
+
+tt:[24.8.1]
+//RLP-36846
+
+|This policy identifies Azure SQL servers which use insecure TLS version. 
+
+Enforcing TLS connections between database server and client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and application. 
+
+As a security best practice, it is recommended to use the latest TLS version for Azure SQL server.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case "Ready" and (['sqlServer'].['properties.minimalTlsVersion'] equal ignore case "None" or ['sqlServer'].['properties.minimalTlsVersion'] equals "1.0" or ['sqlServer'].['properties.minimalTlsVersion'] equals "1.1")
+----
+
+|*GCP Cloud Function not enabled with VPC connector for network egress*
+
+tt:[24.8.1]
+//RLP-146158
+
+|This policy identifies GCP Cloud Functions that are not enabled with a VPC connector for network egress. This includes both Cloud Functions v1 and Cloud Functions v2.
+
+Using a VPC connector for network egress in GCP Cloud Functions is crucial to prevent security risks such as data interception and unauthorized access. This practice strengthens security by allowing safe communication with private resources, enhancing traffic monitoring, reducing the risk of data leaks, and ensuring compliance with security policies.
+
+It is recommended to configure GCP Cloud Functions with a VPC connector.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE and serviceConfig.vpcConnector does not exist
+----
+
+|*GCP Cloud Function with overly permissive network ingress settings*
+
+tt:[24.8.1]
+//RLP-146154
+
+|This policy identifies GCP Cloud Functions that have overly permissive network ingress settings. This includes both Cloud Functions v1 and Cloud Functions v2.
+
+Ingress settings control whether resources outside of your Google Cloud project or VPC Service Controls perimeter can invoke a function.  With overly permissive ingress setting, all inbound requests to invoke function are allowed, both from the public and from resources within the same project. Restrictive network ingress settings for cloud functions in GCP minimize the risk of unauthorized access and attacks by limiting inbound traffic to trusted sources. This approach enhances security, prevents malicious activities, and ensures only legitimate traffic reaches your applications.
+
+It is recommended to restrict the public traffic and allow traffic from VPC networks in the same project or traffic through the Cloud Load Balancer.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE and serviceConfig.ingressSettings equals ALLOW_ALL
+----
+
+|*GCP Cloud Function v1 is using unsecured HTTP trigger*
+
+tt:[24.8.1]
+//RLP-146140
+
+|This policy identifies GCP Cloud Functions v1 that are using unsecured HTTP trigger.
+
+Using HTTP triggers for cloud functions poses significant security risks, including vulnerability to interception, tampering, and various attacks like man-in-the-middle. Conversely, HTTPS triggers provide encrypted communication, safeguarding sensitive data and ensuring confidentiality. HTTPS also supports authentication mechanisms, enhancing overall security and trust.
+
+It is recommended to enable 'Require HTTPS' for HTTP triggers for all cloud functions v1.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = environment equals GEN_1 and serviceConfig.securityLevel does not equal SECURE_ALWAYS
+----
+
+|*GCP Cloud Function is publicly accessible by allUsers or allAuthenticatedUsers*
+
+tt:[24.8.1]
+//RLP-146140
+
+|This policy identifies GCP Cloud Functions that are publicly accessible by allUsers or allAuthenticatedUsers.
+
+Granting permissions to 'allusers' or 'allAuthenticatedUsers' on any resource in GCP makes the resource public. Public access over cloud functions can lead to unauthorized invocations of the function or leakage of sensitive information such as the function's source code. 
+
+Following the least privileged access policy, it is recommended to grant access restrictively and avoid granting permissions to allUsers or allAuthenticatedUsers unless absolutely needed.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE and iamPolicy.bindings[?any(members[*] is member of ("allAuthenticatedUsers","allUsers"))] exists
+----
+
+|*GCP Cloud Function is granted a basic role*
+
+tt:[24.8.1]
+//RLP-145853
+
+|This policy identifies GCP Cloud Functions that are granted a basic role. This includes both Cloud Functions v1 and Cloud Functions v2.
+
+Basic roles are highly permissive roles that existed before the introduction of IAM and grant wide access over project to the grantee. The use of basic roles for granting permissions increases the blast radius and could help to escalate privilege further in case the Cloud Function is compromised.
+
+Following the principle of least privilege, it is recommended to avoid the use of basic roles.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'gcloud-projects-get-iam-user' AND json.rule = roles[*] contains "roles/viewer" or roles[*] contains "roles/editor" or roles[*] contains "roles/owner" as X; config from cloud.resource where api.name = 'gcloud-cloud-function-v2' as Y; filter '$.Y.serviceConfig.serviceAccountEmail equals $.X.user'; show Y;
+----
+
+|*OCI Object Storage Bucket write level logging is disabled*
+
+tt:[24.8.1]
+//RLP-61035
+
+|This policy identifies Object Storage buckets that have write-level logging disabled.
+
+Enabling write-level logging for Object Storage provides more visibility into changes to objects in your buckets. Without write-level logging, there is no record of changes made to the bucket. This lack of visibility can lead to undetected data breaches, unauthorized changes, and compliance violations.
+
+As a best practice, it is recommended to enable write-level logging on Object Storage buckets.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'oci-object-storage-bucket' as X; config from cloud.resource where api.name = 'oci-logging-logs' as Y; filter 'not ($.X.name contains $.Y.configuration.source.resource and $.Y.configuration.source.service contains objectstorage and $.Y.configuration.source.category contains write and $.Y.lifecycleState equal ignore case ACTIVE )'; show X;
+----
+
+|*User with Administrative Permissions Has Active Access Keys Which Are Unused Over 90 Days*
+
+tt:[24.8.1]
+//RLP-146497
+
+|Identifies user accounts with administrative permissions for which active access keys exist and have not been used in at least 90 days. Access keys are long-term credentials which allow AWS IAM users programmatic access to resources. When the user in question possesses administrative permissions, and their access keys are active but not in use, they can potentially be found by an adversary, granting them administrative permissions.
+
+*Policy Severity—* Medium
+
+*Policy Type—* IAM
+
+*Policy Subtype—* Permissions
+
+----
+config from iam where dest.cloud.type = 'AWS' AND action.access.isAdministrative = true AND source.cloud.accesskey.lastused.days > 90 AND source.cloud.accesskey.activekeys > 0
+----
+
+|*Cloud Service account with high privileges is inactive for 90 days and is assigned to a resource*
+
+tt:[24.8.1]
+//RLP-146497
+
+|Identifies cloud service accounts in Azure, AWS and GCP which have administrative permissions that have not been used in the last 90 days and are attached to a resource. 
+
+As opposed to user accounts, service accounts are predictable. Therefore, if a service account has administrative permissions which it has not used in the past 90 days, we can confidently say the resource it is attached to does not require them, and remove the permissions, decreasing the blast radius in case of a compromise of the service account.
+
+*Policy Severity—* Medium
+
+*Policy Type—* IAM
+
+*Policy Subtype—* Permissions
+
+----
+config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount', 'service principal', 'user assigned', 'system assigned' ) AND action.access.isAdministrative = true AND grantedby.cloud.entity.lastlogin.days > 90 AND source.cloud.resource.type in ( 'instance', 'function', 'oidc-provider', 'environment', 'task-definition', 'WebIdentity', 'virtualMachines', 'sites', 'App Registration', 'service', 'workflows', 'virtualMachineScaleSets/virtualMachines', 'instances', 'applications', 'services', 'functions', 'serviceAccounts')
+----
+
+|*User account with high privileges and MFA disabled*
+
+tt:[24.8.1]
+//RLP-146497
+
+|Identifies user accounts with administrative permissions for which Multi-Factor Authentication (MFA) is not enabled. 
+
+Sensitive accounts such as those with administrative permissions are considered high value to attackers and tend to be targeted. 
+
+As such, these accounts, when not safeguarded by an additional authentication factor, have a higher chance of successful compromise, which would result in the adversary gaining administrative permissions within your ogranization.
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Policy Subtype—* Permissions
+
+----
+config from iam where action.access.isAdministrative = true AND source.cloud.resource.type = 'user' AND source.mfaenabled = False
+----
+
+|*Third-Party Service Account with High Privileges at the Folder or Organization Level*
+
+tt:[24.8.1]
+//RLP-146497
+
+|Identifies instances of third-party vendor owned service accounts which are granted high privileges and may allow administrative access to your cloud environment. 
+
+This increases the attack surface, as in case of a compromise of the vendor's environment, an attacker would gain elevated access to your account by abusing the service account permissions.
+
+*Policy Severity—* Medium
+
+*Policy Type—* IAM
+
+*Policy Subtype—* Permissions
+
+----
+config from iam where dest.cloud.type = 'GCP' AND grantedby.cloud.entity.type = 'serviceaccount' AND action.access.isAdministrative = true AND source.cloud.account.isvendor = true AND grantedby.level.type IN ( 'GCP Organization', 'GCP Folder' )
+----
+
+
+|*Service Account with Cross Cloud Administrative Access*
+
+tt:[24.8.1]
+//RLP-146497
+
+|Identifies service accounts with permissions to assume an administrative role in another account hosted in a different cloud vendor environment. 
+
+Administrative permissions can result in the compromising of the security posture of your organization.
+
+As the service account resides in a separate cloud vendor's environment, a compromise of the source account could lead to lateral movement exposing the second account and enlarging the blast radius across cloud provider environments.
+
+*Policy Severity—* Medium
+
+*Policy Type—* IAM
+
+*Policy Subtype—* Permissions
+
+----
+config from iam where source.cloud.type = 'GCP' AND dest.cloud.type = 'AWS' and action.access.isadministrative = True AND grantedby.cloud.entity.type = 'role'
+----
+
+|===
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL and Metadata*
+
+|*GCP GKE unsupported Master node version*
+//RLP-146735
+
+tt:[24.8.1]
+
+|*Changes—* The policy description and RQL are updated to narrow down resources based on currently supported GKE versions and remove false positives.
+
+*Current Policy Description—* Ensure your GKE Master node version is supported. This policy checks your GKE master node version and generates an alert if the version running is unsupported.
+
+*Updated Policy Description—* This policy identifies the GKE master node version and generates an alert if the version running is unsupported.
+
+Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
+
+As a security best practice, it is always recommended to use the latest version of GKE.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isMasterVersionSupported exists AND isMasterVersionSupported does not equal "true"
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+----
+
+*Impact—* Low. Existing alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+|*GCP GKE unsupported node version*
+//RLP-146735
+
+tt:[24.8.1]
+
+|*Changes—* The policy description and RQL are updated to narrow down resources based on currently supported GKE versions and remove false positives.
+
+*Current Policy Description—* Ensure your GKE node version is supported. This policy checks your GKE node version and generates an alert if the version running is unsupported.
+
+*Updated Policy Description—* This policy identifies the GKE node version and generates an alert if the version running is unsupported.
+
+Using an unsupported version of Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP) can lead to several potential issues and risks, such as security vulnerabilities, compatibility issues, performance and stability problems, and compliance concerns. To mitigate these risks, it's crucial to regularly update the GKE clusters to supported versions recommended by Google Cloud.
+
+As a security best practice, it is always recommended to use the latest version of GKE.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Current RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isNodeVersionSupported exists AND isNodeVersionSupported does not equal "true"
+----
+
+*Updated RQL—*
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
+----
+
+*Impact—* Low. Existing alerts will be resolved for the GKE clusters where the GKE major and minor versions are not end of life as per the GCP release schedule.
+
+|*AWS Secret Manager Secret that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS Secret Manager Secret that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS Secret Manager Secret is Publicly Accessible Through Resource-Based Policies
+
+*Current Policy Description—* This policy identifies the AWS Secret Manager Secret resources which are publicly accessible through IAM policies. Ensure that the AWS Secret Manager Secret resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS Secret Manager Secrets with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure. 
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'secretsmanager' and dest.cloud.resource.type = 'Secret' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'secretsmanager' and dest.cloud.resource.type = 'Secret' AND grantedby.cloud.policy.condition does not exist 
+----
+
+*Impact—* No impact on alerts.
+
+|*AWS KMS Key that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS KMS Key that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS KMS Key is Publicly Accessible Through Resource-Based Policies
+
+*Current Policy Description—* This policy identifies the AWS KMS Key resources which are publicly accessible through IAM policies. Ensure that the AWS KMS Key resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS KMS Keys with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'kms' AND dest.cloud.resource.type = 'key' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'kms' AND dest.cloud.resource.type = 'key' AND grantedby.cloud.policy.condition does not exist 
+----
+
+*Impact—* No impact on alerts.
+
+|*AWS Lambda Layer Version that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS Lambda Layer Version that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS Lambda Layer Version is Publicly Accessible Through Resource-Based Policies 
+
+*Current Policy Description—* This policy identifies the AWS Lambda Layer Version resources which are publicly accessible through IAM policies. Ensure that the AWS AWS Lambda Layer Version resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS Lambda Layer Versions with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Policy Severity—* Critical
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'layerVersion' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'AWS:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist)
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'layerVersion' AND grantedby.cloud.policy.condition does not exist 
+----
+
+*Impact—* No impact on alerts.
+
+|*AWS SQS Queue that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS SQS Queue that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS SQS Queue is Publicly Accessible Through Resource-Based Policies
+
+*Current Policy Description—* This policy identifies the AWS SQS Queue resources which are publicly accessible through IAM policies. Ensure that the AWS SQS Queue resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS SQS Queues with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sqs' AND dest.cloud.resource.type = 'queue' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sqs' AND dest.cloud.resource.type = 'queue' AND grantedby.cloud.policy.condition does not exist 
+----
+
+*Impact—* No impact on alerts.
+
+|*AWS SNS Topic that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS SNS Topic that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS SNS Topic is Publicly Accessible Through Resource-Based Policies
+
+*Current Policy Description—* This policy identifies the AWS SNS Topic resources which are publicly accessible through IAM policies. Ensure that the AWS SNS Topic resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS SNS Topics with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure. 
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sns' AND dest.cloud.resource.type = 'topic' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'sns' AND dest.cloud.resource.type = 'topic' AND grantedby.cloud.policy.condition does not exist 
+----
+
+*Impact—* No impact on alerts.
+
+|*AWS ECR Repository that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS ECR Repository that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS ECR Repository is Publicly Accessible Through Resource-Based Policies 
+
+*Current Policy Description—* This policy identifies the AWS ECR Repository resources which are publicly accessible through IAM policies. Ensure that the AWS ECR Repository resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS ECR Repositories with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure. 
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'ecr' AND dest.cloud.resource.type = 'repository' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 'ecr' AND dest.cloud.resource.type = 'repository' AND grantedby.cloud.policy.condition does not exist 
+----
+
+*Impact—* No impact on alerts.
+
+
+|*AWS S3 bucket with data destruction permissions is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS S3 bucket with data destruction permissions is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS S3 Bucket with Data Destruction Permissions is Publicly Accessible Through Resource-Based Policies
+
+*Current Policy Description—* Having a publicly accessible AWS S3 bucket with the 's3:DeleteBucket' permission can be extremely risky. This permission allows anyone with access to the bucket to delete the bucket with all objects inside. If unauthorized access or compromise occurs, it could result in intentional or accidental data destruction, leading to permanent loss of important or sensitive information stored in the bucket.
+
+*Updated Policy Description—* This policy identifies AWS S3 Buckets with Resource-based policies which allow all principals and the 's3:DeleteBucket' permission. This configuration could grant anyone with access to the bucket the ability to delete it together with all objects inside, potentially leading to permanent loss of information stored in the bucket. 
+
+*Policy Severity—* Low
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist AND action.name IN ( 's3:DeleteBucket' ))
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition does not exist AND action.name IN ( 's3:DeleteBucket' )
+----
+
+*Impact—* No impact on alerts.
+
+
+|*AWS S3 bucket that is publicly accessible through IAM policies*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and RQL are updated to take into account all resource-based policy conditions to ensure full coverage.
+
+*Current Policy Name—* AWS S3 bucket that is publicly accessible through IAM policies
+
+*Updated Policy Name—* AWS S3 bucket is Publicly Accessible Through Resource-Based Policies 
+
+*Current Policy Description—* This policy identifies the AWS S3 bucket resources which are publicly accessible through IAM policies. Ensure that the AWS S3 bucket resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
+
+*Updated Policy Description—* This policy identifies AWS S3 Buckets with Resource-based policies which allow all principals. This configuration creates a risk of sensitive information exposure.
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition ( 'aws:SourceArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:VpcSourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:username' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:userid' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpc' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceVpce' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIp' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceIdentity' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalArn' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:SourceOwner' ) does not exist AND grantedby.cloud.policy.condition ( 'kms:CallerAccount' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:PrincipalOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgID' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceOrgPaths' ) does not exist AND grantedby.cloud.policy.condition ( 'aws:ResourceAccount' ) does not exist
+----
+
+*Updated RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' and source.public = true AND dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND grantedby.cloud.policy.condition does not exist
+----
+
+*Impact—* No impact on alerts.
+
+|*Third-party service account can assume a service account with high privileges*
+//RLP-146497
+
+tt:[24.8.1]
+
+|*Changes—* The policy description and RQL are updated to add support for GCP service accounts
+
+*Current Policy Description—* This policy identifies instances where third-party vendors are granted the ability to assume roles with high privileges and may allow significant administrative access to your cloud environment. Such permissions can potentially lead to unauthorized access or escalation of privileges, compromising the security posture of your organization
+
+*Updated Policy Description—* This policy identifies instances where third-party vendors are granted the ability to assume or impersonate roles with high privileges and may allow significant administrative access to your cloud environment. Such permissions can potentially lead to unauthorized access or escalation of privileges, compromising the security posture of your organization.
+
+*Policy Severity—* High
+
+*Policy Type—* IAM
+
+*Current RQL—*
+
+----
+config from iam where dest.cloud.type = 'AWS' AND grantedby.cloud.entity.type = 'role' AND action.access.isAdministrative = true AND source.cloud.account.isvendor = true
+----
+
+*Updated RQL—*
+
+----
+config from iam where grantedby.cloud.entity.type IN ( 'role', 'serviceaccount' ) AND action.access.isadministrative = true AND source.cloud.account.isvendor = true 
+----
+
+*Impact—* No impact on alerts.
+
+2+|*Policy Updates—Metadata*
+
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)*
+//RLP-146951
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0). EC2 instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0).
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* AWS EC2 instance with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). EC2 instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports
+
+*Updated Policy Name—* AWS EC2 instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with unrestricted access (0.0.0.0/0) to Admin ports (22 / 3389). EC2 instances with unrestricted access to the internet for admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+AWS EC2 instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance that is reachable from untrust internet source to ports with high risk*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance that is reachable from untrust internet source to ports with high risk
+
+*Updated Policy Name—* AWS EC2 instance with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies AWS EC2 instances that are internet reachable with untrust internet source to ports with high risk. EC2 instances with unrestricted access to the internet for high risky port may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path from the untrust internet source on ports with high risk.
+
+AWS EC2 instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*AWS EC2 instance with unrestricted outbound access to internet*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* AWS EC2 instance with unrestricted outbound access to internet
+
+*Updated Policy Name—* AWS EC2 instance with network path to the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies EC2 instances that allow unrestricted outbound traffic to the internet. As a best practice, restrict outbound traffic and limit the access to known hosts or services.
+
+*Updated Policy Description—* This policy identifies AWS EC2 instances with network path to the internet (0.0.0.0/0).
+
+AWS EC2 instances with network path to the internet increases the risk of cyber attacks, crypto mining and data breaches which can be used by malicious actors. Such instances are especially prone to data exfiltration or mining exploits.
+
+As a best practice, restrict traffic to unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Cosmos DB (PaaS) instance reachable from untrust internet source*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Cosmos DB (PaaS) instance reachable from untrust internet source
+
+*Updated Policy Name—* Azure Cosmos DB (PaaS) instance with network path from the untrust internet source
+
+*Current Policy Description—* This policy identifies Azure Cosmos DB (PaaS) instances that are internet reachable from untrust internet source. Cosmos DB (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Cosmos DB (PaaS) instances with network path from the untrust internet source.
+
+Cosmos DB (PaaS) instances with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure MySQL (PaaS) instance reachable from untrust internet source on TCP port 3306*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure MySQL (PaaS) instance reachable from untrust internet source on TCP port 3306
+
+*Updated Policy Name—* Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306
+
+*Current Policy Description—* This policy identifies Azure MySQL (PaaS) instances that are internet reachable from untrust internet source on TCP port 3306. MySQL (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306.
+
+Azure MySQL (PaaS) instance with network path from the untrust internet source on TCP port 3306 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure PostgreSQL (PaaS) instance reachable from untrust internet source on TCP port 5432*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure PostgreSQL (PaaS) instance reachable from untrust internet source on TCP port 5432
+
+*Updated Policy Name—* Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432
+
+*Current Policy Description—* This policy identifies Azure PostgreSQL (PaaS) instances that are internet reachable from untrust internet source on TCP port 5432. PostgreSQL (PaaS) instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432.
+
+Azure PostgreSQL (PaaS) instance with network path from the untrust internet source on TCP port 5432 may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure SQL Server (PaaS) reachable from any untrust internet source*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure SQL Server (PaaS) reachable from any untrust internet source
+
+*Updated Policy Name—* Azure SQL Server (PaaS) with network path from the untrust internet source
+
+*Current Policy Description—* This policy identifies Azure SQL Servers (PaaS) that are internet reachable from any untrust internet source. SQL Server instances with untrusted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from untrusted IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure SQL Server (PaaS) with network path from the untrust internet source.
+
+Azure SQL Server (PaaS) with network path from the untrust internet source may enable bad actors to use brute force or exploit a vulnerability on a system to gain unauthorized access. Further database vulnerabilities or weaknesses could potentially be exploited to compromise the integrity, availability, or confidentiality of the data stored.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine in running state that is internet reachable with unrestricted access (0.0.0.0/0)*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine in running state that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines in running state that are internet reachable with unrestricted access (0.0.0.0/0). Virtual Machines with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0).
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine reachable from any untrust internet source to ports with high risk*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine reachable from any untrust internet source to ports with high risk
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies Azure Virtual machines that are reachable from any untrust internet source to ports with high risk. Azure VMs with untrust access to ports with high risk may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the untrust internet source on ports with high risk.
+
+Azure Virtual Machines with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). Azure Virtual Machines with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* Azure Virtual Machine that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389
+
+*Updated Policy Name—* Azure Virtual Machine with network path from the internet (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies Azure Virtual Machines that are internet reachable with unrestricted access (0.0.0.0/0) to admin ports. Azure VMs with unrestricted internet access to admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies Azure Virtual Machines with network path from the internet (0.0.0.0/0) on Admin ports.
+
+Azure Virtual Machines with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Admin ports can increase opportunities for malicious activities such as hacking, Man-In-The-Middle attacks (MITM), and brute-force attacks
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0)*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0)
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0)
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0). VM instances with unrestricted access to the internet may enable bad actors to use brute force on a system to gain unauthorised access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit the access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0).
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on ports 80/443
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0) on ports 80/443
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to HTTP/HTTPS ports (80 / 443). GCP VM instances with unrestricted access to the internet for HTTP/HTTPS ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 80/443.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 80 and 443 are frequently targeted ports and utilized for HTTP and HTTPS protocols, making them susceptible to attacks like cross-site scripting, SQL injections, cross-site request forgeries, and DDoS attacks.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is internet reachable with unrestricted access (0.0.0.0/0) on Admin ports 22/3389
+
+*Updated Policy Name—* GCP VM instance with network path from the internet (0.0.0.0/0) on Admin ports
+
+*Current Policy Description—* This policy identifies GCP VM instances that are internet reachable with unrestricted access (0.0.0.0/0) to Admin ports (22 / 3389). VM instances with unrestricted internet access to admin ports may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the internet (0.0.0.0/0) on ports 22/3389.
+
+GCP VM instances with network path from the internet increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits. Port 22 and 2289 are frequently targeted ports and utilized for remote access using SSH and RDP protocols respectively, making them susceptible to attacks like brute force and vulnerability exposure/exploitation.
+
+As a best practice, restrict traffic from unknown IP addresses and limit the access from known hosts, services, or specific entities.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+|*GCP VM instance that is reachable from untrust internet source to ports with high risk*
+
+//RLP-146951
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and recommendation metadata are revised as follows:
+
+*Current Policy Name—* GCP VM instance that is reachable from untrust internet source to ports with high risk
+
+*Updated Policy Name—* GCP VM instance with network path from the untrust internet source on ports with high risk
+
+*Current Policy Description—* This policy identifies GCP VM instances that are reachable from untrust internet source to ports with high risk. VM instances with unrestricted access to the internet for high risky port may enable bad actors to use brute force on a system to gain unauthorized access to the entire network. As a best practice, restrict traffic from unknown IP addresses and limit access to known hosts, services, or specific entities.
+
+*Updated Policy Description—* This policy identifies GCP VM instances with network path from the untrust internet source on ports with high risk.
+
+GCP VM instances with network path from the untrust internet source on ports with high risk increases the risk of unauthorized access, cyber attacks, and data breaches, as it may provide a larger attack surface for malicious actors. Such instances are especially prone to brute force or vulnerability exploits.
+
+As a best practice, it is recommended to allow access from Trusted IP list and limit the access from known hosts, services, or specific entities.
+
+NOTE: Prisma Cloud Trusted IP List allows administrators to specify a list of IP addresses that are considered trusted or safe.
+
+*Policy Severity—* High
+
+*Policy Type—* Network
+
+*Impact—* No impact on alerts.
+
+
+|*Google Workspace Super Admin not enrolled with 2-step verification*
+
+//RLP-146694
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and metadata are revised as follows:
+
+*Current Policy Name—* Google Workspace Super Admin not enrolled with 2-step verification
+
+*Updated Policy Name—* GCP Google Workspace Super Admin not enrolled with 2-step verification
+
+*Current Policy Description—* This policy identifies Google Workspace Super Admin that do not have 2-Step Verification enabled. Super Admin accounts have access to all features in the Admin console and Admin API. It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Updated Policy Description—* This policy identifies Google Workspace Super Admins that do not have 2-Step Verification enabled.
+
+Super Admin accounts have access to all features in the Admin console and Admin API. This additional layer of 2SV significantly reduces the risk of unauthorized access, protecting administrative controls and sensitive data from potential breaches. Implementing 2-Step Verification safeguards your entire Google Workspace environment, maintaining robust security and compliance standards.
+
+It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+*Impact—* No impact on alerts.
+
+|*Google Workspace User not enrolled with 2-step verification*
+//RLP-146693
+
+tt:[24.8.1]
+
+|*Changes—* The policy name, description, and metadata are revised as follows:
+
+*Current Policy Name—* Google Workspace User not enrolled with 2-step verification
+
+*Updated Policy Name—* GCP Google Workspace User not enrolled with 2-step verification.
+
+*Current Policy Description—* This policy identifies Google Workspace Users who do not have 2-Step Verification enabled. 2-Step Verification is a simple best practice that adds an extra layer of protection on top of username and password combination. It is recommended to enable 2-Step Verification for all users as it provides increased security for user account settings and resources.
+
+*Updated Policy Description—* This policy identifies Google Workspace Super Admins that do not have 2-Step Verification enabled. 
+
+Super Admin accounts have access to all features in the Admin console and Admin API. This additional layer of 2SV significantly reduces the risk of unauthorized access, protecting administrative controls and sensitive data from potential breaches. Implementing 2-Step Verification safeguards your entire Google Workspace environment, maintaining robust security and compliance standards.
+
+It is recommended to enable 2-Step Verification for all Super Admins as it provides an additional layer of security in case account credentials are compromised.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* No impact on alerts.
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*CIS Controls v8.1*
+
+tt:[24.8.1]
+//RLP-146766
+
+|Prisma Cloud now includes support for the CIS Critical Security Control v8.1 ensuring that your compliance monitoring is based on the latest cybersecurity best practices. This update introduces refined compliance checks, enhanced security profiles, improved reporting functionalities, and actionable remediation recommendations.
+
+You can now view the built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|===
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Role-Based Access Control for Compliance and Alert Reports*
+
+tt:[24.8.1]
+//RLP-140182
+
+|User-generated reports will only be visible to System Administrators and to users with the same role.
+
+Implementing Role-Based Access Control (RBAC) enhances data security by streamlining report access for users with the same role, while also preventing unauthorized access.
+
+
+|*Create or Update Policy Permissions*
+
+tt:[24.8.1]
+//RLP-139027
+
+|The Create/Update Policy Permissions are divided into the two granular permissions as follows:
+
+* Policy
+* Manage Policy Compliance Mapping
+
+*Impact—* 
+
+* Users managing new custom permission groups must select both permissions explicitly if they want to assign compliance mappings during policy create/update operation.
+* Manage policy compliance mapping is added by default to all existing permission groups with policy create/update permissions.
+
+
+|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*Policy API*
+
+tt:[24.8.1]
+//RLP-143483
+
+|The following endpoints now have a `readOnly` response parameter to protect policies from unwanted edits.
+
+* https://pan.dev/prisma-cloud/api/cspm/get-policy/[Policy Info] - GET /policy/{id}
+
+* https://pan.dev/prisma-cloud/api/cspm/get-policies/[List Policies] - GET /policy/
+
+* https://pan.dev/prisma-cloud/api/cspm/get-policies-v-2/[List Policies V2] - GET /v2/policy
+
+|*Search Manager API*
+
+tt:[24.8.1]
+//RLP-143483
+
+|The following endpoints now have a `readOnly` response parameter to protect associated saved searches from unwanted edits.
+
+* https://pan.dev/prisma-cloud/api/cspm/search-history/[View Search History] - GET /search/history
+
+* https://pan.dev/prisma-cloud/api/cspm/search-history-by-id/[Get Search Query by ID] - GET /search/history/{id}
+
+
+|===
+
+//[#deprecation-notices]
+//=== Deprecation Notices
+
+//[cols="37%a,63%a"]
+//|===
+//|*Change*
+//|*Description*
+
+//|===
