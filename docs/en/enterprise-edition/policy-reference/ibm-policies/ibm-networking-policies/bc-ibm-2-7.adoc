@@ -1,0 +1,48 @@
+
+== IBM Cloud Kubernetes clusters are accessible by using public endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| cb157ea3-4f50-437e-a1ee-ed3bafec9df6
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/ibm/IBM_K8sClustersAccessibleViaPrivateEndPt.yaml[CKV2_IBM_7]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy ensures that Kubernetes clusters are only accessible via private endpoints, not public endpoints. This is important for security reasons, as exposing clusters through public endpoints increases the risk of unauthorized access and potential vulnerabilities being exploited. By restricting access to private endpoints, the policy enhances the overall security of the Kubernetes environment, protecting sensitive workloads and data from external threats.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* ibm_container_cluster
+* *Arguments:* private_service_endpoint, public_service_endpoint
+
+In order to ensure that the IBM Kubernetes cluster is only accessible via a private endpoint and not a public endpoint, ensure that the `private_service_endpoint` is set to `true` and the `public_service_endpoint` does not exist or is set to `false`.
+
+In this example, the `ibm_container_cluster` resource is used to create a secure Kubernetes cluster. The `public_service_endpoint` is set to `false` to disable the public endpoint, and the `private_service_endpoint` is set to `true` to enable the private endpoint.
+
+[source,go]
+----
+resource "ibm_container_cluster" "secure_cluster" {
+  ...
++  public_service_endpoint = false
++  private_service_endpoint = true
+}
+----

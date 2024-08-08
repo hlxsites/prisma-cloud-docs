@@ -1,0 +1,51 @@
+//Subject to change if we shouldn't map these
+== IBM Cloud Application Load Balancer for VPC has public access enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+//Subject to change if we shouldn't map these
+|Prisma Cloud Policy ID
+| 585fd941-88ca-4c5d-b79b-961ca61fd2ea
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/ibm/IBM_LoadBalancerforVPCisPrivate.yaml[CKV2_IBM_1]
+
+//Subject to change to match the Run policy
+|Severity
+|MEDIUM
+
+//Subject to change if we shouldn't map these
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy examines whether a load balancer within a Virtual Private Cloud (VPC) has public access disabled, ensuring it operates privately. Publicly accessible load balancers pose several security risks, as they expose the VPC to potential malicious external traffic and attacks. By ensuring the load balancer is private, access is restricted to internal network traffic, reducing the surface area for potential attacks and enhancing overall security within the VPC.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* ibm_is_lb
+* *Arguments:* type
+
+Ensure that all `ibm_is_lb` is configured to be private by setting the `type` parameter to `private`.
+
+In this example, the `type` attribute is set to `private` to make the load balancer private and accessible only within the VPC.
+
+[source,go]
+----
+resource "ibm_is_lb" "example" {
+  ...
++  type = "private"
+}
+----
+
