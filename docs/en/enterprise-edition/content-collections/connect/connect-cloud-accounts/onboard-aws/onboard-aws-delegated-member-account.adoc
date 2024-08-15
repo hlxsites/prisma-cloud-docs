@@ -1,0 +1,51 @@
+[.task]
+== Onboard Delegated Member account as Organization
+
+AWS allows delegating organization management administrator permissions to its member accounts. After which member accounts with delegated administrator permissions can create and manage stack sets with service-managed permissions for the organization
+
+AWS documentation - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html
+
+In Prisma Cloud, Delegated member account can be onboarded as Organization with few limitations as follows by choosing either Option 1 or Option 2.
+
+ Option 1: Unified IAM template: 
+If a customer is using the unified IAM template to create IAM roles for master (delegated account) and member accounts, they need to add "CallAs": "DELEGATED_ADMIN" to the downloaded template before deploying it in the CloudFormation stack of the delegated member account.
+
+		
+
+		
+
+Option 2 : Separate templates for management account(delegated member account) and member accounts
+Create IAM role for the delegated account by running the Management IAM role template in the CloudFormation stack.
+Create IAM roles for the rest of the member accounts by running the Member IAM role template under the service-managed CloudFormation StackSet of the delegated account. [Refer below screenshot]
+
+ 
+Navigate to advanced settings to download separate templates for management and member account
+Please refer this document for using advanced settings to onboard org with different templates for master and member accounts -https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-org#:~:text=To%20have%20separate%20CFTs 
+Do not add "CallAs": "DELEGATED_ADMIN" in this flow.
+
+
+	
+Limitation w.r.t Organization Management Account:
+[Service-managed permissions]  AWS doesn’t allow StackSets to deploy stack instances to the organization management account, even if the organization management account is in your organization or in an OU in your organization. [ AWS Organizations >> AWS Accounts]
+
+
+AWS document stating this - https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DeploymentTargets.html 
+
+Because of this limitation, IAM role doesn’t gets created in organization management account.
+
+Note: Due to this, after onboarding in Prisma cloud, Organization Management account status shows red under the Organization list 
+
+
+
+
+
+
+Below are the possible workarounds to include or exclude management account for successful onboarding 
+1. Customer can exclude the organization management account from the member accounts hierarchy selection during onboarding
+
+
+
+2. If the customer still wants to include the management account in the delegated member organization in Prisma, they should download the Management IAM role template from the advanced settings and deploy it in the CloudFormation stack of the management account. While executing the template, the customer must provide the PrismaCloudRoleName as equivalent to the member account (non-delegated member account), i.e., either <rolename of master>-member or the customized role name given for the non-delegated member during onboarding.
+		
+		
+		
