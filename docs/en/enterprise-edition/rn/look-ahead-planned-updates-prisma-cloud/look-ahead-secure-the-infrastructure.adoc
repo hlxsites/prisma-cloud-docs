@@ -1,15 +1,15 @@
 [#ida01a4ab4-6a2c-429d-95be-86d8ac88a7b4]
 == Look Ahead—Planned Updates to Secure the Infrastructure
 
-Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
+Review changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.8.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.9.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
-The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
+The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
 [NOTE]
 ====
-The details and functionality listed below are a preview and the actual release date is subject to change.
+The details and functionalities listed below are a preview and the actual release date is subject to change.
 ====
 
 //* <<announcement>>
@@ -30,13 +30,6 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-
-|*Multiselect Disabled for Alert Rule Name Filter*
-//RLP-147561
-
-|Starting with 24.8.2 release, you will no longer be able to select multiple alert rules in the *Alert Rule Name* filter on the *Alerts > Overview* page. The multiselect option will be disabled to eliminate inconsistent results when filtering more than one alert rule. 
-
-When using the `POST/alerts/policy` API, make sure to include only one *Alert Rule Name* in the filters attribute of the request body schema.
 
 |*Change in Amazon EC2 Ingestion*
 //RLP-145171
@@ -68,7 +61,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.8.2.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.9.1.
 
 . Review the updates.
 +
@@ -89,35 +82,9 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policies*
 |*Description*
 
-|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
-//RLP-147139
+|
 
-tt:[24.8.2]
-
-|*Changes—* The policy description is revised as follows:
-
-*Current Policy Name—* AWS SageMaker endpoint data encryption at rest not configured
-
-*Updated Policy Name—* AWS SageMaker endpoint data encryption at rest not configured with CMK 
-
-*Current Policy Description—* This policy identifies AWS SageMaker Endpoints not configured with data encryption at rest.
-
-AWS SageMaker Endpoint configuration defines the resources and settings for deploying machine learning models to SageMaker endpoints. By default, SageMaker Endpoints are not encrypted at rest. Enabling the encryption helps protect the integrity and confidentiality of the data on the storage volume attached to the ML compute instance that hosts the endpoint.
-
-It is recommended to set encryption at rest to mitigate the risk of unauthorized access and potential data breaches.
-
-*Updated Policy Description—* This policy identifies AWS SageMaker Endpoints not configured with data encryption at rest.
-
-AWS SageMaker Endpoint configuration defines the resources and settings for deploying machine learning models to SageMaker endpoints. By default, SageMaker encryption uses transient keys if a KMS key is not specified, which does not provide the control and management benefits of AWS Customer Managed KMS Key. Enabling the encryption helps protect the integrity and confidentiality of the data on the storage volume attached to the ML compute instance that hosts the endpoint.
-
-It is recommended to set encryption at rest to mitigate the risk of unauthorised access and potential data breaches.
-
-*Policy Severity—* High
-
-*Policy Type—* Config
-
-*Impact—* No impact on alerts.
-
+|
 
 |===
 
@@ -130,184 +97,199 @@ It is recommended to set encryption at rest to mitigate the risk of unauthorised
 |*Service*
 |*API Details*
 
-|*Amazon Bedrock*
-//RLP-147120
+|*Amazon Redshift*
+//RLP-148150
 
-|*aws-bedrock-foundation-model*
+|*aws-redshift-serverless-workgroup*
+
+Additional permission required:
+
+* `redshift-serverless:ListWorkgroups`
+
+The Security Audit role includes the above permission.
+
+|*AWS Security Hub*
+//RLP-148149
+
+|*aws-securityhub-enabled-products-for-import*
+
+Additional permission required:
+
+* `securityhub:ListEnabledProductsForImport`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+//RLP-148145
+
+|*aws-bedrock-model-invocation-logging-configuration*
+
+Additional permission required:
+
+* `bedrock:GetModelInvocationLoggingConfiguration`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+//RLP-148144
+
+|*aws-bedrock-provisioned-model-throughput*
 
 Additional permissions required:
 
-* `bedrock:ListFoundationModels`
-* `bedrock:GetFoundationModel`
-
-The Security Audit role include the above permissions. You must manually update the CFT template to enable them.
-
-|*Amazon Bedrock*
-//RLP-147118
-
-|*aws-bedrock-custom-model*
-
-Additional permissions required:
-
-* `bedrock:ListCustomModels`
-* `bedrock:GetCustomModel`
+* `bedrock:ListProvisionedModelThroughputs`
+* `bedrock:GetProvisionedModelThroughput`
 * `bedrock:ListTagsForResource`
 
-The Security Audit role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListProvisionedModelThroughputs` and `bedrock:GetProvisionedModelThroughput` permissions. You must manually add them to the CFT template to enable them.
 
 |*Amazon Bedrock*
-//RLP-147113
+//RLP-148141
 
-|*aws-bedrock-agent*
+|*aws-bedrock-model-customization-job*
 
 Additional permissions required:
 
-* `bedrock:ListAgents`
-* `bedrock:GetAgent`
+* `bedrock:ListModelCustomizationJobs`
+* `bedrock:GetModelCustomizationJob`
 * `bedrock:ListTagsForResource`
 
-The Security Audit role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
 
-|*AWS Resource Groups and Tagging*
-//RLP-146625
+The Security Audit role does not include the `bedrock:ListModelCustomizationJobs` and `bedrock:GetModelCustomizationJob` permissions. You must manually add them to the CFT template to enable them.
 
-|*aws-resourcegroupstaggingapi-report-creation*
+|*Amazon Bedrock*
+//RLP-148135
 
-Additional permission required:
-
-* `tag:DescribeReportCreation`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable them.
-
-|*AWS Resource Groups and Tagging*
-//RLP-146624
-
-|*aws-resourcegroupstaggingapi-compliance-summary*
-
-Additional permission required:
-
-* `tag:GetComplianceSummary`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable them.
-
-|*Azure App Service Plan*
-//RLP-146757
-
-|*azure-app-service-plan-diagnostic-settings*
+|*aws-bedrock-knowledgebase*
 
 Additional permissions required:
 
-* `Microsoft.Web/serverfarms/Read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
+* `bedrock:ListKnowledgeBases`
+* `bedrock:GetKnowledgeBase`
+* `bedrock:ListTagsForResource`
 
-The Reader role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListKnowledgeBases` and `bedrock:GetKnowledgeBase` permissions. You must manually add them to the CFT template to enable them.
+
+|*Azure Databricks*
+//RLP-147853
+
+|*azure-databricks-access-connectors*
+
+Additional permission required:
+
+* `Microsoft.Databricks/accessConnectors/read`
+
+The Reader role includes the above permission.
 
 |*Azure Active Directory*
-//RLP-131015
+//RLP-128447
 
-|*azure-active-directory-authentication-methods-registration-campaign*
+|*azure-active-directory-admin-consent-request-policy*
 
 Additional permission required:
 
-* `Policy.ReadWrite.AuthenticationMethod`
+* `Policy.Read.All`
 
-The Reader role includes the permission.
-
+The Global Reader role includes the above permission.
 
 |*Azure Active Directory*
-//RLP-128436
+//RLP-128079
 
-|*azure-active-directory-subscribed-sku*
-
-Additional permission required:
-
-* `Organization.Read.All`
-
-The Reader role includes the permission.
-
-|tt:[Update] *Azure Storage*
-
-//RLP-146499, RLP-146500, RLP-146501, RLP-146502
-
-|The following APIs will be updated to include the `StorageAccountId` and `StorageAccountName` fields in the JSON resource configuration. This enhancement facilitates improved cross-referencing in RQL queries.
-
-* `azure-storage-account-blob-diagnostic-settings`
-* `azure-storage-account-file-diagnostic-settings`
-* `azure-storage-account-queue-diagnostic-settings`
-* `azure-storage-account-table-diagnostic-settings`
-
-|*Google BigLake*
-//RLP-146984
-
-|*gcloud-biglake-catalog-database-table*
-
-Additional permissions required:
-
-* `biglake.catalogs.list`
-* `biglake.databases.list`
-* `biglake.tables.list`
-
-The Viewer role includes the permissions.
-
-|*Google BigLake*
-//RLP-146983
-
-|*gcloud-biglake-catalog-database*
-
-Additional permissions required:
-
-* `biglake.catalogs.list`
-* `biglake.databases.list`
-
-The Viewer role includes the permissions.
-
-|*Google BigLake*
-//RLP-146982
-
-|*gcloud-biglake-catalog*
+|*azure-active-directory-cross-tenant-access-default-settings*
 
 Additional permission required:
 
-* `biglake.catalogs.list`
+* `Policy.Read.All`
 
-The Viewer role includes the permission.
+The Global Reader role includes the above permission.
 
-|*Google BigQuery Data Transfer*
-//RLP-146981
+|*Google Cloud Batch Job*
+//RLP-148101
 
-|*gcloud-bigquery-data-transfer-config*
+|*gcloud-cloud-batch-job*
 
 Additional permission required:
 
-* `bigquery.transfers.get`
+* `batch.jobs.list`
 
-The Viewer role includes the permission.
+The Viewer role includes the above permission.
 
-|*Google Cloud Domains*
-//RLP-128080
+|*Google Bare Metal Solution*
+//RLP-148100
 
-|*gcloud-cloud-domains*
-
-Additional permissions required:
-
-* `domains.registrations.list`
-* `domains.registrations.getIamPolicy`
-
-The Viewer role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-124735
-
-|*gcloud-vmware-engine-external-address*
+|*gcloud-bare-metal-solution-volume-lun*
 
 Additional permissions required:
 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.externalAddresses.list`
+* `baremetalsolution.instances.list`
+* `baremetalsolution.luns.list`
 
-The Viewer role includes the permissions.
+The Viewer role includes the above permissions.
+
+|*Google Bare Metal Solution*
+//RLP-148099
+
+|*gcloud-bare-metal-solution-nfs-share*
+
+Additional permission required:
+
+* `baremetalsolution.nfsshares.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148098
+
+|*gcloud-bare-metal-solution-volume*
+
+Additional permission required:
+
+* `baremetalsolution.volumes.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148097
+
+|*gcloud-bare-metal-solution-network*
+
+Additional permission required:
+
+* `baremetalsolution.networks.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-147865
+
+|*gcloud-bare-metal-solution-instance*
+
+Additional permission required:
+
+* `baremetalsolution.instances.list`
+
+The Viewer role includes the above permission.
+
+
+|*OCI Web Application Firewall*
+//RLP-148332
+
+|*oci-loadbalancer-waf*
+
+Additional permissions required:
+
+* `WEB_APP_FIREWALL_INSPECT`
+* `WEB_APP_FIREWALL_READ`
+
+The Reader role includes the above permissions.
 
 |===
+
 
 [#new-compliance-benchmarks-and-updates]
 === New Compliance Benchmarks and Updates
@@ -317,48 +299,9 @@ The Viewer role includes the permissions.
 |*Compliance Benchmark*
 |*Description*
 
-|*SEBI - Consolidated Cybersecurity and Cyber Resilience Framework (CSCRF)*
-//RLP-147789, RLP-147728
+|
 
-|Prisma Cloud now supports  Consolidated Cybersecurity and Cyber Resilience Framework (CSCRF) released by the Securities and Exchange Board of India (SEBI). CSCRF aims to establish a unified framework that encompasses various strategies to safeguard REs (Regulated Entities) and Market Infrastructure Institutions (MIIs) against cyber risks and incidents.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-|*NIST SP 800-171 Revision 3*
-//RLP-147678
-
-|Prisma Cloud now supports the latest version of NIST SP 800-171 Revision 3. This updated includes significant updates to the publication’s control families, security controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-|*Secure Controls Framework (SCF) - 2024.2*
-//RLP-147607
-
-|Prisma Cloud has been updated to incorporate support for the Secure Controls Framework (SCF) - 2024.2, providing a comprehensive approach to both cybersecurity and privacy practices for safeguarding organizational information assets. The SCF's latest version elaborates on the refinement of current controls, introduces new controls tailored to counteract recent threats and technological advancements, ensures alignment with the most current compliance mandates, and integrates modifications driven by input from the community and industry professionals.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-|*Update for CIS AWS Foundation Benchmark*
-//RLP-140359
-
-|New Policy mappings are added to both Level 1 and Level 2 of CIS AWS Foundation benchmark v2.0.0 and CIS AWS Foundation benchmark v3.0.0 to improve policy mapping coverage.
-
-*Impact—* As new mappings are introduced, compliance scoring might vary.
-
-|*Update for GDPR*
-//RLP-147541
-
-|New Policy mappings are added to the  GDPR compliance standard.
-
-*Impact—* As new mappings are introduced, compliance scoring might vary.
-
-|*Update for CIS Microsoft Azure Foundation Benchmark*
-//RLP-147541
-
-|New Policy mappings are added to both Level 1 and Level 2 of CIS Microsoft Azure Foundation benchmark v2.0.0 and CIS AWS Foundation benchmark v2.1.0 to improve policy mapping coverage.
-
-*Impact—* As new mappings are introduced, compliance scoring might vary.
-
+|
 
 |===
 
@@ -415,23 +358,6 @@ You can now view this built-in standard and the associated policies on the *Comp
 * *Get CVE Overview Endpoint*
 ** https://pan.dev/prisma-cloud/api/cspm/cve-overview-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/cve-overview]
 
-
-
-
-|tt:[*End of support for Azure Time Series Insights and Azure Data Catalog Services*]
-//RLP-147490
-
-|NA
-|24.8.2
-
-|The following APIs are planned for deprecation as Azure has announced the retirement of Azure Time Series Insights and Azure Data Catalog Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
-
-* `azure-timeseriesinsights-environments`
-* `azure-datacatalog-catalog`
-
-In RQL, the key will not be available in the `api.name` attribute auto-completion.
-
-*Impact—* If you have a saved search or custom policies based on these APIs, you must delete them manually. The policy alerts will be resolved as *Policy_Deleted*.
 
 |tt:[*Resource Explorer API*]
 
