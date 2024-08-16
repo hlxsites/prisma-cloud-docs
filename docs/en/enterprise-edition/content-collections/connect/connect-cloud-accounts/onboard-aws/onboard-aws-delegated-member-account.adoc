@@ -1,21 +1,25 @@
 [.task]
 == Onboard Delegated Member account as Organization
 
-Create and manage AWS stack sets with service-managed permissions for AWS organizations. AWS permits the delegation of organization management administrator permissions to its member accounts. Learn more about https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html[AWS Delegated Member Accounts].
+ AWS permits the delegation of organization management administrator permissions to its member accounts. These member accounts with delegated administrator permissions can create and manage StackSets with service-managed permissions for AWS organizations. Learn more about https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html[AWS Delegated Member Accounts].
 
-Use the options outlined below to onboard delegated member accounts on Prisma Cloud:
+Use the options below to onboard delegated member accounts on Prisma Cloud:
 
 === Option 1: Unified IAM template 
 
-If you are using a unified IAM template to create IAM roles for master (delegated account) and member accounts, add `"CallAs": "DELEGATED_ADMIN"` parameter to the downloaded template before deploying it in the CloudFormation stack of the delegated member account.
+If you are using a unified IAM template to create IAM roles for master (delegated account) and member accounts, add the `"CallAs": "DELEGATED_ADMIN"` parameter to the downloaded template before deploying it in the CloudFormation stack of the delegated member account.
 
-=== Option 2 : Separate templates for management account(delegated member account) and member accounts
+=== Option 2 : Separate templates for management account (delegated member account) and member accounts
 
 . Create IAM role for the delegated account by running the Management IAM role template in the CloudFormation stack.
-. Create IAM roles for the rest of the member accounts by running the Member IAM role template under the service-managed CloudFormation StackSet of the delegated account as show below.
+. Create IAM roles for the rest of the member accounts by running the Member IAM role template under the service-managed *CloudFormation StackSet* of the delegated account as show below.
+
+image::connect/delegated-member-account-1[]
 
  
 . Navigate to *Advanced Settings* to download separate templates for management and member accounts. Learn more about using https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/onboard-aws-org#:~:text=To%20have%20separate%20CFTs[advanced settings] to onboard org with different templates for master and member accounts. 
+
+image::connect/delegated-member-account-2[]
 
 NOTE: Do not add `"CallAs": "DELEGATED_ADMIN"`` in this flow.
 
@@ -29,6 +33,8 @@ As a result you may encounter an issue with IAM roles not being created in the o
 * Exclude the organization management account from the member accounts hierarchy selection during onboarding.
 
 * If you still want to include the management account in the delegated member organization in Prisma Cloud, download the Management IAM role template from the advanced settings and deploy it in the CloudFormation stack of the management account. While executing the template, you must provide the `PrismaCloudRoleName` as equivalent to the member account (non-delegated member account). Provide either `<rolename of master>-member` or the customized role name given tothe non-delegated member during onboarding.
+
+image::connect/delegated-member-account-3[]
 		
 		
 		
