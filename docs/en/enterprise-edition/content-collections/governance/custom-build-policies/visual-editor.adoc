@@ -4,28 +4,53 @@
 
 == Visual Editor
 
-Prisma Cloud supports the capability of a Visual Editor where you can create custom build policies for  your templates using the existing fields.
-The Visual Editor is a suitable option when you want to create custom policies that include Attribute checks with a support of AND/OR logic.
-To help you create a custom policy using the Visual Editor, you will see an example of custom build policy for S3 Bucket ACL where log delivery is not recommended.
-
+The 'Visual Editor' allows you to create custom build policies for *IaC*, *Secrets* and *Licenses*, using Attribute checks that support of AND/OR logic.
 
 [.procedure]
 
-.. Select *Policies > Add Policy > Config > Add Policy Details* and then select *Next*.
+. Under *Governance*, select *Add Policy* > *Config*
+. Fill in the fields in the *Add Details* step of the wizard (refer to xref:custom-build-policies.adoc[Custom Build Policies])> *Next*.
 +
-In this example, you see the policy details for S3 Bucket ACL where log delivery is not recommended.
+The *IaC Policy Code Editor* is displayed by default in the *Create query* step of the wizard. 
+//+
+//In this example, you see the policy details for S3 Bucket ACL where log delivery is not recommended.
 //+
 //image::governance/visual-editor.png
-+
-Code Editor appears as a default view.
+//+
+//Code Editor appears as a default view.
 
-.. Select *Visual Editor*.
+. Select *Visual Editor* from the menu. 
+. Select the required policy. Options: IaC, License and Secrets. 
+
+. Configure the policy by selecting the provided fields.
++
+* For Licenses, select a license type. Multiple types are supported
++
+* For Secrets, add a Regular expression. Multiple 'OR' expressions are supported
++
+* For IaC, see <<configure-iac,ConfigureIac Policies>> below  
+
+//+
+//In this example, you see results for the S3 Bucket ACL query.
+//+
+//image::governance/visual-editor-9.png
+
+. Select *Next* to access Compliance Standards, and complete the process for creating a custom Build-time check policy (refer to xref:custom-build-policies.adoc[Custom Build Policies]).
+
 //+
 //image::governance/visual-editor-1.png
 
-. Select *Category* *Type*.
+[.task]
+[#configure-iac]
+=== Configure Iac Policies
+
+Limitation: The Visual Editor supports policy creation for Prisma Cloud's supported cloud service providers. For unsupported providers, use the Code Editor.
+
+[.procedure]
+. Repeat steps 1-3 above.
+. Select *Category Type*.
 +
-*Category Type* is where the policy is grouped based on either Elasticsearch, General, IAM, Kubernetes, Logging, Monitoring, Networking, Public, Secrets, Serverless, Storage and Vulnerabilities. You can use the category type to search or filter specific policies.
+Policies are categorized by type (Elasticsearch, General, IAM, Kubernetes, Logging, Monitoring, Networking, Public, Secrets, Serverless, Storage, Vulnerabilities) for easy search and filtering.
 //+
 //image::governance/visual-editor-2.png
 
@@ -34,15 +59,13 @@ Code Editor appears as a default view.
 NOTE: Framework options include: Terraform, Kubernetes, CloudFormation and Bicep.
 
 . Select *Cloud Provider*.
-+
-You can only create rules for Cloud Service Providers that are supported on Prisma Cloud via the Visual Editor. It is possible to create policies for unsupported providers using the Code Editor.
-//+
+
 //image::governance/visual-editor-3.png
 
 . Select *Resource Type*.
 +
-Resource Type is relevant to the selection of the Cloud Provider. You can also add the syntax of the resource to search for the same.
-//+
+The Cloud Provider selection determines the available Resource Types and their corresponding syntax.
+
 //image::governance/visual-editor-4.png
 //+
 //In this example add s3 to and you should be able to locate relevant resources.
@@ -51,27 +74,34 @@ Resource Type is relevant to the selection of the Cloud Provider. You can also a
 
 . Create a query: Select an *Attribute*, *Operator* and add a *Value*.
 +
-The query defines the match condition to verify if a resource contains a specific value, or if the specific value exists.
+This query defines the matching condition to check if a resource contains a specific value or if a specific value exists.
 +
-NOTE: This query type enables users to construct complex search criteria using multiple attribute-operator-value combinations. The initial query supports multiple OR conditions, offering flexible filtering options. You can then apply AND logic to further refine results, providing granular control over data retrieval.
-+
-See <<examples-on-custom-policies,Custom Build Policies Examples>> below for custom query build examples.
+NOTE: This query type allows users to build complex search criteria using multiple attribute-operator-value combinations. The initial query supports both AND and OR conditions for flexible filtering. You can further refine results by applying additional logic, providing granular control over data retrieval.
 
-. Select *Test* to verify your custom code.
-+
-If your custom code contains no errors, Prisma Cloud will display up to 30 resource results.
 //+
-//In this example, you see results for the S3 Bucket ACL query.
-//+
-//image::governance/visual-editor-9.png
+//See <<examples-on-custom-policies,Custom Build Policies Examples>> below for custom query build examples.
 
-. Select *Next* to access Compliance Standards, and complete the process for creating a custom Build-time check policy.
+. Select *Scan* to verify your custom IaC code.
++
+If your custom IaC code contains no errors, Prisma Cloud will display up to 30 resource results.
++
+The following screenshot displays an example of results returned by a verified IaC policy.
++
+image::governance/custom-build-policy-iac.png[]
+
+
+
+
+
+
+
+
 //+
 //image::governance/visual-editor-10.png
 ////
 +
 NOTE: You are in Step 2 of Create Custom Policies for Build-Time Checks. You are required to complete the rest of the steps to see your new custom Build-time check policy on the Prisma Cloud console.
-////
+
 
 [#examples-on-custom-policies]
 === Custom Build Policies Examples
@@ -127,8 +157,7 @@ NOTE: You are in Step 2 of Create Custom Policies for Build-Time Checks. You are
 //+
 //image::governance/visual-editor-7.png
 //+
-////
-+
+////+
 NOTE: The Custom Policy "aws-networking-deny-public-ssh" uses 2 rules with arguments for cidr_blocks and to_port. You can create multiple  nested arguments for this policy. In this example,  to express a more complex ingress policy for an AWS security group you can use arguments like; `ingress.from_port`, `ingress.to_port`, `ingress.protocol`, `ingress.cidr_blocks`.
 +
 You can use And/OR logic to create a  rule with more than one query.
@@ -139,3 +168,4 @@ In this example you see the AND logic used.
 ////
 //+
 //image::governance/visual-editor-8.png
+////
