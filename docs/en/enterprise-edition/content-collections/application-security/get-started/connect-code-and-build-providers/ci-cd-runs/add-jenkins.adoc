@@ -81,3 +81,14 @@ Your integrated Jenkins repositories will be displayed. You may have to wait for
 +
 * The next Jenkins scan will automatically include the selected repositories
 * To view scan results and resolve issues, in *Application Security* select *Home* > *Projects*. See xref:../../../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Monitor and Manage Code Build Issues] for more information  
+
+=== Usage
+
+The following example demonstrates how to integrate Prisma Cloud Checkov into your Jenkins Maven job to streamline IaC security testing and ensure compliance.
+
+----
+export PRISMA_API_URL="https://app.ca.prismacloud.io"
+export BC_API_KEY="${PC_USER}::${PC_PASSWORD}"
+Docker pull bridgecrew/checkov:latest
+docker run --rm -v $(pwd):/src -w /src bridgecrew/checkov:latest -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,test_results.xml --prisma-api-url "\${PRISMA_API_URL}" --bc-api-key "\${BC_API_KEY}" --repo-id GitHubOrgGroup/mule-test-app --branch dev
+----
