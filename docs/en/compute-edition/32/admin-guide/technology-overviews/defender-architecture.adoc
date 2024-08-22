@@ -8,11 +8,13 @@ ifdef::prisma_cloud[]
 :port-ws: 443
 endif::prisma_cloud[]
 
+[#defender-architecture]
 == Defender architecture
 
 Customers often ask how Prisma Cloud Defender really works under the covers.
 Prisma Cloud leverages Docker's ability to grant advanced kernel capabilities to enable Defender to protect your whole stack, while being completely containerized and utilizing a least privilege security design.
 
+[#defender-design]
 === Defender design
 
 Because we’ve built Prisma Cloud expressly for cloud native stacks, the architecture of our agent (what we call Defender) is quite different.
@@ -52,6 +54,7 @@ Additionally, we can and do apply `cgroups` to set hard limits on CPU and memory
 In the event of a communications failure with Console, Defender continues running and enforcing the active policy that was last pushed by the management point.
 Events that would be pushed back to Console are cached locally until it is once again reachable.
 
+[#why-not-a-kernel-module]
 === Why not a kernel module?
 
 Given the broad range of security protection Prisma Cloud provides, not just for containers, but also for the hosts they run on, you might assume that we use a kernel module - with all the associated baggage that goes along with that.
@@ -68,6 +71,7 @@ Further, kernel modules can introduce significant stability risks to a system.
 Again, because of their wide access, a poorly performing kernel module that’s frequently called can drag down performance of the entire host, consume excessive resources, and lead to kernel panics.
 For these reasons, many modern operating systems designed for cloud native apps, like Google Container-Optimized OS, explicitly prevent the usage of kernel modules.
 
+[#defender-console-communication]
 === Defender-Console communication
 
 By default, Defender connects to Console with a websocket on TCP port {port-ws}.
@@ -111,6 +115,7 @@ When starting a container in a Prisma Cloud-protected environment:
 The last step guarantees that Defender always fails open, which is important for the resiliency of your environment.
 Even if the Defender process terminates, becomes unresponsive, or cannot be restarted, a failed Defender will not hinder deployments or the normal operation of a node.
 
+[#firewalls]
 === Firewalls
 
 Defender enforces WAAS policies and monitors layer 4 traffic (CNNS).

@@ -1,8 +1,10 @@
+[#scan-images-with-twistcli]
 == Scan Images with `twistcli`
 
 You can use the Prisma Cloud `twistcli` command-line tool to scan container images and serverless functions.
 Scanning with `twistcli` is supported on Linux, macOS, and Windows.
 
+[#command]
 === Command
 
 The `twistcli` command-line tool has several subcommands.
@@ -18,6 +20,7 @@ The image must be on the system running the `twistcli` command-line tool.
 If not and if you are using Docker, you can retrieve the image with the `docker pull` before scanning it.
 The `twistcli` tool does not pull images.
 
+[#syntax]
 ==== Syntax
 
 When using `twistcli images scan`, the image or tarball to scan must be the last parameter.
@@ -29,6 +32,7 @@ If scanning a tarball, use the `--tarball` option.
 twistcli images scan [OPTIONS] [IMAGE]
 ----
 
+[#description]
 ==== Description
 
 The `twistcli images scan` tool collects information about the packages and binaries in the container image, and sends the information to the Prisma Cloud Console for analysis.
@@ -56,6 +60,7 @@ ctr -n <namespace> images ls
 The image should be present on the system, having either been built or pulled there.
 If a repository is specified without a tag, `twistcli` looks for an image tagged `latest`.
 
+[#options]
 ==== Options
 
 ifdef::prisma_cloud[]
@@ -226,6 +231,7 @@ Incorrect usage:
   ./twistcli images scan --tarball image.tar --user ted
 ----
 
+[#return-value]
 ==== Return Value
 
 The exit code is 0 if `twistcli images scan` finds no vulnerabilities or compliance issues.
@@ -250,6 +256,7 @@ If it fails, for whatever reason, you want to fail everything because there is a
 ====
 
 
+[#scan-results]
 === Scan Results
 
 To view scan reports in Console, go to *Monitor > Vulnerabilities > Images > CI* or *Monitor > Compliance > Images > CI*.
@@ -261,6 +268,7 @@ When scanning images in the CI pipeline with twistcli or the xref:../continuous-
 You can also retrieve scan reports in JSON format using the Prisma Cloud API, see the <<api, API>> section.
 
 
+[#output]
 ==== Output
 
 The twistcli tool can output scan results to several places:
@@ -402,6 +410,7 @@ Following is the output file schema:
 }
 ----
 
+[#list-of-vulnerabilities]
 === List of vulnerabilities
 
 This section discusses the contents of the scan results when retrieved from the API.
@@ -431,6 +440,7 @@ Once retrieving the results of a scan via an API call, the list of vulnerabiliti
 }
 ```
 
+[#list-of-packages]
 === List of packages
 
 This section discusses the contents of the scan results when retrieved from the API.
@@ -486,6 +496,7 @@ Each package has the following name-value pairs:
     }
 }
 ```
+[#projects]
 === Projects
 
 When users from a tenant project run twistcli, they must set the `--project` option to specify the proper context for the command.
@@ -520,11 +531,13 @@ $ curl \
 ----
 
 
+[#dockerless-scan]
 === Dockerless Scan
 
 By default, twistcli is run from outside the container image.
 
 
+[#podman-twistcli-scans]
 ==== Podman Twistcli Scans
 
 Twistcli can run scans on Podman hosts.
@@ -532,6 +545,7 @@ Use `--podman-path PATH` to specify the path to podman and force the twistcli sc
 For additional information, see the <<podman, Podman>> section.
 
 
+[#running-from-inside-a-container]
 ==== Running from inside a Container
 
 In some cases, you might need to copy twistcli to the container's file system, and then run the scanner from inside the container.
@@ -553,6 +567,7 @@ When twistcli is run from outside the container, this information is retrieved f
 
 NOTE: To run a `twistcli` image scan within a container and without passing the `--containerized` flag, you need to run the container as a privileged container.
 
+[#usage]
 ===== Usage
 
 When running the scanner from inside a container, you need to properly orient it by passing it the `--containerized` flag.
@@ -561,6 +576,7 @@ There are a couple of ways to run twistcli with the `--containerized` flag: buil
 For security reasons, Prisma Cloud recommends that you create a user with the _CI User_ xref:../authentication/user-roles.adoc[role] for running scans.
 
 
+[#build-time-invocation]
 ===== Build-time Invocation
 
 After building an image, run it.
@@ -605,6 +621,7 @@ $ docker run \
     <REPORT_ID>
 ----
 
+[#run-time-invocation]
 ===== Run-time Invocation
 
 If you have access to the orchestrator, you can exec into the running container to run the twistcli scanner.
@@ -631,6 +648,7 @@ $ ./twistcli images scan \
 ----
 
 [.task]
+[#simple-scan]
 === Simple Scan
 
 Scan an image with twistcli and print the summary report to stdout.
@@ -652,6 +670,7 @@ image::simple_scan.png[scale=15]
 
 
 [.task]
+[#scan-with-detailed-report]
 === Scan with Detailed Report
 
 You can have twistcli generate a detailed report for each scan.
@@ -775,6 +794,7 @@ Open `scan_results_pp.json` to view the results. Vulnerability information can b
 ----
 
 [.task]
+[#scan-images-built-with-jenkins-in-an-openshift-environment]
 === Scan Images Built with Jenkins in an OpenShift Environment
 
 // For help understanding the Jenkins infrastructure on OCP, see:
@@ -812,6 +832,7 @@ $ twistcli hosts scan \
 Where the `--skip-docker` option skips all Docker compliance checks such as the Docker daemon configuration and the `--include-3rd-party` option scans application-specific files such as JARs.
 
 
+[#scan-images-when-the-docker-docket-isnt-in-the-default-location]
 === Scan Images when the Docker Docket Isn't in the Default Location
 
 The twistcli scanner uses the Docker API, so it must be able to access the socket where the Docker daemon listens.
@@ -830,6 +851,7 @@ $ ./twistcli images scan \
   <IMAGE_NAME>
 ----
 
+[#options]
 ==== Options
 
 - **--address URI**
@@ -896,6 +918,7 @@ Otherwise, specify an explicit path.
     --podman-path podman \
     <IMAGE_NAME>
 
+[#cicd-automation]
 === CI/CD Automation
 
 Twistcli images scan can be used to shift-left security scans inside of your build pipeline.
@@ -931,6 +954,7 @@ stage('Scan with Twistcli') {
 ifdef::prisma_cloud[]
 
 [.task]
+[#using-twistcli-with-prisma-cloud-compute-in-enterprise-edition]
 === Using twistcli with Prisma Cloud Compute in Enterprise Edition
 
 The following procedure is true even if IP whitelisting feature is enabled in Prisma Cloud.
@@ -952,6 +976,7 @@ You can use your username:password from PC or Access Key / Secret Key created by
 endif::prisma_cloud[]
 
 
+[#scan-image-tarballs]
 === Scan Image Tarballs
 
 `twistcli` can scan image tarballs.
@@ -979,6 +1004,7 @@ For example:
 NOTE:
 To scan image tarballs in an unprivileged container, pass the following capabilities: CAP_SYS_CHROOT and CAP_MKNOD.
 
+[#scan-windows-images-on-windows-hosts-with-containerd]
 === Scan Windows Images on Windows Hosts with `containerd`
 
 You can use `twistcli` to scan Windows images on Windows hosts with `containerd` installed.
@@ -998,6 +1024,7 @@ Otherwise, you can use Hyper-V isolation to run older containers on new host bui
 For more information, see https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility?tabs=windows-server-2022%2Cwindows-11-21H2[Windows containers version compatibility].
 ====
 
+[#scan-images-on-linux-hosts-with-containerd]
 === Scan Images on Linux Hosts with `containerd`
 
 You can use `twistcli` to scan images on Linux hosts with `containerd` installed.
@@ -1024,6 +1051,7 @@ ctr -n <namespace> images ls
 https://github.com/containerd/containerd/releases[Download] the https://github.com/projectatomic/containerd/blob/master/docs/cli.md[ctr] utility.
 ====
 
+[#limitations]
 === Limitations
 
 // twistlock/twistlock#37074

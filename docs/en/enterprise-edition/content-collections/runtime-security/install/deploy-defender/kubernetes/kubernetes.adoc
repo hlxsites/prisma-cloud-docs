@@ -18,6 +18,7 @@ You can place the files or charts under source control to track changes, to inte
 
 Each Prisma Cloud Defender is deployed as a `DaemonSet` to ensure that a Prisma Cloud Defender instance runs on each worker node of your cluster.
 
+[#prerequisites]
 === Prerequisites
 
 To deploy your Defenders smoothly, you must meet the following requirements.
@@ -41,12 +42,14 @@ For more information about the runtimes that Prisma Cloud supports, see the xref
 
 * Install the xref:../../../tools/twistcli.adoc[Prisma Cloud command-line utility] called `twistcli`, which is bundled with the Prisma Cloud software. You use `twistcli` to deploy the Defenders.
 
+[#required-permissions]
 ==== Required Permissions
 
 * You can create and delete namespaces in your cluster.
 
 * You can run the `kubectl create` command.
 
+[#required-firewall-and-port-configuration]
 ==== Required Firewall and Port Configuration
 
 Open the following ports in your firewall.
@@ -74,6 +77,7 @@ The Defenders connect to the Prisma Cloud Console service using a websocket over
 include::../../fragments/install-defender-twistcli-export-kubectl.adoc[leveloffset=+1]
 
 [.task, #_helm]
+[#install-prisma-cloud-with-helm-charts]
 === Install Prisma Cloud with Helm charts
 
 You can use `twistcli` to create Helm charts for the Prisma Cloud Console and the Defenders.
@@ -105,14 +109,17 @@ The following procedure shows the modified commands.
     --create-namespace \
     ./twistlock-defender-helm.tar.gz
 
+[#install-prisma-cloud-on-a-cri-non-docker-cluster]
 === Install Prisma Cloud on a CRI (non-Docker) cluster
 
 // Include reusable content fragment.
 // Install Defender using 'twistcli defender export' with cri option.
 include::kubernetes-cri.adoc[leveloffset=+1]
 
+[#troubleshooting]
 === Troubleshooting
 
+[#kubernetes-crashloopbackoff-error]
 ==== Kubernetes CrashLoopBackOff Error
 
 **Error**
@@ -130,6 +137,7 @@ When running WAAS Out-of-Band (OOB), the Defender automatically increases the `c
 
 Increase the Pod limit to 4GB when activating WAAS OOB on K8s cluster.
 
+[#out-of-memory-oom-error-in-kubernetes-defender-nodes]
 ==== Out-of-Memory (OOM) Error in Kubernetes Defender Nodes
 //CWP-56444
 
@@ -147,6 +155,7 @@ When deploying inline firewall instances on a Defender node with more than 10 pr
 
 [#increasing-pod-limit]
 [.task]
+[#increase-the-defender-pod-limit]
 ==== Increase the Defender Pod Limit
 
 To increase the Defender Pod limit, complete the following steps:
@@ -170,6 +179,7 @@ To increase the Defender Pod limit, complete the following steps:
 ... Run `kubectl edit ds twistlock-defender-ds -n twistlock` and change the value under *resources > limits > memory* to *4096Mi*.
 ... *Save* the file to restart the Defenders with the increased memory limit.
 
+[#pod-security-policy]
 ==== Pod Security Policy
 
 If Pod Security Policy is enabled in your cluster, you might get the following error when trying to create a Defender DaemonSet.

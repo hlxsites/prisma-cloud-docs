@@ -1,3 +1,4 @@
+[#deploy-waas-agentless]
 == Deploy WAAS Agentless
 
 WAAS agentless rules inspect HTTP requests and responses through a mirror of the traffic to provide WAAS detections.
@@ -13,6 +14,7 @@ For each VPC traffic mirroring rule, a VPC Observer will be created in a VPC mac
 
 Monitoring applications with WAAS agentless through VPC traffic mirroring is subject to limitations, quotas, and checksum offloading as defined in the  https://docs.aws.amazon.com/vpc/latest/mirroring/traffic-mirroring-limits.html[AWS documentation].
 
+[#prerequisites]
 === Prerequisites
 
 * To configure WAAS agentless with AWS VPC traffic mirroring, apply the permission template ending in https://redlock-public.s3.amazonaws.com/waas/aws/agentless_app_firewall_permissions_template.yaml[agentless_app_firewall_permissions_template.yaml] to AWS CloudFormation console for your account. For detailed instructions on how to apply cloud formation templates, refer to the https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html[AWS documentation].
@@ -36,6 +38,7 @@ Optionally, if you onboard your AWS accounts using Prisma Cloud, you can add the
 NOTE: Cloud accounts require *Cloud discovery* to be enabled to discover the EC2 instances to mirror.
 
 [.task]
+[#create-a-waas-agentless-rule-for-vpc-traffic-mirroring]
 === Create a WAAS Agentless Rule for VPC Traffic Mirroring
 
 To deploy WAAS agentless with VPC traffic mirroring, create a new rule, configure VPC, define application endpoints, and select protections.
@@ -78,6 +81,7 @@ A scheduled scan runs every hour to check for new and deleted EC2 instances base
 To force a scan, you can click *Update*.
 
 [.task]
+[#add-an-app-policy-to-the-rule]
 === Add an App (policy) to the Rule
 
 [.procedure]
@@ -158,6 +162,7 @@ image::waas_out_of_band_rule_overview.png[]
 +
 NOTE: For more information, see the <<../waas-analytics.adoc#,WAAS analytics help page>>
 
+[#vpc-configuration-status]
 === VPC Configuration Status
 
 Once the VPC configuration is saved, a CloudFormation template will be created and deployed in the selected region. You can track the stack deployment stages through Prisma Console. 
@@ -184,6 +189,7 @@ You can *Delete* an Agentless rule, that will tear down the entire VPC stack con
 
 The VPC Observer is installed under *Manage > Defenders > Defenders: Deployed*. A VPC observer can only be deleted if you delete the rule from the Console.
 
+[#update-vpc-configurations]
 === Update VPC Configurations
 
 You can edit the VPC configurations only to update the Tags, Instance names, Ports, and Observer instance type. This will update the AWS CloudFormation template, and AWS will create/destroy only the updated AWS resources.
@@ -203,6 +209,7 @@ The following actions are applicable for the HTTP requests or responses related 
 
 * *Disable* - The WAAS action is disabled.
 
+[#limitations]
 === Limitations
 
 *Limitations for setting traffic mirroring imposed by AWS*
@@ -235,6 +242,7 @@ NOTE: You must upgrade the VPC Observer through *Manage > Defenders*.
 * Changing the VPC observer instance types involves downtime.
 * Once the AWS setup is created/updated in the agentless rule, the Observer status is only available on *Manage > Defenders > Defenders: Deployed* page.
 
+[#troubleshoot-vpc-traffic-mirroring-errors]
 === Troubleshoot VPC Traffic Mirroring Errors
 
 `Failed to set up VPC traffic mirroring: failed creating AWS stack, status ROLLBACK_COMPLETE`.
@@ -246,6 +254,7 @@ image::err1-failed-to-setup-vpc.png[]
 Some scenarios in the AWS CloudFormation that may lead to the above error are as follows:
 
 [.task]
+[#you-are-not-authorized-to-perform-this-operation]
 ==== You are not authorized to perform this operation
 
 This is because the selected AWS cloud account doesn't have enough permissions for deployment.
@@ -257,6 +266,7 @@ image::err2-not-authorized.png[]
 . Delete the rule in error and create a new rule in the AWS Cloud account with the permissions as mentioned in the https://redlock-public.s3.amazonaws.com/waas/aws/agentless_app_firewall_permissions_template.json[agentless_app_firewall_permissions_template.json] file to AWS CloudFormation console for your account.
 
 [.task]
+[#sessionnumber-1-already-in-use-for-eni-]
 ==== SessionNumber 1 already in use for eni-*
 
 Trying to mirror an already mirrored EC2 instance (either by WAAS or another product).
@@ -267,11 +277,13 @@ image::err3-session-already-in-use.png[]
 . Edit the VPC configuration and remove the instance from the tags or instance names list, and click *Update* to retry the deployment.
 . Remove the mirroring from the machine from the other rule/other product, and click *Update* to retry the deployment.
 
+[#waitcondition-received-failed-message-defender-deployment-failed-for-uniqueid-i-xxxx]
 ==== WaitCondition received failed message: 'Defender deployment failed' for uniqueid: i-xxxx.
 
 include::fragments/defender-deployment-failed-troubleshoot.adoc[]
 
 [.task]
+[#failed-to-find-vms-to-mirror]
 ==== Failed to find VMs to mirror
 
 The security token included in the request is invalid.

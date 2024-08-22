@@ -1,3 +1,4 @@
+[#deploy-defender-on-openshift-v4]
 == Deploy Defender on OpenShift v4
 
 Prisma Cloud Defenders are deployed as a DaemonSet, which ensures that an instance of Defender runs on every node in the cluster.
@@ -11,15 +12,18 @@ This guide shows you how to generate deployment YAML files for Defenders, and th
 
 To better understand clusters, read our xref:../../cluster-context.adoc[cluster context] topic.
 
+[#preflight-checklist]
 === Preflight checklist
 
 To ensure that your installation on supported versions of OpenShift v4.x goes smoothly, work through the following checklist and validate that all requirements are met.
 
+[#minimum-system-requirements]
 ==== Minimum system requirements
 
 Validate that the components in your environment (nodes, host operating systems, orchestrator) meet the specs in
 xref:../../system-requirements.adoc[System requirements].
 
+[#permissions]
 ==== Permissions
 
 Validate that you have permission to:
@@ -39,6 +43,7 @@ For OpenShift installations, a project is created when you run _oc new-project_.
 
 * Run _oc create_ commands.
 
+[#network-connectivity]
 ==== Network connectivity
 
 Validate that outbound connections to your Console can be made on port 443.
@@ -48,6 +53,7 @@ The _twistcli_ utility is included with every release.
 
 
 [.task]
+[#create-an-openshift-project-for-prisma-cloud]
 ==== Create an OpenShift project for Prisma Cloud
 
 Create a project named _twistlock_.
@@ -61,6 +67,7 @@ Create a project named _twistlock_.
 ----
 
 [.task]
+[#optional-push-the-prisma-cloud-images-to-a-private-registry]
 ==== (Optional) Push the Prisma Cloud images to a private registry
 
 When Prisma Cloud is deployed to your cluster, the images are retrieved from a registry.
@@ -164,6 +171,7 @@ To override the cloud provider's cluster name, use the `--cluster` option.
 For self-managed clusters, manually specify a cluster name with the `--cluster` option.
 
 [.task]
+[#option-1-deploy-with-yaml-files]
 ===== Option #1: Deploy with YAML files
 
 Deploy the Defender DaemonSet with YAML files.
@@ -219,6 +227,7 @@ Use the _--image-name_ flag to designate an image in the OpenShift internal regi
 
 
 [.task]
+[#option-2-deploy-with-helm-chart]
 ===== Option #2: Deploy with Helm chart
 
 Deploy the Defender DaemonSet with a Helm chart.
@@ -305,6 +314,7 @@ name: twistlock-console
 
   $ helm install --namespace=twistlock -g twistlock-defender-helm.tar.gz
 
+[#confirm-the-defenders-were-deployed]
 ==== Confirm the Defenders were deployed.
 
 .. In Prisma Cloud Console, go to *Manage > Defenders > Manage* to see a list of deployed Defenders.
@@ -329,11 +339,13 @@ endif::compute_edition[]
 
 
 ifdef::prisma_cloud[]
+[#use-oc-to-deploy-the-defender]
 === Use OC to Deploy the Defender
 
 You can deploy Defenders using the xref:install-oc.adoc[OpenShift OC].
 endif::prisma_cloud[]
 
+[#control-defender-deployments-with-taint]
 === Control Defender deployments with taint
 
 You can deploy Defenders to all nodes in an OpenShift cluster (master, infra, compute).
@@ -365,6 +377,7 @@ Add the following toleration in PodSpec (DaemonSet.spec.template.spec)
 
 
 [.task]
+[#uninstall]
 === Uninstall
 
 ifdef::compute_edition[]

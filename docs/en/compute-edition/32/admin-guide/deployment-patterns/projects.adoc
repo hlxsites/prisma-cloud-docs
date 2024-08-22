@@ -1,3 +1,4 @@
+[#projects]
 == Projects
 
 Some deployments must be compartmentalized for regulatory or operational reasons.
@@ -18,6 +19,7 @@ NOTE: Scale projects have been deprecated.
 If you've deployed a scale project, see xref:../deployment-patterns/migration-options-for-scale-projects.adoc[migration options for scale projects] for more information about how to transition to a supported configuration.
 
 
+[#terminology]
 === Terminology
 
 The following terms are used throughout this article:
@@ -38,6 +40,7 @@ Tenant projects are like silos.
 Each tenant maintains its own rules and settings, separate from Central Console and any other tenant.
 
 
+[#when-to-use-projects]
 === When to use projects
 
 Carefully assess whether you need projects.
@@ -55,6 +58,7 @@ You can always migrate to projects at a later time.
 For more information, see <<Migration strategies>>.
 
 
+[#architecture]
 === Architecture
 
 Projects federate the UI and API for multiple Consoles.
@@ -68,6 +72,7 @@ image::projects_arch.png[width=800]
 
 
 [.section]
+[#connectivity]
 ==== Connectivity
 
 By default, the master and its supervisor Consoles communicate over port 8083.
@@ -92,6 +97,7 @@ However, no project Defenders ever communicate directly with Central Console.
 
 
 [.section]
+[#access-control]
 ==== Access control
 
 When users log into Prisma Cloud Console, they are presented with a list of projects to which they have access, and they can chose the project they want to work in.
@@ -109,6 +115,7 @@ For example, if a 'local' user has been granted access to project1, but also bel
 
 
 [.section]
+[#secrets]
 ==== Secrets
 
 Prisma Cloud fully supports secrets management for tenant projects.
@@ -116,12 +123,14 @@ Secrets management can be independently configured and managed for each tenant p
 
 
 [.section]
+[#limitations]
 ==== Limitations
 
 Moving Defenders between projects is not supported.
 To "move" a Defender, decommission it from one project and deploy it to another.
 
 
+[#provisioning-flow]
 === Provisioning flow
 
 Let's look at how projects are provisioned.
@@ -158,6 +167,7 @@ You can release a supervisor, and return it to its original state, by deleting t
 The supervisor Console reverts back to master mode.
 
 
+[#migration-strategies]
 === Migration strategies
 
 If you have already deployed one or more stand-alone Consoles, and you want to adopt a project-based structure, then the migration is easy.
@@ -191,6 +201,7 @@ Provision a tenant project for each of the prod, test, and dev Consoles.
 image::projects_migrate3.png[width=700]
 
 
+[#accessing-the-api]
 === Accessing the API
 
 All API requests should be routed to Central Console only.
@@ -210,6 +221,7 @@ Some endpoints require no special permissions to access them, such as getting a 
 
 
 [.task]
+[#provisioning-a-project]
 === Provisioning a project
 
 Provision new projects from the Central Console UI.
@@ -242,6 +254,7 @@ If you are migrating an existing Console to a project, specify the admin credent
 
 
 [.task]
+[#decommissioning-a-project]
 === Decommissioning a project
 
 Decommissioning a project simply reverts the supervisor Console back to a stand-alone master Console.
@@ -261,6 +274,7 @@ The credentials are shown only one time, so copy them, and set them aside in a s
 
 
 [.task]
+[#decommissioning-disconnected-projects]
 === Decommissioning disconnected projects
 
 Central Console lets you delete projects, even if the supervisor Console is disconnected.
@@ -286,6 +300,7 @@ Only xref:../authentication/user-roles.adoc#administrator[admin users] are permi
 
 
 [.task]
+[#deploying-defender-daemonsets-for-projects-console-ui]
 === Deploying Defender DaemonSets for projects (Console UI)
 
 When creating a DaemonSet for a project, you can use the Console UI, twistcli, or API.
@@ -299,6 +314,7 @@ This section shows you how to use the Console UI.
 . Configure the deployment parameters, then copy and run the resulting install script.
 
 
+[#deploying-defender-daemonsets-for-projects-twistcli]
 === Deploying Defender DaemonSets for projects (twistcli)
 
 Create a DaemonSet deployment file with twistcli.
@@ -312,6 +328,7 @@ The DNS name or IP address must be a xref:../configure/subject-alternative-names
     --cluster-address <SUPERVISOR-CONSOLE-SAN>
 
 
+[#deploying-defender-daemonsets-for-projects-api]
 === Deploying Defender DaemonSets for projects (API)
 
 A DaemonSet deployment file can also be created with the API.

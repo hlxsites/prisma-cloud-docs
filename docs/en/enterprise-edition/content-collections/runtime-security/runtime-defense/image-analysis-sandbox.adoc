@@ -7,6 +7,7 @@ The analysis mechanism collects and displays container behaviors by safely exerc
 
 Running the analysis is supported for Linux images on Docker container runtime.
 
+[#setup-the-sandbox-machine]
 === Setup the sandbox machine
 
 In order to run a sandbox analysis for an image, you first need to set up a dedicated sandbox virtual machine.
@@ -30,14 +31,17 @@ When setting up the VM, follow the guidelines below to make sure potential malwa
 NOTE: It is recommended to avoid running a Defender on the same machine used as the sandbox VM. Running a Defender on this machine might cause the image that is being analyzed in the sandbox to also be presented under *Monitor > Vulnerabilities/Compliance > Images > Deployed images* as an image running in the environment.
 
 
+[#running-the-sandbox-command]
 === Running the _sandbox_ command
 
 [.section]
+[#description]
 ==== Description
 
 Triggering a sandbox analysis is done by executing the `twistcli sandbox` command on an image. After the command is triggered, Prisma Cloud's sandbox mechanism runs the container, and starts tracing its behavior. The events occurring on the running container are collected and are later analyzed to discover suspicious behaviors.
 
 [.section]
+[#synopsis]
 ==== Synopsis
 
 The usage of the `twistcli sandbox` command is very similar to running a container image using docker:
@@ -55,6 +59,7 @@ If a repository is specified without a tag, `twistcli` looks for an image tagged
 The entrypoint and arguments should be specified after the image. If an entrypoint isn't specified, the default entrypoint of the image will be used.
 
 [.section]
+[#options]
 ==== Options
 
 `--address` [.underline]#`URL`#::
@@ -149,6 +154,7 @@ Immediately exit the analysis if an error is encountered.
 Show help
 
 [.section]
+[#return-value]
 ==== Return value
 
 The exit code is 0 if the sandbox analysis verdict is "Passed". If the verdict is "Failed", the exit code is 1.
@@ -157,6 +163,7 @@ The criteria for passing or failing the sandbox analysis is determined by the se
 
 Another reason why `twistcli sandbox` might return an exit code of 1 is if the analysis failed due to an error.
 
+[#sandbox-analysis-results]
 === Sandbox analysis results
 
 After `twistcli` dynamically analyzes the image, `twistcli`:
@@ -173,6 +180,7 @@ image::runtime-security/image-sandbox-results-a.png[]
 
 image::runtime-security/image-sandbox-results-b.png[]
 
+[#analysis-summary]
 ==== Analysis summary
 
 The analysis summary contains the following main parts:
@@ -187,6 +195,7 @@ The criteria for passing or failing the sandbox analysis is determined by the se
 +
 The image details also include an indication of an additional scan that may have been performed on the image. If the image was scanned for vulnerabilities and compliance as a part of the CI process, registry scanning, or as a deployed image, it will be displayed in the *Additional scan* field. You will also be able to click on its value to see the scan results. Only the furthest stage is reported in the following order: CI -> Registry -> Deployed.
 
+[#suspicious-findings]
 ==== Suspicious findings
 
 The sandbox analysis mechanism detects the following suspicious behaviors:
@@ -243,6 +252,7 @@ Detecting malware using WildFire requires the xref:../configure/wildfire.adoc[Wi
 
 |===
 
+[#container-behavior]
 ==== Container behavior
 
 The sandbox analysis mechanism collects Processes, Networking, and Filesystem events that occurred while the container was running in the sandbox. The events are displayed in the Console UI analysis report, in order to provide you with an overview of the container behavior at runtime.
@@ -252,10 +262,12 @@ There are two display modes for viewing the container behavior events:
 * By Type - the events are aggregated by the main event properties, to give you an overview of which process run on the container, what were the network destinations it was trying to reach, what are its listening ports, etc. For example, if a process was running three times, only a single row will appear for this process, with the common properties only (MD5), and without the properties that are changing between events (command, parent process, etc).
 * By Time - all the events are presented ordered by the time they occurred. For example, if a process was running three times, three rows with the same process will appear, with different time, and with all the event details for each one of them (command, parent process, etc).
 
+[#filesystem-events]
 ===== Filesystem events
 
 For container filesystem, Prisma Cloud collects Open, Create, and Modify file events.
 
+[#network-events]
 ===== Network events
 
 There are three event types collected for container networking:
@@ -270,19 +282,23 @@ Outbound connection events are also displayed on a world map according to the co
 
 image::runtime-security/image-sandbox-networking.png[]
 
+[#view-sandbox-results-on-image-details]
 ==== View sandbox results on image details
 
 When reviewing image details, you can look at its latest sandbox analysis results in a dedicated section. The *Anaysis sandbox* section contains an analysis summary, including the verdict and the suspicious findings counts by type. Click on the link at the top to move to the full report page.
 
 image::runtime-security/image-sandbox-dialog.png[]
 
+[#actions]
 === Actions
 
+[#add-to-trust-group]
 ==== Add to trust group
 
 After reviewing the analysis results of an image, you can decide whether you trust this image to run in your development and production environments. Optionally, you can add the image repository to a single or multiple trust groups using the *Add to trust group* action.
 This way it is possible for you to get notified or block images that are not trusted. See xref:../compliance/operations/trusted-images.adoc[Trusted Images] to learn more.
 
+[#export-to-json-file]
 ==== Export to JSON file
 
 To export the analysis results, use the *Export to JSON* action at the top of the page. This action will download a file in a JSON format with the analysis results for the image.

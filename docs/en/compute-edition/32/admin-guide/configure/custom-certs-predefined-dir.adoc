@@ -1,3 +1,4 @@
+[#configure-custom-certs-from-a-predefined-directory]
 == Configure custom certs from a predefined directory
 
 You can use your own certs to secure Prisma Cloud communication channels by simply copying your custom certs to a predefined directory that the Console and Defender containers mount at runtime.
@@ -24,6 +25,7 @@ Prisma Cloud generates, manages, and rotates the keys internally.
 However, if your organization's policy calls for directly managing all keys and certs, Prisma Cloud gives you the control to do so.
 
 
+[#how-it-works]
 === How it works
 
 Configure Console and Defender to use custom certs by saving the certs into a known, predefined directory.
@@ -41,6 +43,7 @@ For example, if console-cert.pem or console-key.pem are changed, the HTTPS liste
 This system is designed to make rotating certificates easy by simply copying new certs to the predefined directory.
 
 
+[#loading-a-tls-configuration]
 === Loading a TLS configuration
 
 When Console and Defender start, they create TLS configurations.
@@ -74,6 +77,7 @@ If reading a cert fails, Console/Defender logs the following messages, and exits
 ----
 
 
+[#fixing-misconfigurations]
 ==== Fixing misconfigurations
 
 If there's an error loading your certs (for example, malformed key material), you can fix the problem by simply copying fixed certs to the predefined directory.
@@ -82,11 +86,13 @@ As long as the Prisma Cloud container starts with the predefined directory mount
 This, in conjunction with the verbose log messages, will help you get your configuration right.
 
 
+[#required-certificate-files]
 === Required certificate files
 
 To secure a connection with your custom certs, Prisma Cloud looks for specific files in `/var/lib/twistlock/custom-certificates`.
 
 
+[#console]
 ==== Console
 
 For the Console HTTPS listener (for securing the web UI and API), the following files must be available in the predefined directory:
@@ -101,6 +107,7 @@ For Console's WebSocket listener (for securing Console-Defender communication), 
 * `defender-server-key.pem`
 
 
+[#defender]
 ==== Defender
 
 For Defender's WebSocket listener (for securing Console-Defender communication), the required files are:
@@ -110,6 +117,7 @@ For Defender's WebSocket listener (for securing Console-Defender communication),
 * `defender-client-key.pem`
 
 
+[#log-messages]
 === Log messages
 
 Clear operational and error messages are sent to the Console and Defender logs so you can debug certificate issues.
@@ -129,6 +137,7 @@ Upon resetting a connection following a cert rotation, a message is logged, e.g.
 Any error in the cert files (e.g., corrupt files, key-cert mismatch, etc.) will result in failure to establish connection, and it's logged as an error.
 
 
+[#deployment-patterns]
 === Deployment patterns
 
 This feature depends on your key material already being present on each node where Console and Defender run.
@@ -142,6 +151,7 @@ All pods would mount the same network volume, so that when you rotate your certs
 
 
 [.task]
+[#onebox]
 ==== Onebox
 
 [.procedure]
@@ -166,6 +176,7 @@ Connections are reset when relevant changes are detected.
 
 
 [.task]
+[#deploying-console-and-defender-in-kubernetes-or-openshift-clusters]
 ==== Deploying Console and Defender in Kubernetes or OpenShift clusters
 
 The following steps provide high-level guidance for deploying Prisma Cloud containers with your custom certs in your clusters.
@@ -201,6 +212,7 @@ spec:
 ----
 
 
+[#limitations]
 === Limitations
 
 App-Embedded and Serverless Defenders currently do not support custom keys and certs for securing Console-Defender communication.

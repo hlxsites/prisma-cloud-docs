@@ -62,6 +62,7 @@ Define CA under Manage &gt; Authentication &gt; System certificates &gt; Certifi
 
 |===
 
+[#console-tls-communication-certificates]
 === Console TLS communication certificates
 
 You can secure access to Console with your own digital certificate.
@@ -90,6 +91,7 @@ Creating certificates is outside the scope of this article.
 For more information about how SSL and certificates secure a site, see http://robertheaton.com/2014/03/27/how-does-https-actually-work/[How does HTTPS actually work].
 
 
+[#configuration-options]
 ==== Configuration options
 
 Prisma Cloud secures the communication between various actors and entities with certificates.
@@ -129,6 +131,7 @@ For example, it might be www.example.com or example.com.
 |===
 
 [.task]
+[#securing-access-to-console-with-custom-certificates]
 ==== Securing access to Console with custom certificates
 
 Secure access to Console with your own custom certificates.
@@ -181,6 +184,7 @@ This feature is no longer recommended.
 See https://developer.mozilla.org/en-US/docs/Web/HTTP/Public_Key_Pinning
 
 [.task]
+[#certificate-based-authentication-to-console]
 === Certificate-based Authentication to Console
 
 This feature allows the Console to verify the client's CA certificate when accessing the Console. Use certificates from an implicitly trusted CA for securing the TLS connection.
@@ -208,6 +212,7 @@ To create such a PEM file, you'd get the public keys of each CA in PEM format an
   $ cat IssuingCA1.pem IssuingCA2.pem IntermediateCA.pem RootCA.pem > CAs.pem
 
 
+[#console-defender-communication-certificates]
 === Console-Defender communication certificates
 
 By design, Console and Defender don't trust each other and use certificates to mutually authenticate when Defender establishes a connection with Console.
@@ -246,10 +251,12 @@ The *Status* column on the Defenders page will reflect the Defenders that are us
 Use the *Certificate expired* filter on the Defenders list to see only the Defenders with expired certificates.
 
 
+[#additional-technical-details]
 ==== Additional technical details
 
 This section provides additional technical details about how the certificates that secure Console-Defender communication are managed.
 
+[#what-is-the-rotation-model]
 ===== What is the rotation model?
 
 When Console is first deployed, it generates a set of certs for Console-Defender communication - a Defender CA, a Defender server cert, and a Defender client cert (with keys).
@@ -267,6 +274,7 @@ Until the old Defender CA expires, Console responds with the old Defender certs 
 As long as the old Defender CA is valid, Defender uses the old client cert for TLS handshakes.
 When the old certs expire, Defender uses the new certs for TLS handshakes.
 
+[#which-certificates-are-rotated]
 ===== Which certificates are rotated?
 
 Console rotates the following files:
@@ -275,23 +283,28 @@ Console rotates the following files:
 * `defender-server-cert.pem` and `defender-server-key.pem` -- Rotated to defender-server-cert.pem.old and defender-server-key.pem.old, and then Console creates new ones.
 * `defender-client-cert.pem` and `defender-client-key.pem` -- Rotated to defender-client-cert.pem.old and defender-client-key.pem.old, and then Console creates new ones.
 
+[#are-all-certs-rotated-at-the-same-time]
 ===== Are all certs rotated at the same time?
 
 Yes, the Defender CA cert, server cert, and client cert are all rotated at the same time.
 
+[#what-triggers-console-to-regenerate-and-rotate-the-certs]
 ===== What triggers Console to regenerate and rotate the certs?
 
 Console checks the expiration date of the Defender CA, and rotates all certs 1.5 years before the Defender CA expires.
 
+[#what-is-the-rotation-frequency]
 ===== What is the rotation frequency?
 
 Once every 1.5 years.
 
+[#what-happens-when-you-upgrade-prisma-cloud-compute]
 ===== What happens when you upgrade Prisma Cloud Compute?
 
 When Console or Defenders are upgraded, the old, unexpired certificates remain on the system.
 Defenders that only have the old certificates are supported until the old Defender CA expires.
 
+[#how-can-you-programmatically-determine-that-certs-have-been-rotated]
 ===== How can you programmatically determine that certs have been rotated?
 
 Look for changes to the Defender certificates on the machine that runs Console.
@@ -300,12 +313,14 @@ Certificates are stored in `/var/lib/twistlock/certificates`.
 Inspect the Defender CA cert for its expiration time.
 When the .old suffix is added to the cert file, you will know it has been rotated.
 
+[#can-you-manage-the-certificate-lifecycle-yourself]
 ===== Can you manage the certificate lifecycle yourself?
 
 Yes, for Compute Edition (self-hosted) only.
 
 SaaS Defenders connect to Console using an API token, not certs.
 
+[#after-certs-have-been-rotated-whats-returned-from-apivversiondefendersdaemonsetyaml]
 ===== After certs have been rotated, what's returned from  api/v<VERSION>/defenders/daemonset.yaml?
 
 The DaemonSet yaml will include both sets of new and old certs:
@@ -322,6 +337,7 @@ Old certs:
 * defender-client-cert.pem.old
 * defender-client-key.pem.old
 
+[#which-defender-types-support-certificate-rotation]
 ===== Which Defender types support certificate rotation?
 
 Supported Defender types:
@@ -334,11 +350,13 @@ Supported Defender types:
 Serverless Defenders aren't supported.
 Serverless Defenders are always deployed with old, unexpired certs, even if new certs exist.
 
+[#what-happens-the-moment-a-defenders-old-certs-expire]
 ===== What happens the moment a Defender's old certs expire?
 
 Defenders can switch to new certificates from old certificates at runtime.
 No restart is required.
 
+[#admission-control-certificates]
 === Admission control certificates
 
 Prisma Cloud provides a dynamic admission controller for Kubernetes built on the Open Policy Agent (OPA).

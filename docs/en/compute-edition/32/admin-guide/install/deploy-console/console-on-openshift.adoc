@@ -1,13 +1,16 @@
+[#openshift-v4]
 == OpenShift v4
 
 Prisma Cloud Console is deployed as a Deployment, which ensures it's always running.
 The Prisma Cloud Console and Defender container images can be stored either in the internal OpenShift registry or your own Docker v2 compliant registry.
 Alternatively, you can configure your deployments to pull images from xref:./container-images.adoc[Prisma Cloud's cloud registry].
 
+[#preflight-checklist]
 === Preflight checklist
 
 To ensure that your installation on supported versions of OpenShift v4.x goes smoothly, work through the following checklist and validate that all requirements are met.
 
+[#minimum-system-requirements]
 ==== Minimum system requirements
 
 Validate that the components in your environment (nodes, host operating systems, orchestrator) meet the specs in
@@ -19,6 +22,7 @@ For OpenShift installs, we recommend using the overlay or overlay2 storage drive
 For more information, see https://bugzilla.redhat.com/show_bug.cgi?id=1518519.
 ====
 
+[#permissions]
 ==== Permissions
 
 Validate that you have permission to:
@@ -38,9 +42,11 @@ For OpenShift installations, a project is created when you run _oc new-project_.
 
 * Run _oc create_ commands.
 
+[#internal-cluster-network-communication]
 ==== Internal cluster network communication
 TCP: 8083, 8084
 
+[#external-cluster-network-communication]
 ==== External cluster network communication
 TCP: 443
 
@@ -48,6 +54,7 @@ The Prisma Cloud Console connects to the Prisma Cloud Intelligence Stream (https
 If your Console is unable to contact the Prisma Cloud Intelligence Stream, follow the guidance for xref:../../tools/update-intel-stream-offline.adoc[offline environments].
 
 [.task]
+[#download-the-prisma-cloud-software]
 ==== Download the Prisma Cloud software
 
 Download the latest Prisma Cloud release to any system where the OpenShift https://www.okd.io/download.html[oc client] is installed.
@@ -75,6 +82,7 @@ The _twistcli_ utility is included with every release.
 After completing this procedure, both Prisma Cloud Console and Prisma Cloud Defenders will be running in your OpenShift cluster.
 
 
+[#create-an-openshift-project-for-prisma-cloud]
 ==== Create an OpenShift project for Prisma Cloud
 
 Create a project named _twistlock_.
@@ -87,6 +95,7 @@ Create a project named _twistlock_.
 ----
 
 [.task]
+[#optional-push-the-prisma-cloud-images-to-a-private-registry]
 ==== (Optional) Push the Prisma Cloud images to a private registry
 
 When Prisma Cloud is deployed to your cluster, the images are retrieved from a registry.
@@ -149,6 +158,7 @@ $ docker tag \
   $ docker push 172.30.163.181:5000/twistlock/private:console_<VERSION>
 ----
 
+[#install-console]
 ==== Install Console
 
 Use the _twistcli_ tool to generate YAML files or a Helm chart for Prisma Cloud Compute Console.
@@ -177,6 +187,7 @@ Guidance for creating an NFS backed PersistentVolume can be found link:https://d
 Also see <<Appendix: NFS PersistentVolume example>>.
 
 [.task]
+[#option-1-deploy-with-yaml-files]
 ===== Option #1: Deploy with YAML files
 
 Deploy Prisma Cloud Compute Console with YAML files.
@@ -230,6 +241,7 @@ You can safely ignore the error that says the twistlock project already exists.
 ====
 
 [.task]
+[#option-2-deploy-with-helm-chart]
 ===== Option #2: Deploy with Helm chart
 
 Deploy Prisma Cloud Compute Console with a Helm chart.
@@ -323,6 +335,7 @@ metadata:
 ----
 
 [.task]
+[#create-an-external-route-to-console]
 ==== Create an external route to Console
 
 Create an external route to Console so that you can access the web UI and API.
@@ -355,6 +368,7 @@ If you plan to issue a xref:../../configure/certificates.adoc[custom certificate
 . Click *Create*.
 
 [.task]
+[#create-an-external-route-to-console-for-external-defenders]
 ==== Create an external route to Console for external Defenders
 
 If you are planning to deploy Defenders to another cluster and report to this Console, you will need to create an additional external route to Console so that the Defenders can access the Console. You need to expose the Prisma Cloud-Console service’s TCP port 8084 as external OpenShift routes. Each route will be an unique, fully qualified domain name.
@@ -390,6 +404,7 @@ The Defender to Console communication is a mutual TLS secure websocket session. 
 . Click *Create*.
 
 [.task]
+[#configure-console]
 ==== Configure Console
 
 Create your first admin user, enter your license key, and configure Console's certificate so that Defenders can establish a secure connection to it.
@@ -423,6 +438,7 @@ Additionally, if a route for external Defenders was created, add that one to the
 image::install_openshift_san.png[width=700]
 
 [.task]
+[#appendix-nfs-persistentvolume-example]
 === Appendix: NFS PersistentVolume example
 
 Create an NFS mount for the Prisma Cloud Console's PV on the host that serves the NFS mounts.
@@ -481,6 +497,7 @@ claimRef:
 ----
 
 [.task]
+[#appendix-implementing-saml-federation-with-a-prisma-cloud-console-inside-an-openshift-cluster]
 === Appendix: Implementing SAML federation with a Prisma Cloud Console inside an OpenShift cluster
 
 When federating Prisma Cloud Console that is accessed through an OpenShift external route with a SAML v2.0 Identity Provider (IdP), the SAML authentication request's _AssertionConsumerServiceURL_ value must be modified.

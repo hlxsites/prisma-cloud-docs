@@ -7,10 +7,12 @@ image::runtime-security/waas-firewall-protections.png[]
 
 NOTE: The following protections are available for Container, Host, and App-Embedded rules. Serverless rules have a limited set of protections focusing mostly on OWASP Top-10 attacks.
 
+[#owasp-top-10-protection]
 === OWASP Top-10 Protection
 
 WAAS offers protection for the critical security risks described in the OWASP Top Ten list.
 
+[#sql-injection]
 ==== SQL Injection
 
 An SQL injection (SQLi) attack occurs when an attacker inserts an SQL query into the input fields of a web application. A successful attack can read sensitive data from the database, modify data in the database, or run arbitrary commands.
@@ -18,6 +20,7 @@ An SQL injection (SQLi) attack occurs when an attacker inserts an SQL query into
 WAAS parses and tokenizes input streams (request data) and then detects malicious attempts to inject unauthorized SQL queries.
 
 
+[#cross-site-scripting]
 ==== Cross Site Scripting
 
 Cross-Site Scripting (XSS) is a type of injection attack, in which malicious JavaScript snippets are injected into otherwise benign and trusted websites. Attackers try to trick the browser into switching to a Javascript context and executing arbitrary code.
@@ -25,6 +28,7 @@ Cross-Site Scripting (XSS) is a type of injection attack, in which malicious Jav
 WAAS parses and tokenizes input streams (request data) and then searches for matching fingerprints of known malicious attack patterns.
 
 
+[#command-code-injection]
 ==== Command & Code Injection
 
 Command injection is a form of attack in which attackers attempt to run arbitrary commands on the web application's host.
@@ -36,6 +40,7 @@ WAAS inspects all HTTP requests sent to the application and protects against all
 NOTE: Prisma Cloud architecture facilitates defense in-depth via multiple protection layers. Enabling xref:../runtime-defense/runtime-defense.adoc[Runtime Protection] in addition to WAAS would allow profiling of the application and identifying any anomalies resulting from command or code injections (e.g. unexpected new processes or DNS queries)
 
 
+[#local-file-inclusion]
 ==== Local File Inclusion
 
 Local File Inclusion is a form of attack in which attackers attempt to gain unauthorized access to locally stored sensitive files on the web application host. Such access attempts are often made using directory traversal attacks or exploiting file inclusion vulnerabilities in the application.
@@ -43,6 +48,7 @@ Local File Inclusion is a form of attack in which attackers attempt to gain unau
 WAAS inspects all HTTP requests sent to the application for local file inclusion attacks aiming at sensitive system files as well as other various traversal attempts.
 
 
+[#attack-tool-vulnerability-scanners]
 ==== Attack Tool & Vulnerability Scanners
 
 Vulnerability scanners are automated tools that scan web applications for known security vulnerabilities and misconfiguration.
@@ -62,8 +68,10 @@ Once defined, users can choose WAAS actions to apply for requests that do not co
 For further details on configuring API protection, refer to the xref:./waas-api-protection.adoc[API Protection] help page.
 
 
+[#security-misconfigurations]
 === Security Misconfigurations
 
+[#shellshock]
 ==== Shellshock
 
 Shellshock is a unique privilege escalation vulnerability that permits remote code execution.
@@ -75,6 +83,7 @@ For more information about Shellshock, see
 https://en.wikipedia.org/wiki/Shellshock_(software_bug)#Initial_report_(CVE-2014-6271)[CVE-2014-6271].
 
 
+[#malformed-request-protection]
 ==== Malformed Request Protection
 
 WAAS validates the structure of HTTP requests, automatically blocking those that are malformed.
@@ -85,6 +94,7 @@ Examples of malformed requests include:
 * HTTP POST requests without a `Content-Length` header.
 
 
+[#cross-site-request-forgery]
 ==== Cross-site Request Forgery
 
 Cross-site request forgery (CSRF) attacks trick the victim's browser into executing unwanted actions on a web application in which the victim is currently authenticated.
@@ -117,6 +127,7 @@ https://caniuse.com/#feat=same-site-cookie-attribute[following browsers support 
 For more information about the SameSite attribute, see https://tools.ietf.org/html/draft-west-first-party-cookies-07
 
 
+[#clickjacking]
 ==== Clickjacking
 
 Web applications that permit their content to be embedded in a frame are at risk of clickjacking attacks. Attackers can exploit permissive settings to invisibly load the target website into their own site and trick users into clicking on links that they never intended to click.
@@ -124,6 +135,7 @@ Web applications that permit their content to be embedded in a frame are at risk
 WAAS modifies all response headers, setting the `X-Frame-Options` response header value to `SAMEORIGIN`. The `SAMEORIGIN` directive only permits a page to be displayed in a frame on the same origin as the page itself.
 
 
+[#intelligence-gathering]
 === Intelligence Gathering
 
 Error messages give attackers insight into the inner workings of your application. It is therefore important to prevent information leakage.
@@ -131,6 +143,7 @@ Error messages give attackers insight into the inner workings of your applicatio
 The following controls limit the exposure of sensitive information.
 
 [.section]
+[#remove-server-fingerprints]
 ==== Remove Server Fingerprints
 
 By gathering information about the software type and version used by the web application, attackers may learn about potentially known weaknesses and bugs and exploit them.
@@ -140,11 +153,13 @@ Eliminating unnecessary headers makes it more difficult for attackers to identif
 Response headers that advertise your application's web server and other server details should be scrubbed. WAAS automatically removes unnecessary headers, such as `X-Powered-By`, `Server`, `X-AspNet-Version`, and `X-AspNetMvc-Version`.
 
 [.section]
+[#detect-information-leakage]
 ==== Detect Information Leakage
 
 WAAS detects situations where the contents of critical files, such as _/etc/shadow_, _/etc/passwd_, and private keys, are contained in responses. WAAS will also detect when responses contain directory listings, output from php_info() function calls, and other similar data leakage cases of potentially risky information.
 
 [.section]
+[#prisma-cloud-advanced-threat-protection]
 ==== Prisma Cloud Advanced Threat Protection
 
 Prisma Cloud Advanced Threat Protection (ATP) is a collection of malware signatures and IP reputation lists aggregated from commercial threat feeds, open-source threat feeds, and Prisma Cloud Labs. It is delivered to your installation via the Prisma Cloud Intelligence Stream.
@@ -195,6 +210,7 @@ NOTE: Every protection will have different locations available for exclusion bas
 
 
 [.task]
+[#add-a-new-exception]
 ==== Add a New Exception
 
 [.procedure]
@@ -214,6 +230,7 @@ NOTE: Every protection will have different locations available for exclusion bas
 
 
 [.task]
+[#manage-exceptions]
 ==== Manage Exceptions
 
 [.procedure]

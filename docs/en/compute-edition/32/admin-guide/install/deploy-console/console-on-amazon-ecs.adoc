@@ -1,3 +1,4 @@
+[#deploy-the-prisma-cloud-console-on-amazon-ecs]
 == Deploy the Prisma Cloud Console on Amazon ECS
 
 Complete the steps on this page to deploy the Prisma Cloud console in an ECS cluster.
@@ -30,6 +31,7 @@ If you are already familiar with AWS ECS and do not need assistance navigating t
 To better understand clusters, read our xref:../cluster-context.adoc[cluster context] topic.
 
 [.task]
+[#get-prisma-cloud]
 === Get Prisma Cloud
 
 The Prisma Cloud release tarball contains all the release artifacts.
@@ -47,6 +49,7 @@ The Prisma Cloud release tarball contains all the release artifacts.
   $ tar xvzf prisma_cloud_compute_edition_<VERSION>.tar.gz  -C twistlock/
 
 [.task]
+[#create-a-cluster]
 === Create a cluster
 
 Create an empty cluster named _pc-ecs-cluster_.
@@ -66,6 +69,7 @@ Later, you will create launch configurations and auto-scaling groups to start EC
 . Click *Create*.
 
 [.task]
+[#create-a-security-group]
 === Create a security group
 
 Create a new security group named _pc-security-group_ that opens the following ports.
@@ -129,6 +133,7 @@ For example, you might want to limit access to port 22 to specific source IPs.
 . Click *Create security group*.
 
 [.task]
+[#create-an-efs-file-system-for-console]
 === Create an EFS file system for Console
 
 Create the Console EFS file system, and then get the command that will be used to mount the file system on every infrastructure node.
@@ -175,6 +180,7 @@ For example, if you plan to deploy ten Defenders, set throughput to 1 MiB/s (10 
 +
 You will use the mount command when setting up Console's launch configuration.
 
+[#set-up-a-load-balancer]
 === Set up a load balancer 
 
 Set up an AWS Classic Load Balancer, and capture the Load Balancer DNS name. 
@@ -186,6 +192,7 @@ Another is used for the websocket connection between Defender and Console, which
 For detailed instructions on how to create a load balancer for Console, see xref:../../howto/configure-ecs-loadbalancer.adoc[Configure an AWS Load Balancer for ECS].
 
 [.task]
+[#use-a-private-registry]
 === Use a private registry
 
 For maximum control over your environment, you might want to store the Console container image in your own private registry, and then install Prisma Cloud from your private registry.
@@ -216,11 +223,13 @@ It is required to push the Console image to your registry.
 +
 Be sure to update your Console task definition so that the value for `image` points to your private registry.
 
+[#deploy-console]
 === Deploy Console
 
 Launch an infrastructure node that runs in the cluster, then start Prisma Cloud Console as a service on that node.
 
 [.task]
+[#create-a-launch-configuration-for-the-infrastructure-node]
 ==== Create a launch configuration for the infrastructure node
 
 Launch configurations are templates that are used by an auto-scaling group to start EC2 instances in your cluster.
@@ -297,6 +306,7 @@ With this option, you can easily SSH to this instance to troubleshoot issues.
 
 
 [.task]
+[#create-an-auto-scaling-group-for-the-infrastructure-node]
 === Create an auto scaling group for the infrastructure node
 
 Launch a single instance of the infrastructure node into your cluster.
@@ -340,6 +350,7 @@ In the details page for the EC2 instance, record the *Public DNS*.
 
 
 [.task]
+[#copy-the-prisma-cloud-config-file-into-place]
 === Copy the Prisma Cloud config file into place
 
 The Prisma Cloud API serves the version of the configuration file used to instantiate Console.
@@ -367,6 +378,7 @@ Use scp to copy _twistlock.cfg_ from the Prisma Cloud release tarball to _/twist
   $ exit
 
 [.task]
+[#create-a-prisma-cloud-console-task-definition]
 === Create a Prisma Cloud Console task definition
 
 Prisma Cloud provides a task definition template for Console.
@@ -416,6 +428,7 @@ By default, its name is *pc-console*.
 . Click *Create*.
 
 [.task]
+[#start-the-prisma-cloud-console-service]
 === Start the Prisma Cloud Console service
 
 Create the Console service using the previously defined task definition.
@@ -463,6 +476,7 @@ A single instance of Console will run on the infrastructure node.
 . Wait for *Last status* to change to *RUNNING* (it can take a few minutes), and then proceed to the next step.
 
 [.task]
+[#configure-prisma-cloud-console]
 === Configure Prisma Cloud Console
 
 Navigate to Console's web interface, create your first admin account, and enter your license.

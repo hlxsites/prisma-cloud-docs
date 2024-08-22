@@ -1,3 +1,4 @@
+[#clustered-db]
 == Clustered-DB
 
 Running Prisma Cloud Compute in the clustered-DB configuration lets you sync Console’s database across multiple instances of Console.
@@ -10,6 +11,7 @@ That is, all Consoles must be new.
 Accordingly, all Defenders must be new as well.
 
 
+[#recommendations-for-your-clustered-db-setup]
 === Recommendations for your clustered-DB setup
 
 The information in the following sections help you make informed decisions when selecting pool size, load balancer configuration, and storage types.
@@ -63,11 +65,13 @@ When configuring your load balancer, make sure to set up the following:
 * To ensure LB can identify unavailable Consoles, we recommended that you set a health check to the Console ping API: \https://<ip:port>/api/v1/_ping.
 
 
+[#performance-implications]
 ==== Performance implications
 
 When deploying a clustered-DB setup on AWS, we recommend that you use https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html[EBS-optimized instances].
 
 
+[#custom-certificates]
 === Custom certificates
 
 You can provide a custom certificate to the clustered-DB Consoles pool.
@@ -79,6 +83,7 @@ NOTE: All Consoles and Defenders must be signed with the same CA.
 This is also relevant for xref:../configure/custom-certs-predefined-dir.adoc[configuring custom certs from a predefined directory].
 
 
+[#guidelines]
 === Guidelines
 
 Before you begin, make sure to follow these guidelines:
@@ -95,6 +100,7 @@ This load balancer will be used for Defenders, twistcli, API and TLS communicati
 
 
 [.task]
+[#creating-the-clustered-db-pool]
 === Creating the clustered-DB pool
 
 [.procedure]
@@ -181,6 +187,7 @@ Expected output:
   3. Address: Console3_address, State: SECONDARY
 
 
+[#clustered-db-potential-statuses]
 === Clustered-DB potential statuses  
 
 The clustered-DB status call restrains the status of the entire pool and the status for each one of the members.
@@ -230,6 +237,7 @@ NOTE this member is not eligible to vote and cannot be elected during the initia
 
 
 [.task]
+[#remove-members]
 === Remove members
 
 Follow the steps below to remove a member (Console) from the pool.
@@ -249,6 +257,7 @@ This Console can’t be added to the pool again since it’s already initialized
 You won't be able to return the same member to the pool, unless you delete the Console and create a new non-initialized one.
 
 
+[#console-disconnection]
 === Console disconnection
 
 If Console fails, the clustered-DB pool will choose a new primary Console.
@@ -261,6 +270,7 @@ This is due to possible DB differences.
 If the delta between the disconnected member and the pool DB is significant, the member DB will be restored from the current pool DB.
 
 
+[#upgrade-clustered-db-consoles]
 === Upgrade clustered-DB Consoles
 
 All Consoles should run the same *major and minor version* (i.e., exactly the same x.y.z version).
@@ -269,6 +279,7 @@ For example, if the DB was upgraded to x.y.z+1, members still running the previo
 They just replicate the DB.
 
 
+[#limitations]
 === Limitations
 
 The clustered-DB setup has the following limitations:
