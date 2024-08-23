@@ -1,21 +1,32 @@
 == OCI Network Security Groups (NSG) has stateful security rules
 
+=== Policy Details
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 326857e9-ce14-4509-afbb-5125e5235c12
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/oci/SecurityGroupsIngressStatelessSecurityRules.py[CKV_OCI_21]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build, Run
+
+|Frameworks
+|Terraform
+
+|=== 
+
 
 === Description
 
 Stateless rules for network security groups create one way traffic rather than two.
 This makes it very explicit which ports are available internally and externally.
 This is recommended for high volume websites.
-
-////
-=== Fix - Runtime
-
-. Go to Networking > Virtual Cloud Networks > VCN Name > Resources > Network Security Groups
-
-. Edit your Network Security Group
-
-. Under Security Rules, Rules, check "Stateless" for all rules
-////
 
 === Fix - Buildtime
 * *Resource:* oci_core_network_security_group_security_rule
@@ -24,9 +35,10 @@ This is recommended for high volume websites.
 [source,go]
 ----
 resource "oci_core_network_security_group_security_rule" "pass" {
-    network_security_group_id = oci_core_network_security_group.test_network_security_group.id
-    direction                 = "INGRESS"
-    protocol                  = var.network_security_group_security_rule_protocol
+  network_security_group_id = oci_core_network_security_group.test_network_security_group.id
+  direction                 = "INGRESS"
+  protocol                  = var.network_security_group_security_rule_protocol
++  stateless                 = true
 }
 ----
 
