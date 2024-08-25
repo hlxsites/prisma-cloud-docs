@@ -8,24 +8,25 @@
 
 Read this section to learn about what is planned in the upcoming `33.00` release on the Runtime Security of the Prisma Cloud console for WAAS, Host Security, Serverless Security, and Container Security.
 
-// The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
+The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
 
 //Currently, there are no previews or announcements for updates.
 
-// [NOTE]
-// ====
-// The details and functionality listed below are a preview of what is planned for the `v32.07` release; the changes listed herein and the actual release date, are subject to change.
-// ====
+[NOTE]
+====
+The details and functionality listed below are a preview of what is planned for the `v33.00` release; the changes listed herein and the actual release date, are subject to change.
+====
 
 
 // // * <<defender-upgrade>>
 // // * <<new-ips-for-runtime>>
 // //* <<announcement>>
-// * <<enhancements>>
-// //* <<api-changes>>
+* <<upcoming-major-change>>
+* <<enhancements>>
+* <<api-changes>>
 // // * <<deprecation-notices>>
 // // * <<eos-notices>>
-// // * <<addressed-issues>>
+* <<addressed-issues>>
 
 
 // // [#new-ips-for-runtime]
@@ -40,7 +41,10 @@ Read this section to learn about what is planned in the upcoming `33.00` release
 
 //[#announcement]
 //=== Announcements
-=== Upcoming Transition from OVAL to VEX Format for Red Hat Security Data
+
+[#upcoming-major-change]
+=== Upcoming Major Change
+==== Transition from OVAL to VEX Format for Red Hat Security Data
 
 Prisma Cloud is transitioning from the OVAL format to the new VEX format that Red Hat has introduced and adopted for reporting security data and vulnerabilities in Red Hat artifacts.
 
@@ -67,29 +71,35 @@ If you have any concerns or need more information about this transition, please 
 
 // |===
 
-// [#enhancements]
-// === Enhancements
+[#enhancements]
+=== Enhancements
 
 // The following enhancements are planned. The details will be available at release:
 
-// [cols="30%a,70%a"]
-// |===
-// |*Feature*
-// |*Description*
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
 
-// // https://redlock.atlassian.net/browse/CWP-59772
+// CWP-59339
 
-// |*Enhancement to Photon OS and Amazon Linux OS Feeds*
+|*Enhancement to WAAS Agentless Support*
 
-// |Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
+|In the upcoming release WAAS agentless rules will support traffic inspection for AWS Application Load Balancers (ALBs) in addition to AWS EC2 instances. 
 
-// // https://redlock.atlassian.net/browse/CWP-57626
+You can view the scan results in the Prisma Cloud console to monitor and manage your ALB traffic inspection. Ensure your AWS account is onboarded to the Prisma Cloud console and then configure the ALB rule. 
 
-// |*Support for Azure Container Registry and VM image scanning*
+*NOTE*: This feature is enabled on request. Please contact your Account team for more information.
 
-// |Prisma Cloud now supports scanning Azure Container Registry (ACR) and Virtual Machine (VM) images for Azure cloud accounts that are onboarded directly through the platform.
+|*Lifecycle Support Update*
 
-// |===
+|Prisma Cloud officially gurantess backward compatibility with up to two previous major versions (N-2). 
+
+From version 33.xx onwards, Prisma Cloud will not restrict usage of Defender versions or REST API calls from up to three major releases prior to the current version.
+
+For example, with the current version at 33.xx, API calls and Defenders from version 30.xx will remain functional, while providing backward compatibility for versions 32.xx and 31.xx. 
+
+|===
 
 // [#deprecation-notices]
 // === Deprecation Notices
@@ -98,41 +108,81 @@ If you have any concerns or need more information about this transition, please 
 
 // |===
 
-//[#api-changes]
-//=== API Changes
+[#api-changes]
+=== API Changes
 
-//[cols="30%a,70%a"]
-//|===
-//|*Change*
-//|*Description*
+[cols="30%a,70%a"]
+|===
+|*Change*
+|*Description*
 
-// https://redlock.atlassian.net/browse/CWP-57289
+//CWP-59340
 
-//|*Remove hostname from registry progress response*
+|*WAAS Agentless - Support AWS LB*
 
-//|The response of the https://pan.dev/prisma-cloud/api/cwpp/get-registry-progress/[View Registry Scan Progress] API has the following changes:
+|The Set Agentless App Firewall Policy API request will have the following changes:
 
-//    * A new `specScanStartTime` field is added
+* The existing `trafficMirroring > vpcConfig` property will be modified to include three new fields:
 
-//   * The existing `discovery` and `imageScan` properties have been modified to:
+** lbARN - ARN of the observed load balancer.
+** lbName - Load balancer name.
+** lbType - Load balance type.
 
-//            ** Include a new `type` field
++
 
-//            ** Remove the `hostname` and `scanTime` fields
+*NOTE*: The above-listed fields will be applicable only to the ALB load balancers.
 
-// https://redlock.atlassian.net/browse/CWP-58306
+* The following existing fields will be applicable as described below:
+** instanceNames -  used only in EC2 rules.
+** subnetID - used only in EC2 rules.
+** tags - used only in EC2 rules.
+** vpcID - must be empty (””) for ALB rules
+** autoScalingEnabled - must be true for ALB rules.
 
-//|*Component documentation for API address resolving method for cluster name*
+|===
 
-//|A new optional field `clusterNameResolvingMethod` will be added to the following APIs:
+[#addressed-issues]
+=== Addressed Issues
 
-//* https://pan.dev/compute/api/post-defenders-daemonset-yaml/[Generate Daemonset Deployment YAML File]
+[cols="30%a,70%a"]
 
-//* https://pan.dev/compute/api/post-defenders-helm-twistlock-defender-helm-tar-gz/[Generate a Helm Deployment Chart for Defender]
+|===
+//CWP-60486
 
-//The permissible values for this field are `default`, `manual`, or `api-server` to support various offerings to resolve K8s Cluster names.  
+|*MongoDB Upgrade to Version 6.0.16*
 
-//|===
+|The MongoDB package has been successfully upgraded to version 6.0.16.
+
+As a result, the console deployed image is no longer vulnerable to CVE-2024-6375 and is no longer present on the ignore list.
+
+//CWP-61444
+
+|*Enhancements in Amazon Linux CVE Reporting*
+
+|Vulnerability information for many Amazon Linux CVEs lacked consistency across different Intelligence Stream updates, including changes in severity levels and fixed status versions.
+
+To address this, several key improvements were made, including enhanced consistency across scans, improved handling of duplicated CVEs, accurate ALAS to CVE conversion, and refined kernel package rules. These changes ensure more reliable and actionable vulnerability information for all Amazon distributions and kernel packages.
+
+
+//CWP-58814
+
+|*Java Version No Longer Incorrectly Reported*
+
+|Prisma Cloud incorrectly reported Java version 1.8.0_362 as an affected version for CVE-2023-21930, due to a configuration error.
+
+This issue has now been resolved. The incorrect rule has been removed, and CVE-2023-21930 now correctly identifies the affected Java versions.
+
+//CWP-58355
+|*Minor Versions Included for Alpine CVEs*
+
+|Alpine's security database shows vulnerabilities for each Alpine package, including fixed versions and associated CVEs. However, when the CVE does not include a fixed version, the rule misses vulnerabilities in minor versions, leading to incomplete vulnerability coverage.
+
+This issue has been fixed. The updated vulnerability rules ensure that minor versions are included, even when no specific fix version is available.
+
+
+|===
+
+// |===
 
 // [#eos-notices]
 // === End of Support Notices
@@ -140,14 +190,4 @@ If you have any concerns or need more information about this transition, please 
 
 // |===
 
-
-// [#addressed-issues]
-// === Addressed Issues
-
-//[cols="30%a,70%a"]
-
-// |===
-
-
-// |===
 
