@@ -14,6 +14,7 @@ Learn what's new on Prisma® Cloud in September 2024.
 * <<deprecation-notices>>
 * <<end-of-sale>>
 
+
 [#new-features]
 === New Features
 
@@ -21,5 +22,585 @@ Learn what's new on Prisma® Cloud in September 2024.
 |===
 |*Feature*
 |*Description*
+
+|*Improved Shared Views*
+//RLP-147440
+
+|Enhancements to Saved Views in Prisma Cloud allow you to share custom views with ease. Navigate to *Home > Alerts > Manage Views* and use the checkbox option to *Enable this view/dashboard for all viewers automatically*.If you are the creator of a custom view, checking the box will make the view visible for all users by default.  Previously, sharing views required manual enablement by individual users. Learn more about https://docs.prismacloud.io/en/enterprise-edition/content-collections/alerts/saved-views[Saved Views].
+
+|===
+
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Audit Logs Warning*
+//RLP-148505
+
+|Starting with the 24.9.1 release, if you have configured your AWS account or organization to ingest audit logs through EventBridge, you might see a warning message stating: 
+`Rule <prisma-cloud-your-tenant-id-audit-logs-rule> does not exist on EventBus default in <region>`
+
+This warning is due to performance enhancements in the EventBridge rule configuration, which do not affect system functionality.
+To resolve the warning, download the CloudFormation Template (CFT) from *Misconfigurations > Near Real-Time Visibility > Edit*, and update your CFT stack in AWS. For detailed instructions, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/configure-audit-logs#:~:text=Time%20Visibility.-,Configure%20Details.,-Click%20Download%20EventBridge[Configure Audit Logs].
+
+*Impact—* Updating the CFT will result in an increase in the number of EventBridge rules enabling Prisma Cloud to ingest only the relevant audit logs.
+
+|*Amazon EC2 Ingestion*
+//RLP-145171
+
+|Starting with the 24.9.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+
+*Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
+
+If you have any questions, contact your Prisma Cloud Customer Success Representative.
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="30%a,70%a"]
+|===
+|*Service*
+|*API Details*
+
+
+|*Amazon Redshift*
+//RLP-148150
+
+|*aws-redshift-serverless-workgroup*
+
+Additional permission required:
+
+* `redshift-serverless:ListWorkgroups`
+
+The Security Audit role includes the above permission.
+
+|*AWS Security Hub*
+//RLP-148149
+
+|*aws-securityhub-enabled-products-for-import*
+
+Additional permission required:
+
+* `securityhub:ListEnabledProductsForImport`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+//RLP-148145
+
+|*aws-bedrock-model-invocation-logging-configuration*
+
+Additional permission required:
+
+* `bedrock:GetModelInvocationLoggingConfiguration`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+//RLP-148144
+
+|*aws-bedrock-provisioned-model-throughput*
+
+Additional permissions required:
+
+* `bedrock:ListProvisionedModelThroughputs`
+* `bedrock:GetProvisionedModelThroughput`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListProvisionedModelThroughputs` and `bedrock:GetProvisionedModelThroughput` permissions. You must manually add them to the CFT template to enable them.
+
+|*Amazon Bedrock*
+//RLP-148141
+
+|*aws-bedrock-model-customization-job*
+
+Additional permissions required:
+
+* `bedrock:ListModelCustomizationJobs`
+* `bedrock:GetModelCustomizationJob`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListModelCustomizationJobs` and `bedrock:GetModelCustomizationJob` permissions. You must manually add them to the CFT template to enable them.
+
+|*Amazon Bedrock*
+//RLP-148135
+
+|*aws-bedrock-knowledgebase*
+
+Additional permissions required:
+
+* `bedrock:ListKnowledgeBases`
+* `bedrock:GetKnowledgeBase`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListKnowledgeBases` and `bedrock:GetKnowledgeBase` permissions. You must manually add them to the CFT template to enable them.
+
+|*Azure Databricks*
+//RLP-147853
+
+|*azure-databricks-access-connectors*
+
+Additional permission required:
+
+* `Microsoft.Databricks/accessConnectors/read`
+
+The Reader role includes the above permission.
+
+|*Azure Active Directory*
+//RLP-128447
+
+|*azure-active-directory-admin-consent-request-policy*
+
+Additional permission required:
+
+* `Policy.Read.All`
+
+The Global Reader role includes the above permission.
+
+|*Azure Active Directory*
+//RLP-128079
+
+|*azure-active-directory-cross-tenant-access-default-settings*
+
+Additional permission required:
+
+* `Policy.Read.All`
+
+The Global Reader role includes the above permission.
+
+|*Azure Active Directory*
+//RLP-127879
+
+|*azure-active-directory-configured-external-identity-provider*
+
+Additional permission required:
+
+* `IdentityProvider.Read.All`
+
+//The External Identity Provider Administrator or External ID user flow administrator role includes the above permission.
+
+|*Google Cloud Batch Job*
+//RLP-148101
+
+|*gcloud-cloud-batch-job*
+
+Additional permission required:
+
+* `batch.jobs.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148100
+
+|*gcloud-bare-metal-solution-volume-lun*
+
+Additional permissions required:
+
+* `baremetalsolution.instances.list`
+* `baremetalsolution.luns.list`
+
+The Viewer role includes the above permissions.
+
+|*Google Bare Metal Solution*
+//RLP-148099
+
+|*gcloud-bare-metal-solution-nfs-share*
+
+Additional permission required:
+
+* `baremetalsolution.nfsshares.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148098
+
+|*gcloud-bare-metal-solution-volume*
+
+Additional permission required:
+
+* `baremetalsolution.volumes.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148097
+
+|*gcloud-bare-metal-solution-network*
+
+Additional permission required:
+
+* `baremetalsolution.networks.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-147865
+
+|*gcloud-bare-metal-solution-instance*
+
+Additional permission required:
+
+* `baremetalsolution.instances.list`
+
+The Viewer role includes the above permission.
+
+
+|*OCI Web Application Firewall*
+//RLP-148332
+
+|*oci-loadbalancer-waf*
+
+Additional permissions required:
+
+* `WEB_APP_FIREWALL_INSPECT`
+* `WEB_APP_FIREWALL_READ`
+
+The Reader role includes the above permissions.
+
+
+|===
+
+
+[#new-policies]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+
+
+
+|*AWS IAM user is not a member of any IAM group*
+
+tt:[24.9.1]
+//RLP-148660
+
+|This policy identifies an AWS IAM user as not being a member of any IAM group.
+
+It is generally a best practice to assign IAM users to at least one IAM group. If the IAM users are not in a group, it complicates permission management and auditing, increasing the risk of privilege mismanagement and security oversights. It also leads to higher operational overhead and potential non-compliance with security best practices.
+
+It is recommended to ensure all IAM users are part of at least one IAM group according to your business requirement to simplify permission management, enforce consistent security policies, and reduce the risk of privilege mismanagement.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-list-users' AND json.rule = groupList is empty
+----
+
+|*AWS KMS Customer Managed Key (CMK) is disabled*
+
+tt:[24.9.1]
+//RLP-148659
+
+|This policy identifies the AWS KMS Customer Managed Key (CMK) that is disabled.
+
+Ensuring that your Amazon Key Management Service (AWS KMS) key is enabled is important because it determines whether the key can be used to perform cryptographic operations.  If an AWS KMS Key is disabled, any operations dependent on that key, such as encryption or decryption of data, will fail. This can lead to application downtime, data access issues, and potential data loss if not addressed promptly.
+
+It is recommended to enable the AWS KMS Customer Managed Key (CMK) if it is used in the application, to restore cryptographic operations and ensure your applications and services can access encrypted data.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.enabled is false
+----
+
+|*Azure Cognitive Services account hosted with OpenAI is not configured with data loss prevention*
+
+tt:[24.9.1]
+//RLP-124566
+
+|This policy identifies Azure Cognitive Services accounts hosted with OpenAI that are not configured with data loss prevention. 
+
+Azure AI services offer data loss prevention capabilities that allow customers to configure the list of outbound URLs their Azure AI services resources can access.
+
+As a best practice, it is recommended to enable the data loss prevention feature in OpenAI-hosted Azure Cognitive Services accounts to prevent data loss.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cognitive-services-account' AND json.rule = kind equal ignore case OpenAI and properties.provisioningState equal ignore case Succeeded and (properties.restrictOutboundNetworkAccess does not exist or properties.restrictOutboundNetworkAccess is false or (properties.restrictOutboundNetworkAccess is true and properties.allowedFqdnList is empty))
+----
+
+|*Azure Storage account diagnostic setting for blob is disabled*
+
+tt:[24.9.1]
+//RLP-139073
+
+|This policy identifies Azure Storage account blobs that have diagnostic logging disabled.
+
+By enabling diagnostic settings, you can capture various types of activities and events occurring within these storage account blobs. These logs provide valuable insights into the operations, performance, and security of the storage account blobs.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-blob-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+|*Azure Storage account diagnostic setting for file is disabled*
+
+tt:[24.9.1]
+//RLP-139080
+
+|This policy identifies Azure Storage account files that have diagnostic logging disabled.
+
+By enabling diagnostic settings, you can capture various types of activities and events occurring within these storage account files. These logs provide valuable insights into the operations, performance, and security of the storage account files.
+
+As a best practice, it is recommended to enable diagnostic logs on all storage account files.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-file-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+|*Azure Storage account diagnostic setting for queue is disabled*
+
+tt:[24.9.1]
+//RLP-139081
+
+|This policy identifies Azure Storage account queues that have diagnostic logging disabled.
+
+By enabling diagnostic settings, you can capture various types of activities and events occurring within these storage account queues. These logs provide valuable insights into the operations, performance, and security of the storage account queues.
+
+As a best practice, it is recommended to enable diagnostic logs on all storage account queues.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-queue-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+|*Azure Storage account diagnostic setting for table is disabled*
+
+tt:[24.9.1]
+//RLP-139082
+
+|This policy identifies Azure Storage account tables that have diagnostic logging disabled.
+
+By enabling diagnostic settings, you can capture various types of activities and events occurring within these storage account tables. These logs provide valuable insights into the operations, performance, and security of the storage account tables.
+
+As a best practice, it is recommended to enable diagnostic logs on all storage account tables.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-table-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+|*Azure Application Gateway listener not secured with SSL profile*
+
+tt:[24.9.1]
+//RLP-147324
+
+|This policy identifies Azure Application Gateway listeners that are not secured with an SSL profile.
+
+An SSL profile provides a secure channel by encrypting the data transferred between the client and the application gateway. Without SSL profiles, the data transferred is vulnerable to interception, posing security risks. This could lead to potential data breaches and compromise sensitive information.
+
+As a security best practice, it is recommended to secure all Application Gateway listeners with SSL profiles. This ensures data confidentiality and integrity by encrypting traffic.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-application-gateway' AND json.rule = ['properties.provisioningState'] equal ignore case Succeeded AND ['properties.httpListeners'][].['properties.provisioningState'] equal ignore case Succeeded AND ['properties.httpListeners'][].['properties.protocol'] equal ignore case Https AND ['properties.httpListeners'][*].['properties.sslProfile'].['id'] does not exist
+----
+
+|*Azure Virtual Desktop workspace diagnostic log is disabled*
+
+tt:[24.9.1]
+//RLP-147325
+
+|This policy identifies Azure Virtual Desktop workspaces where diagnostic logs are not enabled.
+
+Diagnostic logs are vital for monitoring and troubleshooting Azure Virtual Desktop, which offers virtual desktops and remote app services. They help detect and resolve issues, optimize performance, and meet security and compliance standards. Without these logs, it’s difficult to track activities and detect anomalies, potentially jeopardizing security and efficiency.
+
+As a best practice, it is recommended to enable diagnostic logs for Azure Virtual Desktop workspaces.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-virtual-desktop-workspace' AND json.rule = diagnostic-settings[?none( properties.logs[?any( enabled is true )] exists )] exists 
+----
+
+|*Azure Virtual Desktop disk encryption not configured with Customer Managed Key (CMK)*
+
+tt:[24.9.1]
+//RLP-148369
+
+|This policy identifies Azure Virtual Desktop environments where disk encryption is not configured using a Customer Managed Key (CMK). 
+
+Disk encryption is crucial for protecting data in Azure Virtual Desktop environments. By default, disks may be encrypted with Microsoft-managed keys, which might not meet specific security requirements. Using Customer Managed Keys (CMKs) offers better control over encryption, allowing organizations to manage key rotation, access, and revocation, thereby enhancing data security and compliance.
+
+As a best practice, it is recommended to configure disk encryption for Azure Virtual Desktop with a Customer Managed Key (CMK). 
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-vm-list' AND json.rule = ['Extensions'].['Microsoft.PowerShell.DSC'].['settings'].['properties'].['hostPoolName'] exists and powerState contains running as X; config from cloud.resource where api.name = 'azure-disk-list' AND json.rule = provisioningState equal ignore case Succeeded and (encryption.type does not contain "EncryptionAtRestWithCustomerKey" or encryption.diskEncryptionSetId does not exist) as Y; filter ' $.X.id equal ignore case $.Y.managedBy '; show Y;
+----
+
+|*Azure Virtual Machine not protected with Azure Backup*
+
+tt:[24.9.1]
+//RLP-148370
+
+|This policy identifies Azure Virtual Machines that are not protected by Azure Backup.
+
+Without Azure Backup, VMs are at risk of data loss due to accidental deletion, corruption, or ransomware attacks. Unprotected VMs may also not comply with organizational data retention policies and regulatory requirements.
+
+As a best practice, it is recommended to configure Azure Backup for all VMs to ensure data protection and enable recovery options in case of unexpected failures or incidents.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-recovery-service-backup-protected-item' AND json.rule = properties.workloadType equal ignore case VM as X; config from cloud.resource where api.name = 'azure-vm-list' AND json.rule = powerState contains running as Y; filter 'not $.Y.id equal ignore case $.X.properties.virtualMachineId'; show Y;
+----
+
+|===
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—Metadata*
+
+|*Policies*
+|*Description*
+
+|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
+//RLP-148554
+
+|*Changes—* The policy severity will be updated.
+
+*Current Policy Severity—* High
+
+*Updated Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*Impact—* Low
+
+
+|*Azure Key Vault Firewall is not enabled*
+//RLP-148542
+
+|*Changes—* The policy RQL will be updated to reduce false positives and only generate alerts if public access is enabled.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.networkAcls.ipRules[*].value does not exist AND properties.publicNetworkAccess does not equal ignore case "disabled"
+----
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls does not exist) or (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls.defaultAction equal ignore case allow )
+----
+*Policy Type—* Config
+
+*Impact—* Low. Open alerts where the public access is enabled and network ACLs default action is denied will be resolved.
+
+
+|*Azure App Service Web app doesn't use latest TLS version*
+//RLP-148541
+
+|*Changes—* The updated Policy RQL will not alert for minTlsVersion of 1.3.
+
+*Current Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1 and 1.2. It is highly recommended to use the latest TLS 1.2 version for web app secure connections.
+
+*Updated Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1, 1.2 and 1.3. It is highly recommended to use the latest TLS greater than 1.1 version for web app secure connections.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with "app" AND config.minTlsVersion does not equal "1.2"
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with app and config.minTlsVersion is member of ('1.0', '1.1')
+----
+
+*Policy Type—* Config
+
+*Policy Severity—* Low
+
+*Impact—* Low. Alert for Azure App Service Web app with minTlsVersion equals 1.3 will be resolved.
+
+|===
+
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*Framework for Adoption of Cloud Services by SEBI Regulated Entities*
+
+tt:[24.9.1]
+//RLP-147789
+
+|Prisma Cloud now supports  Consolidated Cybersecurity and Cyber Resilience Framework (CSCRF) released by the Securities and Exchange Board of India (SEBI) for all major cloud providers. CSCRF aims to establish a unified framework that encompasses various strategies to safeguard REs (Regulated Entities) and Market Infrastructure Institutions (MIIs) against cyber risks and incidents. Framework of adoption is part of the SEBI's overall CSRF standard. 
+
+You can view this built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+*Impact*— As new mappings are introduced, compliance scoring might vary.
+
+|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*RLP-149246*
+
+|Placeholder 
 
 |===
