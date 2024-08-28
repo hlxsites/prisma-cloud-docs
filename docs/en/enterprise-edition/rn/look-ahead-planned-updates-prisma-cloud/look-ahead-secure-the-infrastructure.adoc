@@ -3,7 +3,7 @@
 
 Review changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.9.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.9.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -88,7 +88,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.9.1.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.9.2.
 
 . Review the updates.
 +
@@ -100,73 +100,7 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-[cols="50%a,50%a"]
-|===
-
-2+|*Policy Updates—Metadata*
-
-|*Policies*
-|*Description*
-
-|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
-//RLP-148554
-
-|*Changes—* The policy severity will be updated.
-
-*Current Policy Severity—* High
-
-*Updated Policy Severity—* Informational
-
-*Policy Type—* Config
-
-*Impact—* Low
-
-
-|*Azure Key Vault Firewall is not enabled*
-//RLP-148542
-
-|*Changes—* The policy RQL will be updated to reduce false positives and only generate alerts if public access is enabled.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.networkAcls.ipRules[*].value does not exist AND properties.publicNetworkAccess does not equal ignore case "disabled"
-----
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls does not exist) or (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls.defaultAction equal ignore case allow )
-----
-*Policy Type—* Config
-
-*Impact—* Low. Open alerts where the public access is enabled and network ACLs default action is denied will be resolved.
-
-
-|*Azure App Service Web app doesn't use latest TLS version*
-//RLP-148541
-
-|*Changes—* The updated Policy RQL will not alert for minTlsVersion of 1.3.
-
-*Current Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1 and 1.2. It is highly recommended to use the latest TLS 1.2 version for web app secure connections.
-
-*Updated Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1, 1.2 and 1.3. It is highly recommended to use the latest TLS greater than 1.1 version for web app secure connections.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with "app" AND config.minTlsVersion does not equal "1.2"
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with app and config.minTlsVersion is member of ('1.0', '1.1')
-----
-
-*Policy Type—* Config
-
-*Policy Severity—* Low
-
-*Impact—* Low. Alert for Azure App Service Web app with minTlsVersion equals 1.3 will be resolved.
-
-
-|===
+There are no policy updates currently in progress for the 24.9.2 release.
 
 
 [#api-ingestions]
@@ -177,6 +111,229 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 |*Service*
 |*API Details*
 
+|*Amazon AppStream 2.0*
+//RLP-131272
+
+|*aws-app-stream-image*
+
+Additional permission required:
+
+* `appstream:DescribeImages`
+
+The Security Audit role includes the above permission.
+
+|*Amazon AppStream 2.0*
+//RLP-131580
+
+|*aws-app-stream-image-builder*
+
+Additional permission required:
+
+* `appstream:DescribeImageBuilders`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Comprehend*
+//RLP-149186
+
+|*aws-comprehend-flywheel*
+
+Additional permission required:
+
+* `comprehend:ListFlywheels`
+*  `comprehend:DescribeFlywheel`
+*  `comprehend:ListTagsForResource`
+
+The Security Audit role includes the above permissions.
+
+|*AWS Elastic Disaster Recovery*
+//RLP-149199
+
+|*aws-drs-source-network*
+
+Additional permission required:
+
+* `drs:DescribeSourceNetworks`
+
+The Security Audit role includes the above permission.
+
+|*AWS Control Tower*
+//RLP-149201
+
+|*aws-controltower-landing-zone*
+
+Additional permission required:
+
+* `controltower:ListLandingZones`
+* `controltower:GetLandingZone`
+* `controltower:ListTagsForResource`
+
+The Security Audit role includes the above permissions.
+
+|*Amazon AppStream 2.0*
+//RLP-149201
+
+|*aws-app-stream-image*
+
+Additional permission required:
+
+* `appstream:DescribeImages`
+
+The Security Audit role includes the above permission.
+
+|*Amazon DataZone*
+//RLP-145162
+
+|*aws-datazone-domain*
+
+Additional permission required:
+
+* `datazone:ListDomains`
+* `datazone:GetDomain`
+
+The Security Audit role includes the above permissions.
+
+|*Amazon QuickSight*
+//RLP-147089
+
+|*aws-quicksight-ip-restriction*
+
+Additional permission required:
+
+* `quicksight:DescribeIpRestriction`
+
+The Security Audit role includes the above permission.
+
+|*Azure Event Grid*
+//RLP-148912
+
+|*azure-event-grid-topic-diagnostic-settings*
+
+Additional permission required:
+
+* `Microsoft.EventGrid/topics/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the above permission.
+
+|*Azure Kusto*
+//RLP-148923
+
+|*azure-kusto-clusters-diagnostic-settings*
+
+Additional permission required:
+
+* `Microsoft.Kusto/clusters/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the above permission.
+
+|*Azure Synapse Analytics*
+//RLP-148928
+
+|*azure-kusto-clusters-diagnostic-settings*
+
+Additional permission required:
+
+* `Microsoft.Synapse/workspaces/read`
+* `Microsoft.Synapse/workspaces/sqlPools/read`
+* `Microsoft.Synapse/workspaces/sqlPools/geoBackupPolicies/read`
+
+The Reader role includes the above permission.
+
+|*Azure Database for PostgreSQL*
+//RLP-148932
+
+|*azure-postgresql-flexible-server-database*
+
+Additional permission required:
+
+* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+* `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
+
+The Reader role includes the above permission.
+
+|*Azure Database for PostgreSQL*
+//RLP-148932
+
+|*azure-postgresql-flexible-server-database*
+
+Additional permission required:
+
+* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+* `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
+
+The Reader role includes the above permission.
+
+|*Azure Database for MySQL*
+//RLP-148935
+
+|*azure-mysql-flexible-server-database*
+
+Additional permission required:
+
+* `Microsoft.DBforMySQL/flexibleServers/read`
+* `Microsoft.DBforMySQL/flexibleServers/databases/read`
+
+|*Google Cloud VM Manager*
+//RLP-149002
+
+|*gcloud-vm-manager-patch-deployment*
+
+Additional permission required:
+
+* `osconfig.patchDeployments.list`
+
+The Viewer role includes the above permission.
+
+
+|*Google Cloud VM Manager*
+//RLP-149029
+
+|*gcloud-vm-manager-feature-settings*
+
+Additional permission required:
+
+* `osconfig.projectFeatureSettings.get`
+
+The Viewer role includes the above permission.
+
+
+|*Google Cloud Dataflow*
+//RLP-149030
+
+|*gcloud-dataflow-job*
+
+Additional permission required:
+
+* `dataflow.jobs.list`
+
+The Viewer role includes the above permission.
+
+
+|*Google Cloud Dataflow Data Pipeline*
+//RLP-149031
+
+|*gcloud-dataflow-data-pipeline*
+
+Additional permission required:
+
+* `datapipelines.pipelines.list`
+
+The Viewer role includes the above permission.
+
+
+|*Google Cloud Looker*
+//RLP-149026
+
+|*gcloud-cloud-looker-instance*
+
+Additional permission required:
+
+* `looker.instances.list`
+* `looker.instances.get` 
+
+The Viewer role includes the above permission.
 
 |===
 
