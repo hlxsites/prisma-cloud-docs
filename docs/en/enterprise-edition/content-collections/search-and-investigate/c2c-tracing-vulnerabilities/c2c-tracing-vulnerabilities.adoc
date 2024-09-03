@@ -1,0 +1,23 @@
+== Code to Cloud Tracing for Vulnerabilities
+
+The Unified Vulnerability Explorer can identify vulnerabilities in container images, deployed in runtime and trace it back to its source in code repositories.
+
+=== Overview
+
+Traditional vulnerability scanners provide a list of vulnerabilities and the underlying binaries introducing them. From there, customers would need to find how to properly update the vulnerable packages and to which versions.
+
+Prisma Cloud now goes beyond what traditional scanners can do by allowing users to find exactly how a vulnerability was introduced into their container images.
+
+Code to Cloud tracing (C2C) engine relies on the unique set of data available to Prisma Cloud in order to identify all the vulnerabilities found on a runtime container image, match which registry image was used in the deployment, discover what pipeline was used to build it and from there, identity which Dockerfile contains the instructions to build the image, the Package Manager file and packages pulled into it and its Base Image. 
+
+Finally, Prisma Cloud scans all the source components to find which ones have the same vulnerability found in runtime and builds the trace.
+
+=== How C2C Tracing Works
+
+* For a given Deployed Container, Prisma Cloud determines the corresponding Image Registry from which the image is deployed.
+
+* From the image in the Image Registry, Prisma Cloud finds the CI/CD Pipeline and CI Job(s) that have built the image and the Code Repository that triggered the CI/CD Pipeline.
+
+* Prisma Cloud further determines the corresponding Dockerfile or Package Manager (if applicable), and its associated packages, which are vulnerable to the CVE under analysis.
+
+* If the Base Image is found to be vulnerable to the CVE under analysis, it'll also be represented in the graph.
