@@ -47,6 +47,7 @@ If you have any questions or feedback, contact your Prisma Cloud Customer Suppor
 //Thank You for your support and we appreciate your understanding and support as we make this transition. Our goal is to provide you with the best possible product and experience. If you have any questions or feedback, please do not hesitate to reach out to our support team.
 //Improved Communication: We are committed to continue keeping you updated on our progress and any upcoming features. Expect regular updates and insights into our development process.
 
+
 |===
 
 [#changes-in-existing-behavior]
@@ -68,7 +69,18 @@ If you have any questions or feedback, contact your Prisma Cloud Customer Suppor
 To retrieve any purged data, contact your Prisma Cloud Customer Success Representative.
 
 
+|*Amazon EC2 Ingestion*
+//RLP-145171
+
+|Starting with the 24.9.2 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+
+*Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
+
+If you have any questions, contact your Prisma Cloud Customer Success Representative.
+
+
 |===
+
 
 [#new-policies]
 === New Policies
@@ -100,8 +112,111 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-There are no policy updates currently in progress for the 24.9.2 release.
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
 
+2+|*Policy Updates—RQL*
+
+|*Policies*
+|*Description*
+
+|*GCP User managed service account keys are not rotated for 90 days*
+//RLP-26599
+
+
+|*Changes—* Policy RQL has been updated to exclude disabled service accounts.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
+----
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'disabled is false and name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
+----
+*Policy Type—* Config
+
+*Policy Severity—* Informational
+
+*Impact—* Low. Existing alerts will be resolved for the disabled service accounts. 
+
+
+|*GCP GKE unsupported Master node version*
+//RLP-149471
+
+|*Changes—* Policy RQL will be updated to support GKE version 1.31.
+
+*Current Remediation Steps—* Manually initiate a master upgrade.
+
+1. Visit the Google Kubernetes Engine menu in Google Cloud Platform Console.
+2. Select the desired cluster.
+3. Click the Upgrade available link next to Master version.
+4. Select the desired version, then click Change.
+5. Click the arrow at the top of the screen to go back to the cluster cluster overview page.
+
+*Proposed Remediation Steps—* Manually initiate a master upgrade:
+
+1. Visit the Google Kubernetes Engine Clusters menu in Google Cloud Platform Console.
+2. Click the desired cluster name.
+3. Under Cluster basics, click "Upgrade Available" next to Version.
+4. Select the desired version, then click Save Changes.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." or currentMasterVersion starts with "1.31." )
+----
+
+*Policy Type—* Config
+
+*Impact—* Low. Open alerts where the GKE version is 1.31 will be resolved.
+
+
+|*GCP GKE unsupported node version*
+//RLP-149471
+
+|*Changes—* Policy RQL will be updated to support GKE version 1.31.
+
+*Current Remediation Steps—* Manually upgrading your nodes.
+
+1. Visit the Google Kubernetes Engine menu in GCP Console.
+2. Click the cluster's Edit button, which looks like a pencil.
+3. In the Node Pools section, expand the disclosure arrow for the node pool you want to upgrade.
+4. Click the Change link next to Node version.
+5. Select the desired version, then click Change.
+6. Click Save.
+
+*Proposed Remediation Steps—* Manually upgrading your nodes:
+
+1. Visit the Google Kubernetes Engine Clusters menu in GCP Console.
+2. Next to the cluster you want to edit, Click the Edit button which looks like a pencil under Actions.
+3. On the Cluster details page, click the Nodes tab.
+4. In the Node Pools section, click the name of the node pool that you want to upgrade.
+5. Click the Edit button which looks like a pencil.
+6. Click "Change" under Node version.
+7. Select the desired version from the Node version drop-down list, then click "Upgrade".
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.")
+----
+
+*Policy Type—* Config
+
+*Impact—* Low. Open alerts where the GKE version is 1.31 will be resolved.
+
+|===
 
 [#api-ingestions]
 === API Ingestions
@@ -120,7 +235,7 @@ Additional permission required:
 
 * `appstream:DescribeImages`
 
-The Security Audit role includes the above permission.
+The Security Audit role does not include the above permission.
 
 |*Amazon AppStream 2.0*
 //RLP-131580
@@ -131,14 +246,14 @@ Additional permission required:
 
 * `appstream:DescribeImageBuilders`
 
-The Security Audit role includes the above permission.
+The Security Audit role does not include the above permission.
 
 |*Amazon Comprehend*
 //RLP-149186
 
 |*aws-comprehend-flywheel*
 
-Additional permission required:
+Additional permissions required:
 
 * `comprehend:ListFlywheels`
 *  `comprehend:DescribeFlywheel`
@@ -162,7 +277,7 @@ The Security Audit role includes the above permission.
 
 |*aws-controltower-landing-zone*
 
-Additional permission required:
+Additional permissions required:
 
 * `controltower:ListLandingZones`
 * `controltower:GetLandingZone`
@@ -170,28 +285,17 @@ Additional permission required:
 
 The Security Audit role includes the above permissions.
 
-|*Amazon AppStream 2.0*
-//RLP-149201
-
-|*aws-app-stream-image*
-
-Additional permission required:
-
-* `appstream:DescribeImages`
-
-The Security Audit role includes the above permission.
-
 |*Amazon DataZone*
 //RLP-145162
 
 |*aws-datazone-domain*
 
-Additional permission required:
+Additional permissions required:
 
 * `datazone:ListDomains`
 * `datazone:GetDomain`
 
-The Security Audit role includes the above permissions.
+The Security Audit role does not include the above permissions.
 
 |*Amazon QuickSight*
 //RLP-147089
@@ -204,73 +308,86 @@ Additional permission required:
 
 The Security Audit role includes the above permission.
 
+
+|*Amazon Dynamo DB-Update*
+//RLP-149082
+
+|*aws-dynamodb-describe-table*
+
+Existing API `aws-dynamodb-describe-table` is added with new CSP API `GetResourcePolicy`.
+
+* `dynamodb:GetResourcePolicy`
+
+The Security Audit role does not include the above permission.
+
+
 |*Azure Event Grid*
 //RLP-148912
 
 |*azure-event-grid-topic-diagnostic-settings*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.EventGrid/topics/read`
 * `Microsoft.Insights/DiagnosticSettings/Read`
 
-The Reader role includes the above permission.
+The Reader role includes the above permissions.
 
 |*Azure Kusto*
 //RLP-148923
 
 |*azure-kusto-clusters-diagnostic-settings*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.Kusto/clusters/read`
 * `Microsoft.Insights/DiagnosticSettings/Read`
 
-The Reader role includes the above permission.
+The Reader role includes the above permissions.
 
 |*Azure Synapse Analytics*
 //RLP-148928
 
 |*azure-kusto-clusters-diagnostic-settings*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.Synapse/workspaces/read`
 * `Microsoft.Synapse/workspaces/sqlPools/read`
 * `Microsoft.Synapse/workspaces/sqlPools/geoBackupPolicies/read`
 
-The Reader role includes the above permission.
+The Reader role includes the above permissions.
 
 |*Azure Database for PostgreSQL*
 //RLP-148932
 
 |*azure-postgresql-flexible-server-database*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.DBforPostgreSQL/flexibleServers/read`
 * `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
 
-The Reader role includes the above permission.
+The Reader role includes the above permissions.
 
 |*Azure Database for PostgreSQL*
 //RLP-148932
 
 |*azure-postgresql-flexible-server-database*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.DBforPostgreSQL/flexibleServers/read`
 * `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
 
-The Reader role includes the above permission.
+The Reader role includes the above permissions.
 
 |*Azure Database for MySQL*
 //RLP-148935
 
 |*azure-mysql-flexible-server-database*
 
-Additional permission required:
+Additional permissions required:
 
 * `Microsoft.DBforMySQL/flexibleServers/read`
 * `Microsoft.DBforMySQL/flexibleServers/databases/read`
@@ -328,12 +445,12 @@ The Viewer role includes the above permission.
 
 |*gcloud-cloud-looker-instance*
 
-Additional permission required:
+Additional permissions required:
 
 * `looker.instances.list`
 * `looker.instances.get` 
 
-The Viewer role includes the above permission.
+The Viewer role includes the above permissions.
 
 |===
 
