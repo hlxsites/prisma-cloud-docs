@@ -65,16 +65,66 @@ You can upgrade the Prisma Cloud Console from a major release to the next major 
 |FEATURE
 |DESCRIPTION
 
-|*Support for Azure Container Registry and VM image scanning*
-//CWP-57626
-|Prisma Cloud now supports scanning Azure Container Registry (ACR) and Virtual Machine (VM) images for Azure cloud accounts that are onboarded directly through the platform.
-
 //CWP-60158
 |*A new registry scan status*
 |A new status, *Partially Completed*, has been added to the scan statuses for registry scans. This status is assigned when at least one image has been successfully scanned in the registry. The Partially Completed status also displays the number of images that have been scanned successfully.
 
 |===
 
+[#intelligence-stream-updates]
+=== Intelligence Stream Updates
+
+[cols="25%a,75%a"]
+|===
+|*Feature*
+|*Description*
+
+//CWP-57783
+|*Severity Mapping Update for Intelligence Stream*
+
+|The severity values for the Intelligence stream are now mapped into 2 predefined values: “ High” and “Medium”. 
+
+Note: The severity values are already normalized to create rules. The current change is only specific to the severity reporting name change. 
+
+The following list defines the new vendor severity mapping:
+
+---
+
+* *Current Severity*: Important
+* *New Severity*: High
+* *Vendors*: Amazon, Oracle, RedHat, Rocky, Suse, Ubuntu
+
+---
+
+* *Current Severity*: Moderate
+* *New Severity*: Medium
+* *Vendors*: Oracle, RedHat, Rocky, Suse, Windows
+
+---
+
+* *Current Severity*: End-of-life
+* *New Severity*: Low, Medium, High, or Critical based on NVD
+* *Vendors*: Debian
+
+*Note*: End-of-life will be set in the vulnerability status.
+
+---
+*Note*: The previous “unimportant”, “unassigned”, “untriaged”, “negligible” and “not yet assigned” severity mapping behaviour remains unchanged.
+
+All the other unrecognized severity values from the different feeds will be assigned according to the NVD severity.
+
+For more information, see https://docs.prismacloud.io/en/compute-edition/32/admin-guide/vulnerability-management/cvss-scoring#mappings[CVSS Scoring].
+
+//CWP-60870
+|*End of support for Debian 10 (Buster)*
+
+|Debian 10 (Buster) reached end-of-life on June 30, 2024. Starting from July 2024, the Debian Long Term Support (LTS) team has stopped providing security information for Debian 10.
+
+Consequently, vulnerabilities related to Debian 10 (Buster) were removed from the Prisma Cloud Intelligence Stream.
+
+*Impact*: Starting from this version, customers using Debian Buster (LTS or ELTS) will no longer see vulnerability data related to this version.
+
+|===
 [#rest-api-changes]
 === API Changes and New APIs
 [cols="1,1", options="header"]
@@ -88,6 +138,18 @@ There are no API changes for this release.
 [cols="1,1"]
 |===
 
+//CWP-61027
+|*Reporting All Affected Versions for GO Package CVEs*
+|For some GO package CVEs, Prisma Cloud did not completely report all the affected versions, particularly when multiple version ranges were involved, resulting in occasional false negatives.
+
+This issue is fixed. Prisma Cloud now reports all the affected versions for GO package CVEs.
+
+
+//CWP-61027
+|*Improved CVE Matching for JAR Files with Group IDs*
+|When a JAR file with a group ID is used as a dependency in other JAR files within the same image, Prisma Cloud might fail to properly identify or match CVEs to those JAR files. 
+
+This issue is resolved. Prisma Cloud now correctly handles group IDs in both the Defender and the Console, improving the ability to identify CVEs accurately for such JAR files.
 
 //CWP-57873
 |*Fixed False Positives Caused by RPM and Third-Party Package Name Discrepancies*
@@ -119,11 +181,7 @@ This issue has been fixed. Now, when Defender scans images, error messages are p
 |*Ruby Pessimistic version constraint rules are not merged correctly with other rule ranges causing FPs*
 |Previously, Prisma Cloud did not handle cases involving unaffected and patched Ruby version ranges correctly. Additionally, cases, where patched Ruby version ranges, were included within unaffected Ruby versions using the pessimistic version constraint (~>),  those cases were also not handled correctly. 
 This issue has been resolved. 
-
-
 |===
-
-
 
 // [#backward-compatibility]
 === Backward Compatibility for New Features
@@ -143,19 +201,6 @@ There is no backward compatibility for new features in this release.
 |Prisma Cloud now parses Photon OS and Amazon Linux OS feeds using CVE IDs as the primary vulnerability identifier instead of advisory IDs. 
 
 This change enhances Prisma Cloud’s ability to correlate third-party data, and use vendor-provided information, including backports, severity assessments, and vulnerability scores.
-
-
-//CWP-57783
-| *[Vulnerabilities]: Severity mapping should be consistent to 4 severities: Low/Medium/High/Critical*
-
-| All the current vendor defined severity values for the Intelligence stream are mapped into 4 predefined normalized values “Low”, “Medium”,“ High”, and “Critical”.
-
-Note: The severity values are already normalized to create rules, the current change is only specific to the severity reporting name change.
-
-For more information, visit https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/vulnerability-management/cvss-scoring#mappings[CVSS Scoring].
-
-Note: All the unrecognized severity values from the different feeds will be assigned according to NVD severity.
-
 |===
 
 
@@ -167,6 +212,5 @@ There are no End of Support notifications for this release.
 
 [#deprecation-notices]
 === Deprecation Notices
-==== End of Support for Debian 10 (Buster)
-//CWP-60870
-Debian 10 (Buster) reached end-of-life on June 30, 2024. Starting from July 2024, the Debian Long Term Support (LTS) team has stopped providing security information for Debian 10. Consequently, vulnerabilities related to Debian 10 (Buster) were removed from the Prisma Cloud Intelligence Stream. Customers using Debian Buster (LTS or ELTS) will no longer see vulnerability data for this version.
+There are no other deprecation notices for this release.
+

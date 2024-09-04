@@ -146,7 +146,7 @@ config from iam where source.cloud.service.name = 'Microsoft.Compute' and source
 
 * *source.cloud.account.isvendor*
 +
-This query retrieves all known vendor accounts. 
+This query retrieves all known vendor accounts. Available for AWS, Azure, and GCP environments.
 +
 ----
 config from iam where source.cloud.account.isvendor = true
@@ -158,9 +158,33 @@ The following example retrieves all vendor accounts that do not start with Red.
 config from iam where source.cloud.account DOES NOT START WITH 'Red' and source.cloud.account.isvendor = true 
 ----
 
+* *source.cloud.type = GCP and dest.cloud.type = AWS and dest.cloud.resource.access.isadministrative = True*
++
+This query extracts relevant information about GCP service accounts with access to your AWS environment.
++
+----
+config from IAM where source.cloud.type = GCP and dest.cloud.type = AWS and dest.cloud.resource.access.isadministrative = True
+----
+
+* *source.cloud.accesskey.activekeys*
++
+Queries the number of active access keys held by a user.
++
+----
+config from IAM where source.cloud.accesskey.activekeys = 2
+----
+
+* *source.cloud.accesskey.lastused.days*
++
+Queries the number of days passed since the last usage of an access key.
++
+----
+config from IAM where source.cloud.accesskey.lastused.days > 2
+----
+
 * *source.email*
 +
-Queries permissions of a user by its email address. The following example lists all effective permissions of my@email.com:
+Queries permissions of a user by their email address. The following example lists all effective permissions of my@email.com:
 +
 ----
 config from iam where source.email = 'my@email.com'
@@ -241,6 +265,14 @@ config from iam where source.idp.domain = 'my-domain.okta.com'
 ====
 This feature requires IdP integration.
 ====
+
+* *source.MFAenabled*
++
+ Identifies users without MFA enabled. The query returns True/False values (whether MFA is active/inactive).
++
+----
+config from iam where source.MFAenabled = true 
+----
 
 * *source.public*
 +
@@ -324,6 +356,18 @@ Queries permissions that have been granted by a specific entity type, such as AW
 ----
 config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.entity.type = 'group'
 ----
+
+* *grantedby.cloud.entity.lastlogin*
++
+Detects unused credentials, by querying their last used status. Available for AWS, Azure, and GCP, this RQL clause allows you to determine the days passed since last access:
++
+----
+config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.entity.lastlogin
+----
++
+*Attribute Type*: Number (Days since the last login/activity)
++
+*Values*: - <, >, ⇐, >=, =, =!
 
 * *grantedby.level.id*
 +

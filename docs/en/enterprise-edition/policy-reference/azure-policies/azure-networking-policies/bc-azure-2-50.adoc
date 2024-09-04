@@ -1,0 +1,54 @@
+
+== Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| c88ad039-ca17-4371-a7e0-47b9eb33336e
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMLWorkspaceHBIPublicNetwork.yaml[CKV2_AZURE_50]
+
+|Severity
+|HIGH
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether Azure Storage Accounts for Machine Learning workspaces are publicly accessible. Public access to these accounts storing sensitive business data poses a significant security risk. Leaks or misuse could lead to financial and reputational damage. By ensuring private access, this policy safeguards data confidentiality and integrity.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_machine_learning_workspace,azurerm_storage_account
+* *Arguments:* public_network_access_enabled,high_business_impact
+
+1. Block all network access using storage account network rules.
+2. Grant access only to authorized users by adding exceptions for specific IP addresses or ranges.
+
+[source,go]
+----
+resource "azurerm_storage_account" "pass" {
+  ...
+  public_network_access_enabled = false
+}
+
+resource "azurerm_machine_learning_workspace" "pass2" {
+  ...
+  storage_account_id      = azurerm_storage_account.pass.id
+  ...
+  high_business_impact = true
+}
+----
+

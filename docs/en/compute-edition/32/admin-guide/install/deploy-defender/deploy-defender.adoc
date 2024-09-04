@@ -1,8 +1,6 @@
 :toc: macro
 == Deploy Prisma Cloud Defenders
 
-toc::[]
-
 To take advantage of the agent-based security features of Prisma Cloud, you must deploy the Defender agent.
 
 You can deploy single Defenders for containers, hosts, and serverless functions or deploy Defenders on entire clusters using an orchestrator.
@@ -136,13 +134,14 @@ The trusted images feature isn't supported.
 Kubernetes auditing is done by the Console, and not by the Defenders.
 In the Console, enable Kubernetes auditing and create a configuration that points to your cluster.
 
-=== Connectivity
+=== Connectivity Requirements
 
 Defender must be able to communicate with Prisma Cloud over the network because it pulls policies down and sends data (alerts, events, etc) back to the Prisma Cloud console.
 
 If you are using a certificate authority through a proxy, add the `--proxy-cacert` flag to the curl command https://curl.se/docs/manpage.html#--proxy-cacert[as described in the curl documentation].
 
 ifdef::compute_edition[]
+
 In simple environments, where your hosts run on the same subnet, you can connect to Console using the host's IP address or hostname.
 In more complex environments, where your setup runs in the cloud, it can be more difficult to determine how Defender connects to Console.
 When setting up Defender, use whichever address routes over your configuration and lets Defender connect to Console.
@@ -151,6 +150,7 @@ For example, Console might run in one Virtual Private Cloud (VPC) in AWS, and yo
 Each VPC might have a different RFC1918 address space, and communication between VPCs might be limited to specific ports in a security group.
 Use whichever address lets Defender connect to Console.
 It might be a publicly exposed IP address, a hostname registered with a DNS, or a private address NAT'ed to the actual IP address assigned to Console.
+
 For more information about setting up name resolution in complex networks, see
 xref:../../deployment-patterns/best-practices-dns-cert-mgmt.adoc#[Best practices for for DNS and certificate management].
 
@@ -209,3 +209,13 @@ image::install_defender_pattern3.png[width=750]
 
 endif::compute_edition[]
 
+==== URL Whitelisting
+
+When Defenders are behind a proxy or firewall, ensure the following URLs are whitelisted to allow proper communication:
+
+* *Console URL*: Ensure Defenders can access the Prisma Cloud Console URL.
+* *API Endpoint*: For SaaS consoles (not applicable to self-hosted versions), allow Defenders to connect to the API endpoint URL.
++
+API endpoint URL format: `api.<region>.prismacloud.io`. Replace `<region>` with the Prisma Cloud instance location. For example, `sg` for Singapore or `us` for the United States.
+
+* *WildFire Service*: If the WildFire service is enabled, allow Defenders to connect to *.wildfire.paloaltonetworks.com or the relevant xref:../../configure/wildfire.adoc[regional WildFire URLs].
