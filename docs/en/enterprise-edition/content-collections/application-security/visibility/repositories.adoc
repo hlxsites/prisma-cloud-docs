@@ -1,65 +1,75 @@
 == Repositories
 
-*Repositories* provides a comprehensive view of your engineering technical stack from repository to deployment, all within a repository-based view. This allows you to identify and analyze all your code repositories, their associated infrastructure such as programming languages, frameworks, CI files and so on, and your paths to production.
+The *Repositories* page provides a comprehensive repository-centric view of your engineering environment. This consolidated view helps you:
 
-'Repositories' maps your organization's security posture, allowing you to understand the high and critical risks in your repositories. The <<app-graph,Application Graph>> provides additional insights into your repository assets. This helps you to prioritize and address the most critical security issues first, reducing the risk of security breaches.
+* Identify and analyze the technologies used across your projects, such as code repositories and their associated infrastructure including programming languages, frameworks and CI files, as well as your paths to production
+
+* Gain insights into security posture. 'Repositories' maps your organization's security posture, allowing you to understand the high and critical risks in your repositories 
+
+* Leverage the <<app-graph,Application Graph>>, which visually maps your repositories and their connections, providing deeper insights into your environment. This visual representation helps you identify potential issues and dependencies that may not be observable by a single-repository view 
 
 NOTE: The repositories displayed in the inventory are limited to those selected during VCS onboarding. To ensure complete visibility, it is recommended to select all repositories during VCS onboarding. Users will only see repositories to which they have been granted access, based on their designated roles and permissions.
 
+=== User Repository CI/CD Scan Limitation
+
+Prisma Cloud's CI/CD scan capabilities differ between organization repositories and user repositories. Unlike organization repositories, Prisma Cloud's CI/CD security for user repositories offers limited functionality, as scans are limited to fetching *Workspace* data (members, collaborators information and commit history) and *Repository* data (collaborators, repository contributors and repository commits history). Advanced CI/CD security scan features are not supported for user repositories.
+
 //See xref:getting-started.adoc#manage-role-permission[Manage Roles and Permissions]for more.
 
-To access *Repositories*, in *Application Security* select *Home*.
+To access *Repositories*, in *Application Security* select *Home* > *Repositories*. An inventory of your repositories in your organization is displayed.
 
-*Repositories* opens by default, displaying an inventory of your engineering technical stack, organized by repository.
+image::application-security/repo-imp3.1.png[]
 
-image::application-security/repositories2.1.png[]
+Each repository in the list displays the following details:
 
-The inventory includes the following details.
+* *Version control system* (VCS) platform: An icon represents the VCS hosting the repository
 
-* *Version control system* (VCS) platform: Represents the VCS hosting the repository.
+* *Repository Name* 
 
-* *Repository Name*: A list of all repositories detected from all the VCS integrations. Includes a link to the repository
+* *Organization*: The organization that owns the repository
+// * *Visibility*: Whether the repository is private or public (displayed as an icon)
 
-* *Visibility*: Whether the repository is private or public (displayed as an icon)
-
-* *Archived*: Whether the repository is archived (displayed as an icon)
+//* *Archived*: Whether the repository is archived (displayed as an icon)
 
 * *Contributors*: A list of contributors to the repository. Clicking on a number displayed in the column opens a pop-up with more details about the contributors. Additional information about the contributors can also be found by selecting a repository which opens the resource explorer, as described below
 
-* *Technologies*: Displays the most frequently used languages and frameworks detected in the repository. Hover over a technology to its frequency of usage in the pipeline. Selecting the number displayed in the column displays a popup, with information about additional technologies detected in the repository.
+* *Technologies*: Displays the most frequently used languages and frameworks detected in the repository. Hover over a technology to its frequency of usage in the pipeline. Selecting the number displayed in the column displays a popup, with information about additional technologies detected in the repository
+
+
+* *Priority Level*: The repository's relative importance. Refer to <<repo-importance-score,Repository Importance Priority Score>> below for more information 
 
 * *Pipelines*: The CI/CD pipeline systems such as Jenkins and GitHub Actions that are connected to the repository. Clicking on the number next to a pipeline opens a pop-up displaying details about the pipelines. Note that you must integrate your CI systems in order to view connected pipelines
 
-* *Issues*: The number of IaC, Secrets, SCA and CI/CD issues detected in the master branch of a repository. Clicking on the link redirects to the relevant issue page. IaC, Secrets and SCA issues redirect to the Projects page, while CI/CD issues redirect to CI/CD Risks, where the issues are displayed filtered by repository and high-critical severity
-
-* *Last Update*: The last date that the repository was updated, that is new code pushed
+* *Issues*: The number of IaC, Secrets, SCA and CI/CD issues detected in the master branch of a repository. Clicking on a link redirects to the relevant issue page. IaC, Secrets and SCA issues redirect to the 'Projects' page, while CI/CD issues redirect to the 'CI/CD Risks' page
+//Each repository in the list displays the following details:
+//* *Last Update*: The last date that the repository was updated, that is new code pushed
 
 * *Risk Factors*: Indicates whether the repository deploys images to live systems
 
 * *Deployed Images*: Allows you to identify container images in a running environment
 +
-NOTE: For more information on Risk Factors and Deployed Images, refer to xref:../risk-management/risk-indicators.adoc[Risk Indicators].
+NOTE: For more information on 'Risk Factors' and 'Deployed Images', refer to xref:../risk-management/risk-indicators.adoc[Risk Indicators].
 
-* *Actions*: Selecting the menu under the Actions column displays the *Application Graph*, a graphical representation of the repository's path to production. See <<app-graph,Application Graph>> below for more
+* *Actions*: Selecting the menu under the 'Actions' column displays the *Application Graph*, a graphical representation of the repository's path to production (See <<app-graph,Application Graph>> below for more information) and *Edit Priority Level* (Refer to <<custom-repo-importance,Custom Repository Importance Scores>> below for more information)
 //image::application-security/icon-app-graph.png[]
 // ** <<last-pull-request-scan,Last Pull Request Scan>>: A link to details of the last repository PR scan
 // ** <<sbom-,SBOM>>: A link to the repository SBOM.
 
-Selecting a repository in the inventory table opens the *resource explorer*, displaying additional information.
+Selecting a repository in the inventory table opens the *Resource Explorer* sidecar, displaying additional information.
 
-* The *Details* tab opens opens as the default view, displaying metadata about the repository, including repo size, last commit, dependencies (with a link to the SBOM page, filtered by the repository) and CI files. In addition, technologies detected in the repository, including programming languages and frameworks, are displayed.
+* The *Details* tab opens opens by default, displaying *metadata* such as visibility, size, last commit date, dependencies, CI files, pipelines and deployed images. The *Technologies* section displays detected programming languages and frameworks and CI/CD systems. The *Priority Level* section provides details about the repository's priority level. Click the *Edit Priority Level* button to customize the priority level. See <<custom-repo-importance,Custom Repository Importance Scores>> below for more information
 +
-image::application-security/repositories-details2.1.png[]
+image::application-security/repo_details3.1.png[]
 
 * The *Contributors* tab includes details about the contributors and their permissions to the repository
 +
 image::application-security/repositories-contributors3.1.png[]
 
-* The *Graph* tab provides a view of the repository as a graphical representation
+* The *Graph* tab provides graphical representation of the repository. By default, this tab opens the repository view. Additionally, the *Packages* tab visualizes the packages in the repository as a graphical representation.
 +
-image::application-security/repositories-appgraph2.1.png[] 
+image::application-security/repo_appgraph3.2.png[] 
 +
-See <<app-graph,Application Graph>> below for more on the *Application Graph*.
+For more information about the *Application Graph*, refer to the <<app-graph,Application Graph>> below. For information about the Package graph, see <<#graph-package,Application Graph - Package Visualization>> below.
 +
 NOTE: You can also access a repository's graph from *Actions* in the Repository table.
 
@@ -67,36 +77,43 @@ NOTE: You can also access a repository's graph from *Actions* in the Repository 
 
 'Repositories' features default filters for quick data analysis. Additionally, you can add or remove filters to further refine your results by selecting the filter. Available filters include:
 
-* *Repository*: Filter by repository (Displayed by default)
-* *Organization*: Filter by organization of a version controlled system (Displayed by default)
-* *Visibility*: Filter by type of repository. Values: 'Private', 'Public' (Displayed by default)
-* *Technologies*: Filter by programming languages and frameworks detected in the infrastructure, listed by category to find technologies such as Python, GitHub Actions, Terraform and more. Values: 'Programming', 'Package Manager', 'Data Files', 'Devops' (Displayed by default)
-* *Pipelines*: Filter by pipelines detected in the infrastructure (Displayed by default)
-* *Issues*: Filter by type of issue. Values: 'IaC', 'Secrets', 'SCA', 'CI/CD' (Displayed by default) 
-* *VCS*: Filter type of version control system detected in the environment
-* *Archived*: Filter repositories by archived/un-archived status 
+* *Repository*: Filter by repository 
+* *Visibility*: Filter by type of repository. Values: 'Private', 'Public'  
+* *Technologies*: Filter by programming languages and frameworks detected in the infrastructure, listed by category to find technologies such as Python, GitHub Actions, Terraform and more. Values: 'Programming', 'Package Manager', 'Data Files', 'Devops'  
+* *Pipelines*: Filter by pipelines detected in the infrastructure  
+* *Issues*: Filter by type of issue. Values: 'IaC', 'Secrets', 'SCA', 'CI/CD'   
+* *Deployed Images*: Filter repositories by container images in a running environment  
+* *Risk Factors*: Filter by deployed repository  
+* *Organization*: Filter by organization of a version controlled system
+* *Priority Level*: Filter repositories by *Repository Importance Score*. For more information refer to <<#repo-importance-score, Repository Importance Priority Score>> below
+* *VCS*: Filter type of version control system detected in the environment (To view this filter, select *Add Filter*)
+* *Archived*: Filter repositories by archived/un-archived status (To view this filter, select *Add Filter*)
 
 [#app-graph]
-
 === Application Graph
 
-You can view the repository as a graphical representation, allowing you to explore, better understand and analyze the repository assets and connections. This will allow you to get a better understanding of your technology stack, attack vectors and security posture. The development
-path from version control system to deployment including the different technologies, systems and configurations in the engineering environment are presented as nodes on a graph, while edges provide details of the relationship between the nodes.
+The Application Graph visualizes your repository's components and their connections, including both the overall development flow and detailed package relationships. In addition, the Application Graph visualizes all packages in your repository. See <<#graph-package,Application Graph - Package Visualization>> below for more information.
+
+
+==== Application Graph - Repository Visualization 
+
+You can view the repository as a graphical representation, allowing you to explore, better understand and analyze the repository assets and connections. This will allow you to get a better understanding of your technology stack, attack vectors and security posture. The development path from version control system to deployment including the different technologies, systems and configurations in the engineering environment are presented as nodes on a graph, while edges provide details of the relationship between the nodes.
 
 The Application Graph currently supports the following systems:
 
 * VCS platforms: GitHub, GitLab, Bitbucket
+
 * Continuous integration (CI) systems: Jenkins, CircleCI, GitHub Actions
 
 To view a repository as a graph:
 
-* Select a repository in the inventory table > *Graph* tab OR:
+* Select a repository in the inventory table > *Graph* tab or:
 
-* Select the Graph View icon located in the _Actions_ column of a repository in the inventory table
+* Select the Graph View icon located in the 'Actions' column of a repository in the inventory table
 
-The *Application Graph* representing the repository is displayed.
+The *Application Graph* representing the repository is displayed by default.
 
-image::application-security/repositories-app-graph1.1.png[]
+image::application-security/repo_appgraph-2.1.png[]
 
 The Application Graph includes the following components:
 
@@ -113,7 +130,7 @@ The Application Graph includes the following components:
 ==== Nodes
 
 [.task]
-===== View Node Details
+To view a node's details:
 
 [.procedure]
 
@@ -130,7 +147,9 @@ image::application-security/repositories-graph-additional-details1.1.png[]
 
 Nodes of the same type are grouped and displayed under a single group node as entities of the node. A number indicates the number of entities in the node. Click on the group node to expand and view the entities. Details of an entity can be viewed by clicking on *View Details* in the same manner as nodes. 
 
-You can collapse the entities back into the group node by standing on the entities and selecting the collapse icon.
+You can collapse the entities back into the group node by hovering over the entities and selecting the collapse icon.
+
+
 
 ////
 
@@ -176,9 +195,267 @@ a|
 ////
 
 [#edges-]
-==== Edges
+===== Edges
 
 Edges are the connections that display the relationships between nodes. The path arrow indicates the direction between the source and target node. 
+
+[#graph-package]
+==== Application Graph - Package Visualization
+
+The Application Graph now visualizes all packages in your repository, including the number of package files, direct and indirect dependencies, as well as whether they are vulnerable. This visual representation helps you identify potential dependency conflicts and manage package relationships effectively. You can also filter to display vulnerable packages only through the *Show only vulnerable* tab. 
+
+image::application-security/repo_appgraph-package1.1.png[]
+
+* Select the *PackageFile* node to see all associated package files and their connections in the repository
+
+* Click on the *Packages* node to view all packages in the repository, including their relationship to the package files
+
+* Click on a single package to view the package details  
+
+////
+[#risk-factors]
+=== Risk Factors
+
+Risk Factors include deployed images, runtime-connected repositories, and potential internet exposure (coming soon) indicators. By identifying these indicators, Prisma Cloud helps you prioritize external risks and understand which security issues to address first.  
+
+==== Prerequisites
+
+To leverage Risk Factors for prioritizing security efforts, you must first fulfill the following requirements.
+
+* Enable the CI/CD module in CAS. Refer to xref:../get-started/application-security-license-types.adoc[Application Security License Types] for more information about the CI/CD module licensing
+
+*  Ensure that xref:../../runtime-security/agentless-scanning/agentless-scanning.adoc[Agentless Scanning] and container image workloads are enabled in your cloud account or that xref:../../runtime-security/install/deploy-defender/deploy-defender.adoc[Defender] is enabled in your container orchestration environments
+
+
+* Connect your repositories to a supported CI system. Refer to xref:../get-started/connect-code-and-build-providers/ci-cd-systems/ci-cd-systems.adoc[CI/CD Systems] for more information about integrating CI systems
+
+[#deploy-repo]
+==== Deployed Repositories
+
+[.task]
+
+The 'Deployed Repositories' risk indicator reveals which repositories trigger container image builds from your code. Use the *Risk Factor* filter to easily find your repositories that are connected to runtime. 
+
+[.procedure]
+
+. Select *Deployed Repository* in the *Risk Factors* filter.
++
+image::application-security/prior-risk-deploy-repo-3.1.png[]
++
+Repositories deployed in runtime are displayed. The icon under the Risk Factor column indicates the type of risk indicator, in this case, deployed repositories. 
++
+image::application-security/prior-risk-icon1.png[]
+
+. To view additional details in a sidecar, click on the repository.
++
+The *Details* tab of the sidecar, which opens by default, displays repository details including size, last commit, dependencies, CI files, pipelines and deployed images. Additionally, all technologies detected in the repository are listed.
++
+image::application-security/prior-risk-deplor-repo-details1.1.png[]
+
+. Select the *Contributor* tab to view all contributors and their associated repository permissions.
+
+. Select the *Graph* tab to view the repository in graph view. For more information, refer to the <<#app-graph,Application Graph>> above.
+
+
+==== Deployed Images
+
+//The *Deployed Images* risk indicator allows you to identify container images in a running environment. It also enables a comprehensive view of your code-to-cloud journey:
+
+The *Deployed Images* risk indicator allows you to identify container images in a running environment. It also enables a comprehensive view of your code-to-cloud journey (Repository > CI pipeline  > Container Image). 
+
+//To view Deployed Images, select *Repository* > hover over the value in the *Pipeline* column > The *Container Image/s* are displayed. 
+
+You can view deployed images under the *Deployed Images* column as well as through the *Details* tab in the repository sidecar (see Deployed Repositories above). 
+
+Use the *Deployed Images filter* to filter by specific container images. This will enable you to quickly find your repositories that are connected to runtime.
+
+image::application-security/prior-risk-deploy-image-filter1.1.png[]
+////
+
+[#repo-importance-score]
+=== Repository Importance Priority Score
+
+The 'Repository Importance Score' provides a data-driven approach to prioritize security efforts across multiple code repositories by quantifying each repository's significance. Repository scores are calculated based on various factors, including codebase characteristics and path-to-production environments. These factors include, but are not limited to:
+
+//* *Repository commits*: Includes the total number of commits, the number of commits over the last *X* months, and the time of the last commit 
+//* *Repository Issues*: Includes the total number of issues detected in a repository, and the last time an issue was reported
+//* *Repository releases/tags*: Includes the total number of tags and releases, and the last time a tag or release was created 
+//* *Repository characteristics*: Includes whether the repository was forked, if it is private or public, if it is part of your organization and whether it is archived
+
+* *Repository commits*: The frequency of code changes indicates potential areas of ongoing development and potential security risks
+* *Number of issues*: The presence of vulnerabilities (SCA), weaknesses (SAST), and secrets identified within the repository
+* *Repository characteristics*: Whether the repository is private, part of the organization or only a user repository, and more
+* *Number of releases*: Repositories with frequent releases might have a higher impact on production environments. The last release date indicates activity
+* *Number of contributors*: A larger contributor base suggests broader code ownership and potentially greater attack surface
+* *Repository relationships*: Includes all collaborators, CI files, connected pipelines (including whether they build an image), and whether the repository is associated with a container  (repo > pipeline > image > container) 
+
+Additionally, this score can be customized to accommodate your organization's specific security priorities, allowing you to weigh these factors differently based on your unique security needs. For more information refer to <<custom-repo-importance,Custom Repository Importance Scores>> below.
+
+By leveraging this scoring system, teams can understand the relative importance of repositories. This enables them to effectively allocate security resources and prioritize addressing issues in the most critical repositories first, safeguarding the safety of business-critical functionalities. You can view the Repository Importance Score under the *Priority Level* column. 
+
+
+//Alt name: Repository Importance Priority Score, Prioritize Repositories
+
+
+
+
+
+////
+Security management across code repositories presents a growing challenge as codebases expand and teams adopt microservices architectures. Efficient resource allocation for security efforts hinges on identifying the critical repositories that require the most attention in order to allocate resources effectively.  
+
+The Repository Score is a dynamic metric designed to address the challenges of prioritizing security issues within a multi-repository environment. By incorporating factors like repository maintenance frequency, characteristics, path to production and more, Repository Score provides a quantitative measure (1-10) to guide security teams towards the most impactful remediation efforts. This data-driven approach empowers developers to optimize security resource allocation and focus on vulnerabilities that pose the greatest risk. The data collection processes is automated and scheduled at regular intervals to ensure that scores are based on the latest information.
+
+You can filter CAS findings and insights based on the Code Repository Importance Score across Project, CI/CD Risks, SBOM, and Technologies pages to focus on repositories with higher importance.
+
+
+In the fast-paced world of software development, our customers face significant challenges in efficiently prioritizing security issues across their numerous code repositories. Without a clear understanding of which repositories are most actively used and critical to their operations, it becomes difficult to allocate resources effectively. To address this, we introduce the Repo Score—an innovative solution designed to streamline decision-making processes for security teams.
+
+The Repo Score is a dynamic, actionable metric ranging from 1 to 100 that quantifies the active usage and significance of each integrated code repository relative to others. By providing a clear measure of a repository's importance and priority, this score empowers security teams to focus their efforts on the most crucial areas first, ensuring that resources are allocated where they are needed most. With the Repo Score, our objective is to enhance efficiency and effectiveness in managing and mitigating security risks within code repositories, ultimately contributing to a more secure and robust software development lifecycle.
+////
+
+
+
+
+
+
+
+
+////
+You can customize Repository Importance scores to suit your organization requirements. Provide a comment explaining the manual score, the reasoning behind it, and the name of the user performing the change. When a manual score is applied, a comment explaining the reasoning behind the adjustment is required. Once set manually, the system stops calculating the score for the repository, using the manual score instead. You can restore automatic calculation that will override the manual calculation. 
+////
+
+==== View Repository Importance Score 
+
+You can view the 'Repository Importance Score' in the *Priority Level* column. Use the *Priority Level* filter to filter repositories based on their importance score. Values: 'High', Medium', 'Low'.
+
+////
+NOTE: See <<#custom-repo-importance,Custom Repository Importance Scores>> below to manually configure a repository's score. 
+
+. In *Application Security*, select *Repositories*.
++
+The Repository Importance Score is displayed in the *Priority Level* column.
+//By default, repositories are sorted according to Priority Importance. Values: "High', 'Medium, 'Low'.
++
+image::application-security/[]
+
+. Filter repositories based on their Importance Score using the *Priority Level* filter. Values: 'High', Medium', 'Low'.
+////
+
+==== Understanding Repository Importance Scores
+
+Hover over a repository's importance score or click on a repository to open the sidecar *Details* tab to display additional details, such as repository characteristics and relationships. This allows you to analyze the factors contributing to the Repository Importance Score and understand how it is calculated.
+
+//+
+//image:application-security/[]
+
+[.task]
+
+[#custom-repo-importance]
+==== Custom Repository Importance Scores
+
+You can customize the Importance Score of a repository to align with your organization's priorities. After manual configuration, Prisma Cloud will stop the automatic calculation and use your defined score instead.
+
+NOTE: You can reset any manually set scores for code repositories. Upon resetting, Prisma Cloud will resume the automatic calculation of the repository's score and remove any associated user comments.
+
+[.procedure]
+
+. Open the *Edit Priority Level* popup.
++
+Option #1: Select the menu in the *Actions* column > *Edit Priority Level*.
++
+Option #2: Select a repository > click *Edit Priority Level* in the repository sidecar.
++
+image::application-security/repo-imp-custom1.1.png[]
+
+. Set the priority level in the *Set Priority Manually* field. Values: 'Low': 1-4, 'Medium': 5-7, 'High': 8-10.
+. Add a comment (optional).
+. Select *Save*.
+
+NOTE: Setting a custom repository importance score adds a "manual" label to the priority level details.
+
+To restore the default repository importance score, clear the *Set Priority Manually* field > *Save*.
+
+//TODO add link
+
+
+////
+The CAS Application Graph enables you to utilize the Repository Importance Score when filtering search results, enabling focus on critical repositories in your application landscape. Incorporating Importance Score into CAS Application Graph queries provides valuable insights to prioritize investigations and optimize security posture management.
+
+The *Investigate Simple Mode Query Builder* allows you to filter repositories based on their assigned Importance Score. This functionality enables you to:
+
+* *Prioritize Critical Repositories*: Focus your investigation efforts on repositories with higher importance scores. This ensures you prioritize security issues that potentially impact your most business-critical applications
+* *Granular Search*: Filter by a specific range of scores to refine your search results. For instance, you might target repositories with a score of 70 or above, indicating a high level of business criticality
+F// TODO linkor more information on how to build a prioritize a query as part of a query see xref:[]
+//TODO link to Query builder with Repository Importance Score attribute
+
+////
+
+
+// TODO Is "In addition you can filter repositories specifying a range of scores" part of the query attributes?
+
+//For more information on how to build a prioritize a query as part of a query see xref:[]
+//TODO link to Query builder with Repository Importance Score attribute 
+
+////
+=== Repository Importance Score in Dashboards 
+
+You can customize CAS dashboard widgets based on Repository Importance Score to focus on repositories with higher importance.
+
+You can view Repository Importance scores for all integrated code repositories in the *Repositories* table, allowing you to prioritize vulnerabilities based on potential impact. Filters and sorting by Repository Importance scores allow you prioritize repositories that require attention.
+
+Application context allows you to focus on code repositories and issues that are part of high business impact on your organization. 
+
+ Perform the following actions by navigating to *Application Security* > *Repositories* page. 
+
+* Group applications 
+* Filter integrated code repositories based on the specific application they belong to
+* Filter by application impact level
+
+In addition, you can filter the *Project*, *CI/CD Risks*, *SBOM*, and *Technologies* tables based on Repository Importance scores.
+////
+
+
+=== Manage Repository Importance Scores via REST API
+
+The Repository Importance Score API empowers you to automate workflows and manage Importance Scores for your code repositories programmatically. This API supports both fetching and setting scores, allowing for bulk operations to streamline your security posture management.
+
+*Key Functionalities*
+
+* *Retrieve Importance Scores*: Utilize the API to efficiently retrieve the importance score(s) for one or more repositories. This functionality is ideal for integrating importance scores into existing workflows or dashboards
+* *Set Scores*: Programmatically set the importance score for one or more repositories. You can optionally include a comment to explain the rationale behind the score adjustment. This comment will be displayed alongside the score for future reference
+* *Bulk Operations*: Both retrieval and update functionalities support bulk operations, allowing you to efficiently manage the importance scores for a large number of repositories simultaneously
+
+*Limitation*: The request handles a maximum of 5000 repositories.
+
+For more information, refer to the https://pan.dev/prisma-cloud/api/code/get-vcs-repository-page/[GET Repositories Page] API documentation.
+
+
+
+=== Investigate Repositories  
+
+The CAS Application Graph enables you to investigate repositories in graph view. Use the  *Simple Mode Query Builder* in *Investigate* to filter repositories based on their assigned repository importance score, enabling you to prioritize and focus your investigation efforts on critical repositories that potentially impact your most business-critical applications.  
+
+[.procedure]
+==== Build a Repository Importance Score Query
+
+You can build a query to prioritize repositories based on their Repository Importance Score through the *Investigate Simple Mode Query Builder*. 
+
+[.task]
+
+. In *Application Security*, select the *Investigate* tab.
+. Click *Select a Query Type* > *Application Asset*.
+. For *Type is*, select *VCS Repository*.
+. In the WHERE clause, select *Score* > *Intersects* operator > Select a value: High, Medium, Low.
++
+The repositories matching your criteria are displayed in graph mode. 
++
+image::application-security/repo-imp1.1.png[]
+
+For more information on viewing your software development life cycle (SLDC) as a graphical representation that allows you to explore assets and connections, refer to xref:../../search-and-investigate/application-asset-queries/application-asset-queries.adoc[Application Asset Queries].
+
+// /search-and-investigate/application-asset-queries/application-asset-queries.adoc
+
+
 
 ////
 ===== Actions on Edges

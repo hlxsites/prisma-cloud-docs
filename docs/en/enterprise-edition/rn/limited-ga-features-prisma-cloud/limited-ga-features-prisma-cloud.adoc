@@ -4,11 +4,22 @@ Review the Prisma Cloud features that have Limited General Availability (LGA) on
 
 The LGA features are not available on all stacks and are subject to change by the GA release. If you want a specific feature enabled, contact Prisma Cloud Customer Support.
 
-
 [cols="50%a,50%a"]
 |===
 |FEATURE
 |DESCRIPTION
+
+|*Tag-based RBAC with Resource Lists*
+//RLP-143394
+
+|Tag-based Role-based access control (RBAC) with Resource Lists builds on Prisma Cloud’s existing RBAC capabilities, which allow your System Administrators to define limited access to cloud assets by introducing support for https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/tag-based-rbac-resource-lists-lga.pdf[Tag-based Resource Lists for Roles].
+
+
+|*Auto-Dismiss Alerts*
+//PCSUP-24226
+
+|Enable *Auto-Actions* in Prisma Cloud to efficiently tackle tasks such as auto-dismissal of alerts with specific tags, defined in a resource list. When creating alert rules you have the option to automatically take action when a policy is violated by auto-dismissing alerts on assigned targets. Once enabled, these options are displayed as additional steps in the alert rule creation process. For example, if you enable *Auto-Actions*, the options to *Configure Auto-Actions* is displayed. You can optionally configure *Auto-Action* to include Reason and Authorization details. 
+//Auto-Actions can be enabled on your tenant by contacting Prisma Cloud Customer Support.
 
 |*Cloud Account Group Details Included in CSV Download File*
 //RLP-141935, RLP-134460
@@ -27,28 +38,14 @@ The LGA features are not available on all stacks and are subject to change by th
 //'xxx@paloaltonetworks.com'(with role 'System Admin':'System Admin') logged in via password
 //----
 
-|*Prisma Cloud DSPM*
-//RLP-129484
-
-|Prisma Cloud Data Security Posture Management (DSPM), previously known as Dig Security platform, helps you discover, classify, protect, and govern your data across multi-cloud environments. With Prisma Cloud https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/dspm-lga.pdf[DSPM], you can reduce data misuse, achieve compliance, and prevent ransomware attacks and data breaches. It provides:
-
-* Automated discovery and classification of data assets that allows you to locate where sensitive data resides and ensure continuous compliance with latest security and privacy regulation.
-
-* Data Security Posture Management that allows your security teams to prioritize remediation efforts and efficiently reduce data exposure.
-
-* Data Detection and Response (DDR) that detects data exfiltration attempts, compliance breaches, and data misuse. 
 
 |*Continuous Permission Management*
-
-tt:[*_CSPM - Visibility, Compliance and Governance_*]
-
 //RLP-129731
 
 |Prisma Cloud provides a https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/continuous-permission-management-lga.pdf[Continuous Permission Management] enhancement script to streamline your experience with your onboarded cloud accounts. You can now easily manage the required API ingestion permissions for your AWS, Azure, GCP, or OCI cloud accounts on a continuous basis, ensuring smooth operation and eliminating potential misconfiguration issues against new API ingestions.
 
 
 |*_AWSCloudAccount.orgHierarchyNames() RQL Function for AWS Assets*
-
 //RLP-127530, RLP-110106
 
 |A new `_AWSCloudAccount.orgHierarchyNames()` RQL function is available to enumerate the organization memberships for a given asset. You can use this function to refer to the list of complete Organization Units (OUs) in your account ownership hierarchy in order to compare whether any of the OUs or parent OUs match with the targeted list values. Here are a few examples:
@@ -62,9 +59,6 @@ tt:[*_CSPM - Visibility, Compliance and Governance_*]
 * `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() does not intersect (“OU1") and _AWSCloudAccount.orgHierarchyNames() exists`
 
 |*AppDNA for Application Context*
-
-tt:[*_CSPM - Visibility, Compliance and Governance_*]
-
 //RLP-104999
 
 |AppDNA helps you center your security strategy around your applications, the most vital construct in your cloud estate. https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/app-dna-lga.pdf[AppDNA] intelligently groups assets in a manner that exposes their relationships, in the context of application development. AppDNA helps you:
@@ -78,8 +72,6 @@ tt:[*_CSPM - Visibility, Compliance and Governance_*]
 
 |*Support for Onboarding IBM Cloud*
 
-tt:[*_CSPM - Visibility, Compliance and Governance_*]
-
 //RLP-101176
 //https://docs.paloaltonetworks.com/content/dam/techdocs/en_US/pdf/prisma/prisma-cloud/prerelease/ibm-onboarding-lga.pdf
 
@@ -90,8 +82,6 @@ You can now manage vulnerabilities, ensure compliance, and provide runtime defen
 
 |*Asset Tag Filter in Asset Inventory*
 
-tt:[*_CSPM - Visibility, Compliance and Governance_*]
-
 //RLP-70205 - Possible GA in Q4
 
 //https://docs.paloaltonetworks.com/content/dam/techdocs/en_US/pdf/prisma/prisma-cloud/prerelease/asset-inventory-resource-tag-filter-lga.pdf
@@ -101,10 +91,22 @@ tt:[*_CSPM - Visibility, Compliance and Governance_*]
 
 |*Resolved Alert Notification to External Integrations*
 
-tt:[*_CSPM - Visibility, Compliance and Governance_*]
-
 //RLP-71649, RLP-83106
 
 |The alert notification system is enhanced to send resolved notifications to external integrations such as ServiceNow or Jira (integrations that support the state change) when you delete a cloud account or update an alert rule on the Prisma Cloud administrative console. For example, when the cloud account or the alert rule associated with an open alert is deleted, the alert status is updated as resolved on Prisma Cloud and the corresponding resolved notification will be sent to the supported integration channels where the open alert notification was sent.
+
+|tt:[Update] *Resource Type Column Included in Download all filtered assets .csv*
+
+//RLP-132702, RLP-131241, PCSUP-23876
+//Moving this from 3.2 New Features commented out to LGA as fix for PCUP-23876 as this feature is still in LGA.
+
+|In *Asset Explorer*, if you select *Download all filtered assets*, the resulting .csv file now includes a *Resource Type* column that lists the asset type. Previously, the  column was displayed only on selecting *Download the current table*.
+
+|tt:[Update] *Enable Notifications for Alerts State Change*
+
+//PCSUP-23876, RLPARCH-10419
+//Blurb approved by Nishant Agarwal via Slack
+
+|Stay updated on the status of alerts you are tracking by configuring external notifications for when the status of an alert changes. For example, if an alert status transitions from one state to another, such as from *Open* to *Dismissed* or *Resolved*, you can enable alert notifications when *Alert notifications for all states* is enabled. If you do not see the option to enable notifications for the different states when you https://docs.prismacloud.io/en/enterprise-edition/content-collections/alerts/create-an-alert-rule-cloud-infrastructure#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Cloud Infrastructure], contact Prisma Cloud Customer Support to enable it on your Prisma Cloud tenant.
 
 |===

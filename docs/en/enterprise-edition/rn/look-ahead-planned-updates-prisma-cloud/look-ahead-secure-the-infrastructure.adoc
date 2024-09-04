@@ -1,24 +1,53 @@
 [#ida01a4ab4-6a2c-429d-95be-86d8ac88a7b4]
 == Look Ahead—Planned Updates to Secure the Infrastructure
 
-Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
+Review changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.7.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.9.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
-The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
+The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
 [NOTE]
 ====
-The details and functionality listed below are a preview and the actual release date is subject to change.
+The details and functionalities listed below are a preview and the actual release date is subject to change.
 ====
 
+* <<announcement>>
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
 * <<api-ingestions>>
-* <<new-compliance-benchmarks-and-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
 //* <<rest-api-updates>>
 * <<deprecation-notices>>
+
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Change*
+|*Description*
+
+|*Prisma Cloud Release Schedule Updated from a Bi-weekly to a Monthly Release*
+//RLP-148595
+
+|Starting with the 24.10.1 release, Prisma Cloud release schedule will transition from a bi-weekly to a monthly cadence to ensure continuous deliver of high-quality features and enhancements.
+
+* Enhance Quality: A longer development cycle enables the Prisma Cloud team to focus on thorough testing and quality assurance, ensuring that each release meets the highest standards.
+
+* Incorporate Feedback: With more time between releases, we can better integrate your feedback and suggestions into our product roadmap, leading to features that truly meet your organization's security needs.
+
+* Optimize Resources: This change helps allocate resources more effectively, allowing the Prisma Cloud team to work on more feature improvements for you.
+
+*Impact—* Prisma Cloud will release new features, enhancements, and security updates on a monthly basis starting in October 2024 (no more .2 releases). Each release will be accompanied by detailed release notes to keep you informed of what's new.
+
+If you have any questions or feedback, contact your Prisma Cloud Customer Support representative.
+
+//Thank You for your support and we appreciate your understanding and support as we make this transition. Our goal is to provide you with the best possible product and experience. If you have any questions or feedback, please do not hesitate to reach out to our support team.
+//Improved Communication: We are committed to continue keeping you updated on our progress and any upcoming features. Expect regular updates and insights into our development process.
+
+|===
 
 [#changes-in-existing-behavior]
 === Changes in Existing Behavior
@@ -28,41 +57,37 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|*Tag-based Resource Lists*
-//RLP-140177
+|*Audit Logs Warning*
+//RLP-148505
 
-|Starting with the 24.7.2 release, the following limits will be enforced for Tag-based Resource Lists:
+|Starting with the 24.9.1 release, if you have configured your AWS account or organization to ingest audit logs through EventBridge, you may see a `Rule <prisma-cloud-your-tenant-id-audit-logs-rule> does not exist on EventBus default in <region>` warning message.  
 
-* Tag-based Resource Lists will be limited to 10 key-value pairs
-* Up to 5 Tag-based Resource Lists may be associated with a Role
-* Tag-based Resource List Tag key and value will be limited to 256 characters each
+This warning is due to performance enhancements in the EventBridge rule configuration, which do not affect system functionality.
 
-*Impact—* These changes will affect Tag-based Resource Lists and Roles after the 24.7.2 release. Existing configurations will not be affected.
-// Commenting out per feedback from AO 5/24 - check for 24.7.1 inclusion
+To resolve the warning, download the CloudFormation Template (CFT) from *Misconfigurations > Near Real-Time Visibility > Edit* and update your CFT stack in AWS. For detailed instructions, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-aws/configure-audit-logs#:~:text=Time%20Visibility.-,Configure%20Details.,-Click%20Download%20EventBridge[Configure Audit Logs].
 
-|*New Limits for Audit Log API*
-//RLP-142211
-
-|Prisma Cloud will introduce a response size limit of 100K records for the Audit Logs endpoint effective 24.7.1.
-
-* https://pan.dev/prisma-cloud/api/cspm/rl-audit-logs/[GET - /audit/redlock]
+*Impact—* Updating the CFT will result in an increase in the number of EventBridge rules enabling Prisma Cloud to ingest only the relevant audit logs.
 
 
-|*API Rate Limits — Update User Role API*
-//RLP-141323
+|*Amazon EC2 Ingestion*
+//RLP-145171
 
-|To resolve a critical performance issue with the https://pan.dev/prisma-cloud/api/cspm/update-user-role/[Update User Role] API (PUT /user/role), a rate limit with the following parameters will be implemented effective 24.7.1.
+|Starting with the 24.9.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
 
-`Limit=3, Burst=3` 
+*Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
 
-*Impact—* Requests exceeding these limits will result in an *HTTP 429* Too Many Requests response.
+If you have any questions, contact your Prisma Cloud Customer Success Representative.
 
-|*Role-Based Access Control for Compliance and Alert Reports*
-//RLP-140182
 
-|User-generated reports will only be visible to System Administrators and to users with the same role effective 24.8.1.
+|*Audit Logs Retention Period*
+//RLP-146965, RLP-147876
 
-Implementing Role-Based Access Control (RBAC) enhances data security by streamlining report access for users with the same role, while also preventing unauthorized access.
+|Starting with the 24.9.1 release, audit logs from the AWS, Azure, GCP cloud service providers, and Prisma Cloud will be purged from the live system after 120 days or when the total number of logs exceeds 1.2 billion, whichever comes first. 
+
+*Impact—* Once the logs are purged, they will not be accessible via RQL queries on the *Investigate* page in Prisma Cloud. However, the data on the logs will be retained in an archived, encrypted format for the duration of your contract. 
+
+To retrieve any purged data, contact your Prisma Cloud Customer Success Representative.
+
 
 |===
 
@@ -84,7 +109,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.7.1.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.9.1.
 
 . Review the updates.
 +
@@ -96,14 +121,74 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-No policy updates planned for 24.7.1 release.
+[cols="50%a,50%a"]
+|===
 
-//[cols="50%a,50%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+2+|*Policy Updates—Metadata*
 
-//|===
+|*Policies*
+|*Description*
+
+|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
+//RLP-148554
+
+|*Changes—* The policy severity will be updated.
+
+*Current Policy Severity—* High
+
+*Updated Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*Impact—* Low
+
+
+|*Azure Key Vault Firewall is not enabled*
+//RLP-148542
+
+|*Changes—* The policy RQL will be updated to reduce false positives and only generate alerts if public access is enabled.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.networkAcls.ipRules[*].value does not exist AND properties.publicNetworkAccess does not equal ignore case "disabled"
+----
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls does not exist) or (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls.defaultAction equal ignore case allow )
+----
+*Policy Type—* Config
+
+*Impact—* Low. Open alerts where the public access is enabled and network ACLs default action is denied will be resolved.
+
+
+|*Azure App Service Web app doesn't use latest TLS version*
+//RLP-148541
+
+|*Changes—* The updated Policy RQL will not alert for minTlsVersion of 1.3.
+
+*Current Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1 and 1.2. It is highly recommended to use the latest TLS 1.2 version for web app secure connections.
+
+*Updated Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1, 1.2 and 1.3. It is highly recommended to use the latest TLS greater than 1.1 version for web app secure connections.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with "app" AND config.minTlsVersion does not equal "1.2"
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with app and config.minTlsVersion is member of ('1.0', '1.1')
+----
+
+*Policy Type—* Config
+
+*Policy Severity—* Low
+
+*Impact—* Low. Alert for Azure App Service Web app with minTlsVersion equals 1.3 will be resolved.
+
+
+|===
+
 
 [#api-ingestions]
 === API Ingestions
@@ -113,177 +198,240 @@ No policy updates planned for 24.7.1 release.
 |*Service*
 |*API Details*
 
-|*Amazon Route53 Resolver*
-//RLP-142816
+|*Amazon Redshift*
+//RLP-148150
 
-|*aws-route53resolver-resolver-endpoint*
-
-Additional permissions required:
-
-* `route53resolver:ListResolverEndpoints`
-* `route53resolver:ListTagsForResource`
-
-The Security Audit role includes the permissions.
-
-//*AWS AppConfig*
-//RLP-142813 - Sandip Vishwakarma 6/18 in 6.2 draft - change the release version for this to 24.7.2
-
-//*aws-appconfig-application*
-//Additional permissions required:
-//* `appconfig:ListApplications`
-//* `appconfig:ListEnvironments`
-//* `appconfig:ListConfigurationProfiles`
-//The Security Audit role does not include the permissions. You must manually add the above permissions to the CFT template to enable them.
-
-|*AWS Service Catalog*
-//RLP-142801
-
-|*aws-servicecatalog-product-as-admin*
+|*aws-redshift-serverless-workgroup*
 
 Additional permission required:
 
-* `servicecatalog:SearchProductsAsAdmin`
+* `redshift-serverless:ListWorkgroups`
 
-The Security Audit role does not include the permission. You must manually add the above permission to the CFT template to enable it.
+The Security Audit role includes the above permission.
 
-|*Amazon Simple Email Service*
-//RLP-142798
+|*AWS Security Hub*
+//RLP-148149
 
-|*aws-ses-receipt-rule-set*
-
-Additional permissions required:
-
-* `ses:ListReceiptRuleSets`
-* `ses:DescribeReceiptRuleSet`
-
-The Security Audit role includes the permissions.
-
-|*Azure Cache*
-//RLP-141839
-
-|*azure-cache-redis-enterprise*
+|*aws-securityhub-enabled-products-for-import*
 
 Additional permission required:
 
-* `Microsoft.Cache/redisEnterprise/read`
+* `securityhub:ListEnabledProductsForImport`
 
-The Reader role includes the permission.
+The Security Audit role includes the above permission.
 
-|*Azure Monitor*
-//RLP-142103
+|*Amazon Bedrock*
+//RLP-148145
 
-|*azure-monitor-data-collection-endpoints*
-
-Additional permission required:
-
-* `Microsoft.Insights/DataCollectionEndpoints/Read`
-
-The Reader role includes the permission.
-
-
-|*Azure SignalR Service*
-//RLP-137475
-
-|*azure-signalr-diagnostic-settings*
-
-Additional permissions required:
-
-* `Microsoft.SignalRService/SignalR/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader role includes the permissions.
-
-
-|*Google Policy Analyzer*
-//RLP-142633
-
-|*gcloud-policy-analyzer-service-account-authentication*
+|*aws-bedrock-model-invocation-logging-configuration*
 
 Additional permission required:
 
-* `policyanalyzer.serviceAccountLastAuthenticationActivities.query`
+* `bedrock:GetModelInvocationLoggingConfiguration`
 
-The Viewer role includes the permission.
+The Security Audit role includes the above permission.
 
+|*Amazon Bedrock*
+//RLP-148144
 
-|*Google Eventarc*
-//RLP-142632
-
-|*gcloud-eventarc-trigger*
-
-Additional permissions required:
-
-* `eventarc.triggers.list`
-* `eventarc.triggers.getIamPolicy`
-
-The Viewer role includes the permissions.
-
-
-|*Google Eventarc*
-//RLP-142631
-
-|*gcloud-eventarc-channel*
+|*aws-bedrock-provisioned-model-throughput*
 
 Additional permissions required:
 
-* `eventarc.channels.list`
-* `eventarc.channels.getIamPolicy`
+* `bedrock:ListProvisionedModelThroughputs`
+* `bedrock:GetProvisionedModelThroughput`
+* `bedrock:ListTagsForResource`
 
-The Viewer role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
 
+The Security Audit role does not include the `bedrock:ListProvisionedModelThroughputs` and `bedrock:GetProvisionedModelThroughput` permissions. You must manually add them to the CFT template to enable them.
 
-|*Google Compute Engine*
-//RLP-142630
+|*Amazon Bedrock*
+//RLP-148141
 
-|*gcloud-compute-machine-image*
-
-Additional permissions required:
-
-* `compute.machineImages.list`
-* `compute.machineImages.getIamPolicy`
-
-The Viewer role includes the permissions.
-
-|*Google Compute Engine*
-//RLP-142627
-
-|*gcloud-compute-reservation*
+|*aws-bedrock-model-customization-job*
 
 Additional permissions required:
 
-* `compute.reservations.list`
-* `compute.reservations.getIamPolicy`
+* `bedrock:ListModelCustomizationJobs`
+* `bedrock:GetModelCustomizationJob`
+* `bedrock:ListTagsForResource`
 
-The Reader role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListModelCustomizationJobs` and `bedrock:GetModelCustomizationJob` permissions. You must manually add them to the CFT template to enable them.
+
+|*Amazon Bedrock*
+//RLP-148135
+
+|*aws-bedrock-knowledgebase*
+
+Additional permissions required:
+
+* `bedrock:ListKnowledgeBases`
+* `bedrock:GetKnowledgeBase`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListKnowledgeBases` and `bedrock:GetKnowledgeBase` permissions. You must manually add them to the CFT template to enable them.
+
+|*Azure Databricks*
+//RLP-147853
+
+|*azure-databricks-access-connectors*
+
+Additional permission required:
+
+* `Microsoft.Databricks/accessConnectors/read`
+
+The Reader role includes the above permission.
+
+|*Azure Active Directory*
+//RLP-128447
+
+|*azure-active-directory-admin-consent-request-policy*
+
+Additional permission required:
+
+* `Policy.Read.All`
+
+The Global Reader role includes the above permission.
+
+|*Azure Active Directory*
+//RLP-128079
+
+|*azure-active-directory-cross-tenant-access-default-settings*
+
+Additional permission required:
+
+* `Policy.Read.All`
+
+The Global Reader role includes the above permission.
+
+|*Azure Active Directory*
+//RLP-127879
+
+|*azure-active-directory-configured-external-identity-provider*
+
+Additional permission required:
+
+* `IdentityProvider.Read.All`
+
+//The External Identity Provider Administrator or External ID user flow administrator role includes the above permission.
+
+|*Google Cloud Batch Job*
+//RLP-148101
+
+|*gcloud-cloud-batch-job*
+
+Additional permission required:
+
+* `batch.jobs.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148100
+
+|*gcloud-bare-metal-solution-volume-lun*
+
+Additional permissions required:
+
+* `baremetalsolution.instances.list`
+* `baremetalsolution.luns.list`
+
+The Viewer role includes the above permissions.
+
+|*Google Bare Metal Solution*
+//RLP-148099
+
+|*gcloud-bare-metal-solution-nfs-share*
+
+Additional permission required:
+
+* `baremetalsolution.nfsshares.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148098
+
+|*gcloud-bare-metal-solution-volume*
+
+Additional permission required:
+
+* `baremetalsolution.volumes.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-148097
+
+|*gcloud-bare-metal-solution-network*
+
+Additional permission required:
+
+* `baremetalsolution.networks.list`
+
+The Viewer role includes the above permission.
+
+|*Google Bare Metal Solution*
+//RLP-147865
+
+|*gcloud-bare-metal-solution-instance*
+
+Additional permission required:
+
+* `baremetalsolution.instances.list`
+
+The Viewer role includes the above permission.
 
 
-|tt:[Update] *OCI Cloud Guard*
-//RLP-138217. Move this blurb to features introduced in 24.7.2
+|*OCI Web Application Firewall*
+//RLP-148332
 
-|*oci-cloudguard-security-recipe*
+|*oci-loadbalancer-waf*
 
-The `oci-cloudguard-security-recipe` API will be updated to exclude the `timeCreated` and `timeUpdated` fields from JSON because it changes frequently causing too many resource snapshots.
+Additional permissions required:
+
+* `WEB_APP_FIREWALL_INSPECT`
+* `WEB_APP_FIREWALL_READ`
+
+The Reader role includes the above permissions.
 
 |===
 
-[#new-compliance-benchmarks-and-updates]
-=== New Compliance Benchmarks and Updates
 
-[cols="50%a,50%a"]
-|===
-|*Compliance Benchmark*
-|*Description*
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
 
-|*Policy Mapping Update for CIS v3.0.0 (GCP) Level 1 and Level 2*
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
 
-tt:[*24.6.2*]
-//RLP-142387
+//|
 
-|New Policy mappings are added to CIS v3.0.0 (GCP) Level 1 and Level 2 compliance standard.
+//|
 
-*Impact—* No impact on existing alerts. The compliance score may vary because a new mapping has been added.
+//|===
 
-|===
+
+//[#rest-api-updates]
+//=== REST API Updates
+
+//[cols="37%a,63%a"]
+//|===
+//|*Change*
+//|*Description*
+
+//|
+
+//|
+
+//|===
+
 
 [#deprecation-notices]
 === Deprecation Notices
@@ -296,6 +444,47 @@ tt:[*24.6.2*]
 |*Sunset Release*
 |*Replacement Endpoints*
 
+|tt:[*Vulnerabilities Dashboard APIs*]
+//RLP-147410
+
+* *Get Vulnerability Overview Endpoints*
+
+** https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview/[GET /uve/api/v1/dashboard/vulnerabilities/overview]
+
+** https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/overview]
+
+* *Get Prioritized Vulnerabilities Endpoints*
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability/[GET /uve/api/v1/dashboard/vulnerabilities/prioritised]
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/prioritised]
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-3/[GET /uve/api/v3/dashboard/vulnerabilities/prioritised]
+
+* *Get Top Impacting Vulnerabilities Endpoint*
+
+** https://pan.dev/prisma-cloud/api/cspm/top-prioritised-vulnerability/[GET /uve/api/v1/dashboard/vulnerabilities/prioritised-vuln]
+
+* *Get CVE Overview Endpoint*
+** https://pan.dev/prisma-cloud/api/cspm/cve-overview/[GET /uve/api/v1/dashboard/vulnerabilities/cve-overview]
+
+|24.8.1
+|24.11.1
+
+|* *Get Vulnerability Overview Endpoint*
+
+** https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-3/[GET /uve/api/v3/dashboard/vulnerabilities/overview]
+
+* *Get Prioritized Vulnerabilities Endpoint* 
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-4/[GET /uve/api/v4/dashboard/vulnerabilities/prioritised]
+
+* *Get Top Impacting Vulnerabilities*
+** https://pan.dev/prisma-cloud/api/cspm/top-prioritised-vulnerability-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/prioritised-vuln]
+
+* *Get CVE Overview Endpoint*
+** https://pan.dev/prisma-cloud/api/cspm/cve-overview-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/cve-overview]
+
 
 |tt:[*Resource Explorer API*]
 
@@ -306,32 +495,13 @@ tt:[*24.6.2*]
 * https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
 
 |23.9.2
-|24.10.2
+|24.10.1
 |* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
-
-|tt:[*Deprecation of Compliance Standards*]
-
-The following legacy Compliance Standards are planned for deprecation at the end of May 2024. The standards will be removed from the Prisma Cloud console at the end of July 2024.
-
-* MITRE ATT&CK v10.0
-* MITRE ATT&CK v6.3
-* MITRE ATT&CK v8.2
-* HITRUST CSF v9.3
-* HITRUST v.9.4.2
-
-//RLP-140241
-
-|24.5.2
-|24.7.2
-|You must upgrade to the latest version of the Compliance Standards:
-
-* MITRE ATT&CK v14.0 Cloud IaaS for Enterprise
-* HITRUST CSF v.11.2.0
 
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
-//RLP-120514
+//RLP-120514, RLP-145823
 
 * https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
 * https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
@@ -391,6 +561,14 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 * https://pan.dev/prisma-cloud/api/cspm/post-method-for-asset-inventory-v-3/[post /v3/inventory]
 * https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-3/[get /v3/inventory/trend]
 * https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-3/[post /v3/inventory/trend]
+
+|tt:[*Asset Explorer APIs*]
+//RLP-139337
+|24.8.1
+|NA
+
+|The `accountGroup` response parameter was introduced in error and is now deprecated for Get Asset - https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[GET - uai/v1/asset] API endpoint.
+
 
 |tt:[*End of support for Google Cloud Function v1 API*]
 //RLP-142340
@@ -456,11 +634,11 @@ Response object property `risk.grade.options` is deprecated for the following re
 | -
 | NA
 
-|tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
+//tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
 //RLP-126719, need to check if this notice can be moved to current features in 24.1.2
-| - 
-| - 
-|To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
-The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
+//- 
+//- 
+//To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
+//The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
 
 |===

@@ -1,0 +1,79 @@
+
+== Azure Databricks Workspaces not using customer-managed key for root DBFS encryption
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 5495b666-049c-496b-bfda-9ee9c2449d36
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/DatabricksWorkspaceDBFSRootEncryptedWithCustomerManagedKey.yaml[CKV2_AZURE_48]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,ARM,Bicep
+
+|===
+
+=== Description
+
+This policy checks whether Databricks Workspaces leverage a customer-managed key for root DBFS encryption. DBFS (Databricks File System) is the distributed file system used by Databricks clusters. Encrypting the root DBFS adds an extra layer of security, ensuring that even in the event of unauthorized access, the data remains inaccessible and secure. Customer-managed keys enhance security by giving you control over encryption, strengthening your security posture.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_databricks_workspace,azurerm_databricks_workspace_root_dbfs_customer_managed_key
+* *Arguments:* sku,customer_managed_key_enabled
+
+Set the `customer_managed_key_enabled` attribute to `true` during Azure Databricks workspace creation. This enables customer-managed key encryption for your DBFS root data at rest.
+
+[source,go]
+----
+resource "azurerm_databricks_workspace" "databricks_workspace_good" {
+  ...
+  customer_managed_key_enabled = true
+}
+
+resource "azurerm_databricks_workspace_root_dbfs_customer_managed_key" "databricks_workspace_good" {
+  workspace_id     = azurerm_databricks_workspace.databricks_workspace_good.id
+  key_vault_key_id = "123456"
+}
+----
+
+*ARM*
+
+* *Resource:* Microsoft.Databricks/workspaces
+* *Arguments:* prepareEncryption/value
+
+Set the `customer_managed_key_enabled` attribute to `true` during Azure Databricks workspace creation. This enables customer-managed key encryption for your DBFS root data at rest.
+
+[source,json]
+----
+"resources": [
+  {
+    "type": "Microsoft.Databricks/workspaces",
+    "properties": {
+      ...
+      "parameters": {
+        "prepareEncryption": {
++          "value": true
+        },
++        "encryption": {
++          "value": {
++            ...
++          }
+        },
+      }
+    }
+  }
+]
+----
