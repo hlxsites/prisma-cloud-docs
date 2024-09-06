@@ -1,6 +1,105 @@
-== 33.00 Known Issues
+== Known and Fixed Issues in 33.xx
 
 The following table lists the known issues for 33.00 release.
+
+=== Fixed Issues
+
+[cols="23%a,77%a"]
+|===
+|*ISSUE ID*
+|*DESCRIPTION*
+
+|*CWP-61444*
+
+tt:[Fixed in 33.00.168]
+
+| Vulnerability information for many Amazon Linux CVEs lacked consistency across different Intelligence Stream updates, including changes in severity levels and fixed status versions.
+To address this, several key improvements were made, including enhanced consistency across scans, improved handling of duplicated CVEs, accurate ALAS to CVE conversion, and refined kernel package rules. These changes ensure more reliable and actionable vulnerability information for all Amazon distributions and kernel packages.
+
+|*CWP-58814*
+
+tt:[Fixed in 33.00.168]
+
+| Inconsistent version numbering for Java products led to several false positives in Prisma Cloud security scans.
+To ensure accurate mapping of vulnerabilities to Java versions, all Java product versions will be normalized to the standard 1.x format. For example, in the https://nvd.nist.gov/vuln/detail/CVE-2023-21930[CVE-2023-21930] entry on the National Vulnerability Database (NVD), OpenJDK 8 will map to Java 1.8.
+
+| *CWP-58355*
+
+tt:[Fixed in 33.00.168]
+
+| Alpine's security database shows vulnerabilities for each Alpine package, including fixed versions and associated CVEs. However, when the CVE does not include a fixed version, the rule misses vulnerabilities in minor versions, leading to incomplete vulnerability coverage.
+This issue has been fixed. The updated vulnerability rules ensure that minor versions are included, even when no specific fixed version is available.
+
+|*CWP-61220*
+
+tt:[Fixed in 33.00.168]
+
+| Although version 32.07 generated alerts for CVE-2024-6104 and CVE-2024-29018, Prisma Cloud was not directly vulnerable to these CVEs and remained safe to use. These alerts have been fixed in Prisma Cloud release 33.00.
+
+|*CWP-58073*
+
+tt:[Fixed in 33.00.168]
+
+|Customers could pass invalid data to the `v1/alert-profile` and `collections` APIs. To address this issue, the following validations have been added:
+* For `v1/alert-profiles` APIs:
+
+** The name parameter must be less than 50 characters.
+** The email address must be valid.
+** The port parameter must not be less than 1.
+** The recipient’s email address must be valid.
+
+* For `Collections`:
+** The name parameter must be less than 50 characters.
+** The description parameter must be less than 200 characters.
+
+|*CWP-59190*
+
+tt:[Fixed in 33.00.168]
+
+|If the Defender disconnects while scanning an image that has the same tag, registry, repository, and credentials, it can lead to multiple scan requests of the same image. In addition, a race condition could sometimes prevent the image from being properly removed from the host container registry after scanning.
+This fix ensures that only one scan is performed per image, even if multiple scan requests are triggered by disconnections. This reduces the load on the Defender.
+
+The fix also addresses the race condition. However, not all possible race conditions are addressed:
+
+* If the same image is scanned in different repositories or registries, race conditions are not addressed by this fix.
+* If the same image is scanned in the same repository and registry but with different tags, the fix does not handle potential race conditions.
+
+|*CWP-59443*
+
+tt:[Fixed in 33.00.168]
+
+|Previously, users experienced intermittent timeouts in a shorter timeframe than the default inactivity period, which was set to 300 minutes under *Settings > Enterprise Settings > User Idle Timeout > CX*. This issue has now been resolved, and all Prisma Cloud tabs log out only after 300 minutes of inactivity.
+
+|*CWP-59841*
+
+tt:[Fixed in 33.00.168]
+
+| *Agentless Scanning - Support for OCI root compartment scans*
+
+OCI instances deployed in the root compartment were not scanned during Agentless scans. Instances in child compartments were scanned as expected, but root compartment instances were excluded without error. This issue is fixed-all compartments, including the root, are now scanned successfully.
+
+
+|*CWP-60298*
+
+tt:[Fixed in 33.00.168]
+
+|Compliance IDs 440/441 triggered false positives during a serverless Lambda scan for kms permissions. This issue is fixed.
+
+|*CWP-60356*
+
+tt:[Fixed in 33.00.168]
+
+| In certain cases, the command that triggered an incident was missing from the incident capture flow. This caused the messages in the Incident Explorer to occasionally lack clarity, leading to incomplete logs.
+The fix ensures that executed commands are now included in audit reports when available. Additionally, it prevents the generation of incomplete reports if the command is missing.
+
+|*CWP-60574*
+
+tt:[Fixed in 33.00.168]
+
+| Previously, when an image digest was updated for the same `{registry/repo:tag}` combination, the Console was updated but the UAI and UVE continued to display the old image digests. This issue is fixed.
+
+
+|===
 
 === Known Issues
 
@@ -11,9 +110,12 @@ The following table lists the known issues for 33.00 release.
 
 // Note that when we add a known issue, you have to then update this page to include the "Fixed in xx.xx.xxx" for the known issue when it is fixed subsequently. Fixed issues in a given release are documented in the 31.xx adoc file and indicated as fixed on this page (if it was identified as a known issue earlier).
 
-|*ISSUE ID*
-|*Description*
+| *CWP-59436*
 
-Additional details
+tt:[Found in 33.00.168]
+
+| *Console failed to start in Clustered DB mode*
+
+In Prisma Cloud Compute Edition instances that have the Clustered DB mode enabled for the Console, the Console fails to start after upgrading to release 32.06.
 
 |===
