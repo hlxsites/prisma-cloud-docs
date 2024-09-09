@@ -383,6 +383,137 @@ CVE-2024-3154 - Arbitrary Systemd Property Injection as Defender does not direct
 |*ISSUE ID*
 |*DESCRIPTION*
 
+// CWP-61444
+|tt:[Fixed in 33.00.169]
+
+| *Improvements in Amazon Linux Vulnerability Reporting*
+
+Vulnerability information for many Amazon Linux CVEs lacked consistency across different Intelligence Stream updates, including changes in severity levels and fixed status versions.
+To address this, several key improvements were made, including enhanced consistency across scans, improved handling of duplicated CVEs, accurate ALAS to CVE conversion, and refined kernel package rules. These changes ensure more reliable and actionable vulnerability information for all Amazon distributions and kernel packages.
+
+// CWP-58814
+|tt:[Fixed in 33.00.169]
+
+| *Standardizing Java Versioning for Accurate Vulnerability Mapping*
+
+Inconsistent version numbering for Java products led to several false positives in Prisma Cloud security scans.
+To ensure accurate mapping of vulnerabilities to Java versions, all Java product versions will be normalized to the standard 1.x format. For example, in the https://nvd.nist.gov/vuln/detail/CVE-2023-21930[CVE-2023-21930] entry on the National Vulnerability Database (NVD), OpenJDK 8 will map to Java 1.8.
+
+// CWP-58355
+|tt:[Fixed in 33.00.169]
+
+| *Enhanced Detection for Minor Versions in Alpine Packages*
+
+Alpine's security database shows vulnerabilities for each Alpine package, including fixed versions and associated CVEs. However, when the CVE does not include a fixed version, the rule misses vulnerabilities in minor versions, leading to incomplete vulnerability coverage.
+This issue has been fixed. The updated vulnerability rules ensure that minor versions are included, even when no specific fixed version is available.
+
+
+// CWP-61220
+|tt:[Fixed in 33.00.169]
+
+| *CVEs Resolved in Release 33.00*
+
+While alerts were generated for CVE-2024-6104 and CVE-2024-29018, Prisma Cloud was not directly vulnerable and remained safe to use. The alerts have been resolved in Prisma Cloud release 33.00.
+
+// CWP-58073
+| tt:[Fixed in 33.00.169]
+
+| Customers could pass invalid data to the `v1/alert-profile` and `collections` APIs. To address this issue, the following validations have been added:
+
+* For `v1/alert-profiles` APIs:
+
+** The name parameter must be less than 50 characters.
+** The email address must be valid.
+** The port parameter must not be less than 1.
+** The recipient’s email address must be valid.
+
+* For `Collections`:
+** The name parameter must be less than 50 characters.
+** The description parameter must be less than 200 characters.
+
+// CWP-59190
+|tt:[Fixed in 33.00.169]
+
+|*Improved Image Scanning*
+
+If the Defender disconnects while scanning an image that has the same tag, registry, repository, and credentials, it can lead to multiple scan requests of the same image. In addition, a race condition could sometimes prevent the image from being properly removed from the host container registry after scanning.
+This fix ensures that only one scan is performed per image, even if multiple scan requests are triggered by disconnections. This reduces the load on the Defender.
+
+The fix also addresses the race condition. However, not all possible race conditions are addressed:
+
+* If the same image is scanned in different repositories or registries, race conditions are not addressed by this fix.
+* If the same image is scanned in the same repository and registry but with different tags, the fix does not handle potential race conditions.
+
+
+// CWP-59443
+|tt:[Fixed in 33.00.169]
+
+| Previously, users experienced intermittent timeouts in a shorter timeframe than the default inactivity period, which was set to 300 minutes under *Settings > Enterprise Settings > User Idle Timeout > CX*. This issue has now been resolved, and all Prisma Cloud tabs log out only after 300 minutes of inactivity.
+
+// CWP-59841
+|tt:[Fixed in 33.00.169]
+
+| *Agentless Scanning - Support for OCI root compartment scans*
+
+OCI instances deployed in the root compartment were not scanned during Agentless scans. Instances in child compartments were scanned as expected, but root compartment instances were excluded without error. This issue is fixed-all compartments, including the root, are now scanned successfully.
+
+
+// CWP-60298
+|tt:[Fixed in 33.00.169]
+
+|*Compliance IDs 440/441 in Lamba Scans*
+
+Compliance IDs 440/441 triggered false positives during a serverless Lambda scan for kms permissions. This issue is fixed.
+
+// CWP-60356
+|tt:[Fixed in 33.00.169]
+
+| *Improved Clarity in Incident Log Messages*
+
+In certain cases, the command that triggered an incident was missing from the incident capture flow. This caused the messages in the Incident Explorer to occasionally lack clarity, leading to incomplete logs.
+The fix ensures that executed commands are now included in audit reports when available. Additionally, it prevents the generation of incomplete reports if the command is missing
+
+// CWP-60574
+|tt:[Fixed in 33.00.169]
+
+| Previously, when an image digest was updated for the same `{registry/repo:tag}` combination, the Console was updated but the UAI and UVE continued to display the old image digests. This issue is fixed.
+
+// CWP-60819
+|tt:[Fixed in 33.00.169]
+
+| *Reduced Registry Scan Duration*
+
+Prisma Cloud sometimes experienced extended registry scan times due to certain images not being correctly recognized.
+This led to the registry scan missing cached images, resulting in longer scan durations. The cache miss happened because the image ID hash from the Container Runtime API was missing the sha256 prefix.
+The issue has now been fixed by using the hash from the registry scan request sent by the Console, when available. This ensures cache hits and enhances scan performance.
+
+// CWP-60900
+|tt:[Fixed in 33.00.169]
+
+| Exporting discovered APIs to OpenAPI CSV files from the *Runtime > Monitor > WAAS > API discovery > Export CSV* page failed if the API had unsupported methods such as PURGE. This issue is fixed.
+
+// CWP-61291
+|tt:[Fixed in 33.00.169]
+
+| Previously, a "buffer full" error was reported with an HTTP 500 status code, when the same port was reused in a specific order across multiple apps in a single WAAS rule. This issue is fixed now.
+
+//CWP-61362
+|tt:[Fixed in 33.00.169]
+
+| Fixed an issue where compliance alerts for malware (Compliance ID 455) did not appear in daily email reports despite failed resources being detected. This fix ensures accurate reporting for agentless scans.
+
+//CWP-61375
+|tt:[Fixed in 33.00.169]
+
+|*Agentless Scanning - Resource Group Creation in Target Azure Account during Hub Scan Mode*
+
+Fixed an issue where resource groups were created in the target account during Azure agentless Hub scan mode. Now, resource groups are no longer created in the target account when a hub account is defined on it.
+
+//CWP-61752
+|tt:[Fixed in 32.07]
+
+|The issue related to interruption in the communication between a defender and the console--that was introduced by the newly introduced fail-safe mechanism aimed to prevent any impact to customer traffic or downtime--is resolved. The fix requires you to upgrade the Console and the Defenders to version 33.00.
+
 //CWP-61027
 |tt:[Fixed in 32.07]
 |For some GO package CVEs, Prisma Cloud did not completely report all the affected versions, particularly when multiple version ranges were involved, resulting in occasional false negatives.
