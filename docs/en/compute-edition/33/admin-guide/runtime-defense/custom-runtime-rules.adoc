@@ -147,6 +147,14 @@ Supported only for ELF files. For other types of files, this property will be em
 
 |===
 
+//CWP-57290
+[NOTE]
+====
+File creation and file location change operations do not generate a runtime audit event. 
+
+For example, when using the `touch` command, which is commonly used to create empty files, the file creation itself is allowed, even if write operations are blocked. While the system prevents any actual writing to the file, the attempt triggers a write audit due to the way the file system processes these operations.
+====
+
 ==== Networking events
 
 Network events fire when a process tries to establish an outbound connection.
@@ -248,14 +256,6 @@ If you explicitly deny a process and set the effect to *Prevent* in the *Process
 The same logic applies to custom rules that try to allow processes that are prevented by other policies.
 For example, consider process 'foo' that is explicitly denied by a runtime rule, with the effect set to *Prevent*.
 You cannot allow 'foo -bar' in a custom runtime rule by analyzing proc.cmdline for '-bar'.
-
-* Prisma Cloud doesn't support the action *Prevent* on `write` operations to existing files.
-For example, consider the following expression:
-+
- file.path = "/tmp/file"
-+
-If this expression is added to a runtime rule, and the effect is set to prevent, then Prisma Cloud will prevent the creation of such a file.
-If the file already exists, however, Prisma Cloud won't prevent any write operation to it, but will raise an alert.
 
 * App-Embedded custom rules support Processes and Outbound Connection rule types. The Block action is not supported, while Prevent is supported for both Processes and Outbound Connection rule types.
 
