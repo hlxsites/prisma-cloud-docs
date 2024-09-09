@@ -2,7 +2,7 @@
 
 Learn what's new on Prisma® Cloud in September 2024.
 
-//* <<announcement>>
+* <<announcement>>
 * <<new-features>>
 * <<changes-in-existing-behavior>>
 * <<api-ingestions>>
@@ -14,6 +14,30 @@ Learn what's new on Prisma® Cloud in September 2024.
 //* <<deprecation-notices>>
 //* <<end-of-sale>>
 
+[#announcement]
+=== Announcement
+
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+| *Lifecycle Support Update*
+
+tt:[Secure the Runtime]
+
+tt:[33.00.169]
+
+//CWP-61282
+
+| Prisma Cloud officially guarantees backward compatibility with up to two previous major versions (N-2).
+
+Although the support lifecycle remains unchanged, starting from version 33.xx, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from up to three major releases before the current version (upto N-3 major releases).
+
+For example, with the current version at 33.xx, API calls and Defenders from version 30.xx will be allowed. However, support and complete backward compatibility is guaranteed for the 32.xx and 31.xx releases.
+
+|===
 
 [#new-features]
 === New Features
@@ -44,6 +68,48 @@ tt:[24.9.1]
 //RLP-141021
 
 |Prisma Cloud has enhanced its Prisma Cloud Technical Documentation https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-jira[Jira integration] to work with all Jira Cloud and Jira On-Premise versions including 9.0 and above. This enhancement will enable you to receive Prisma Cloud alert notifications in your Jira accounts.  
+
+| *Transition from OVAL to VEX Format for Red Hat Security Data*
+
+tt:[Secure the Runtime]
+
+tt:[33.00.169]
+
+// CWP-61485/CWP-59337
+
+| Prisma Cloud is transitioning from the OVAL format to the new VEX format that Red Hat has introduced and adopted for reporting security data and vulnerabilities in Red Hat artifacts.
+
+*Pre-33.00*: Until you upgrade to a 33.xx release, Prisma Cloud will continue using OVAL for vulnerability scanning with no expected impact.
+
+*33.xx*: After upgrading your Console and Defenders to version 33.00 or later, Prisma Cloud will switch to the VEX format for vulnerability reporting. This transition might result in a change in the number of reported CVEs due to the inherent differences between the VEX and OVAL content.
+
+*Comparison Between OVAL and VEX Formats*: With the OVAL format, Prisma Cloud reports vulnerabilities for each binary found during the scan. However, with the new VEX format, Prisma Cloud will report one vulnerability for the source package and provide information on related binaries.
+
+This means that the number of vulnerabilities with the same CVE ID will be reduced, as Prisma Cloud will report one vulnerability for the RPM package instead of multiple reports for each binary.
+
+*Continued Support*: Prisma Cloud will continue to support OVAL format for two major versions—v33.xx and v34.xx—to maintain compatibility with Defenders in pre-33.xx releases, as long as Red Hat continues to produce OVAL files.
+
+*Expected Console Loading Time in the 33.xx release*: For new Consoles paired with new Defenders, the Console loading time after a restart event will be approximately 1-2 minutes.
+
+*Console Memory Usage in the 33.XX release*: For on-premise users upgrading to the latest Console, the Console memory requirement is 8 GB. This requirement is only for the self-hosted editions.
+
+For a more detailed explanation of this transition, see the https://main--prisma-cloud-docs-website--hlxsites.hlx.page/en/compute-edition/assets/pdf/lookahead-transition-to-vex-format.pdf[Transition from Oval to VEX Files] document.
+
+If you have any concerns or need additional information about this transition, contact support@paloaltonetworks.com.
+
+| *Enhancement to WAAS Agentless Support*
+
+tt:[Secure the Runtime]
+
+tt:[33.00.169]
+
+// CWP-59339
+
+| WAAS agentless rules now support traffic inspection for AWS Application Load Balancers (ALBs) in addition to AWS EC2 instances. Ensure your AWS account is onboarded to the Prisma Cloud console and then configure the ALB rule.
+
+To add the ALB rule access *Defend > WAAS > Add Rule > Add Configuration*. Ensure your CloudFormation template is applied with the necessary permissions to your onboarded AWS account in the region where the ALB resides. You can view the scan results in the Prisma Cloud console to monitor and manage your ALB traffic inspection.
+
+NOTE: This feature is enabled on request. Please contact your Account team for more details.
 
 |===
 
@@ -226,6 +292,28 @@ Additional permission required:
 * `container.clusters.getCredentials`
 
 You must manually add the permission to a Custom role.
+
+
+| WAAS Agentless - Support AWS LB
+
+tt:[33.00.169]
+
+// CWP-59340
+
+| The https://pan.dev/prisma-cloud/api/cwpp/put-policies-firewall-app-agentless/[Set Agentless App Firewall Policy] API request is updated to support AWS Application Load Balancers (ALBs):
+
+* The “trafficMirroring > vpcConfig” property is modified to include three new fields for ALBs:
+** lbARN - ARN of the observed load balancer.
+** lbName - Load balancer name.
+** lbType - Load balance type.
+
+* The following existing fields are now applicable as follows:
+
+** instanceNames -  used only in EC2 rules.
+** subnetID - used only in EC2 rules.
+** tags - used only in EC2 rules.
+** vpcID - must be empty (””) for ALB rules.
+** autoScalingEnabled - must be true for ALB rules.
 
 
 |===
