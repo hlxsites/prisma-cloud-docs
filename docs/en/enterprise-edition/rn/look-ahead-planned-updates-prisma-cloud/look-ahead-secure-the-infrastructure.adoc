@@ -1,26 +1,54 @@
 [#ida01a4ab4-6a2c-429d-95be-86d8ac88a7b4]
 == Look Ahead—Planned Updates to Secure the Infrastructure
 
-Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
+Review changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.8.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.9.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
-The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
+The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
 [NOTE]
 ====
-The details and functionality listed below are a preview and the actual release date is subject to change.
+The details and functionalities listed below are a preview and the actual release date is subject to change.
 ====
 
-//* <<announcement>>
+* <<announcement>>
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
 * <<api-ingestions>>
-* <<new-compliance-benchmarks-and-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
 //* <<rest-api-updates>>
 * <<deprecation-notices>>
 
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Change*
+|*Description*
+
+|*Prisma Cloud Release Schedule Updated from a Bi-weekly to a Monthly Release*
+//RLP-148595
+
+|Starting with the 24.10.1 release, Prisma Cloud release schedule will transition from a bi-weekly to a monthly cadence to ensure continuous deliver of high-quality features and enhancements.
+
+* Enhance Quality: A longer development cycle enables the Prisma Cloud team to focus on thorough testing and quality assurance, ensuring that each release meets the highest standards.
+
+* Incorporate Feedback: With more time between releases, we can better integrate your feedback and suggestions into our product roadmap, leading to features that truly meet your organization's security needs.
+
+* Optimize Resources: This change helps allocate resources more effectively, allowing the Prisma Cloud team to work on more feature improvements for you.
+
+*Impact—* Prisma Cloud will release new features, enhancements, and security updates on a monthly basis starting in October 2024 (no more .2 releases). Each release will be accompanied by detailed release notes to keep you informed of what's new.
+
+If you have any questions or feedback, contact your Prisma Cloud Customer Support representative.
+
+//Thank You for your support and we appreciate your understanding and support as we make this transition. Our goal is to provide you with the best possible product and experience. If you have any questions or feedback, please do not hesitate to reach out to our support team.
+//Improved Communication: We are committed to continue keeping you updated on our progress and any upcoming features. Expect regular updates and insights into our development process.
+
+
+|===
 
 [#changes-in-existing-behavior]
 === Changes in Existing Behavior
@@ -31,17 +59,20 @@ The details and functionality listed below are a preview and the actual release 
 |*Description*
 
 
-|*Multiselect Disabled for Alert Rule Name Filter*
-//RLP-147561
+|*Audit Logs Retention Period*
+//RLP-146965, RLP-147876
 
-|Starting with 24.8.2 release, you will no longer be able to select multiple alert rules in the *Alert Rule Name* filter on the *Alerts > Overview* page. The multiselect option will be disabled to eliminate inconsistent results when filtering more than one alert rule. 
+|Starting with the 24.9.2 release, the Audit logs from AWS, Azure, GCP Cloud providers, and Prisma Cloud are purged from the live system after 120 days or when the total number of logs exceeds 1.2 billion, whichever comes first. Once the logs are purged, they are no longer accessible via RQL queries on the Investigate page in Prisma Cloud. However, the data on the logs are retained in an archived, encrypted format for the duration of your contract. To retrieve any purged data, you must contact your Customer Success Representative. 
 
-When using the `POST/alerts/policy` API, make sure to include only one *Alert Rule Name* in the filters attribute of the request body schema.
+*Impact—* Once the logs are purged, they will not be accessible via RQL queries on the *Investigate* page in Prisma Cloud. However, the data on the logs will be retained in an archived, encrypted format for the duration of your contract. 
 
-|*Change in Amazon EC2 Ingestion*
+To retrieve any purged data, contact your Prisma Cloud Customer Success Representative.
+
+
+|*Amazon EC2 Ingestion*
 //RLP-145171
 
-|Starting with the 24.9.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+|Starting with the 24.10.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
 
 *Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
 
@@ -49,6 +80,7 @@ If you have any questions, contact your Prisma Cloud Customer Success Representa
 
 
 |===
+
 
 [#new-policies]
 === New Policies
@@ -68,7 +100,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.8.2.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.9.2.
 
 . Review the updates.
 +
@@ -80,47 +112,111 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-
 [cols="50%a,50%a"]
 |===
+|*Policy Updates*
+|*Description*
 
-2+|*Policy Updates—Metadata*
+2+|*Policy Updates—RQL*
 
 |*Policies*
 |*Description*
 
-|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
-//RLP-147139
+|*GCP User managed service account keys are not rotated for 90 days*
+//RLP-26599
 
-tt:[24.8.2]
 
-|*Changes—* The policy description is revised as follows:
+|*Changes—* Policy RQL has been updated to exclude disabled service accounts.
 
-*Current Policy Name—* AWS SageMaker endpoint data encryption at rest not configured
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
+----
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'disabled is false and name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
+----
+*Policy Type—* Config
 
-*Updated Policy Name—* AWS SageMaker endpoint data encryption at rest not configured with CMK 
+*Policy Severity—* Informational
 
-*Current Policy Description—* This policy identifies AWS SageMaker Endpoints not configured with data encryption at rest.
+*Impact—* Low. Existing alerts will be resolved for the disabled service accounts. 
 
-AWS SageMaker Endpoint configuration defines the resources and settings for deploying machine learning models to SageMaker endpoints. By default, SageMaker Endpoints are not encrypted at rest. Enabling the encryption helps protect the integrity and confidentiality of the data on the storage volume attached to the ML compute instance that hosts the endpoint.
 
-It is recommended to set encryption at rest to mitigate the risk of unauthorized access and potential data breaches.
+|*GCP GKE unsupported Master node version*
+//RLP-149471
 
-*Updated Policy Description—* This policy identifies AWS SageMaker Endpoints not configured with data encryption at rest.
+|*Changes—* Policy RQL will be updated to support GKE version 1.31.
 
-AWS SageMaker Endpoint configuration defines the resources and settings for deploying machine learning models to SageMaker endpoints. By default, SageMaker encryption uses transient keys if a KMS key is not specified, which does not provide the control and management benefits of AWS Customer Managed KMS Key. Enabling the encryption helps protect the integrity and confidentiality of the data on the storage volume attached to the ML compute instance that hosts the endpoint.
+*Current Remediation Steps—* Manually initiate a master upgrade.
 
-It is recommended to set encryption at rest to mitigate the risk of unauthorised access and potential data breaches.
+1. Visit the Google Kubernetes Engine menu in Google Cloud Platform Console.
+2. Select the desired cluster.
+3. Click the Upgrade available link next to Master version.
+4. Select the desired version, then click Change.
+5. Click the arrow at the top of the screen to go back to the cluster cluster overview page.
 
-*Policy Severity—* High
+*Proposed Remediation Steps—* Manually initiate a master upgrade:
+
+1. Visit the Google Kubernetes Engine Clusters menu in Google Cloud Platform Console.
+2. Click the desired cluster name.
+3. Under Cluster basics, click "Upgrade Available" next to Version.
+4. Select the desired version, then click Save Changes.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." or currentMasterVersion starts with "1.31." )
+----
 
 *Policy Type—* Config
 
-*Impact—* No impact on alerts.
+*Impact—* Low. Open alerts where the GKE version is 1.31 will be resolved.
 
+
+|*GCP GKE unsupported node version*
+//RLP-149471
+
+|*Changes—* Policy RQL will be updated to support GKE version 1.31.
+
+*Current Remediation Steps—* Manually upgrading your nodes.
+
+1. Visit the Google Kubernetes Engine menu in GCP Console.
+2. Click the cluster's Edit button, which looks like a pencil.
+3. In the Node Pools section, expand the disclosure arrow for the node pool you want to upgrade.
+4. Click the Change link next to Node version.
+5. Select the desired version, then click Change.
+6. Click Save.
+
+*Proposed Remediation Steps—* Manually upgrading your nodes:
+
+1. Visit the Google Kubernetes Engine Clusters menu in GCP Console.
+2. Next to the cluster you want to edit, Click the Edit button which looks like a pencil under Actions.
+3. On the Cluster details page, click the Nodes tab.
+4. In the Node Pools section, click the name of the node pool that you want to upgrade.
+5. Click the Edit button which looks like a pencil.
+6. Click "Change" under Node version.
+7. Select the desired version from the Node version drop-down list, then click "Upgrade".
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.")
+----
+
+*Policy Type—* Config
+
+*Impact—* Low. Open alerts where the GKE version is 1.31 will be resolved.
 
 |===
-
 
 [#api-ingestions]
 === API Ingestions
@@ -130,150 +226,109 @@ It is recommended to set encryption at rest to mitigate the risk of unauthorised
 |*Service*
 |*API Details*
 
-|*Amazon Bedrock*
-//RLP-147120
+|*Amazon Redshift*
+//RLP-148150
 
-|*aws-bedrock-foundation-model*
+|*aws-redshift-serverless-workgroup*
+
+Additional permission required:
+
+* `redshift-serverless:ListWorkgroups`
+
+The Security Audit role includes the above permission.
+
+|*AWS Security Hub*
+//RLP-148149
+
+|*aws-securityhub-enabled-products-for-import*
+
+Additional permission required:
+
+* `securityhub:ListEnabledProductsForImport`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+//RLP-148145
+
+|*aws-bedrock-model-invocation-logging-configuration*
+
+Additional permission required:
+
+* `bedrock:GetModelInvocationLoggingConfiguration`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+//RLP-148144
+
+|*aws-bedrock-provisioned-model-throughput*
 
 Additional permissions required:
 
-* `bedrock:ListFoundationModels`
-* `bedrock:GetFoundationModel`
-
-The Security Audit role include the above permissions. You must manually update the CFT template to enable them.
-
-|*Amazon Bedrock*
-//RLP-147118
-
-|*aws-bedrock-custom-model*
-
-Additional permissions required:
-
-* `bedrock:ListCustomModels`
-* `bedrock:GetCustomModel`
+* `bedrock:ListProvisionedModelThroughputs`
+* `bedrock:GetProvisionedModelThroughput`
 * `bedrock:ListTagsForResource`
 
-The Security Audit role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListProvisionedModelThroughputs` and `bedrock:GetProvisionedModelThroughput` permissions. You must manually add them to the CFT template to enable them.
 
 |*Amazon Bedrock*
-//RLP-147113
+//RLP-148141
 
-|*aws-bedrock-agent*
+|*aws-bedrock-model-customization-job*
 
 Additional permissions required:
 
-* `bedrock:ListAgents`
-* `bedrock:GetAgent`
+* `bedrock:ListModelCustomizationJobs`
+* `bedrock:GetModelCustomizationJob`
 * `bedrock:ListTagsForResource`
 
-The Security Audit role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
 
-|*AWS Resource Groups and Tagging*
-//RLP-146625
+The Security Audit role does not include the `bedrock:ListModelCustomizationJobs` and `bedrock:GetModelCustomizationJob` permissions. You must manually add them to the CFT template to enable them.
 
-|*aws-resourcegroupstaggingapi-report-creation*
+|*Amazon Bedrock*
+//RLP-148135
 
-Additional permission required:
-
-* `tag:DescribeReportCreation`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable them.
-
-|*AWS Resource Groups and Tagging*
-//RLP-146624
-
-|*aws-resourcegroupstaggingapi-compliance-summary*
-
-Additional permission required:
-
-* `tag:GetComplianceSummary`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable them.
-
-|*Azure App Service Plan*
-//RLP-146757
-
-|*azure-app-service-plan-diagnostic-settings*
+|*aws-bedrock-knowledgebase*
 
 Additional permissions required:
 
-* `Microsoft.Web/serverfarms/Read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
+* `bedrock:ListKnowledgeBases`
+* `bedrock:GetKnowledgeBase`
+* `bedrock:ListTagsForResource`
 
-The Reader role includes the permissions.
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
 
-|*Azure Active Directory*
-//RLP-131015
-
-|*azure-active-directory-authentication-methods-registration-campaign*
-
-Additional permission required:
-
-* `Policy.ReadWrite.AuthenticationMethod`
-
-The Reader role includes the permission.
+The Security Audit role does not include the `bedrock:ListKnowledgeBases` and `bedrock:GetKnowledgeBase` permissions. You must manually add them to the CFT template to enable them.
 
 
-|*Azure Active Directory*
-//RLP-128436
+|*Amazon Dynamo DB-Update*
+//RLP-149082
 
-|*azure-active-directory-subscribed-sku*
+|*aws-dynamodb-describe-table*
 
-Additional permission required:
+Existing API `aws-dynamodb-describe-table` is updated with new CSP API `GetResourcePolicy`to ingest Resource Based Policy information.
 
-* `Organization.Read.All`
+* `dynamodb:GetResourcePolicy`
 
-The Reader role includes the permission.
+The Security Audit role does not include the above permission.
 
-|tt:[Update] *Azure Storage*
 
-//RLP-146499, RLP-146500, RLP-146501, RLP-146502
+|*Amazon API Updates*
+//RLP-148998
 
-|The following APIs will be updated to include the `StorageAccountId` and `StorageAccountName` fields in the JSON resource configuration. This enhancement facilitates improved cross-referencing in RQL queries.
+|*aws-glue-job* +
+*aws-emr-studio* +
+*aws-sagemaker-domain*
 
-* `azure-storage-account-blob-diagnostic-settings`
-* `azure-storage-account-file-diagnostic-settings`
-* `azure-storage-account-queue-diagnostic-settings`
-* `azure-storage-account-table-diagnostic-settings`
+The APIs listed above have been updated to ingest an additional field *BucketName*.
 
-|*Google BigLake*
-//RLP-146984
-
-|*gcloud-biglake-catalog-database-table*
-
-Additional permissions required:
-
-* `biglake.catalogs.list`
-* `biglake.databases.list`
-* `biglake.tables.list`
-
-The Viewer role includes the permissions.
-
-|*Google BigLake*
-//RLP-146983
-
-|*gcloud-biglake-catalog-database*
-
-Additional permissions required:
-
-* `biglake.catalogs.list`
-* `biglake.databases.list`
-
-The Viewer role includes the permissions.
-
-|*Google BigLake*
-//RLP-146982
-
-|*gcloud-biglake-catalog*
-
-Additional permission required:
-
-* `biglake.catalogs.list`
-
-The Viewer role includes the permission.
 
 |*Google BigQuery Data Transfer*
-//RLP-146981
+//RLP-149623
 
 |*gcloud-bigquery-data-transfer-config*
 
@@ -281,86 +336,273 @@ Additional permission required:
 
 * `bigquery.transfers.get`
 
-The Viewer role includes the permission.
+The Viewer role includes the above permission.
 
-|*Google Cloud Domains*
-//RLP-128080
+tt:[NOTE:] API has been updated to ingest resources from all supported regions except the region `me-central2 due` to platform dependencies.
 
-|*gcloud-cloud-domains*
 
-Additional permissions required:
+|*OCI Web Application Firewall*
+//RLP-148332
 
-* `domains.registrations.list`
-* `domains.registrations.getIamPolicy`
 
-The Viewer role includes the permissions.
-
-|*Google Cloud VMware Engine*
-//RLP-124735
-
-|*gcloud-vmware-engine-external-address*
+|*oci-loadbalancer-waf*
 
 Additional permissions required:
 
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.externalAddresses.list`
+* `WEB_APP_FIREWALL_INSPECT`
+* `WEB_APP_FIREWALL_READ`
 
-The Viewer role includes the permissions.
+The Reader role includes the above permissions.
+
+//APIs below are commented out becasue they will not be ready for 9.2. Uncomment for 9.2 LA as they will have a 10.1 fix version per Giri.
+
+// |*Amazon AppStream 2.0*
+//RLP-131272
+
+// |*aws-app-stream-image*
+
+//Additional permission required:
+
+//* `appstream:DescribeImages`
+
+//The Security Audit role does not include the above permission.
+
+// |*Amazon AppStream 2.0*
+//RLP-131580
+
+// |*aws-app-stream-image-builder*
+
+// Additional permission required:
+
+// * `appstream:DescribeImageBuilders`
+
+// The Security Audit role does not include the above permission.
+
+// |*Amazon Comprehend*
+//RLP-149186
+
+// |*aws-comprehend-flywheel*
+
+//Additional permissions required:
+
+//* `comprehend:ListFlywheels`
+//*  `comprehend:DescribeFlywheel`
+//*  `comprehend:ListTagsForResource`
+
+//The Security Audit role includes the above permissions.
+
+// |*AWS Elastic Disaster Recovery*
+//RLP-149199
+
+// |*aws-drs-source-network*
+
+//Additional permission required:
+
+//* `drs:DescribeSourceNetworks`
+
+//The Security Audit role includes the above permission.
+
+// |*AWS Control Tower*
+//RLP-149201
+
+// |*aws-controltower-landing-zone*
+
+//Additional permissions required:
+
+//* `controltower:ListLandingZones`
+//* `controltower:GetLandingZone`
+//* `controltower:ListTagsForResource`
+
+//The Security Audit role includes the above permissions.
+
+// |*Amazon DataZone*
+//RLP-145162
+
+// |*aws-datazone-domain*
+
+// Additional permissions required:
+
+//* `datazone:ListDomains`
+//* `datazone:GetDomain`
+
+//The Security Audit role does not include the above permissions.
+
+// |*Amazon QuickSight*
+//RLP-147089
+
+// |*aws-quicksight-ip-restriction*
+
+//Additional permission required:
+
+//* `quicksight:DescribeIpRestriction`
+
+//The Security Audit role includes the above permission.
+
+
+// |*Azure Event Grid*
+//RLP-148912
+
+// |*azure-event-grid-topic-diagnostic-settings*
+
+//Additional permissions required:
+
+//* `Microsoft.EventGrid/topics/read`
+//* `Microsoft.Insights/DiagnosticSettings/Read`
+
+//The Reader role includes the above permissions.
+
+// |*Azure Kusto*
+//RLP-148923
+
+// |*azure-kusto-clusters-diagnostic-settings*
+
+//Additional permissions required:
+
+//* `Microsoft.Kusto/clusters/read`
+//* `Microsoft.Insights/DiagnosticSettings/Read`
+
+//The Reader role includes the above permissions.
+
+// |*Azure Synapse Analytics*
+//RLP-148928
+
+// |*azure-kusto-clusters-diagnostic-settings*
+
+//Additional permissions required:
+
+//* `Microsoft.Synapse/workspaces/read`
+//* `Microsoft.Synapse/workspaces/sqlPools/read`
+//* `Microsoft.Synapse/workspaces/sqlPools/geoBackupPolicies/read`
+
+//The Reader role includes the above permissions.
+
+// |*Azure Database for PostgreSQL*
+//RLP-148932
+
+// |*azure-postgresql-flexible-server-database*
+
+//Additional permissions required:
+
+//* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+//* `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
+
+//The Reader role includes the above permissions.
+
+// |*Azure Database for PostgreSQL*
+//RLP-148932
+
+// |*azure-postgresql-flexible-server-database*
+
+//Additional permissions required:
+
+//* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+//* `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
+
+//The Reader role includes the above permissions.
+
+// |*Azure Database for MySQL*
+//RLP-148935
+
+// |*azure-mysql-flexible-server-database*
+
+//Additional permissions required:
+
+//* `Microsoft.DBforMySQL/flexibleServers/read`
+//* `Microsoft.DBforMySQL/flexibleServers/databases/read`
+
+// |*Google Cloud VM Manager*
+//RLP-149002
+
+// |*gcloud-vm-manager-patch-deployment*
+
+//Additional permission required:
+
+//* `osconfig.patchDeployments.list`
+
+//The Viewer role includes the above permission.
+
+
+// |*Google Cloud VM Manager*
+//RLP-149029
+
+// |*gcloud-vm-manager-feature-settings*
+
+//Additional permission required:
+
+//* `osconfig.projectFeatureSettings.get`
+
+//The Viewer role includes the above permission.
+
+
+// |*Google Cloud Dataflow*
+//RLP-149030
+
+// |*gcloud-dataflow-job*
+
+//Additional permission required:
+
+//* `dataflow.jobs.list`
+
+//The Viewer role includes the above permission.
+
+
+// |*Google Cloud Dataflow Data Pipeline*
+//RLP-149031
+
+// |*gcloud-dataflow-data-pipeline*
+
+//Additional permission required:
+
+//* `datapipelines.pipelines.list`
+
+//The Viewer role includes the above permission.
+
+
+// |*Google Cloud Looker*
+//RLP-149026
+
+// |*gcloud-cloud-looker-instance*
+
+//Additional permissions required:
+
+//* `looker.instances.list`
+//* `looker.instances.get` 
+
+//The Viewer role includes the above permissions.
+
+
 
 |===
 
-[#new-compliance-benchmarks-and-updates]
-=== New Compliance Benchmarks and Updates
 
-[cols="50%a,50%a"]
-|===
-|*Compliance Benchmark*
-|*Description*
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
 
-|*SEBI - Consolidated Cybersecurity and Cyber Resilience Framework (CSCRF)*
-//RLP-147789, RLP-147728
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
 
-|Prisma Cloud now supports  Consolidated Cybersecurity and Cyber Resilience Framework (CSCRF) released by the Securities and Exchange Board of India (SEBI). CSCRF aims to establish a unified framework that encompasses various strategies to safeguard REs (Regulated Entities) and Market Infrastructure Institutions (MIIs) against cyber risks and incidents.
+//|
 
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+//|
 
-|*NIST SP 800-171 Revision 3*
-//RLP-147678
-
-|Prisma Cloud now supports the latest version of NIST SP 800-171 Revision 3. This updated includes significant updates to the publication’s control families, security controls and new Prisma cloud policies are mapped to the controls increasing the overall coverage.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-|*Secure Controls Framework (SCF) - 2024.2*
-//RLP-147607
-
-|Prisma Cloud has been updated to incorporate support for the Secure Controls Framework (SCF) - 2024.2, providing a comprehensive approach to both cybersecurity and privacy practices for safeguarding organizational information assets. The SCF's latest version elaborates on the refinement of current controls, introduces new controls tailored to counteract recent threats and technological advancements, ensures alignment with the most current compliance mandates, and integrates modifications driven by input from the community and industry professionals.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-|*Update for CIS AWS Foundation Benchmark*
-//RLP-140359
-
-|New Policy mappings are added to both Level 1 and Level 2 of CIS AWS Foundation benchmark v2.0.0 and CIS AWS Foundation benchmark v3.0.0 to improve policy mapping coverage.
-
-*Impact—* As new mappings are introduced, compliance scoring might vary.
-
-|*Update for GDPR*
-//RLP-147541
-
-|New Policy mappings are added to the  GDPR compliance standard.
-
-*Impact—* As new mappings are introduced, compliance scoring might vary.
-
-|*Update for CIS Microsoft Azure Foundation Benchmark*
-//RLP-147541
-
-|New Policy mappings are added to both Level 1 and Level 2 of CIS Microsoft Azure Foundation benchmark v2.0.0 and CIS AWS Foundation benchmark v2.1.0 to improve policy mapping coverage.
-
-*Impact—* As new mappings are introduced, compliance scoring might vary.
+//|===
 
 
-|===
+//[#rest-api-updates]
+//=== REST API Updates
+
+//[cols="37%a,63%a"]
+//|===
+//|*Change*
+//|*Description*
+
+//|
+
+//|
+
+//|===
 
 
 [#deprecation-notices]
@@ -416,23 +658,6 @@ You can now view this built-in standard and the associated policies on the *Comp
 ** https://pan.dev/prisma-cloud/api/cspm/cve-overview-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/cve-overview]
 
 
-
-
-|tt:[*End of support for Azure Time Series Insights and Azure Data Catalog Services*]
-//RLP-147490
-
-|NA
-|24.8.2
-
-|The following APIs are planned for deprecation as Azure has announced the retirement of Azure Time Series Insights and Azure Data Catalog Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
-
-* `azure-timeseriesinsights-environments`
-* `azure-datacatalog-catalog`
-
-In RQL, the key will not be available in the `api.name` attribute auto-completion.
-
-*Impact—* If you have a saved search or custom policies based on these APIs, you must delete them manually. The policy alerts will be resolved as *Policy_Deleted*.
-
 |tt:[*Resource Explorer API*]
 
 //RLP-131482, RLP-115752
@@ -442,7 +667,7 @@ In RQL, the key will not be available in the `api.name` attribute auto-completio
 * https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
 
 |23.9.2
-|24.10.2
+|24.10.1
 |* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
 
 
@@ -479,7 +704,7 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 
 |23.10.1
 
-|24.9.1
+|24.9.2
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
