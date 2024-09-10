@@ -1,18 +1,65 @@
-:topic_type: task
 [#gke-autopilot]
-[.task]
+
 == Google Kubernetes Engine (GKE) Autopilot
 
-You can now install the Prisma Cloud DaemonSet Defender on your GKE *Autopilot* cluster.
-GKE Autopilot clusters are using https://cloud.google.com/kubernetes-engine/docs/concepts/using-containerd[*cos_containerd*] nodes, therefore the DaemonSet must be configured with *Containerd* runtime. 
-Defenders deployed on GKE Autopilot clusters only support the official twistlock registry. You can't use a custom registry.
+You can now install the Prisma Cloud DaemonSet Defender on your GKE Autopilot cluster. GKE Autopilot clusters use https://cloud.google.com/kubernetes-engine/docs/concepts/using-containerd[COS] (Container-Optimized OS) with Containerd nodes, therefore the DaemonSet must be configured with *Containerd*. Defenders deployed on GKE Autopilot clusters only support the official Prisma Cloud registry, and you cannot use a custom registry. The DaemonSet image must adhere to the following regex to ensure it comes from the official repository:
+
+[source]
+----
+^registry-auth\\.twistlock\\.com/.*/twistlock/defender.*.
+----
+
+To ensure a successful deployment, do not modify the volume mounts or capabilities from the YAML generated. Any changes may cause issues with GCP allow list and deployment in GKE Autopilot.
+
+[.task]
+=== Prerequisites
+
+GKE Autopilot does not natively support DaemonSet scaling. In case of resource exhaustion, Defender pods may not start if there are insufficient resources available. To mitigate this, consider configuring a *PriorityClass* to prioritize Defender pods. Here are the steps for mitigation:
 
 [.procedure]
-. Review the prerequisites and the procedure in the *Google Kubernetes Engine (GKE)* and the *Install Prisma Cloud on a CRI (non-Docker) cluster* sections.
+
+. Create a PriorityClass YAML to prioritize the Defender pods:
++
+[source]
+----
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: pcc-defender-ds
+value: 1000000000
+globalDefault: false
+description: "Deploy defender daemonset"
+----
++
+Apply it to your cluster:
++
+[source]
+----
+kubectl apply -f pc.yaml
+----
+
+. Reference the PriorityClass in the DaemonSet YAML under `/spec/template/spec`:
++
+[source]
+----
+priorityClassName: pcc-defender-ds
+----
+
+This will prioritize the Defender pods over other workloads in the cluster.
+
+Here are the steps to deploy the Prisma Cloud DaemonSet Defender on a Google Kubernetes Engine (GKE) Autopilot.
+
+[.task]
+=== Deploy Google Kubernetes Engine (GKE) Autopilot.
+
+Here are the steps to deploy the Prisma Cloud DaemonSet Defender on a Google Kubernetes Engine (GKE) Autopilot.
+
+[.procedure]
+
+. Review the prerequisites and the procedure in the Google Kubernetes Engine (GKE) and the Install Prisma Cloud on a CRI (non-Docker) cluster sections.
 
 . Use the following twistcli command to generate the YAML file for the GKE Autopilot deployment.
 +
-ifdef::prisma_cloud[]
 [source]
 ----
    $ <PLATFORM>/twistcli defender export kubernetes \
@@ -21,31 +68,23 @@ ifdef::prisma_cloud[]
     --cluster-address <console address> \
     --address https://<console address>:443
 ----
-endif::prisma_cloud[]
-ifdef::compute_edition[]
++
+* The `--gke autopilot flag` adds the `'autopilot.gke.io/no-connect: "true"’ `annotation to the YAML file.
+* The  `--container-runtime containerd` flag ensures compatibility with GKE Autopilot clusters by using the Container-Optimized OS with the containerd node image (instead of Docker). This also removes the `/var/lib/containers` mount, which is not required for GKE Autopilot.
+
+If you are on Prisma Cloud console, from *Runtime Security > Manage > Defenders > Deployed Defenders > Manual deploy* ensure that the orchestrator type is *Kubernetes*, select the *Container Runtime type* as Containerd and form *Advanced Settings* enable *GKE Autopilot deployment*.
+
+image::deploy-gke.gif[]
+
+. Create the twistlock namespace on your cluster by running the following command:
++
 [source]
 ----
-   $ <PLATFORM>/twistcli defender export kubernetes \
-    --gke-autopilot \
-    --container-runtime containerd \
-    --cluster-address <console address> \
-    --address https://<console address>:8083
+$ kubectl create namespace twistlock
 ----
-endif::compute_edition[]
-+
-The `--gke autopilot flag adds the 'autopilot.gke.io/no-connect: "true"`' annotation to the YAML file and `--container-runtime containerd` flag enables GKE Autopilot clusters to use the Container-Optimized OS with containerd node image, not Docker. It also removes the  '/var/lib/containers' mount from the generated file as that configuration is not required for the GKE autopilot deployment.
-+
-[NOTE]
-====
-If you are using the web interface, on *Runtime Security > Manage > Defenders > Defenders: Deployed > Manual deploy* ensure that the *orchestrator type* is *Kubernetes*, select the *Container Runtime type* as *Containerd*, and enable *GKE Autopilot deployment*.
-====
 
-. Create the *twistlock* namespace on your cluster by running the following command:
-     
-  $ kubectl create namespace twistlock
-  
 . Deploy the updated YAML or the Helm chart on your GKE Autopilot cluster.
 
 . Verify that the Defenders are deployed.
-+
-After a few minutes you should observe the nodes and running containers in Console, with Prisma Cloud Compute now protecting your cluster.
+
+After a few minutes, verify that the Defenders are deployed. You should observe the nodes and running containers in the Console, confirming that Prisma Cloud Compute is now protecting your cluster.
