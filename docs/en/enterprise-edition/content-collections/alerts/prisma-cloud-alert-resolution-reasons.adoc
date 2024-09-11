@@ -1,17 +1,110 @@
 [#id97d61277-e387-43b1-8a54-ec644bc02fdc]
-== Alert Resolution Reasons
+== Prisma Cloud Alert Status Reasons
 
-Review the different reasons an alert is closed on Prisma Cloud in the table below.
+Review the different reasons on why an alert is in the *Open* or *Resolved* status on Prisma Cloud.
 
-When an open alert is resolved, the reason the alert was closed is included to help with audits. Select *Alerts > Overview* on the Prisma Cloud administrative console to view the reason. Alert closure reason is also displayed in the response object in the API.
+When an open alert is resolved, the reason is included to help with audits. The reason is displayed in the response object in the API and on the Prisma Cloud administrative console on *Alerts > Overview* when you select a resolved alert and review the alert details for the violating resource.
 
+Some common reasons listed in the below table are also applicable for when an alert is newly opened or re-opened from the resolved status.
+
+//Review the different reasons an alert is closed on Prisma Cloud in the table below.
+//When an open alert is resolved, the reason the alert was closed is included to help with audits. Select *Alerts > Overview* on the Prisma Cloud administrative console to view the reason. Alert closure reason is also displayed in the response object in the API.
 //Resons commented out below are internal per Slack message from Nishant Agarwal https://panw-rnd.slack.com/archives/C03DM03888L/p1722608424264969?thread_ts=1722538162.719429&cid=C03DM03888L
+//The table below lists the reasons:
 
 
 [cols="35%a,65%a"]
 |===
-|Reason
-|Details
+|*Reason*
+|*Details*
+
+
+|ACCOUNT_DELETED
+
+|Account was deleted. When a cloud account that was being monitored on Prisma Cloud is deleted, all alerts are resolved with the resolution reason *Account Deleted* and the alerts are permanently deleted if the account is not added back within 24 hours. This status is sent with the alert payload to external integrations that you have configured.
+
+|ACCOUNT_GROUP_UPDATED
+
+|Account group was updated.
+
+|ACCOUNT_GROUP_DELETED
+
+|Account group was deleted.
+
+|ALERT_RULE_DISABLED
+
+|Alert rule was disabled.
+
+|ALERT_RULE_UPDATED
+
+|Alert rule was updated. The list of policies included in the rule, account groups being scanned, or cloud regions may have been modified.
+
+|ALERT_RULE_DELETED
+
+|Alert rule was deleted.
+
+
+|ANOMALY_CONFIG_CHANGED
+
+|Anomaly policy configuration changed.
+
+|MDC_REOPEN_FOR_ACCIDENTAL_DELETE
+
+|Alert was reopened during ingestion beacuse a resource was rediscovered.
+
+|NEW_ALERT
+
+|A new alert was generated.
+
+
+|POLICY_UPDATED
+
+|Policy was updated. If an alert is resolved, this reason indicates a change in the policy RQL that results in a resource not being in scope for the policy evaluation. If the alert is in open status, this reason indicates that a policy update resulted in a resource being in the scope of the policy evaluation and failed the evaluation.
+
+|POLICY_DISABLED
+
+|Policy was disabled.
+
+|POLICY_DELETED
+
+|Policy was deleted.
+
+
+|REMEDIATED
+
+|Alert was successfully remediated using the Cloud Service Provider CLI, either manually or by auto-remediation.
+
+|RESOURCE_DELETED
+
+|Resource was deleted.
+
+|RESOURCE_UPDATED
+
+|Resource was updated (based on the JSON metadata). This status indicates that a change was detected in one of the clauses included in a single or join policy statement within the policy RQL. If the alert is now in the resolved status, this reason indicates that the policy violation is no longer valid due to an update to the underlying resource. If the alert is in the open status, this reason indicates that the policy violation is now valid due to an update to the underlying resource.
+
+|RESOURCE_POLICY_RESCOPED
+
+|Alert was resolved because the policy was updated and the violating resource is no longer scanned or within the scope of the modified policy.
+
+
+|SNOOZED_AUTO_REOPEN
+
+|Snooze time expired for the alert and it was automatically reopened.
+
+|USER_DISMISSED
+
+|Alert was dismissed or snoozed by a Prisma Cloud administrator or by a user with the role of System Admin, Account Group Admin, or Account and Cloud Provisioning Admin.
+
+|USER_REOPENED
+
+|A dismissed or snoozed alert was reopened by a Prisma Cloud administrator or by a user with the role of System Admin, Account Group Admin, or Account and Cloud Provisioning Admin.
+
+
+|===
+
+// |SCHEDULED -- RLP-49067
+
+// |As a result of some Prisma Cloud scanning engine optimizations, some of the Open and Resolved alerts were updated with the reason Scheduled. This was done inadvertently, is not related to a change in the cloud resource that triggered the alert, and will be addressed with a fix in an upcoming release. For IAM alerts, Scheduled is the the only supported reason.
 
 
 // |ACCOUNT_ENABLED
@@ -19,107 +112,23 @@ When an open alert is resolved, the reason the alert was closed is included to h
 // ACCOUNT_ADDED +
 // ACCOUNT_DELETED
 
-
-// | 
-
-
-// |ACCOUNT_GROUP_UPDATED
-//ACCOUNT_GROUP_DELETED
-// | 
-
-|ALERT_RULE_UPDATED
+// |Applicable for IAM alerts
 //ALERT_RULE_UPDATED_UPSCOPE
 //ALERT_RULE_UPDATED_DESCOPE
-ALERT_RULE_DISABLED
-ALERT_RULE_DELETED
 //ALERT_RULE_ADDED
-
-|Alert rule updated status indicates that the list of policies included in the rule, account groups being scanned, or cloud regions may have been modified.
-
-
-|ALERT_REMEDIATED
-|
-
-// |ANOMALY_CONFIG_CHANGED
-// |Anomaly policy configuration changed.
-
-
-|AUTO_REMEDIATED
-MANUALLY_REMEDIATED
-|
-
-
-// |EXISTING_ALERT_RESOURCE_UPDATED
-// |
-
-
-|MDC_DELETE
-MDC_UNDELETED
-MDC_REOPEN_FOR_ACCIDENTAL_DELETE
-|Reopened for accidental delete status indicates that an alert was reopened during ingestion as resource was rediscovered.
-
-
-
-// |NETWORK_DISMISSED_AUTO_REOPEN
-// |
-
-
-|POLICY_ENABLED
-POLICY_UPDATED
-POLICY_DISABLED
-POLICY_DELETED
+//AUTO_REMEDIATED
+//MANUALLY_REMEDIATED
+//EXISTING_ALERT_RESOURCE_UPDATED
+//MDC_DELETE
+//MDC_UNDELETED
+//Reopened for accidental delete status indicates that an alert was reopened during ingestion as resource was rediscovered.
+//NETWORK_DISMISSED_AUTO_REOPEN
+//POLICY_ENABLED
 //POLICY_UNAVAILABLE
-
-|Policy updated status indicates a change in the policy RQL that results in a resource not being in scope for the policy evaluation.
-
-
-|REMEDIATED
-|Alert was successfully remediated using the Cloud Service Provider’s CLI, either manually or auto-remediation.
-
-
-|RESOURCE_UPDATED
-RESOURCE_DELETED
-// RESOURCE_ADDED
-
-
-|Resource was updated reason (based on the JSON metadata) indicates that a change was detected in one of the clauses included in a single or join policy statement within the policy RQL. With this resource update, the policy violation is no longer valid and the alert was resolved.
-
-
-// |RESOURCE_LIST_SNOOZED
+//Policy updated status indicates a change in the policy RQL that results in a resource not being in scope for the policy evaluation.
+//RESOURCE_ADDED
+//Resource was updated reason (based on the JSON metadata) indicates that a change was detected in one of the clauses included in a single or join policy statement within the policy RQL. With this resource update, the policy violation is no longer valid and the alert was resolved.
+//RESOURCE_LIST_SNOOZED
 //RESOURCE_LIST_DISMISSED
-// |
-
-
-// |RESOURCE_POLICY_RESCOPED
-// |Alert was resolved because the policy was updated and the violating resource is no longer scanned or within the scope of the modified policy.
-
-
-|SCHEDULED
-
-|Applicable for IAM alerts
-
-
-|SNOOZED_AUTO_REOPEN
-SNOOZED_EXPIRED
-
-|Snooze time expired for the alert, and it was automatically reopened.
-
-
-// |TENANT_DELETED
-// |
-
-
-|USER_DISMISSED
-USER_REOPENED
-
-|Alert was dismissed or snoozed/reopened by a Prisma Cloud administrator with role of System admin, Account Group Admin, or Account and Cloud Provisioning Admin.
-
-
-|===
-
-
-
-
-
-
-
+//SNOOZED_EXPIRED
+//TENANT_DELETED
