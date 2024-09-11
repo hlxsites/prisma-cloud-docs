@@ -1,0 +1,63 @@
+
+== Bedrock Agent is not encrypted with a Customer Master Key
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/BedrockAgentEncrypted.py[CKV_AWS_373]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,Terraform Plan, CloudFormation
+
+|===
+
+=== Description
+
+The policy checks to ensure that the AWS Bedrock Agent is encrypted using a Customer Master Key (CMK) rather than utilizing default encryption methods. When encryption is performed using a CMK, it offers more control over who can manage and access the encryption keys compared to default encryption keys provided by AWS. This added control enhances the security of the data managed by the Bedrock Agent, reducing the risk of unauthorized access and potential data breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_bedrockagent_agent
+* *Arguments:* customer_encryption_key_arn
+
+In the following code, a `customer_encryption_key_arn` is added encrypting the Bedrock Agent using a Customer Master Key (CMK).
+
+[source,go]
+----
+resource "aws_bedrockagent_agent" "bedrock_agent_with_kms_key" {
+  ...
++  customer_encryption_key_arn = aws_kms_key.example.arn
+}
+----
+
+
+*CloudFormation*
+
+* *Resource:* AWS::Bedrock::Agent
+* *Arguments:* CustomerEncryptionKeyArn
+
+In the following code, a `CustomerEncryptionKeyArn` is added encrypting the Bedrock Agent using a Customer Master Key (CMK).
+
+[source,yaml]
+----
+Resources:
+  Pass:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: test
++      CustomerEncryptionKeyArn: arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+----

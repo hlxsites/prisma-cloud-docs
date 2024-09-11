@@ -1,0 +1,72 @@
+
+== AWS ACM Certificate with wildcard domain name
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4f729fe3-3c9d-4255-81da-ae2f6fe0c34b
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/ACMWildcardDomainName.yaml[CKV2_AWS_71]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform, Terraform Plan, CloudFormation
+
+|===
+
+=== Description
+
+This policy is examining whether an AWS ACM (AWS Certificate Manager) certificate's domain name contains wildcard entries. Wildcards in domain names (e.g., *.example.com) can be problematic because they allow the certificate to secure every subdomain under a given domain. While convenient, this poses a significant security risk; if any subdomain gets compromised, the same certificate could potentially be exploited to conduct attacks across all other subdomains. Avoiding wildcard certificates adds a layer of security by ensuring that each subdomain has its own distinct certificate, thereby isolating risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_acm_certificate
+* *Arguments:* subject_alternative_names
+
+In order to fix this finding, instead of specifying a domain with a wildcard (e.g., `*.example.com`), specific subdomains such as `www.example.com` and `api.example.com` should be listed in the `subject_alternative_names` attribute.
+
+[source,go]
+----
+resource "aws_acm_certificate" "example" {
+  ...
+
+  subject_alternative_names = [
+-    "*.example.com",
+    "www.example.com",
+    "api.example.com"
+  ]
+}
+----
+
+
+*Terraform*
+
+* *Resource:* AWS::CertificateManager::Certificate
+* *Arguments:* SubjectAlternativeNames
+
+In order to fix this finding, instead of specifying a domain with a wildcard (e.g., `*.example.com`), specific subdomains such as `www.example.com` and `api.example.com` should be listed in the `SubjectAlternativeNames` attribute.
+
+[source,yaml]
+----
+  ExamplePass2Certificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: "example.com"
+      ValidationMethod: "DNS"
+      SubjectAlternativeNames:
+-        - "*.example.com"
+        - "blog.example.com"
+        - "shop.example.com"
+----
+

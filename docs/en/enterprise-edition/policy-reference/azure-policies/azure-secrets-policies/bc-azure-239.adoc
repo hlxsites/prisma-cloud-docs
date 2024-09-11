@@ -1,0 +1,68 @@
+
+== Azure Synapse Workspace administrator login password is exposed
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/SynapseWorkspaceAdministratorLoginPasswordHidden.py[CKV_AZURE_239]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform, Terraform Plan, ARM, Bicep
+
+|===
+
+=== Description
+
+This policy is focused on ensuring that the administrator login password for an Azure Synapse Workspace is not exposed. It checks for any instances where the password might be publicly accessible or improperly stored. Exposing such sensitive information can lead to unauthorized access, data breaches, and potential misuse of resources. Keeping administrator credentials secure is essential to maintaining the overall security and integrity of the Azure environment.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_workspace
+* *Arguments:* sql_administrator_login_password
+
+To fix the issue where an Azure Synapse Workspace administrator login password is exposed, you need to inject the password securely rather than hardcoding it in your Terraform configuration.
+
+[source,go]
+----
+resource "azurerm_synapse_workspace" "example" {
+  ...
+
+-  sql_administrator_login              = "sqladminuser"
+-  sql_administrator_login_password     = "H@Sh1CoR3!"
+}
+----
+
+
+*ARM*
+
+* *Resource:* Microsoft.Synapse/workspaces
+* *Arguments:* sqlAdministratorLoginPassword
+
+To fix the issue where an Azure Synapse Workspace administrator login password is exposed, you need to inject the password securely rather than hardcoding it in your Terraform configuration.
+
+[source,json]
+----
+{
+  ...
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      ...
+      "properties": {
+-        "sqlAdministratorLogin": "sqladminuser",
+-        "sqlAdministratorLoginPassword": "H@Sh1CoR3!",
+----

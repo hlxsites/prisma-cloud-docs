@@ -1,0 +1,84 @@
+
+== AWS RDS database instance not configured with encryption in transit
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| a95b30ca-281f-4ff9-b7c4-1f5543086f7c
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/RDSEncryptionInTransit.yaml[CKV2_AWS_69]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,Terraform Plan, CloudFormation
+
+|===
+
+=== Description
+
+This policy ensures that an Amazon RDS database instance is configured to use encryption for data in transit. This means that the data transmitted between the database and other services or clients is protected using encryption protocols. 
+
+Not configuring encryption in transit is considered bad because it exposes data to potential interception and unauthorized access during transmission. When data is sent over a network without encryption, it can be intercepted and read by malicious actors, leading to data breaches and compromising sensitive information. Therefore, using encryption in transit is crucial for maintaining data integrity and confidentiality in cloud environments.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_db_instance, aws_db_parameter_group
+* *Arguments:* parameter
+
+In order to fix the issue, each database type has its own setting to enforce secure connections.
+
+* Postgres and SQLserver: rds.force_ssl set to 1
+* MariaDB and MySQL: require_secure_transport set to 1
+* DB2: db2comm set to SSL
+
+Example:
+
+[source,go]
+----
+resource "aws_db_instance" "example" {
+  # ... other configurations ...
+
+  # Ensure the RDS instance is configured with encryption in transit
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::RDS::DBInstance, AWS::RDS::DBParameterGroup
+* *Arguments:* Parameters
+
+In order to fix the issue, each database type has its own setting to enforce secure connections.
+
+* Postgres and SQLserver: rds.force_ssl set to 1
+* MariaDB and MySQL: require_secure_transport set to 1
+* DB2: db2comm set to SSL
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  DB2PassParam:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: "My DB2 parameter group"
+      Family: "1db2-ae1"
+      Parameters:
+        db2comm: "SSL"
+----
+

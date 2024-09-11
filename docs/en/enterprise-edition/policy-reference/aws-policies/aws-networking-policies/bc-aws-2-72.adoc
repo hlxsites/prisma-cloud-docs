@@ -1,0 +1,77 @@
+
+== AWS CloudFront origin protocol policy does not enforce HTTPS-only
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 366ac171-3066-46d3-a32f-df80b0a9fe56
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/CloudfrontOriginNotHTTPSOnly.yaml[CKV2_AWS_72]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform, Terraform Plan, CloudFormation
+
+|===
+
+=== Description
+
+This policy is verifying that the AWS CloudFront distribution is configured to use HTTPS as the only allowed protocol for communication between CloudFront and its origin. The rationale behind enforcing HTTPS-only is to ensure that data transmitted over the network is encrypted. Without this policy, data could be sent using unencrypted HTTP, which is vulnerable to interception and eavesdropping by malicious actors. Using HTTPS helps protect sensitive information, maintain data integrity, and secure communication channels.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* origin
+
+In order to fix this issue, ensure that the origin protocol policy in your AWS CloudFront distribution is set to enforce HTTPS-only. This can be done by setting the `origin_protocol_policy` attribute to `https-only`.
+
+[source,go]
+----
+resource "aws_cloudfront_distribution" "example" {
+  ...
+
+  origin {
+    ...
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+    }
+  }
+}
+----
+
+
+*Terraform*
+
+* *Resource:* AWS::CloudFront::Distribution
+* *Arguments:* DistributionConfig.Origins
+
+In order to fix this issue, ensure that the origin protocol policy in your AWS CloudFront distribution is set to enforce HTTPS-only. This can be done by setting the `origin_protocol_policy` attribute to `https-only`.
+
+[source,yaml]
+----
+ ExamplePassHttpsOnlyDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - DomainName: "example.data.mediastore.amazonaws.com"  # contains important domain name
+            Id: "custom-origin-example"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "https-only"  # HTTPS only
+              ...
+----
