@@ -25,16 +25,19 @@
 
 === Description
 
-This policy is verifying that the AWS CloudFront distribution is configured to use HTTPS as the only allowed protocol for communication between CloudFront and its origin. The rationale behind enforcing HTTPS-only is to ensure that data transmitted over the network is encrypted. Without this policy, data could be sent using unencrypted HTTP, which is vulnerable to interception and eavesdropping by malicious actors. Using HTTPS helps protect sensitive information, maintain data integrity, and secure communication channels.
+This policy detects whether the AWS CloudFront distribution is configured to use HTTPS as the only allowed protocol for communication between CloudFront and its origin. Enforcing HTTPS-only ensures that data transmitted over the network is encrypted. Using HTTPS helps protect sensitive information, maintain data integrity, and secure communication channels. If this configuration is not enforced, data could be sent using unencrypted HTTP, which is vulnerable to interception and eavesdropping by malicious actors.
 
 === Fix - Buildtime
+
+Ensure that the origin protocol policy in your AWS CloudFront distribution is set to enforce HTTPS-only.
 
 *Terraform*
 
 * *Resource:* aws_cloudfront_distribution
 * *Arguments:* origin
 
-In order to fix this issue, ensure that the origin protocol policy in your AWS CloudFront distribution is set to enforce HTTPS-only. This can be done by setting the `origin_protocol_policy` attribute to `https-only`.
+In this example, an AWS CloudFront distribution is configured to enforce HTTPS-only communication between CloudFront and the origin by setting the `origin_protocol_policy` attribute to `https-only` in the custom_origin_config block.
+
 
 [source,go]
 ----
@@ -54,12 +57,12 @@ resource "aws_cloudfront_distribution" "example" {
 ----
 
 
-*Terraform*
+*CloudFormation*
 
 * *Resource:* AWS::CloudFront::Distribution
-* *Arguments:* DistributionConfig.Origins
+* *Arguments:* DistributionConfig.Origins.CustomOriginConfig.OriginProtocolPolicy
 
-In order to fix this issue, ensure that the origin protocol policy in your AWS CloudFront distribution is set to enforce HTTPS-only. This can be done by setting the `origin_protocol_policy` attribute to `https-only`.
+In this example, the origin protocol policy in your AWS CloudFront distribution enforces HTTPS-only communication by configuring the `OriginProtocolPolicy` attribute to `https-only`.
 
 [source,yaml]
 ----
