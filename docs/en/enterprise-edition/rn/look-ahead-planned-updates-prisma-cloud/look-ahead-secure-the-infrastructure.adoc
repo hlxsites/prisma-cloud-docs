@@ -3,7 +3,7 @@
 
 Review changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.9.2 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.10.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -16,9 +16,9 @@ The details and functionalities listed below are a preview and the actual releas
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
+* <<iam-policy-update>>
+* <<new-compliance-benchmarks-and-updates>>
 * <<api-ingestions>>
-//* <<new-compliance-benchmarks-and-updates>>
-//* <<rest-api-updates>>
 * <<deprecation-notices>>
 
 [#announcement]
@@ -58,15 +58,21 @@ If you have any questions or feedback, contact your Prisma Cloud Customer Suppor
 |*Feature*
 |*Description*
 
+|*Update Google Kubernetes Engine*
+//RLP-150422, Check the fixversion again before moving the blurb in 10.1. The Fixversion may change to 11.1.
 
-|*Audit Logs Retention Period*
-//RLP-146965, RLP-147876
+|Starting with the 24.10.1 release, the JSON resource attributes `isMasterVersionSupported` and `isNodeVersionSupported` for *gcloud-container-describe-clusters* API will be updated to align with the CSP *GetServerConfig* API. This change will provide accurate results for policy violation alerts related to the default policies— *GCP GKE unsupported Master node version* and *GCP GKE unsupported node version*.
 
-|Starting with the 24.9.2 release, the Audit logs from AWS, Azure, GCP Cloud providers, and Prisma Cloud are purged from the live system after 120 days or when the total number of logs exceeds 1.2 billion, whichever comes first. Once the logs are purged, they are no longer accessible via RQL queries on the Investigate page in Prisma Cloud. However, the data on the logs are retained in an archived, encrypted format for the duration of your contract. To retrieve any purged data, you must contact your Customer Success Representative. 
+*Impact—* No impact on existing alerts. New alerts will be generated against policy violations based on the complete GKE version used for clusters and nodes. If you have custom policies, you must manually update them to receive the alerts.
 
-*Impact—* Once the logs are purged, they will not be accessible via RQL queries on the *Investigate* page in Prisma Cloud. However, the data on the logs will be retained in an archived, encrypted format for the duration of your contract. 
+|*Update Amazon Elastic Container Registry (ECR)*
+//RLP-150134
 
-To retrieve any purged data, contact your Prisma Cloud Customer Success Representative.
+|Starting with the 24.10.1 release, the `external_asset_id` for `aws-ecr-image` in Prisma Cloud will be updated in the backend. As a result, all resources for `aws-ecr-image` API will be deleted and then regenerated on the management console.
+
+Existing alerts corresponding to these resources will be resolved as Closed, and new alerts will be generated against policy violations.
+
+*Impact—* You may notice a reduced count for the number of alerts. However, once the resources for the aws-ecr-image API resumes ingesting data, the alert count will return to the original numbers.
 
 
 |*Amazon EC2 Ingestion*
@@ -78,6 +84,21 @@ To retrieve any purged data, contact your Prisma Cloud Customer Success Represen
 
 If you have any questions, contact your Prisma Cloud Customer Success Representative.
 
+|*Alerts for Role Chaining*
+//IVG-15421
+
+|Starting with the 24.10.1 release, enhancements to Prisma Cloud Identity and Entitlement Management (CIEM) capabilities will alert users when role chaining is present in their environment. Role chaining occurs when you use a role to assume a second role. This results in the newly granted role assuming all the permissions granted to the first role.
+
+*Impact—* To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
+
+|*Updates to GCP Terraform Template*
+//RLP-150820
+
+|Starting with the 24.10.1 release, a subset of Viewer role permissions needed for API ingestions will be added to the existing Custom role present in the Google Terraform template. Also, the original Viewer role containing necessary permissions will still be available in the template.
+
+With this change, you need not manually enter the necessary API permissions under custom roles in case you decide not to grant Prisma Cloud Viewer role permissions.
+
+*Impact—* This change will not affect the onboarding *Status* of your accounts.
 
 |===
 
@@ -100,7 +121,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.9.2.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.10.1.
 
 . Review the updates.
 +
@@ -112,247 +133,293 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-[cols="50%a,50%a"]
+[cols="35%a,65%a"]
 |===
 |*Policy Updates*
 |*Description*
 
 2+|*Policy Updates—RQL*
 
-|*Policies*
+|*Azure Storage Account without Secure transfer enabled*
+//RLP-149572
+|*Changes—* The policy description and RQL will be updated to ignore storage accounts where the secure transfer property is not applicable for NFS Azure file shares to work.
+
+*Current Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. When 'secure transfer required' is enabled, REST APIs to access your storage accounts connect using HTTPs any requests using HTTP will be rejected. When you are using the Azure files service, connection without encryption will fail. It is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name.
+
+*Updated Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. 
+
+When "secure transfer required" is disabled, REST APIs to access your storage accounts may connect over insecure HTTP which is not advised. Hence, it is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name. Additionally, this property is not applicable for NFS Azure file shares to work.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.supportsHttpsTrafficOnly !exists or properties.supportsHttpsTrafficOnly is false
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = (properties.supportsHttpsTrafficOnly does not exist or properties.supportsHttpsTrafficOnly is false) as X; config from cloud.resource where api.name = 'azure-storage-file-shares' as Y; filter '($.X.kind does not equal ignore case "FileStorage") or ($.X.kind equal ignore case "FileStorage" and $.Y.id contains $.X.name and $.Y.properties.enabledProtocols does not contain NFS)'; show X;
+----
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts on the Storage account using the NFS Azure file will be resolved as *Policy_Updated*.
+
+|*GCP Cloud Function v1 is using unsecured HTTP trigger*
+//RLP-149695
+|*Changes—* The policy RQL will be updated to check only the appropriate GCP Cloud Function v1 that has an unsecured HTTP trigger.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals "ACTIVE" AND environment equals "GEN_1" AND serviceConfig.securityLevel does not equal "SECURE_ALWAYS"
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE AND environment equals GEN_1 AND serviceConfig.securityLevel exists AND serviceConfig.securityLevel does not equal SECURE_ALWAYS
+----
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts for the GCP Cloud Function v1 where the *Require HTTPS* configuration does not apply will be resolved as *Policy_Updated*.
+
+|===
+
+[#iam-policy-updates]
+=== IAM Policy Updates
+
+The policy severity levels will be changed to better align with potential risk for the following IAM policies. Note that the existing alerts for the policies will be resolved as *Policy_Updated* and new alerts will be generated for policy violations.
+
+[cols="70%a,15%a,15%a"]
+|===
+|*Policy Name*
+|*Current Severity*
+|*Updated Severity*
+
+|AWS Administrators with IAM permissions are unused for 90 days
+|High
+|Medium
+
+|AWS Groups and IAM Roles with Administrative Permissions
+|High
+|Informational
+
+|AWS IAM Groups and Roles with Excessive Policies
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with Administrative Permissions
+|High
+|Informational
+
+|AWS Users and Machine Identities with Excessive Policies
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with Administrative Permissions
+|High
+|Informational
+
+|Azure AD Groups, Service Principals and Managed Identities with Excessive Policies
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure Administrators with IAM permissions are unused for 90 days
+|High
+|Medium
+
+|Azure Users and Machine Identities with Administrative Permissions
+|High
+|Informational
+
+|Azure Users and Machine Identities with Excessive Policies
+|High
+|Low
+
+|Azure Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure Users and Machine Identities with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|Azure Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|Azure Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|Cloud Service account is inactive for 90 days  
+|Low  
+|Medium  
+
+|Cloud Service account with Data Read Permissions is inactive for 90 days  
+|Low  
+|Medium  
+
+|Cloud Service account with Metadata Write Permissions is inactive for 90 days  
+|Low  
+|Medium  
+
+|GCP Administrators with IAM permissions are unused for 90 days  
+|High  
+|Medium  
+
+|GCP Groups and Service Accounts with Administrative Permissions  
+|High  
+|Informational  
+
+|GCP Groups and Service Accounts with Excessive Policies  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Data Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with Administrative Permissions  
+|High  
+|Informational  
+
+|GCP Users and Machine Identities with Excessive Policies  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Data Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
 |*Description*
 
-|*GCP User managed service account keys are not rotated for 90 days*
-//RLP-26599
+|*CSA CCM v4.0.12*
+//RLP-150804
 
+|Prisma Cloud now supports CSA CCM v4.0.12, Cloud Controls Matrix by Cloud Security Alliance. The CSA Cloud Controls Matrix (CCM) is a cybersecurity control framework for cloud computing. It can be used as a tool for the systematic assessment of a cloud implementation, and provides guidance on which security controls should be implemented by which actor within the cloud supply chain.
 
-|*Changes—* Policy RQL has been updated to exclude disabled service accounts.
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
-----
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'disabled is false and name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
-----
-*Policy Type—* Config
+|*HITRUST CSF v.11.2.0*
+//RLP-150747
 
-*Policy Severity—* Informational
+|New mappings will be introduced to the *HITRUST CSF v.11.2.0* compliance standard across all clouds.
 
-*Impact—* Low. Existing alerts will be resolved for the disabled service accounts. 
+*Impact—* Changes in compliance scoring may occur due to the updated mappings.
 
+|*IT Security Risk Management*
+//RLP-150414
 
-|*GCP GKE unsupported Master node version*
-//RLP-149471
+|Prisma Cloud now supports ITSG-33 (IT Security Risk Management: A Lifecycle Approach) compliance standard. It is a framework developed by the Communications Security Establishment Canada (CSEC) to guide Government of Canada departments in managing IT security risks. By following this framework, organisations can effectively safeguard sensitive information and adapt to evolving threats.
 
-|*Changes—* Policy RQL will be updated to support GKE version 1.31.
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance with ITSG-33 over time.
 
-*Current Remediation Steps—* Manually initiate a master upgrade.
+|*Microsoft Cloud Security Benchmark*
+//RLP-150487
+|Prisma Cloud now supports Microsoft Cloud Security Benchmark (MCSB) v1. The Microsoft cloud security benchmark (MCSB) provides prescriptive best practices and recommendations to help improve the security of workloads, data, and services on the multi-cloud environment.
 
-1. Visit the Google Kubernetes Engine menu in Google Cloud Platform Console.
-2. Select the desired cluster.
-3. Click the Upgrade available link next to Master version.
-4. Select the desired version, then click Change.
-5. Click the arrow at the top of the screen to go back to the cluster cluster overview page.
-
-*Proposed Remediation Steps—* Manually initiate a master upgrade:
-
-1. Visit the Google Kubernetes Engine Clusters menu in Google Cloud Platform Console.
-2. Click the desired cluster name.
-3. Under Cluster basics, click "Upgrade Available" next to Version.
-4. Select the desired version, then click Save Changes.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." or currentMasterVersion starts with "1.31." )
-----
-
-*Policy Type—* Config
-
-*Impact—* Low. Open alerts where the GKE version is 1.31 will be resolved.
-
-
-|*GCP GKE unsupported node version*
-//RLP-149471
-
-|*Changes—* Policy RQL will be updated to support GKE version 1.31.
-
-*Current Remediation Steps—* Manually upgrading your nodes.
-
-1. Visit the Google Kubernetes Engine menu in GCP Console.
-2. Click the cluster's Edit button, which looks like a pencil.
-3. In the Node Pools section, expand the disclosure arrow for the node pool you want to upgrade.
-4. Click the Change link next to Node version.
-5. Select the desired version, then click Change.
-6. Click Save.
-
-*Proposed Remediation Steps—* Manually upgrading your nodes:
-
-1. Visit the Google Kubernetes Engine Clusters menu in GCP Console.
-2. Next to the cluster you want to edit, Click the Edit button which looks like a pencil under Actions.
-3. On the Cluster details page, click the Nodes tab.
-4. In the Node Pools section, click the name of the node pool that you want to upgrade.
-5. Click the Edit button which looks like a pencil.
-6. Click "Change" under Node version.
-7. Select the desired version from the Node version drop-down list, then click "Upgrade".
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.")
-----
-
-*Policy Type—* Config
-
-*Impact—* Low. Open alerts where the GKE version is 1.31 will be resolved.
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
 |===
 
 [#api-ingestions]
 === API Ingestions
 
-[cols="50%a,50%a"]
-|===
-|*Service*
-|*API Details*
-
-|*Amazon Redshift*
-//RLP-148150
-
-|*aws-redshift-serverless-workgroup*
-
-Additional permission required:
-
-* `redshift-serverless:ListWorkgroups`
-
-The Security Audit role includes the above permission.
-
-|*AWS Security Hub*
-//RLP-148149
-
-|*aws-securityhub-enabled-products-for-import*
-
-Additional permission required:
-
-* `securityhub:ListEnabledProductsForImport`
-
-The Security Audit role includes the above permission.
-
-|*Amazon Bedrock*
-//RLP-148145
-
-|*aws-bedrock-model-invocation-logging-configuration*
-
-Additional permission required:
-
-* `bedrock:GetModelInvocationLoggingConfiguration`
-
-The Security Audit role includes the above permission.
-
-|*Amazon Bedrock*
-//RLP-148144
-
-|*aws-bedrock-provisioned-model-throughput*
-
-Additional permissions required:
-
-* `bedrock:ListProvisionedModelThroughputs`
-* `bedrock:GetProvisionedModelThroughput`
-* `bedrock:ListTagsForResource`
-
-The Security Audit role includes the `bedrock:ListTagsForResource` permission.
-
-The Security Audit role does not include the `bedrock:ListProvisionedModelThroughputs` and `bedrock:GetProvisionedModelThroughput` permissions. You must manually add them to the CFT template to enable them.
-
-|*Amazon Bedrock*
-//RLP-148141
-
-|*aws-bedrock-model-customization-job*
-
-Additional permissions required:
-
-* `bedrock:ListModelCustomizationJobs`
-* `bedrock:GetModelCustomizationJob`
-* `bedrock:ListTagsForResource`
-
-The Security Audit role includes the `bedrock:ListTagsForResource` permission.
-
-The Security Audit role does not include the `bedrock:ListModelCustomizationJobs` and `bedrock:GetModelCustomizationJob` permissions. You must manually add them to the CFT template to enable them.
-
-|*Amazon Bedrock*
-//RLP-148135
-
-|*aws-bedrock-knowledgebase*
-
-Additional permissions required:
-
-* `bedrock:ListKnowledgeBases`
-* `bedrock:GetKnowledgeBase`
-* `bedrock:ListTagsForResource`
-
-The Security Audit role includes the `bedrock:ListTagsForResource` permission.
-
-The Security Audit role does not include the `bedrock:ListKnowledgeBases` and `bedrock:GetKnowledgeBase` permissions. You must manually add them to the CFT template to enable them.
+No API ingestions planned for 24.10.1 release.
 
 
-|*Amazon Dynamo DB-Update*
-//RLP-149082
-
-|*aws-dynamodb-describe-table*
-
-Existing API `aws-dynamodb-describe-table` is updated with new CSP API `GetResourcePolicy`to ingest Resource Based Policy information.
-
-* `dynamodb:GetResourcePolicy`
-
-The Security Audit role does not include the above permission.
-
-
-|*Amazon API Updates*
-//RLP-148998
-
-|*aws-glue-job* +
-*aws-emr-studio* +
-*aws-sagemaker-domain*
-
-The APIs listed above have been updated to ingest an additional field *BucketName*.
-
-
-|*Google BigQuery Data Transfer*
-//RLP-149623
-
-|*gcloud-bigquery-data-transfer-config*
-
-Additional permission required:
-
-* `bigquery.transfers.get`
-
-The Viewer role includes the above permission.
-
-tt:[NOTE:] API has been updated to ingest resources from all supported regions except the region `me-central2 due` to platform dependencies.
-
-
-|*OCI Web Application Firewall*
-//RLP-148332
-
-
-|*oci-loadbalancer-waf*
-
-Additional permissions required:
-
-* `WEB_APP_FIREWALL_INSPECT`
-* `WEB_APP_FIREWALL_READ`
-
-The Reader role includes the above permissions.
+//[cols="50%a,50%a"]
+//|===
+//|*Service*
+//|*API Details*
 
 //APIs below are commented out becasue they will not be ready for 9.2. Uncomment for 9.2 LA as they will have a 10.1 fix version per Giri.
 
@@ -572,7 +639,7 @@ The Reader role includes the above permissions.
 
 
 
-|===
+//|===
 
 
 //[#new-compliance-benchmarks-and-updates]
@@ -581,21 +648,6 @@ The Reader role includes the above permissions.
 //[cols="50%a,50%a"]
 //|===
 //|*Compliance Benchmark*
-//|*Description*
-
-//|
-
-//|
-
-//|===
-
-
-//[#rest-api-updates]
-//=== REST API Updates
-
-//[cols="37%a,63%a"]
-//|===
-//|*Change*
 //|*Description*
 
 //|
@@ -673,7 +725,7 @@ The Reader role includes the above permissions.
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
-//RLP-120514, RLP-145823
+//RLP-120514, RLP-145823, Abinaya - They are not planning to sunset the APIs anytime soon and they want the sunset column to be left blank.
 
 * https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
 * https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
@@ -704,7 +756,7 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 
 |23.10.1
 
-|24.9.2
+|NA
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
@@ -750,17 +802,6 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 |`gcloud-cloud-function-v1` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for `gcloud-cloud-function-v1 API`. 
 
 In RQL, the key will not be available in the api.name attribute auto-completion. As a replacement, it is recommended to use the `gcloud-cloud-function-v2` API.
-
-*Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
-
-|tt:[*End of support for Azure Active Directory v1 API*]
-//RLP-143110
-
-|NA
-|24.9.2
-|`azure-active-directory-credential-user-registration-details` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for `azure-active-directory-credential-user-registration-details API`. 
-
-In RQL, the key will not be available in the api.name attribute auto-completion. As a replacement, it is recommended to use the `azure-active-directory-user-registration-details` API.
 
 *Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
 
