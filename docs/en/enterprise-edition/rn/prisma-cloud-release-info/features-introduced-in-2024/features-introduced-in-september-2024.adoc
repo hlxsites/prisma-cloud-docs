@@ -4,14 +4,15 @@ Learn what's new on Prisma® Cloud in September 2024.
 
 * <<announcement>>
 * <<new-features>>
+* <<terraform-template-updates>>
 * <<changes-in-existing-behavior>>
 * <<api-ingestions>>
 * <<new-policies>>
 //* <<iam-policies>>
 * <<policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
-//* <<rest-api-updates>>
-//* <<deprecation-notices>>
+* <<rest-api-updates>>
+* <<deprecation-notice>>
 //* <<end-of-sale>>
 
 [#announcement]
@@ -46,6 +47,16 @@ For example, with the current version at 33.xx, API calls and Defenders from ver
 |===
 |*Feature*
 |*Description*
+
+|*Package Operational Risks*
+
+tt:[Secure the Source]
+//BCE-33800
+
+tt:[24.9.2]
+
+| https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/visibility/sbom/sbom#package-op-risk[Package Operational Risk] assesses the operational risk and potential impact of each open-source package in your codebase. This analysis results in package operational risk severity levels categorized into *High*, *Medium*, and *Low*. By prioritizing risks based on these categories, you can effectively focus remediation efforts on the most critical issues.
+
 
 |*Improved Shared Views*
 //RLP-147440
@@ -113,6 +124,26 @@ NOTE: This feature is enabled on request. Please contact your Account team for m
 
 |===
 
+[#terraform-template-updates]
+=== Updates to Terraform Template
+
+[cols="30%a,70%a"]
+|===
+|*Updates to Terraform Template*
+|*Description*
+
+|*Azure*
+//PCSUP-24985
+
+tt:[24.9.2]
+
+|The following Azure permissions have been removed from the Prisma Cloud Azure Terraform template since they were deprecated by Azure:
+
+* `Microsoft.MachineLearning/commitmentPlans/read`
+* `Microsoft.MachineLearning/webServices/read`
+* `Microsoft.MachineLearning/workspaces/read`
+
+|===
 
 [#changes-in-existing-behavior]
 === Changes in Existing Behavior
@@ -121,6 +152,18 @@ NOTE: This feature is enabled on request. Please contact your Account team for m
 |===
 |*Feature*
 |*Description*
+
+|*Audit Logs Retention Period*
+//RLP-146965, RLP-147876
+
+tt:[24.9.2]
+
+|The Audit logs from AWS, Azure, GCP Cloud providers, and Prisma Cloud are purged from the live system after 120 days or when the total number of logs exceeds 1.2 billion, whichever comes first. Once the logs are purged, they are no longer accessible via RQL queries on the *Investigate* page in Prisma Cloud. However, the data on the logs are retained in an archived, encrypted format for the duration of your contract.
+
+*Impact—* Once the logs are purged, they will not be accessible via RQL queries on the *Investigate* page in Prisma Cloud. However, the data on the logs will be retained in an archived, encrypted format for the duration of your contract. 
+
+To retrieve any purged data, contact your Prisma Cloud Customer Success Representative.
+
 
 |*Audit Logs Warning*
 //RLP-148505
@@ -135,7 +178,6 @@ To resolve the warning, download the CloudFormation Template (CFT) from *Misconf
 
 *Impact—* Updating the CFT will result in an increase in the number of EventBridge rules enabling Prisma Cloud to ingest only the relevant audit logs.
 
-
 |===
 
 
@@ -147,6 +189,154 @@ To resolve the warning, download the CloudFormation Template (CFT) from *Misconf
 |*Service*
 |*API Details*
 
+|*Amazon Bedrock*
+
+tt:[24.9.2]
+//RLP-148145
+
+|*aws-bedrock-model-invocation-logging-configuration*
+
+Additional permission required:
+
+* `bedrock:GetModelInvocationLoggingConfiguration`
+
+The Security Audit role includes the above permission.
+
+|*Amazon Bedrock*
+
+tt:[24.9.2]
+//RLP-148144
+
+|*aws-bedrock-provisioned-model-throughput*
+
+Additional permissions required:
+
+* `bedrock:ListProvisionedModelThroughputs`
+* `bedrock:GetProvisionedModelThroughput`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListProvisionedModelThroughputs` and `bedrock:GetProvisionedModelThroughput` permissions. You must manually add them to the CFT template to enable them.
+
+|*Amazon Bedrock*
+
+tt:[24.9.2]
+//RLP-148141
+
+|*aws-bedrock-model-customization-job*
+
+Additional permissions required:
+
+* `bedrock:ListModelCustomizationJobs`
+* `bedrock:GetModelCustomizationJob`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListModelCustomizationJobs` and `bedrock:GetModelCustomizationJob` permissions. You must manually add them to the CFT template to enable them.
+
+|*Amazon Bedrock*
+
+tt:[24.9.2]
+//RLP-148135
+
+|*aws-bedrock-knowledgebase*
+
+Additional permissions required:
+
+* `bedrock:ListKnowledgeBases`
+* `bedrock:GetKnowledgeBase`
+* `bedrock:ListTagsForResource`
+
+The Security Audit role includes the `bedrock:ListTagsForResource` permission.
+
+The Security Audit role does not include the `bedrock:ListKnowledgeBases` and `bedrock:GetKnowledgeBase` permissions. You must manually add them to the CFT template to enable them.
+
+
+|tt:[Update] *Amazon Dynamo DB*
+
+tt:[24.9.2]
+//RLP-149082
+
+|*aws-dynamodb-describe-table*
+
+The `aws-dynamodb-describe-table` is updated to include a new CSP API `GetResourcePolicy` which ingests resource based policy information.
+
+Additional permission required:
+
+* `dynamodb:GetResourcePolicy`
+
+The Security Audit role does not include the above permission. You must manually add the permission to the CFT template to enable it.
+
+
+|tt:[Update] *Amazon APIs*
+
+tt:[24.9.2]
+//RLP-148998
+
+|The resource JSON for the following APIs are updated to include a new field `BucketName`:
+
+* *aws-glue-job*
+* *aws-emr-studio*
+* *aws-sagemaker-domain*
+
+|*Amazon Redshift*
+
+tt:[24.9.2]
+//RLP-148150
+
+|*aws-redshift-serverless-workgroup*
+
+Additional permission required:
+
+* `redshift-serverless:ListWorkgroups`
+
+The Security Audit role includes the above permission.
+
+|*AWS Security Hub*
+
+tt:[24.9.2]
+//RLP-148149
+
+|*aws-securityhub-enabled-products-for-import*
+
+Additional permission required:
+
+* `securityhub:ListEnabledProductsForImport`
+
+The Security Audit role includes the above permission.
+
+
+|tt:[Update] *Google BigQuery Data Transfer*
+
+tt:[24.9.2]
+//RLP-149623
+
+|*gcloud-bigquery-data-transfer-config*
+
+Additional permission required:
+
+* `bigquery.transfers.get`
+
+The Viewer role includes the above permission.
+
+tt:[NOTE:] API has been updated to ingest resources from all supported regions except the region `me-central2 due` to platform dependencies.
+
+
+|*OCI Web Application Firewall*
+
+tt:[24.9.2]
+//RLP-148332
+
+|*oci-loadbalancer-waf*
+
+Additional permissions required:
+
+* `WEB_APP_FIREWALL_INSPECT`
+* `WEB_APP_FIREWALL_READ`
+
+The Reader role includes the above permissions.
 
 |*Azure Databricks*
 //RLP-147853
@@ -213,73 +403,6 @@ Additional permission required:
 
 The Viewer role includes the above permission.
 
-|*Google Bare Metal Solution*
-//RLP-148100
-
-tt:[24.9.1]
-
-|*gcloud-bare-metal-solution-volume-lun*
-
-Additional permissions required:
-
-* `baremetalsolution.instances.list`
-* `baremetalsolution.luns.list`
-
-The Viewer role includes the above permissions.
-
-|*Google Bare Metal Solution*
-//RLP-148099
-
-tt:[24.9.1]
-
-|*gcloud-bare-metal-solution-nfs-share*
-
-Additional permission required:
-
-* `baremetalsolution.nfsshares.list`
-
-The Viewer role includes the above permission.
-
-|*Google Bare Metal Solution*
-//RLP-148098
-
-tt:[24.9.1]
-
-|*gcloud-bare-metal-solution-volume*
-
-Additional permission required:
-
-* `baremetalsolution.volumes.list`
-
-The Viewer role includes the above permission.
-
-|*Google Bare Metal Solution*
-//RLP-148097
-
-tt:[24.9.1]
-
-|*gcloud-bare-metal-solution-network*
-
-Additional permission required:
-
-* `baremetalsolution.networks.list`
-
-The Viewer role includes the above permission.
-
-|*Google Bare Metal Solution*
-//RLP-147865
-
-tt:[24.9.1]
-
-|*gcloud-bare-metal-solution-instance*
-
-Additional permission required:
-
-* `baremetalsolution.instances.list`
-
-The Viewer role includes the above permission.
-
-
 |*Google Kubernetes Engine*
 //RLP-149148
 
@@ -315,7 +438,6 @@ tt:[33.00.169]
 ** vpcID - must be empty (””) for ALB rules.
 ** autoScalingEnabled - must be true for ALB rules.
 
-
 |===
 
 
@@ -327,7 +449,218 @@ tt:[33.00.169]
 |*Policies*
 |*Description*
 
+|*AWS S3 bucket used for storing AWS Bedrock Custom model training artifacts*
 
+tt:[24.9.2]
+//RLP-149533
+
+|This policy identifies the AWS S3 bucket used for storing AWS Bedrock Custom model training job output.
+
+S3 buckets hold the results and artifacts generated from training models in AWS Bedrock. Ensuring proper configuration and access control is crucial to maintaining the security and integrity of the training output. Improperly secured S3 buckets used for storing AWS Bedrock training output can lead to unauthorized access and potential exposure of model information.
+
+It is recommended to implement strict access controls, enable encryption, and audit permissions to secure AWS S3 buckets for AWS Bedrock training job output and ensure compliance.
+
+NOTE: This policy is designed to identify the S3 buckets utilized for storing results and storing artifacts generated from training custom models in AWS Bedrock. It does not signify any detected misconfiguration or security risk.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' as X; config from cloud.resource where api.name = 'aws-bedrock-custom-model' as Y; filter ' $.Y.outputDataConfig.bucketName equals $.X.bucketName'; show X;
+----
+
+|*AWS S3 bucket is utilized for AWS Bedrock Custom model training data*
+
+tt:[24.9.2]
+//RLP-149529
+
+|This policy identifies the AWS S3 bucket utilized for AWS Bedrock Custom model training job data.
+
+S3 buckets store the datasets required for training Custom models in AWS Bedrock. Proper configuration and access control are essential to ensure the security and integrity of the training data. Improperly configured S3 buckets used for AWS Bedrock Custom model training data can lead to unauthorized access, data breaches, and potential loss of sensitive information.
+
+It is recommended to implement strict access controls, enable encryption, and audit permissions to secure AWS S3 buckets for AWS Bedrock Custom model training data and ensure compliance.
+
+NOTE: This policy is designed to identify the S3 buckets utilized for training custom models in AWS Bedrock. It does not signify any detected misconfiguration or security risk.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' as X; config from cloud.resource where api.name = 'aws-bedrock-custom-model' as Y; filter ' $.Y.trainingDataConfig.bucketName equals $.X.bucketName'; show X; 
+----
+
+|*AWS Bedrock Custom model encrypted with Customer Managed Key (CMK) is not enabled for regular rotation*
+
+tt:[24.9.2]
+//RLP-149520
+
+|This policy identifies AWS Bedrock Custom model encrypted with Customer Managed Key (CMK) is not enabled for regular rotation.
+
+AWS KMS (Key Management Service) allows customers to create master keys to encrypt the Custom model. Not enabling regular rotation for AWS Bedrock custom model key rotation failure can result in potential compliance violations.
+
+As a security best practice, it is important to rotate the keys periodically so that if the keys are compromised, the data in the underlying service is still secure with the new keys.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-bedrock-custom-model' as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and keyMetadata.keyManager equal ignore case CUSTOMER and keyMetadata.origin equals AWS_KMS and (rotation_status.keyRotationEnabled is false or rotation_status.keyRotationEnabled equals "null") as Y; filter '$.X.modelKmsKeyArn equals $.Y.key.keyArn'; show X;
+----
+
+|*Azure DNS Zone having dangling DNS Record vulnerable to subdomain takeover associated with Azure Storage account blob*
+
+tt:[24.9.2]
+//RLP-149355
+
+|This policy identifies DNS records within an Azure DNS zone that point to Azure Storage Account blobs that no longer exist.
+
+A dangling DNS attack happens when a DNS record points to a cloud resource that has been deleted or is inactive, making the subdomain vulnerable to takeover. An attacker can exploit this by creating a new resource with the same name and taking control of the subdomain to serve malicious content. This allows attackers to host harmful content under your subdomain, which could lead to phishing attacks, data breaches, and damage to your reputation. The risk arises because the DNS record still references a non-existent resource, which unauthorized individuals can re-associate with their own resources.
+
+As a security best practice, it is recommended to routinely audit DNS zones and remove or update DNS records pointing to non-existing Azure Storage Account blobs.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-dns-recordsets' AND json.rule = type contains CNAME and properties.CNAMERecord.cname contains "web.core.windows.net" as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.primaryEndpoints.web exists as Y; filter 'not ($.Y.properties.primaryEndpoints.web contains $.X.properties.CNAMERecord.cname) '; show X;
+----
+
+|*Azure DNS Zone having dangling DNS Record vulnerable to subdomain takeover associated with Web App Service*
+
+tt:[24.9.2]
+//RLP-149354
+
+|This policy identifies DNS records within an Azure DNS zone that point to Azure Web App Services that no longer exist.
+
+A dangling DNS attack happens when a DNS record points to a cloud resource that has been deleted or is inactive, making the subdomain vulnerable to takeover. An attacker can exploit this by creating a new resource with the same name and taking control of the subdomain to serve malicious content. This allows attackers to host harmful content under your subdomain, which could lead to phishing attacks, data breaches, and damage to your reputation. The risk arises because the DNS record still references a non-existent resource, which unauthorized individuals can re-associate with their own resources.
+
+As a security best practice, it is recommended to routinely audit DNS zones and remove or update DNS records pointing to non-existing Web App Services.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-dns-recordsets' AND json.rule = type contains CNAME and properties.CNAMERecord.cname contains "azurewebsites.net" as X; config from cloud.resource where api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running as Y;  filter 'not ($.Y.properties.hostNames contains $.X.properties.CNAMERecord.cname) '; show X; 
+----
+
+|*GCP Storage bucket CMEK not rotated every 90 days*
+
+tt:[24.9.2]
+//RLP-148007
+
+|This policy identifies GCP Storage bucket with CMEK that are not rotated every 90 days
+
+A CMEK (Customer-Managed Encryption Key), which is configured for a GCP bucket becomes vulnerable over time due to prolonged use. Without regular rotation, the key is at greater risk of being compromised, which could lead to unauthorized access to the encrypted data in the bucket. This can undermine the security of your data and increase the chances of a breach if the key is exposed or exploited.
+
+It is recommended to configure rotation less than 90 days for CMEKs used for GCP buckets.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'gcloud-kms-crypto-keys-list' AND json.rule = primary.state equals "ENABLED" and (rotationPeriod does not exist or rotationPeriod greater than 7776000) as X; config from cloud.resource where api.name = 'gcloud-storage-buckets-list' as Y; filter ' $.X.name equals $.Y.encryption.defaultKmsKeyName'; show Y;
+----
+
+|*GCP Storage bucket using a disabled CMEK*
+
+tt:[24.9.2]
+//RLP-148002
+
+|This policy identifies GCP Storage buckets that are using a disabled CMEK.
+
+CMEK (Customer-Managed Encryption Keys) for GCP buckets allows you to use your own encryption keys to secure data stored in Google Cloud Storage. If a CMEK defined for a GCP bucket is disabled, the data in that bucket becomes inaccessible, as the encryption keys are no longer available to decrypt the data. This can lead to data loss and operational disruption. If not properly managed, CMEK can also introduce risks such as accidental key deletion or mismanagement, which could compromise data availability and security.
+
+It is recommended to review the state of CMEK and enable it to keep the data in the bucket accessible.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'gcloud-kms-crypto-keys-list' AND json.rule = primary.state does not equal "ENABLED" as X; config from cloud.resource where api.name = 'gcloud-storage-buckets-list' as Y; filter ' $.X.name equals $.Y.encryption.defaultKmsKeyName'; show Y;
+----
+
+|*GCP VM instance is assigned with public IP*
+
+tt:[24.9.2]
+//RLP-147863
+
+|This policy identifies GCP VM instances that are assigned a public IP.
+
+Using a public IP with a GCP VM exposes it directly to the internet, increasing the risk of unauthorized access and attacks. This makes the VM vulnerable to threats such as brute force attempts, DDoS attacks, and other malicious activities. To mitigate these risks, it's safer to use private IPs and secure access methods like VPNs or load balancers.
+
+It is recommended to avoid assigning public IPs to VM instances.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-instances-list' AND json.rule = name does not start with "gke-" and (networkInterfaces[*].accessConfigs exists or networkInterfaces.ipv6AccessConfigs exists)
+----
+
+|*GCP VM instance with Shielded VM Secure Boot disabled*
+
+tt:[24.9.2]
+//RLP-147863
+
+|This policy identifies GCP VM instances that have Shielded VM Secure Boot disabled.
+
+Secure Boot is a security feature that ensures only trusted, digitally signed software runs during the boot process of a computer. Enabling it helps protect against malware and unauthorized software by verifying the integrity of the bootloader and operating system. Without Secure Boot, systems are vulnerable to rootkits, bootkits, and other malicious code that can compromise the system from the start, making it difficult to detect and remove such threats.
+
+It is recommended to enable Shielded VM secure boot for GCP VM instances.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-instances-list' AND json.rule = status equals RUNNING and name does not start with "gke-" and (shieldedInstanceConfig does not exist or shieldedInstanceConfig.enableSecureBoot is false )
+----
+
+|*GCP OS Image is publicly accessible*
+
+tt:[24.9.2]
+//RLP-147856
+
+|This policy identifies GCP OS Images that are publicly accessible.
+
+Custom GCP OS images are user-created operating system images tailored to specific needs and configurations. Making these images public can expose sensitive data, proprietary software, and security vulnerabilities. This can lead to unauthorized access, data breaches, and system exploitation, compromising your infrastructure's security and integrity.
+
+It is recommended to keep OS images private unless required for organizational needs.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-image' AND json.rule = iamPolicy.bindings[?any( members contains "allAuthenticatedUsers" )] exists
+----
+
+|*OCI Compute Instance with Secure Boot disabled*
+
+tt:[24.9.2]
+//RLP-149358
+
+|This policy identifies OCI compute instances in which Secure Boot is disabled.
+
+Secure Boot serves as a security standard ensuring that a machine exclusively boots using Original Equipment Manufacturer (OEM) trusted software. Without the activation of Secure Boot, a compute instance becomes susceptible to booting unauthorized or malicious software, posing a threat to the integrity and security of the instance. Consequently, this vulnerability can lead to unauthorized access, data breaches, or other malicious activities within the instance.
+
+As a security best practice, enabling Secure Boot on all compute instances is strongly recommended to guarantee the exclusive execution of trusted software during the boot process.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-compute-instance' AND json.rule = lifecycleState equal ignore case running AND (platformConfig does not exist OR platformConfig equal ignore case "null" OR platformConfig.isSecureBootEnabled is false)
+----
 
 |*AWS IAM user is not a member of any IAM group*
 
@@ -547,25 +880,76 @@ config from cloud.resource where api.name = 'azure-recovery-service-backup-prote
 |*Policy Updates*
 |*Description*
 
-2+|*Policy Updates—Metadata*
+2+|*Policy Updates—RQL*
 
-|*Policies*
-|*Description*
+|*GCP GKE unsupported Master node version*
+//RLP-149471
 
-|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
-//RLP-148554
+tt:[24.9.2]
 
-tt:[24.9.1]
+|*Changes—* The policy RQL and recommendation steps are updated to support GKE version 1.31.
 
-|*Changes—* The policy severity will be updated.
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+----
 
-*Current Policy Severity—* High
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." or currentMasterVersion starts with "1.31." )
+----
 
-*Updated Policy Severity—* Informational
+*Policy Severity—* Medium
 
 *Policy Type—* Config
 
-*Impact—* Low
+*Impact—* Low. Existing alerts where the GKE version is 1.31 will be resolved.
+
+|*GCP GKE unsupported node version*
+//RLP-149471
+
+tt:[24.9.2]
+
+|*Changes—* The policy RQL and recommendation steps are updated to support GKE version 1.31.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.")
+----
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts where the GKE version is 1.31 will be resolved.
+
+|*GCP User managed service account keys are not rotated for 90 days*
+//RLP-26599
+
+tt:[24.9.2]
+
+|*Changes—* The policy RQL is updated to exclude disabled service accounts
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'disabled is false and name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
+----
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts are resolved for the disabled service accounts.
 
 
 |*Azure Key Vault Firewall is not enabled*
@@ -573,7 +957,7 @@ tt:[24.9.1]
 
 tt:[24.9.1]
 
-|*Changes—* The policy RQL will be updated to reduce false positives and only generate alerts if public access is enabled.
+|*Changes—* The policy RQL is updated to reduce false positives and only generate alerts if public access is enabled.
 
 *Current RQL—* 
 ----
@@ -619,6 +1003,23 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 
 *Impact—* Low. Alert for Azure App Service Web app with minTlsVersion equals 1.3 will be resolved.
 
+2+|*Policy Updates—Metadata*
+
+|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
+//RLP-148554
+
+tt:[24.9.1]
+
+|*Changes—* The policy severity level is updated.
+
+*Current Policy Severity—* High
+
+*Updated Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*Impact—* Low
+
 |===
 
 
@@ -629,6 +1030,35 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 |===
 |*Compliance Benchmark*
 |*Description*
+
+|*TX-RAMP Level 1 and Level 2*
+
+tt:[24.9.2]
+//RLP-149709
+
+|Prisma Cloud now supports the latest version of Texas Risk and Authorization Management Program (TX-RAMP ) Level 1 and Level 2. TX-RAMP is designed to enhance the security and resilience of cloud services used by Texas state agencies by establishing rigorous cybersecurity standards for cloud service providers.
+
+You can view this built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|*NYDFS 23 CRR-NY 500.0*
+
+tt:[24.9.2]
+//RLP-149643
+
+|New Policy mappings are added for CIS Controls v7.1 & CIS Controls v8.0
+
+*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
+
+
+|*CIS Controls v7.1 & CIS Controls v8.0*
+
+tt:[24.9.2]
+//RLP-148514
+
+|New Policy mappings are introduced to the 'NYDFS 23 CRR-NY 500.0' compliance standard across all clouds.
+
+*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
+
 
 |*Framework for Adoption of Cloud Services by SEBI Regulated Entities*
 
@@ -643,14 +1073,73 @@ You can view this built-in standard and the associated policies on the *Complian
 
 |===
 
-//[#rest-api-updates]
-//=== REST API Updates
 
-//[cols="37%a,63%a"]
-//|===
-//|*Change*
-//|*Description*
+[#rest-api-updates]
+=== REST API Updates
 
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
 
+|*Asset Explorer APIs*
 
-//|===
+tt:[24.9.2]
+//RLP-149246
+
+|Added `dataSecurity` response objects to support DSPM API integration.
+
+|*AWS Logging Account APIs*
+
+tt:[24.9.2]
+//RLP-149970
+
+|New https://pan.dev/prisma-cloud/api/cspm/aws-logging-accounts/[AWS logging account APIs] are introduced to configure and manage AWS logging accounts that are necessary for AWS flow log ingestion.
+
+|*Vulnerabilities Dashboard APIs*
+
+tt:[24.9.2]
+//RLP-150474
+
+|The following new UVE POST endpoints have been introduced, offering enhanced filtering capabilities. These serve as alternatives to the deprecated UVE GET endpoints.
+
+* https://pan-dev-f1b58--pr741-5260bkvi.web.app/prisma-cloud/api/cspm/vulnerability-impact-by-stage-v-2/[Get Vulnerability Impact by Stage - POST]
+
+* https://pan.dev/prisma-cloud/api/cspm/vulnerable-assets-v-2/[Get Vulnerable Assets - POST]
+
+* https://pan.dev/prisma-cloud/api/cspm/top-prioritised-vulnerability-v-3/[Get Top Impacting Vulnerabilities - POST]
+
+* https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-4/[Get Vulnerability Overview - POST]
+
+* https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-5/[Get Prioritized Vulnerabilities - POST]
+
+* https://pan.dev/prisma-cloud/api/cspm/cve-overview-v-3/[Get CVE Overview - POST]
+
+* https://pan.dev/prisma-cloud/api/cspm/list-vulnerable-assets-cve-v-2/[Get Vulnerable Assets by CVE - POST]
+
+A new https://pan.dev/prisma-cloud/api/cspm/c-2-c-trace-api/[C2C Trace Asset Graph endpoint] is introduced to get details about the source of the vulnerability that is displayed in the C2C tracing graph in the UI.
+
+|===
+
+[#deprecation-notice]
+=== Deprecation Notice
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|tt:[*End of support for Azure Active Directory v1 API*]
+
+tt:[This change was first announced in 24.6.2 Look ahead notice]
+
+tt:[24.9.2]
+//RLP-143110
+
+|`azure-active-directory-credential-user-registration-details` API is has been deprecated. Due to this change, Prisma Cloud will no longer ingest metadata for `azure-active-directory-credential-user-registration-details API`. 
+
+In RQL, the key will not be available in the `api.name` attribute auto-completion. As a replacement, it is recommended to use the `azure-active-directory-user-registration-details` API.
+
+*Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as *Policy_Deleted*.
+
+|===
