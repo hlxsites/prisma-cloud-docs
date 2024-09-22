@@ -58,21 +58,21 @@ If you have any questions or feedback, contact your Prisma Cloud Customer Suppor
 |*Feature*
 |*Description*
 
-|*Update Google Kubernetes Engine*
-//RLP-150422, Check the fixversion again before moving the blurb in 10.1. The Fixversion may change to 11.1.
+|*Amazon Elastic Container Registry (ECR)*
+//RLP-150134; Added in LA in 9.1; updated text in 9.2; move to Features Introduced in October > Changes in Existing Behavior.
 
-|Starting with the 24.10.1 release, the JSON resource attributes `isMasterVersionSupported` and `isNodeVersionSupported` for *gcloud-container-describe-clusters* API will be updated to align with the CSP *GetServerConfig* API. This change will provide accurate results for policy violation alerts related to the default policies— *GCP GKE unsupported Master node version* and *GCP GKE unsupported node version*.
+|Starting with the 24.10.1 release, the format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
 
-*Impact—* No impact on existing alerts. New alerts will be generated against policy violations based on the complete GKE version used for clusters and nodes. If you have custom policies, you must manually update them to receive the alerts.
+Prisma Cloud will automatically fetch all the live ECR images from your cloud accounts and create them as new resources with the new `external_asset_id` format. New alerts will be generated for resources that match the active policies in your tenant.
 
-|*Update Amazon Elastic Container Registry (ECR)*
+*Impact—* You may notice a temporary drop in `aws-ecr-image` resource count and open alert count. However, after the `aws-ecr-image` resources are automatically ingested, the corresponding live resource count and open alert count will return to the previous levels.
+
+
+// |*Amazon Elastic Container Registry (ECR)*
 //RLP-150134
-
-|Starting with the 24.10.1 release, the `external_asset_id` for `aws-ecr-image` in Prisma Cloud will be updated in the backend. As a result, all resources for `aws-ecr-image` API will be deleted and then regenerated on the management console.
-
-Existing alerts corresponding to these resources will be resolved as Closed, and new alerts will be generated against policy violations.
-
-*Impact—* You may notice a reduced count for the number of alerts. However, once the resources for the aws-ecr-image API resumes ingesting data, the alert count will return to the original numbers.
+// |Starting with the 24.10.1 release, the `external_asset_id` for `aws-ecr-image` in Prisma Cloud will be updated in the backend. As a result, all resources for `aws-ecr-image` API will be deleted and then regenerated on the management console.
+// Existing alerts corresponding to these resources will be resolved as Closed, and new alerts will be generated against policy violations.
+// *Impact—* You may notice a reduced count for the number of alerts. However, once the resources for the aws-ecr-image API resumes ingesting data, the alert count will return to the original numbers.
 
 
 |*Amazon EC2 Ingestion*
@@ -91,6 +91,15 @@ If you have any questions, contact your Prisma Cloud Customer Success Representa
 
 *Impact—* To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
 
+
+|*Google Kubernetes Engine*
+//RLP-150422, Check the fixversion again before moving the blurb in 10.1. The Fixversion may change to 11.1.
+
+|Starting with the 24.10.1 release, the JSON resource attributes `isMasterVersionSupported` and `isNodeVersionSupported` for *gcloud-container-describe-clusters* API will be updated to align with the CSP *GetServerConfig* API. This change will provide accurate results for policy violation alerts related to the default policies— *GCP GKE unsupported Master node version* and *GCP GKE unsupported node version*.
+
+*Impact—* No impact on existing alerts. New alerts will be generated against policy violations based on the complete GKE version used for clusters and nodes. If you have custom policies, you must manually update them to receive the alerts.
+
+
 |*Updates to GCP Terraform Template*
 //RLP-150820
 
@@ -99,6 +108,24 @@ If you have any questions, contact your Prisma Cloud Customer Success Representa
 With this change, you need not manually enter the necessary API permissions under custom roles in case you decide not to grant Prisma Cloud Viewer role permissions.
 
 *Impact—* This change will not affect the onboarding *Status* of your accounts.
+
+
+|*Audit Logs Pagination and Filter*
+//RLP-151119
+
+|Starting with the 24.11.1 release, the Audit Logs will include enhancements to improve performance, reduce data load times, and provide more granular control over data retrieval:
+
+* The Audit Logs page will display paginated data, which will enhance navigation through extensive logs and the filtering options will provide you with more control over your log data. 
+
+* You will also be able to use the new API to programatically leverage the new pagination and filter capabilities to streamline your use cases. 
+
+
+// |*RQL API Rate Limits* 
+//to create RLP
+
+// |Starting with the 24.12.1 release, to improve the user experience, a response size limit of 100K records is now implemented for the https://pan.dev/prisma-cloud/api/cspm/rl-audit-logs/[GET - /audit/redlock] Audit Logs endpoint.
+
+// *Impact—* Requests exceeding 100K records limit results in a *413 Payload Too Large* error with _X-Record-Count_ header, which indicates the number of records that were being requested.
 
 |===
 
@@ -671,6 +698,20 @@ No API ingestions planned for 24.10.1 release.
 |*Deprecated Release*
 |*Sunset Release*
 |*Replacement Endpoints*
+
+|tt:[*Audit Logs API*]
+//RLP-151119
+
+Starting from November 2024, you must transition to the new Audit Logs API. Prisma Cloud will provide a migration period of six months after which the https://pan.dev/prisma-cloud/api/cspm/rl-audit-logs/[current API] will be deprecated.
+
+Once the deprecation period is over, you will have access to only the new API with pagination and filter support.
+
+|24.11.1
+
+|25.5.1
+
+|Will be provided in the 24.11.1 Release Notes.
+
 
 |tt:[*Vulnerabilities Dashboard APIs*]
 //RLP-147410
