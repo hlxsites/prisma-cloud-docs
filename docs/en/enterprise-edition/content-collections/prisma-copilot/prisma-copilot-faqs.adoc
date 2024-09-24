@@ -1,0 +1,51 @@
+== Prisma Copilot FAQs
+
+Here are few frequently asked questions (FAQs) regarding Prisma Copilot.
+
+* *What language models are used by Prisma Copilot?*
++
+The Copilot uses the large language models (LLMs) provided by one of the leading LLM providers. Prisma Cloud has an enterprise level agreement with the LLM provider ensuring that no data is used to further train those LLMs.
+
+* *Does Prisma Copilot use any of my data for model training?*
++
+The Copilot *does not* use your data for training the models used in the Copilot. Prisma Cloud uses foundational models (LLMs trained with publicly available data) for two purposes: 
++
+** Natural language translation: Uses the LLM to understand the questions you ask.
+
+** Summarization: Summarizes different pieces of information. For example, use of Prisma Cloud product documentation to answer your question. The LLM generates a response from those text chunks, which contains important information to provide the answer.
+
+* *How does Prisma Copilot use my data to answer the questions it receives?*
++
+Here's how the Copilot works and how it uses your data: 
++
+** *Step 1 (question contextualization)*
++
+When you type a question in Copilot, the question is analyzed by the Copilot to determine if additional data is required to augment the question. 
++
+For example, when you type _Do I have instances with the log4j vulnerability?_, the Copilot identifies that log4j is a software package and adds to the question the list of CVE IDs associated with that software package.
+
+** *Step 2 (question translation)*
++
+The augmented question is sent to the LLM, which produces a representation of the question that can be used by the Copilot to programmatically answer the question. 
++
+For example, the _Do I have instances with the log4j vulnerability?_ question, is transformed by the LLM in to the following RQL query:
++
+`asset where asset.class = 'Compute' AND WITH : vuln where id IN ( 'CVE-2021-44228', 'CVE-2021-45046', 'CVE-2021-44832', 'CVE-2021-45105' )`
++
+NOTE: Your data is *not* sent to the LLM to generate the RQL statement.
+
+** *Step 3 (local query)*
++
+The Copilot takes the response from the LLM and checks for accuracy. If the response is correct, the Copilot uses it to collect your data that is required to provide the final answer. 
++
+In the example used above, the RQL query is checked by a local language parser and then sent to the local API endpoint _/search/asset_ to identify the cloud instances with vulnerable log4j.
++
+This step involving your data stays within Prisma Cloud. It is *not* sent to the LLM. 
+
+** *Step 4 (final answer)*
++
+The answer from the API endpoint is received by the Copilot, which is displayed as a graph. 
++
+In the example used above, the Copilot displays the list of instances with vulnerable log4j as a graph.
++
+image::prisma-copilot/copilot-faq-5-4.png[]
