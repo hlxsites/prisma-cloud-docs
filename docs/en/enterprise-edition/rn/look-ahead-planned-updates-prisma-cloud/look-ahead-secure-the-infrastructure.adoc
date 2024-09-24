@@ -87,57 +87,7 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
-2+|*Policy Updates—RQL*
 
-|*Azure Storage Account without Secure transfer enabled*
-//RLP-149572
-|*Changes—* The policy description and RQL will be updated to ignore storage accounts where the secure transfer property is not applicable for NFS Azure file shares to work.
-
-*Current Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. When 'secure transfer required' is enabled, REST APIs to access your storage accounts connect using HTTPs any requests using HTTP will be rejected. When you are using the Azure files service, connection without encryption will fail. It is highly recommended to enable secure transfer feature on your storage account.
-
-NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name.
-
-*Updated Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. 
-
-When "secure transfer required" is disabled, REST APIs to access your storage accounts may connect over insecure HTTP which is not advised. Hence, it is highly recommended to enable secure transfer feature on your storage account.
-
-NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name. Additionally, this property is not applicable for NFS Azure file shares to work.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.supportsHttpsTrafficOnly !exists or properties.supportsHttpsTrafficOnly is false
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = (properties.supportsHttpsTrafficOnly does not exist or properties.supportsHttpsTrafficOnly is false) as X; config from cloud.resource where api.name = 'azure-storage-file-shares' as Y; filter '($.X.kind does not equal ignore case "FileStorage") or ($.X.kind equal ignore case "FileStorage" and $.Y.id contains $.X.name and $.Y.properties.enabledProtocols does not contain NFS)'; show X;
-----
-
-*Policy Severity—* Low
-
-*Policy Type—* Config
-
-*Impact—* Low. Existing alerts on the Storage account using the NFS Azure file will be resolved as *Policy_Updated*.
-
-|*GCP Cloud Function v1 is using unsecured HTTP trigger*
-//RLP-149695
-|*Changes—* The policy RQL will be updated to check only the appropriate GCP Cloud Function v1 that has an unsecured HTTP trigger.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals "ACTIVE" AND environment equals "GEN_1" AND serviceConfig.securityLevel does not equal "SECURE_ALWAYS"
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE AND environment equals GEN_1 AND serviceConfig.securityLevel exists AND serviceConfig.securityLevel does not equal SECURE_ALWAYS
-----
-
-*Policy Severity—* Medium
-
-*Policy Type—* Config
-
-*Impact—* Low. Existing alerts for the GCP Cloud Function v1 where the *Require HTTPS* configuration does not apply will be resolved as *Policy_Updated*.
 
 |===
 
@@ -151,32 +101,7 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud
 |*Compliance Benchmark*
 |*Description*
 
-|*CSA CCM v4.0.12*
-//RLP-150804
 
-|Prisma Cloud now supports CSA CCM v4.0.12, Cloud Controls Matrix by Cloud Security Alliance. The CSA Cloud Controls Matrix (CCM) is a cybersecurity control framework for cloud computing. It can be used as a tool for the systematic assessment of a cloud implementation, and provides guidance on which security controls should be implemented by which actor within the cloud supply chain.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
-
-|*HITRUST CSF v.11.2.0*
-//RLP-150747
-
-|New mappings will be introduced to the *HITRUST CSF v.11.2.0* compliance standard across all clouds.
-
-*Impact—* Changes in compliance scoring may occur due to the updated mappings.
-
-|*IT Security Risk Management*
-//RLP-150414
-
-|Prisma Cloud now supports ITSG-33 (IT Security Risk Management: A Lifecycle Approach) compliance standard. It is a framework developed by the Communications Security Establishment Canada (CSEC) to guide Government of Canada departments in managing IT security risks. By following this framework, organisations can effectively safeguard sensitive information and adapt to evolving threats.
-
-You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance with ITSG-33 over time.
-
-|*Microsoft Cloud Security Benchmark*
-//RLP-150487
-|Prisma Cloud now supports Microsoft Cloud Security Benchmark (MCSB) v1. The Microsoft cloud security benchmark (MCSB) provides prescriptive best practices and recommendations to help improve the security of workloads, data, and services on the multi-cloud environment.
-
-You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
 |===
 

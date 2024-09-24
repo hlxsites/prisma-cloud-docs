@@ -205,27 +205,208 @@ The Security Audit role includes the above permission.
 |*Policies*
 |*Description*
 
-|*AWS S3 bucket used for storing AWS Bedrock Custom model training artifacts*
+|*AWS EMR Studio using the shadow resource bucket for workspace storage*
 
 tt:[24.10.1]
-//RLP-149533
+//RLP-150584
 
-|This policy identifies the AWS S3 bucket used for storing AWS Bedrock Custom model training job output.
+|This policy identifies that the AWS EMR Studio using the bucket for workspace storage is not managed from the current account. This could potentially be using the shadow resource bucket for workspace storage.
 
-S3 buckets hold the results and artifacts generated from training models in AWS Bedrock. Ensuring proper configuration and access control is crucial to maintaining the security and integrity of the training output. Improperly secured S3 buckets used for storing AWS Bedrock training output can lead to unauthorized access and potential exposure of model information.
+AWS EMR enables data processing and analysis using big data frameworks like Hadoop, Spark, and Hive. To create an EMR Studio, the EMR service automatically generates an S3 bucket. This S3 bucket follows the naming pattern ‘aws-emr-studio-{Account-ID}-{Region}’. An attacker can create an unclaimed bucket with this predictable name and wait for the victim to deploy a new EMR Studio in a new region. This can result in multiple attacks, including cross-site scripting (XSS) when the user opens the compromised notebook in EMR Studio.
 
-It is recommended to implement strict access controls, enable encryption, and audit permissions to secure AWS S3 buckets for AWS Bedrock training job output and ensure compliance.
+It is recommended to verify the expected bucket owner and update the AWS EMR storage location and enforce the aws: ResourceAccount condition in the policy of the service role used by the AWS EMR to check that the AWS account ID of the S3 bucket used by AWS EMR Studio according to your business requirements.
 
-NOTE: This policy is designed to identify the S3 buckets utilized for storing results and storing artifacts generated from training custom models in AWS Bedrock. It does not signify any detected misconfiguration or security risk.
-
-*Policy Severity—* Informational
+*Policy Severity—* Medium
 
 *Policy Type—* Config
 
+*RQL—* 
 ----
-config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' as X; config from cloud.resource where api.name = 'aws-bedrock-custom-model' as Y; filter ' $.Y.outputDataConfig.bucketName equals $.X.bucketName'; show X;
+config from cloud.resource where api.name = 'aws-emr-studio' AND json.rule = DefaultS3Location exists and DefaultS3Location contains "aws-emr-studio-" as X; config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' as Y; filter 'not ($.X.BucketName equals $.Y.bucketName)' ; show X;
 ----
 
+|*AWS Glue Job using the shadow resource bucket for script location*
+
+tt:[24.10.1]
+//RLP-150584
+
+|This policy identifies that the AWS Glue Job using the bucket for script location is not managed from the current location. This could potentially be using the shadow resource bucket for script location.
+
+A shadow resource bucket is an unauthorized S3 bucket posing security risks. AWS Glue is a service utilized to automate the extraction, transformation, and loading (ETL) processes, streamlining data preparation for analytics and machine learning. When a job is created using the Visual ETL tool, Glue automatically creates an S3 bucket with a predictable name pattern ‘aws-glue-assets-accountid-region’. An attacker could create the S3 bucket in any region before the victim uses Glue ETL, causing the victims Glue service to write files to the attacker-controlled bucket. This vulnerability allows an attacker to inject any code into the Glue job of the victim, resulting in remote code execution (RCE).
+
+It is recommended to verify the expected bucket owner and update the AWS Glue jobs script location and enforce the aws:ResourceAccount condition in the policy of the AWS Glue Job to check that the AWS account ID of the S3 bucket used by AWS Glue Job according to your business requirements.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'aws-glue-job' AND json.rule = Command.BucketName exists and Command.BucketName contains "aws-glue-assets-" as X; config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' AND json.rule = bucketName contains "aws-glue-assets-" as Y; filter 'not ($.X.Command.BucketName equals $.Y.bucketName)' ; show X;
+----
+
+|*Azure Machine Learning compute instance not configured inside virtual network*
+
+tt:[24.10.1]
+//RLP-150351
+
+|This policy identifies Azure Machine Learning compute instances that are not configured within a virtual network.
+
+Azure Machine Learning compute instances outside a Virtual Network are exposed to external threats, as they may be publicly accessible. Placing the instance within a Virtual Network improves security by limiting access to trusted virtual machines and services within the same network. This ensures secure communication and blocks unauthorized public access.
+
+As a security best practice, it is recommended to deploy the Azure Machine Learning compute instances inside a virtual network.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-machine-learning-compute' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.properties.subnet.id does not exist
+----
+
+|*Azure Machine Learning compute instance with local authentication enabled*
+
+tt:[24.10.1]
+//RLP-150352
+
+|This policy identifies Azure Machine Learning compute instances that are using local authentication.
+
+Disabling local authentication improves security by mandating the use of Microsoft Entra ID for authentication. Local authentication can lead to security risks and unauthorized access. Using Microsoft Entra ID ensures a more secure and compliant authentication process.
+
+As a security best practice, it is recommended to disable local authentication and use Microsoft Entra ID for authentication.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-machine-learning-compute' AND json.rule = properties.properties.state equal ignore case running and (properties.computeType equal ignore case ComputeInstance or properties.computeType equal ignore case AmlCompute ) and properties.disableLocalAuth is false 
+----
+
+|*Azure Machine Learning workspace not encrypted with Customer Managed Key (CMK)*
+
+tt:[24.10.1]
+//RLP-150353
+
+|This policy identifies Azure Machine Learning workspaces that are not encrypted with a Customer Managed Key (CMK).
+
+Azure handles encryption using platform-managed keys by default, but customer-managed keys (CMKs) provide greater control and help meet specific security and compliance requirements. Without CMKs, organizations may not have full control over key management and rotation, increasing the risk of compliance issues and unauthorized data access. Configuring the workspace to use CMKs enhances security by allowing organizations to manage key access and rotation, ensuring stronger protection and compliance for sensitive data.
+
+As a security best practice, it is recommended to configure the workspace to use Customer Managed Keys (CMKs).
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.encryption.status does not exist or properties.encryption.status equal ignore case disabled) 
+----
+
+|*Azure Machine Learning workspace not enforced with Managed Virtual Network Isolation*
+
+tt:[24.10.1]
+//RLP-150354
+
+|This policy identifies Azure Machine Learning workspaces that are not enforced with Managed Virtual Network Isolation.
+
+Managed Virtual Network Isolation ensures that the workspace and its resources are accessible only within a secure virtual network. Without enforcing this isolation, the environment becomes vulnerable to security risks like external threats, data leaks, and non-compliance. If not properly isolated, the workspace may be exposed to public networks, increasing the chances of unauthorized access and data breaches.
+
+As a security best practice, it is recommended to configure Azure Machine Learning workspaces with Managed Virtual Network Isolation. This will restrict network access to the workspace and ensure that it can only be accessed from authorized networks.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.managedNetwork.isolationMode equal ignore case Disabled OR properties.managedNetwork.isolationMode does not exist)
+----
+
+
+|*GCP public-facing (external) regional load balancer using HTTP protocol*
+
+tt:[24.10.1]
+//RLP-147860
+
+|This policy identifies GCP public-facing (external) regional load balancers using HTTP protocol.
+
+Using HTTP protocol with a GCP external load balancer transmits data in plaintext, making it vulnerable to eavesdropping, interception, and modification by malicious actors. This lack of encryption exposes sensitive information, increases the risk of man-in-the-middle attacks, and compromises the overall security and privacy of the data exchanged between clients and servers.
+
+It is recommended to use HTTPS protocol with external-facing load balancers.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+
+|*GCP public-facing (external) global load balancer using HTTP protocol*
+
+tt:[24.10.1]
+//RLP-147861
+
+|This policy identifies GCP public-facing (external) global load balancers using HTTP protocol.
+
+Using the HTTP protocol with a GCP external load balancer transmits data in plaintext, making it vulnerable to eavesdropping, interception, and modification by malicious actors. This lack of encryption exposes sensitive information, increases the risk of man-in-the-middle attacks, and compromises the overall security and privacy of the data exchanged between clients and servers.
+
+It is recommended to use HTTPS protocol with external-facing load balancers.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+
+|*GCP Vertex AI Workbench Instance is using default service account with the editor role*
+
+tt:[24.10.1]
+//RLP-150416
+
+|This policy identifies GCP Vertex AI Workbench Instances that are using the default service account with the Editor role.
+
+The Compute Engine default service account is automatically created with an autogenerated name and email address when you enable the Compute Engine API. By default, this service account is granted the IAM basic Editor role unless you explicitly disable this behavior. If this service account is assigned to a Vertex AI Workbench instance, it may lead to potential privilege escalation.
+
+In line with the principle of least privilege, it is recommended that Vertex AI Workbench Instances are not assigned the 'Compute Engine default service account', particularly when the Editor role is granted to the service account.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" and gceSetup.serviceAccounts[*].email contains "compute@developer.gserviceaccount.com" as X; config from cloud.resource where api.name = 'gcloud-projects-get-iam-user' AND json.rule = user contains "compute@developer.gserviceaccount.com" and roles[*] contains "roles/editor" as Y; filter ' $.X.gceSetup.serviceAccounts[*].email equals $.Y.user'; show X;
+----
+
+|*GCP Vertex AI Workbench Instance has vTPM disabled*
+
+tt:[24.10.1]
+//RLP-150417
+
+|This policy identifies GCP Vertex AI Workbench Instances that have the Virtual Trusted Platform Module (vTPM) feature disabled.
+
+The Virtual Trusted Platform Module (vTPM) validates the guest VM's pre-boot and boot integrity and provides key generation and protection. The root keys of the vTPM, as well as the keys it generates, cannot leave the vTPM, thereby offering enhanced protection against compromised operating systems or highly privileged project administrators.
+
+It is recommended to enable the virtual TPM device on GCP Vertex AI Workbench Instances to support measured boot and other OS security features that require a TPM.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+|*GCP Vertex AI Workbench Instance has Integrity monitoring disabled*
+
+tt:[24.10.1]
+//RLP-150420
+
+|This policy identifies GCP Vertex AI Workbench Instances that have Integrity monitoring disabled.
+
+Integrity Monitoring continuously monitors the boot integrity, kernel integrity, and persistent data integrity of the underlying VM of the shielded workbench instances. It detects unauthorized modifications or tampering, enhancing security by verifying the trusted state of VM components throughout their lifecycle. Integrity monitoring provides active alerts, enabling administrators to respond to integrity failures and prevent compromised nodes from being deployed into the cluster.
+
+It is recommended to enable Integrity Monitoring for Workbench instances to detect and mitigate advanced threat, such as rootkits and bootkit malware.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
 
 |===
 
@@ -424,143 +605,61 @@ If you have any questions, reach out to your Prisma Cloud Customer Success Repre
 
 2+|*Policy Updates—RQL*
 
-|*GCP GKE unsupported Master node version*
-//RLP-149471
+|*Azure Storage Account without Secure transfer enabled*
+//RLP-149572
 
-tt:[24.9.2]
+tt:[24.10.1]
 
-|*Changes—* The policy RQL and recommendation steps are updated to support GKE version 1.31.
+|*Changes—* The policy description and RQL will be updated to ignore storage accounts where the secure transfer property is not applicable for NFS Azure file shares to work.
+
+*Current Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. When 'secure transfer required' is enabled, REST APIs to access your storage accounts connect using HTTPs any requests using HTTP will be rejected. When you are using the Azure files service, connection without encryption will fail. It is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name.
+
+*Updated Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. 
+
+When "secure transfer required" is disabled, REST APIs to access your storage accounts may connect over insecure HTTP which is not advised. Hence, it is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name. Additionally, this property is not applicable for NFS Azure file shares to work.
 
 *Current RQL—* 
 ----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." )
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.supportsHttpsTrafficOnly !exists or properties.supportsHttpsTrafficOnly is false
 ----
 
 *Updated RQL—* 
 ----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentMasterVersion starts with "1.27." or currentMasterVersion starts with "1.28." or currentMasterVersion starts with "1.29." or currentMasterVersion starts with "1.30." or currentMasterVersion starts with "1.31." )
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = (properties.supportsHttpsTrafficOnly does not exist or properties.supportsHttpsTrafficOnly is false) as X; config from cloud.resource where api.name = 'azure-storage-file-shares' as Y; filter '($.X.kind does not equal ignore case "FileStorage") or ($.X.kind equal ignore case "FileStorage" and $.Y.id contains $.X.name and $.Y.properties.enabledProtocols does not contain NFS)'; show X;
 ----
-
-*Policy Severity—* Medium
-
-*Policy Type—* Config
-
-*Impact—* Low. Existing alerts where the GKE version is 1.31 will be resolved.
-
-|*GCP GKE unsupported node version*
-//RLP-149471
-
-tt:[24.9.2]
-
-|*Changes—* The policy RQL and recommendation steps are updated to support GKE version 1.31.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30." )
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.")
-----
-
-*Policy Severity—* Medium
-
-*Policy Type—* Config
-
-*Impact—* Low. Existing alerts where the GKE version is 1.31 will be resolved.
-
-|*GCP User managed service account keys are not rotated for 90 days*
-//RLP-26599
-
-tt:[24.9.2]
-
-|*Changes—* The policy RQL is updated to exclude disabled service accounts
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-iam-service-accounts-keys-list' AND json.rule = 'disabled is false and name contains iam.gserviceaccount.com and (_DateTime.ageInDays($.validAfterTime) > 90) and keyType equals USER_MANAGED'
-----
-
-*Policy Severity—* Informational
-
-*Policy Type—* Config
-
-*Impact—* Low. Existing alerts are resolved for the disabled service accounts.
-
-
-|*Azure Key Vault Firewall is not enabled*
-//RLP-148542
-
-tt:[24.9.1]
-
-|*Changes—* The policy RQL is updated to reduce false positives and only generate alerts if public access is enabled.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = properties.networkAcls.ipRules[*].value does not exist AND properties.publicNetworkAccess does not equal ignore case "disabled"
-----
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls does not exist) or (properties.publicNetworkAccess does not equal ignore case disabled and properties.networkAcls.defaultAction equal ignore case allow )
-----
-*Policy Type—* Config
-
-*Impact—* Low. Open alerts where the public access is enabled and network ACLs default action is denied will be resolved.
-
-
-|*Azure App Service Web app doesn't use latest TLS version*
-//RLP-148541
-
-tt:[24.9.1]
-
-|*Changes—* The updated Policy RQL will not alert for minTlsVersion of 1.3.
-
-*Current Description—* This policy identifies Azure web apps which are not set with latest version of TLS encryption. App service currently allows the web app to set TLS versions 1.0, 1.1 and 1.2. It is highly recommended to use the latest TLS 1.2 version for web app secure connections.
-
-*Updated Description—* This policy identifies Azure web apps that are not configured with the latest version of TLS encryption. Azure Web Apps provide a platform to host and manage web applications securely. 
-
-Using the latest TLS version is crucial for maintaining secure connections. Older versions of TLS, such as 1.0 and 1.1, have known vulnerabilities that can be exploited by attackers. Upgrading to newer versions like TLS 1.2 or 1.3 ensures that the web app is better protected against modern security threats.
-
-It is highly recommended to use the latest TLS version (greater than 1.1) for secure web app connections.
-
-*Current RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with "app" AND config.minTlsVersion does not equal "1.2"
-----
-
-*Updated RQL—* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = kind starts with app and config.minTlsVersion is member of ('1.0', '1.1')
-----
-
-*Policy Type—* Config
 
 *Policy Severity—* Low
 
-*Impact—* Low. Alert for Azure App Service Web app with minTlsVersion equals 1.3 will be resolved.
+*Policy Type—* Config
 
-2+|*Policy Updates—Metadata*
+*Impact—* Low. Existing alerts on the Storage account using the NFS Azure file will be resolved as *Policy_Updated*.
 
-|*AWS SageMaker endpoint data encryption at rest not configured with CMK*
-//RLP-148554
+|*GCP Cloud Function v1 is using unsecured HTTP trigger*
+//RLP-149695
 
-tt:[24.9.1]
+tt:[24.10.1]
 
-|*Changes—* The policy severity level is updated.
+|*Changes—* The policy RQL will be updated to check only the appropriate GCP Cloud Function v1 that has an unsecured HTTP trigger.
 
-*Current Policy Severity—* High
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals "ACTIVE" AND environment equals "GEN_1" AND serviceConfig.securityLevel does not equal "SECURE_ALWAYS"
+----
 
-*Updated Policy Severity—* Informational
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE AND environment equals GEN_1 AND serviceConfig.securityLevel exists AND serviceConfig.securityLevel does not equal SECURE_ALWAYS
+----
+
+*Policy Severity—* Medium
 
 *Policy Type—* Config
 
-*Impact—* Low
+*Impact—* Low. Existing alerts for the GCP Cloud Function v1 where the *Require HTTPS* configuration does not apply will be resolved as *Policy_Updated*.
 
 |===
 
@@ -573,45 +672,50 @@ tt:[24.9.1]
 |*Compliance Benchmark*
 |*Description*
 
-|*TX-RAMP Level 1 and Level 2*
+|*CSA CCM v4.0.12*
+//RLP-150804
 
-tt:[24.9.2]
-//RLP-149709
+tt:[24.10.1]
 
-|Prisma Cloud now supports the latest version of Texas Risk and Authorization Management Program (TX-RAMP ) Level 1 and Level 2. TX-RAMP is designed to enhance the security and resilience of cloud services used by Texas state agencies by establishing rigorous cybersecurity standards for cloud service providers.
+|Prisma Cloud now supports CSA CCM v4.0.12, Cloud Controls Matrix by Cloud Security Alliance. The CSA Cloud Controls Matrix (CCM) is a cybersecurity control framework for cloud computing. It can be used as a tool for the systematic assessment of a cloud implementation, and provides guidance on which security controls should be implemented by which actor within the cloud supply chain.
 
-You can view this built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
-|*NYDFS 23 CRR-NY 500.0*
+|*HITRUST CSF v.11.2.0*
+//RLP-150747
 
-tt:[24.9.2]
-//RLP-149643
+tt:[24.10.1]
 
-|New Policy mappings are added for CIS Controls v7.1 & CIS Controls v8.0
+|New mappings will be introduced to the *HITRUST CSF v.11.2.0* compliance standard across all clouds.
 
-*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
+*Impact—* Changes in compliance scoring may occur due to the updated mappings.
 
+|*IT Security Risk Management*
+//RLP-150414
 
-|*CIS Controls v7.1 & CIS Controls v8.0*
+tt:[24.10.1]
 
-tt:[24.9.2]
-//RLP-148514
+|Prisma Cloud now supports ITSG-33 (IT Security Risk Management: A Lifecycle Approach) compliance standard. It is a framework developed by the Communications Security Establishment Canada (CSEC) to guide Government of Canada departments in managing IT security risks. By following this framework, organisations can effectively safeguard sensitive information and adapt to evolving threats.
 
-|New Policy mappings are introduced to the 'NYDFS 23 CRR-NY 500.0' compliance standard across all clouds.
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance with ITSG-33 over time.
 
-*Impact—* No impact on existing alerts. The compliance score may vary as new mappings are added.
+|*Microsoft Cloud Security Benchmark*
+//RLP-150487
 
+tt:[24.10.1]
 
-|*Framework for Adoption of Cloud Services by SEBI Regulated Entities*
+|Prisma Cloud now supports Microsoft Cloud Security Benchmark (MCSB) v1. The Microsoft cloud security benchmark (MCSB) provides prescriptive best practices and recommendations to help improve the security of workloads, data, and services on the multi-cloud environment.
 
-tt:[24.9.1]
-//RLP-147789
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
-|Prisma Cloud now supports  Consolidated Cybersecurity and Cyber Resilience Framework (CSCRF) released by the Securities and Exchange Board of India (SEBI) for all major cloud providers. CSCRF aims to establish a unified framework that encompasses various strategies to safeguard REs (Regulated Entities) and Market Infrastructure Institutions (MIIs) against cyber risks and incidents. Framework of adoption is part of the SEBI's overall CSRF standard. 
+|*CIS v2.1.0 (Azure) Level 2 and CIS v2.0.0 (Azure) Level 2*
+//RLP-150819
 
-You can view this built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+tt:[24.10.1]
 
-*Impact*— As new mappings are introduced, compliance scoring might vary.
+|New mappings have been introduced to the CIS v2.1.0 (Azure) Level 2 and CIS v2.0.0 (Azure) Level 2 compliance standards.
+
+*Potential Impact*: Changes in compliance scoring may occur due to the updated mappings.
 
 |===
 
