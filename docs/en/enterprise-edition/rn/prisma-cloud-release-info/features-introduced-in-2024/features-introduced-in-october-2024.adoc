@@ -27,7 +27,7 @@ Learn what's new on Prisma® Cloud in September 2024.
 |*Prisma Cloud Release Schedule Updated from a Bi-weekly to a Monthly Release*
 //RLP-148595
 
-|Starting with the 24.10.1 release, Prisma Cloud release schedule will transition from a bi-weekly to a monthly cadence to ensure continuous deliver of high-quality features and enhancements.
+|Prisma Cloud's release schedule will transition from a bi-weekly to a monthly cadence, starting with the current release, to ensure continuous deliver of high-quality features and enhancements.
 
 * Enhance Quality: A longer development cycle enables the Prisma Cloud team to focus on thorough testing and quality assurance, ensuring that each release meets the highest standards.
 
@@ -53,10 +53,13 @@ If you have any questions or feedback, contact your Prisma Cloud Customer Suppor
 |*Feature*
 |*Description*
 
-|Placeholder for RLP-119968
-|
 
-|Role Chaining
+|*Role Chaining Detection for AWS*
+
+|Enhancements to Prisma Cloud Identity and Entitlement Management (CIEM) capabilities will now alert you when role chaining is present in your cloud environment. Role chaining occurs when you use a primary role to assume a secondary role. This results in the newly granted role assuming all the permissions granted to the first role. 
+
+|Placeholder for RLP-119968
+
 |
 
 |===
@@ -73,7 +76,7 @@ If you have any questions or feedback, contact your Prisma Cloud Customer Suppor
 |*Amazon Elastic Container Registry (ECR)*
 //RLP-150134; Added in LA in 9.1; updated text in 9.2; move to Features Introduced in October > Changes in Existing Behavior.
 
-|Starting with the 24.10.1 release, the format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
+|Starting with the current release, the format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
 
 Prisma Cloud will automatically fetch all the live ECR images from your cloud accounts and create them as new resources with the new `external_asset_id` format. New alerts will be generated for resources that match the active policies in your tenant.
 
@@ -83,21 +86,15 @@ Prisma Cloud will automatically fetch all the live ECR images from your cloud ac
 
 //RLP-150422
 
+|*Change*: The Prisma cloud API will be updated to compute attributes "isMasterVersionSupported" and "isNodeVersionSupported" to provide results based on the latest improvements made by the GCP team with respect to the GetServerConfig API. This enhancement is planned to provide more accurate results for the alerts based on the default policies.
+
 *API*: gcloud-container-describe-clusters
 
-*Issue*:
+*Issue*: The default policies GCP GKE unsupported Master node version and GCP GKE unsupported node version are currently checking the GCP GKE version based on major and minor values. To provide accurate results, we are enhancing the Prisma API attribute to compare complete versions from the GCP API.
 
-The default policies GCP GKE unsupported Master node version and GCP GKE unsupported node version are currently checking the GCP GKE version based on major and minor values. To provide accurate results, we are enhancing the Prisma API attribute to compare complete versions from the GCP API.
 
-*Change*:
+*Impact*: New alerts might be triggered based on the complete GKE version used for clusters and nodes.If you have custom policies, you must manually update them to check using the updated attribute.
 
-The Prisma cloud API will be updated to compute attributes "isMasterVersionSupported" and "isNodeVersionSupported" to provide results based on the latest improvements made by the GCP team with respect to the GetServerConfig API. This enhancement is planned to provide more accurate results for the alerts based on the default policies
-
-*Impact*:
-
-New alerts might be triggered based on the complete GKE version used for clusters and nodes.
-
-If you have custom policies, you must manually update them to check using the updated attribute.
 
 |*VPC Peering Connections API Changes*
 
@@ -112,7 +109,7 @@ If you have custom policies, you must manually update them to check using the up
 
 //RLP-150820
 
-|Starting with the 24.10.1 release, we will return all the granular permissions from viewer role under custom role, which are used for ingesting APIs. Viewer role will still be part of terraform. In addition, granular permissions will also be provided. which is similar to AWS.
+|Starting with the current release, we will return all the granular permissions from viewer role under custom role, which are used for ingesting APIs. Viewer role will still be part of terraform. In addition, granular permissions will also be provided. which is similar to AWS.
 
 
 // |*Amazon Elastic Container Registry (ECR)*
@@ -125,7 +122,7 @@ If you have custom policies, you must manually update them to check using the up
 |*Amazon EC2 Ingestion*
 //RLP-145171
 
-|Starting with the 24.10.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+|Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
 
 *Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
 
@@ -134,7 +131,7 @@ If you have any questions, contact your Prisma Cloud Customer Success Representa
 |*Alerts for Role Chaining*
 //IVG-15421
 
-|Starting with the 24.10.1 release, enhancements to Prisma Cloud Identity and Entitlement Management (CIEM) capabilities will alert users when role chaining is present in their environment. Role chaining occurs when you use a role to assume a second role. This results in the newly granted role assuming all the permissions granted to the first role.
+|Enhancements to Prisma Cloud Identity and Entitlement Management (CIEM) capabilities will alert users when role chaining is present in their environment. Role chaining occurs when you use a role to assume a second role. This results in the newly granted role assuming all the permissions granted to the first role.
 
 *Impact—* To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
 
@@ -732,8 +729,6 @@ tt:[24.10.1]
 |tt:[*End of support for Google Cloud Function v1 API*]
 //RLP-142340
 
-|NA
-|24.10.1
 |`gcloud-cloud-function-v1` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for `gcloud-cloud-function-v1 API`. 
 
 In RQL, the key will not be available in the api.name attribute auto-completion. As a replacement, it is recommended to use the `gcloud-cloud-function-v2` API.
@@ -744,13 +739,15 @@ In RQL, the key will not be available in the api.name attribute auto-completion.
 
 //RLP-131482, RLP-115752
 
+|The following API endpoints will be deprecated as of this release:
+
 * https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
 * https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
 * https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
 
-|23.9.2
-|24.10.1
-|* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
+The API's above will be replaced by the following new endpoint:
+
+* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
 
 
 |===
