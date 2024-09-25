@@ -87,7 +87,62 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+|**GCP SQL Instances do not have valid SSL configuration*
+//RLP-150532
 
+|*Current Policy Description*:
+
+This policy identifies GCP SQL instances that do not have valid SSL configuration with an unexpired SSL certificate. Cloud SQL supports connecting to an instance using the Secure Socket Layer (SSL) protocol. If Cloud SQL Auth proxy is not used for authentication, it is recommended to utilize SSL for connection to SQL Instance, ensuring the security for data in transit.
+
+*Proposed Policy Description*:
+
+This policy identifies GCP SQL instances that do not have valid SSL configuration with an expired SSL certificate. 
+
+In case the SQL instance is not configured to use the SSL connections then the SQL instance might accept unencrypted and unsecure connections. This can cause several risks and issues such as Data Interception, Authentication Risks and so on. 
+
+It is a best practice to enable SSL configuration to ensure data security and integrity when communicating with a GCP SQL instance.
+
+*Current Policy RQL*:
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name='gcloud-sql-instances-list' and json.rule = "(settings.ipConfiguration.requireSsl is true and _DateTime.ageInDays(serverCaCert.expirationTime) > -1) or not (settings.ipConfiguration.requireSsl is true)"
+----
+*Proposed Policy RQL*:
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name='gcloud-sql-instances-list' and json.rule = "(settings.ipConfiguration.sslMode equal ignore case TRUSTED_CLIENT_CERTIFICATE_REQUIRED and _DateTime.ageInDays(serverCaCert.expirationTime) > -1) or settings.ipConfiguration.sslMode equal ignore case ALLOW_UNENCRYPTED_AND_ENCRYPTED"
+----
+*Current Policy Remediation*:
+
+Reference Google's https://cloud.google.com/sql/docs/mysql/configure-ssl-instance[documentation] to renew / update the SSL certificate.  
+
+*Proposed policy Remediation*:
+
+To configure SQL instance with SSL configuration,follow the steps mentioned below:
+
+. Log in to google cloud console
+. Navigate to 'Cloud SQL Instances'
+. Click on the alerted instance and navigate to 'Security' under 'Connections' tab
+. Select one of the following under 'Manage SSL mode':
+.. Allow only SSL connections
+.. Require trusted client certificates
+
+To verify the validity of the current certificate, follow the steps mentioned below:
+
+. Log in to google cloud console
+. Navigate to 'Cloud SQL Instances'
+. Click on the alerted instance and navigate to 'Security' under 'Connections' tab
+. Verify the expiration date of your server certificate under 'Manage server CA certificates' table
+
+Review these https://cloud.google.com/sql/docs/mysql/configure-ssl-instance#client-certs[steps] to create a new client certificate. 
+
+*Policy Type*: Config
+
+*Policy Severity*: Low
+
+*Impact*: 
+
+Low. Alerts will be triggered in case the SQL instance is configured with SSL mode as ALLOW_UNENCRYPTED_AND_ENCRYPTED or TRUSTED_CLIENT_CERTIFICATE_REQUIRED with expired certificate
+
+Open Alerts will be resolved in case the SQL instance is configured with SSL mode as ENCRYPTED_ONLY or TRUSTED_CLIENT_CERTIFICATE_REQUIRED with valid certificate. 
 
 |===
 
@@ -400,6 +455,89 @@ Additional permissions required:
 * `Microsoft.DBforMySQL/flexibleServers/read`
 * `Microsoft.DBforMySQL/flexibleServers/databases/read`
 
+The Reader role includes the above permissions.
+
+
+|*Azure SQL Database*
+//RLP-149746
+
+|*azure-sql-db-transparent-data-encryption*
+
+Additional permissions required:
+
+* `Microsoft.Sql/managedInstances/read`
+* `Microsoft.Sql/managedInstances/databases/read`
+* `Microsoft.Sql/managedInstances/databases/transparentDataEncryption/read`
+
+The Reader role includes the above permissions.
+
+
+|*Azure API Management*
+//RLP-151219
+
+|*azure-api-management-service-identity-provider*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/identityProviders/read`
+
+The Reader role includes the above permissions.
+
+
+|*Azure API Management*
+//RLP-151222
+
+|*azure-api-management-service-alert-rules*
+
+Additional permissions required:
+
+* `Microsoft.Insights/MetricAlerts/Read`
+
+The Reader role includes the above permission.
+
+
+|*Azure API Management*
+//RLP-151308
+
+|*azure-api-management-service-products*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/products/read`
+
+The Reader role includes the above permissions.
+
+
+|*Azure API Management*
+//RLP-151313
+
+|*azure-api-management-service-api-policy*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/apis/read`
+* `Microsoft.ApiManagement/service/apis/policies/read`
+
+The Reader role includes the above permissions.
+
+
+|*Azure API Management*
+//RLP-151317
+
+|*azure-api-management-service-product-policy*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/products/read`
+* `Microsoft.ApiManagement/service/products/policies/read`
+
+The Reader role includes the above permissions.
+
+
 |*Google Cloud VM Manager*
 //RLP-149002
 
@@ -446,6 +584,185 @@ Additional permission required:
 * `datapipelines.pipelines.list`
 
 The Viewer role includes the above permission.
+
+
+|*Google Cloud Memorystore*
+//RLP-149032
+
+|*gcloud-redis-cluster*
+
+Additional permission required:
+
+* `redis.clusters.list`
+
+The Viewer role includes the above permission.
+
+
+|*Google Cloud Storage*
+//RLP-150324
+
+|*gcloud-storage-hmac-key*
+
+Additional permission required:
+
+* `storage.hmacKeys.list`
+
+The Viewer role includes the above permission.
+
+
+|*Google Service Infrastructure Service Management*
+//RLP-150325
+
+|*gcloud-service-management-managed-service*
+
+Additional permission required:
+
+* `servicemanagement.services.list` 
+* `servicemanagement.services.getIamPolicy` 
+* `servicemanagement.services.get`
+
+The Service Management Administrator role includes the above permissions.
+
+
+|*Google Cloud SQL*
+//RLP-150326
+
+|*gcloud-sql-instance-database*
+
+Additional permission required:
+
+* `cloudsql.instances.list`
+* `cloudsql.databases.list`
+
+The Viewer role includes the above permissions.
+
+
+|*Google Cloud SQL*
+//RLP-150327
+
+|*gcloud-sql-instance-backup-run*
+
+Additional permission required:
+
+* `cloudsql.instances.list`
+* `cloudsql.backupRuns.list`
+
+The Viewer role includes the above permissions.
+
+
+|*Google API Gateway*
+//RLP-150328
+
+|*gcloud-apigateway-api*
+
+Additional permission required:
+
+* `apigateway.apis.list`
+* `apigateway.apis.getIamPolicy`
+
+The Viewer role includes the above permissions.
+
+
+|*Google Bigquery Reservation*
+//RLP-151171
+
+|*gcloud-bigquery-reservation*
+
+Additional permission required:
+
+* `bigquery.reservations.list`
+
+The Viewer role includes the above permission.
+
+
+|*Google Bigquery Reservation*
+//RLP-151172
+
+|*gcloud-bigquery-reservation*
+
+Additional permission required:
+
+* `bigquery.reservations.list`
+* `bigquery.reservationAssignments.list`
+
+The Viewer role includes the above permissions.
+
+
+|*Google Bigquery Reservation*
+//RLP-151173
+
+|*gcloud-bigquery-reservation-bi-engine-reservation*
+
+Additional permission required:
+
+* `bigquery.bireservations.get`
+
+The Viewer role includes the above permission.
+
+
+|*Google API Gateway*
+//RLP-151174
+
+|*gcloud-apigateway-api-config*
+
+Additional permission required:
+
+* `apigateway.apis.list`
+* `apigateway.apiconfigs.list`
+
+The Viewer role includes the above permissions.
+
+
+|*Google Cloud IAM*
+//RLP-151175
+
+|*gcloud-organization-iam-workforce-pool*
+
+Additional permission required:
+
+* `iam.googleapis.com/workforcePools.getIamPolicy`
+* `iam.googleapis.com/workforcePools.list`
+
+The Viewer role includes the above permissions.
+
+
+|*Google Cloud IAM*
+//RLP-151175
+
+|*gcloud-organization-iam-workforce-pool-provider*
+
+Additional permission required:
+
+* `iam.googleapis.com/workforcePools.list`
+* `iam.googleapis.com/workforcePoolProviders.list`
+
+The Viewer role includes the above permissions.
+
+
+|*OCI Vaults*
+//RLP-149803
+
+|*oci-vault-secrets*
+
+Additional permissions required:
+
+* `SECRET_INSPECT`
+
+The Reader role includes the above permission.
+
+
+|*OCI Object Storage*
+//RLP-149823
+
+|*oci-object-storage-preauthenticated-requests*
+
+Additional permissions required:
+
+* `OBJECTSTORAGE_NAMESPACE_READ`
+* `BUCKET_INSPECT`
+* `BUCKET_READ`
+
+The Reader role includes the above permissions.
 
 
 |===
