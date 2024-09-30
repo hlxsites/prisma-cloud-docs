@@ -87,6 +87,30 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+|*Azure Logic App configured with public network access*
+//RLP-150603
+
+|RQL will be updated to avoid false positives in case the Logic App has public access disabled using default behavior with a private endpoint configured.
+
+*Current RQL*: 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'properties.state equal ignore case running and kind contains workflowapp and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
+----
+
+*Proposed RQL*:
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'properties.state equal ignore case running and kind contains workflowapp and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist and (properties.privateLinkIdentifiers does not exist or properties.privateLinkIdentifiers is empty))) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
+----
+
+*Policy Type*: Config
+
+*Policy Severity*: Medium
+
+*Alert Impact*: Low
+
+*Impact*: Open alerts on the Logic App have public access disabled using default behavior with a private endpoint configured will be resolved.
+
+
 |*GCP SQL Instances do not have valid SSL configuration*
 //RLP-150532
 
