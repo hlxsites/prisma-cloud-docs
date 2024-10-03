@@ -1,0 +1,159 @@
+:toc: macro
+== 33.00 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|33.00.169
+
+|Code name
+|Pascal
+
+|Release date
+|September 09, 2024
+
+|Type
+|Major release
+
+|SHA-256
+|3063d79ae22fb500215802cfb6094792c7e8eb8e26010415f70d62f302160b7d
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtimes, tools, and orchestrators.
+
+// You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+// https://cdn.twistlock.com/releases/orvGojie/prisma_cloud_compute_edition_33_00_169.tar.gz[https://cdn.twistlock.com/releases/orvGojie/prisma_cloud_compute_edition_33_00_169.tar.gz]
+
+toc::[]
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defenders
+
+With the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[Defender versions supported (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. In addition, starting from this release (version 33.00), Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 version. So the current release will allow Defenders and REST API calls from release 30.xx also. Failure to upgrade Defenders below version `v30.00`, such as `v22.12`, will result in disconnection of the Defenders from the Console.
+
+However, to maintain full support, you must upgrade your Defenders to `v31.xx` or a higher release.
+
+To summarize, the level of support for the different versions of Defenders is as follows:
+
+* Defender versions 33.xx, 32.xx, and 31.xx have full support
+* Defender versions 30.xx are functional (will be able to connect to version 33.xx Console) but support is not available for such Defenders
+* Defender versions previous to 30.xx, such as 22.12, are neither supported nor functional (cannot connect to version 33.xx Console)
+
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+With the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Console versions (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. 
+
+NOTE: Defenders from the n-3 release will remain functional as described above.    
+
+You can upgrade the Prisma Cloud console directly from any n-1 version to n. With `v33.00` as n and `v32.00` as n-1, you can upgrade directly from `v32.05.124` to `v33.00.169`.
+
+NOTE: You have to upgrade any version of `v31.00` to `v32.00` before upgrading to `v33.00`. For example, you can upgrade from `v31.02.137` to `v32.07.123` and then upgrade to `v32.00.159`.
+
+
+[#announcement]
+=== Announcement
+
+//CWP-61282
+
+=== Lifecycle Support Update
+
+Prisma Cloud officially guarantees backward compatibility with up to two previous major versions (n-2).
+
+Although the support lifecycle remains unchanged, starting from version 33.xx, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from up to three major releases before the current version (upto n-3 major releases).
+
+For example, with the current version at 33.xx, API calls and Defenders from version 30.xx will be allowed. However, support and complete backward compatibility is guaranteed for the 32.xx and 31.xx releases.
+
+[#cve-coverage-update]
+=== CVE Coverage Update
+
+// CWP-60486
+=== CVE-2024-6375
+The MongoDB package has been successfully upgraded to version 6.0.16. As a result, the console deployed image is no longer vulnerable to CVE-2024-6375 and is no longer present on the ignore list.
+
+[#enhancements]
+=== Enhancements
+
+=== Transition from OVAL to VEX Format for Red Hat Security Data
+
+// CWP-61485/CWP-59337
+
+Prisma Cloud is transitioning from the OVAL format to the new VEX format that Red Hat has introduced and adopted for reporting security data and vulnerabilities in Red Hat artifacts.
+
+*Pre-33.00*: Until you upgrade to a 33.xx release, Prisma Cloud will continue using OVAL for vulnerability scanning with no expected impact.
+
+*33.xx*: After upgrading your Console and Defenders to version 33.00 or later, Prisma Cloud will switch to the VEX format for vulnerability reporting. This transition might result in a change in the number of reported CVEs due to the inherent differences between the VEX and OVAL content.
+
+*Comparison Between OVAL and VEX Formats*: With the OVAL format, Prisma Cloud reports vulnerabilities for each binary found during the scan. However, with the new VEX format, Prisma Cloud will report one vulnerability for the source package and provide information on related binaries.
+
+This means that the number of vulnerabilities with the same CVE ID will be reduced, as Prisma Cloud will report one vulnerability for the RPM package instead of multiple reports for each binary.
+
+*Continued Support*: Prisma Cloud will continue to support OVAL format for two major versions—v33.xx and v34.xx—to maintain compatibility with Defenders in pre-33.xx releases, as long as Red Hat continues to produce OVAL files.
+
+*Expected Console Loading Time in the 33.xx release*: For new Consoles paired with new Defenders, the Console loading time after a restart event will be approximately 1-2 minutes.
+
+*Console Memory Usage in the 33.XX release*: For on-premise users upgrading to the latest Console, the Console memory requirement is 8 GB. This requirement is only for the self-hosted editions.
+
+For a detailed explanation of this transition, see https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/assets/pdf/lookahead-transition-to-vex-format.pdf[Transition from Oval to VEX Files]. For details on how CVEs are reported in the new VEX format as compared to the OVAL format, see https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/assets/pdf/oval-vex-cves-comparison.pdf[CVEs Comparison between Oval and VEX].
+
+If you have any concerns or need additional information about this transition, contact support@paloaltonetworks.com.
+
+// // CWP-59339
+// === Enhancement to WAAS Agentless Support
+// WAAS agentless rules now support traffic inspection for AWS Application Load Balancers (ALBs) in addition to AWS EC2 instances. Ensure your AWS account is onboarded to the Prisma Cloud console and then configure the ALB rule.
+
+// To add the ALB rule access *Defend > WAAS > Add Rule > Add Configuration*. Ensure your CloudFormation template is applied with the necessary permissions to your onboarded AWS account in the region where the ALB resides. You can view the scan results in the Prisma Cloud console to monitor and manage your ALB traffic inspection.
+
+// NOTE: This feature is enabled on request. Please contact your Account team for more details.
+
+
+//[#new-features-agentless-security]
+// === New Features in Agentless Security
+
+// [#new-features-core]
+// === New Features in Core
+
+// [#new-features-host-security]
+// === New Features in Host Security
+
+// [#new-features-serverless]
+// === New Features in Serverless
+
+// [#new-features-waas]
+// === New Features in WAAS
+
+[#api-changes]
+=== API Changes and New APIs
+
+// CWP-59340
+=== WAAS Agentless - Support AWS LB
+
+The https://pan.dev/prisma-cloud/api/cwpp/put-policies-firewall-app-agentless/[Set Agentless App Firewall Policy] API request is updated to support AWS Application Load Balancers (ALBs):
+
+* The “trafficMirroring > vpcConfig” property is modified to include three new fields for ALBs:
+** lbARN - ARN of the observed load balancer.
+** lbName - Load balancer name.
+** lbType - Load balance type.
+
+* The following existing fields are now applicable as follows:
+
+** instanceNames -  used only in EC2 rules.
+** subnetID - used only in EC2 rules.
+** tags - used only in EC2 rules.
+** vpcID - must be empty (””) for ALB rules.
+** autoScalingEnabled - must be true for ALB rules.
+
+// [#addressed-issues]
+// === Addressed Issues
+
+
+// [#deprecation-notices]
+// === Deprecation Notices
+

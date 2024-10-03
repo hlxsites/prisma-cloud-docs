@@ -1,3 +1,10 @@
+## [1.0.67](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.66...v1.0.67) (2024-08-22)
+
+
+### Bug Fixes
+
+* rebuild worker ([c462439](https://github.com/hlxsites/prisma-cloud-docs/commit/c4624393b59b9a05ad49102070131d9d9ce32e19))
+
 ## [1.0.66](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.65...v1.0.66) (2024-03-27)
 
 

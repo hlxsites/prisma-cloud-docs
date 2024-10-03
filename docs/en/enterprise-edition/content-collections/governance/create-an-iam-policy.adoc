@@ -5,7 +5,7 @@
 
 // Create custom IAM policies in Prisma Cloud to monitor your AWS, Azure, or GCP environments to enforce identity management best practices.
 
-Prisma Cloud provides the ability to create custom IAM policies to fulfill your organization’s IAM requirements. You can build a new IAM policy based on the userinput:[config from iam] RQL query and monitor the identities across your cloud environment.
+Prisma Cloud provides the ability to create custom IAM policies to fulfill your organization’s IAM requirements. You can build a new IAM policy based on the `config from iam` RQL query and monitor the identities across your cloud environment.
 
 [.procedure]
 . Select *Governance*.
@@ -14,19 +14,25 @@ Prisma Cloud provides the ability to create custom IAM policies to fulfill your 
 
 . Enter your policy details—*Policy Name* and *Severity*.
 +
-(Optional) You can choose to add *Description* and *Labels*.
+(Optional) Add a *Description* and *Labels*.
 +
 image::governance/iam-excessive-permissions.png[]
 
+. Check `Use Group/Cloud Service Account as violating resource` if you wish to view alert results on AWS role, Azure service principal or GCP account group.
+
 . Select *Next* and build your RQL query.
 +
-The default option of *New Search* enables you to build a new RQL query from scratch while *Saved Search* enables you to use a RQL query that you previously saved. The following RQL query returns the net effective permissions of a user in your cloud account named varname:[my-user]:
+The default option of *New Search* enables you to build a new RQL query from scratch while *Saved Search* enables you to use a RQL query that you previously saved. For example:
+
+* `config from iam where source.cloud.service.name = 'iam' and source.cloud.resource.type = 'user' and source.cloud.resource.name = 'my-user'`
 +
-screen:[config from iam where source.cloud.service.name = 'iam' and source.cloud.resource.type = 'user' and source.cloud.resource.name = 'my-user']
+Returns the net effective permissions of a user in your cloud account named _my-user_.
+
+* `config from iam where grantedby.cloud.entity.type = 'group' AND source.cloud.resource.type = 'user'`
++
+Lists all effective permissions that have been granted to a user by any AWS IAM group.
 +
 A green check mark displays if you entered a valid query.
-//+
-//image::create-an-iam-policy-rql-example.png[]
 
 . Select the search button.
 
@@ -37,7 +43,5 @@ After you successfully create your new policy, it displays on the *Policies* pag
 image::governance/create-an-iam-policy-success.png[]
 
 . Use the *Filter* to search for custom or default (out-of-the-box) policies.
-//+
-//image::iam-policy-filter.png[]
 +
 image::governance/iam-policy-filter-ootb.png[]

@@ -28,10 +28,6 @@ Ensure your system meets the following requirements.
 https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/assets/oneal-32-system-requirements?sheet=hardware
 |===
 
-
-For more than 10,000 Defenders you need 4 vCPUS and 10GB of RAM for every additional 5,000 Defenders
-For example, 20,000 connected Defenders require a total of 16 vCPUs, 50GB of RAM and 500GB SSD of persistent storage.
-
 The Prisma Cloud Console uses `cgroups` to cap resource usage and supports `cgroups v1` and `cgroups v2`.
 When more than 1,000 Defenders are connected, you should disable this cap using the `DISABLE_CONSOLE_CGROUP_LIMITS` flag in the `twistlock.cfg` configuration file.
 
@@ -40,26 +36,30 @@ endif::compute_edition[]
 [#defender-resources]
 ==== Defender Resource Requirements
 
-Each Defender requires 256MB of RAM and 8GB of host storage.
+Each Defender requires 256MB of RAM, 8GB of host storage, and 256m CPU.
+
+NOTE: 256m is the requested CPU value and not the limit. The limit in Defenders is set to 900m. For limits and requested value, refer to the daemonset.yaml file, which you can download from the Prisma Cloud console.
 
 The Defender uses `cgroups` v1 or v2 to cap resource usage at 512MB of RAM and 900 CPU shares where a typical load is ~1-5% CPU and 30-70MB RAM.
 
-The Defender stores its data in the `/var` folder.
-When allocating disk space for Defender, ensure the required space is available in the `/var` folder.
-Defenders are designed to be portable containers that collect data.
-Any data that must be persisted is sent to the Prisma Cloud Console for storage.
-Defenders don't require persistent storage.
-If you deploy persistent storage for Defenders, it can corrupt Defender files.
+For every additional 5,000 Defenders beyond 10,000 Defenders, you need 4 CPUs and 10GB RAM. For example, if there are 20,000 connected Defenders, you require 16 vCPUs, 50GB of RAM, and 500GB SSD of persistent storage.
 
 If Defenders provide registry scanning they require the following resources:
 
-* Defenders providing registry scanning--
 * 2GB of RAM
 * 20GB of storage
 * 2 CPU cores
-Defenders that are part of CI integrations (Jenkins, twistcli) require storage space depending on the size of the scanned images.
-The required disk space is 1.5 times the size of the largest image to be scanned, per executor.
-For example, if you have a Jenkins instance with two executors, and your largest container image is 500MB, then you need at least 1.5GB of storage space: `500MB x 1.5 x 2`
+
+For Defenders that are a part of CI integrations such as Jenkins and twistcli, the amount of storage space required depends on the size of the scanned images. You will need disk space that is 1.5 times the size of the largest image to be scanned, per executor. For example, if you have a Jenkins instance with two executors and your largest container image is 500MB, you will need at least 1.5GB of storage space (500MB x 1.5 x 2).
+
+Keep the following caveats in mind when determining Defender storage and memory requirements:
+
+* The Defender stores its data in the `/var` folder. When allocating disk space for Defender, ensure the required space is available in the `/var` folder.
+* Defenders are designed to be portable containers that collect data. Any data that must be persisted is sent to the Prisma Cloud Console for storage.
+* Defenders do not require persistent storage. Deploying persistent storage for Defenders can corrupt Defender files.
+* For Web Application and API Security (WAAS):
+** Inline - Increase the pod memory to 4GB if the Defender is protecting more than 10 workloads. 
+** Out-Of-Band - Increase the pod memory to 4GB.
 
 [#vms]
 === Virtual Machines (VMs)
@@ -161,10 +161,18 @@ Refer to the the Linux capabilities https://man7.org/linux/man-pages/man7/capabi
 * CAP_SETFCAP
 * CAP_IPC_LOCK
 
+//CWP-51764
 [NOTE]
 ====
-The Prisma Cloud App-Embedded Defender requires CAP_SYS_PTRACE only. 
+* The Prisma Cloud App-Embedded Defender requires CAP_SYS_PTRACE only. 
+* Embedding defender in an application that is running in a non-privileged mode and that invokes another application/process with sudo, may cause the defender process to panic.
 ====
+
+[NOTE]
+====
+Embedding Defender in an application that is running in a non-privileged mode and that invokes another application/process with sudo, may cause the defender process to panic
+====
+
 When running on a Docker host, Prisma Cloud Defender uses the following files/folder on the host:
 
 * /var/run/docker.sock -- Required for accessing Docker runtime.
@@ -188,7 +196,7 @@ https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/
 The following storage drivers are supported:
 * `overlay2`
 * `overlay`
-* `devicemapper` are supported.
+* `devicemapper`
 
 For more information, review Docker's guide to https://docs.docker.com/storage/storagedriver/select-storage-driver[select a storage driver].
 
@@ -207,12 +215,14 @@ Supported versions are listed in the <<orchestrators,orchestration>> section
 
 Podman is a daemon-less container engine for developing, managing, and running OCI containers on Linux. The twistcli tool can use the preinstalled Podman binary to scan CRI images.
 
-Podman v1.6.4, v3.4.2, v4.0.2
+Podman v1.6.4, v3.4.2, v4.0.2 are supported.
+
+*Note:* Defender installation is not supported on Podman hosts.
 
 [#helm]
 === Helm
 
-Helm is a package manager for Kubernetes that allows developers and operators to more easily package, configure, and deploy applications and services onto Kubernetes clusters.
+Helm is a package manager for Kubernetes that allows developers and operators to package, configure, and deploy applications and services onto Kubernetes clusters.
 
 Helm v3.10, v3.10.3, and 3.11 are supported.
 
@@ -273,6 +283,7 @@ Comprehensive Common Vulnerabilities and Exposures (CVE) data is provided for th
 * SUSE 
 * Ubuntu (LTS releases only)
 * Windows Server
+* Chainguard Wolfi Linux
 
 If a CVE doesn't have an architecture identifier, the CVE is related to all architectures.
 
@@ -341,13 +352,13 @@ For Microsoft Edge, only the new Chromium-based version (80.0.361 and later) is 
 === Cortex XDR 
 
 Prisma Cloud Defenders can work alongside Cortex XDR agents. 
-Currently, users need to manually add exceptions in Console for both agents to work together.
+Currently, users need to manually add exceptions in the Console for both agents to work together.
 In a future release, there will be out-of-the-box support for co-existence.
 Users can disable the Defender runtime defense when a Cortex XDR agent is present.
 
 To allow for both the solutions to co-exist:
 
 . Add the Cortex agent as a trustable executable.
-For more information, see to xref:../configure/custom-feeds.adoc#create-a-list-of-trusted-executables[Creating a trusted executable].
+For more information, refer to xref:../configure/custom-feeds.adoc#create-a-list-of-trusted-executables[Creating a trusted executable].
 
-. Suppress runtime alerts from the Cortex agent by adding custom runtime rules that allow the Cortex agent process and file path.
+. Suppress runtime alerts from the Cortex agent by adding custom runtime rules that allow the Cortex agent to process the file path.

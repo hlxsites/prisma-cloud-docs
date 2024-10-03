@@ -1,22 +1,54 @@
 [#ida01a4ab4-6a2c-429d-95be-86d8ac88a7b4]
 == Look Ahead—Planned Updates to Secure the Infrastructure
 
-Review any changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
+Review changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 24.5.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 24.10.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
-The Look Ahead announcements are for an upcoming release and it is not a cumulative list of all announcements.
+The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
 [NOTE]
 ====
-The details and functionality listed below are a preview and the actual release date is subject to change.
+The details and functionalities listed below are a preview and the actual release date is subject to change.
 ====
 
+* <<announcement>>
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
+* <<iam-policy-update>>
+* <<new-compliance-benchmarks-and-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
+
+[#announcement]
+=== Announcement
+
+[cols="50%a,50%a"]
+|===
+|*Change*
+|*Description*
+
+|*Prisma Cloud Release Schedule Updated from a Bi-weekly to a Monthly Release*
+//RLP-148595
+
+|Starting with the 24.10.1 release, Prisma Cloud release schedule will transition from a bi-weekly to a monthly cadence to ensure continuous deliver of high-quality features and enhancements.
+
+* Enhance Quality: A longer development cycle enables the Prisma Cloud team to focus on thorough testing and quality assurance, ensuring that each release meets the highest standards.
+
+* Incorporate Feedback: With more time between releases, we can better integrate your feedback and suggestions into our product roadmap, leading to features that truly meet your organization's security needs.
+
+* Optimize Resources: This change helps allocate resources more effectively, allowing the Prisma Cloud team to work on more feature improvements for you.
+
+*Impact—* Prisma Cloud will release new features, enhancements, and security updates on a monthly basis starting in October 2024 (no more .2 releases). Each release will be accompanied by detailed release notes to keep you informed of what's new.
+
+If you have any questions or feedback, contact your Prisma Cloud Customer Support representative.
+
+//Thank You for your support and we appreciate your understanding and support as we make this transition. Our goal is to provide you with the best possible product and experience. If you have any questions or feedback, please do not hesitate to reach out to our support team.
+//Improved Communication: We are committed to continue keeping you updated on our progress and any upcoming features. Expect regular updates and insights into our development process.
+
+
+|===
 
 [#changes-in-existing-behavior]
 === Changes in Existing Behavior
@@ -26,22 +58,74 @@ The details and functionality listed below are a preview and the actual release 
 |*Feature*
 |*Description*
 
-|*Login Experience Enhancements*
-//RLP-135039
+|*Amazon Elastic Container Registry (ECR)*
+//RLP-150134; Added in LA in 9.1; updated text in 9.2; move to Features Introduced in October > Changes in Existing Behavior.
 
-|Starting with the 24.5.1 release, users can expect a change in their login experience on the Prisma Cloud console. Updates to the Prisma Cloud login pages will provide support for all available authentication options (excluding IdP-initiated SAML SSO). This update also addresses an issue related to redirection to Palo Alto Networks SSO for login and addresses a bug preventing traversal of deep links for some users.
+|Starting with the 24.10.1 release, the format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
 
-*Impact*— The SSO Login Page will be updated to more clearly identify OIDC SSO login and add support for Palo Alto Networks SSO login. Redirection to Palo Alto Networks SSO will no longer occur when accessing Prisma Cloud links without a valid session. Deep links will be supported in cases in which previously they were not persisted through login flows.
+Prisma Cloud will automatically fetch all the live ECR images from your cloud accounts and create them as new resources with the new `external_asset_id` format. New alerts will be generated for resources that match the active policies in your tenant.
 
-|*API Rate Limits*
-//RLP-129569
+*Impact—* You may notice a temporary drop in `aws-ecr-image` resource count and open alert count. However, after the `aws-ecr-image` resources are automatically ingested, the corresponding live resource count and open alert count will return to the previous levels.
 
-|Prisma Cloud uses API https://pan.dev/prisma-cloud/api/cspm/rate-limits/[rate limits] at the endpoint level to protect the performance and availability of its services. Rate limits will be applied to additional APIs starting from the 24.5.2 release. Details of these rate limits will be made available in the supporting API documentation and Look Ahead Notices when these limits are introduced. 
 
-|*Alert Info API*
-//RLP-134888
+// |*Amazon Elastic Container Registry (ECR)*
+//RLP-150134
+// |Starting with the 24.10.1 release, the `external_asset_id` for `aws-ecr-image` in Prisma Cloud will be updated in the backend. As a result, all resources for `aws-ecr-image` API will be deleted and then regenerated on the management console.
+// Existing alerts corresponding to these resources will be resolved as Closed, and new alerts will be generated against policy violations.
+// *Impact—* You may notice a reduced count for the number of alerts. However, once the resources for the aws-ecr-image API resumes ingesting data, the alert count will return to the original numbers.
 
-|The Alert Info https://pan.dev/prisma-cloud/api/cspm/get-alert/[GET alert/:id] response will include a new field `connectionDetails` in release 24.5.2.
+
+|*Amazon EC2 Ingestion*
+//RLP-145171
+
+|Starting with the 24.10.1 release, Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+
+*Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
+
+If you have any questions, contact your Prisma Cloud Customer Success Representative.
+
+|*Alerts for Role Chaining*
+//IVG-15421
+
+|Starting with the 24.10.1 release, enhancements to Prisma Cloud Identity and Entitlement Management (CIEM) capabilities will alert users when role chaining is present in their environment. Role chaining occurs when you use a role to assume a second role. This results in the newly granted role assuming all the permissions granted to the first role.
+
+*Impact—* To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
+
+
+|*Google Kubernetes Engine*
+//RLP-150422, Check the fixversion again before moving the blurb in 10.1. The Fixversion may change to 11.1.
+
+|Starting with the 24.10.1 release, the JSON resource attributes `isMasterVersionSupported` and `isNodeVersionSupported` for *gcloud-container-describe-clusters* API will be updated to align with the CSP *GetServerConfig* API. This change will provide accurate results for policy violation alerts related to the default policies— *GCP GKE unsupported Master node version* and *GCP GKE unsupported node version*.
+
+*Impact—* No impact on existing alerts. New alerts will be generated against policy violations based on the complete GKE version used for clusters and nodes. If you have custom policies, you must manually update them to receive the alerts.
+
+
+|*Updates to GCP Terraform Template*
+//RLP-150820
+
+|Starting with the 24.10.1 release, a subset of Viewer role permissions needed for API ingestions will be added to the existing Custom role present in the Google Terraform template. Also, the original Viewer role containing necessary permissions will still be available in the template.
+
+With this change, you need not manually enter the necessary API permissions under custom roles in case you decide not to grant Prisma Cloud Viewer role permissions.
+
+*Impact—* This change will not affect the onboarding *Status* of your accounts.
+
+
+|*Audit Logs Pagination and Filter*
+//RLP-151119
+
+|Starting with the 24.11.1 release, the Audit Logs will include enhancements to improve performance, reduce data load times, and provide more granular control over data retrieval:
+
+* The Audit Logs page will display paginated data, which will enhance navigation through extensive logs and the filtering options will provide you with more control over your log data. 
+
+* You will also be able to use the new API to programatically leverage the new pagination and filter capabilities to streamline your use cases. 
+
+
+|*Rate Limits — RQL Service APIs*
+//RLP-151274
+
+|Starting with the 24.12.1 release, to improve Prisma Cloud performance, rate limits will be implemented for the RQL service APIs.
+
+*Impact—* Requests exceeding the limits will result in an *HTTP 429* Too Many Requests response.
 
 |===
 
@@ -58,13 +142,13 @@ To learn about the new policies that will be added in the next release:
 
 . Find the Prisma Cloud policies folder on GitHub.
 +
-The folder contains RQL based Config, Network, and Audit Event policies in JSON format. https://github.com/PaloAltoNetworks/prisma-cloud-policies[View the GitHub repo].
+The folder contains RQL based Config, IAM, Network, and Audit Event policies in JSON format. https://github.com/PaloAltoNetworks/prisma-cloud-policies[View the GitHub repo].
 
 . Select the branch for which you want to review policy updates.
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.5.1.
+Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-24.10.1.
 
 . Review the updates.
 +
@@ -72,259 +156,537 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 +
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
+
 [#policy-updates]
 === Policy Updates
 
-[cols="50%a,50%a"]
+[cols="35%a,65%a"]
 |===
 |*Policy Updates*
 |*Description*
 
-|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
-//RLP-136748
+2+|*Policy Updates—RQL*
 
-|*Changes*— Use either non-FIPS security policy `ELBSecurityPolicy-TLS13-1-2-2021-06` or FIPS security policy `ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04` to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
+|*Azure Storage Account without Secure transfer enabled*
+//RLP-149572
+|*Changes—* The policy description and RQL will be updated to ignore storage accounts where the secure transfer property is not applicable for NFS Azure file shares to work.
 
-*Severity*— Low
+*Current Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. When 'secure transfer required' is enabled, REST APIs to access your storage accounts connect using HTTPs any requests using HTTP will be rejected. When you are using the Azure files service, connection without encryption will fail. It is highly recommended to enable secure transfer feature on your storage account.
 
-*Policy Type*— Config
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name.
 
-*Current RQL*— 
+*Updated Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. 
+
+When "secure transfer required" is disabled, REST APIs to access your storage accounts may connect over insecure HTTP which is not advised. Hence, it is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name. Additionally, this property is not applicable for NFS Azure file shares to work.
+
+*Current RQL—* 
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and (sslPolicy does not contain ELBSecurityPolicy-TLS13-1-2-2021-06))] exists
-----
-
-*Proposed RQL*— 
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists
-----
-
-*Impact*: Low
-
-|*Azure Microsoft Defender for Cloud set to Off for DNS*
-//RLP-137209
-
-|*Changes*— The policy RQL will be updated to check if the legacy DNS plan is deprecated.
-
-*Severity*— Low
-
-*Policy Type*— Config
-
-*Current RQL*— 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.pricingTier does not equal Standard)] exists
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.supportsHttpsTrafficOnly !exists or properties.supportsHttpsTrafficOnly is false
 ----
 
-*Proposed RQL*— 
+*Updated RQL—* 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = pricings[?any(name equals VirtualMachines and properties.pricingTier equal ignore case Standard and properties.subPlan equal ignore case P2)] does not exist or pricings[?any(name equals Dns and properties.deprecated is false and properties.pricingTier does not equal Standard)] exists
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = (properties.supportsHttpsTrafficOnly does not exist or properties.supportsHttpsTrafficOnly is false) as X; config from cloud.resource where api.name = 'azure-storage-file-shares' as Y; filter '($.X.kind does not equal ignore case "FileStorage") or ($.X.kind equal ignore case "FileStorage" and $.Y.id contains $.X.name and $.Y.properties.enabledProtocols does not contain NFS)'; show X;
 ----
 
-*Impact*: Low
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts on the Storage account using the NFS Azure file will be resolved as *Policy_Updated*.
+
+|*GCP Cloud Function v1 is using unsecured HTTP trigger*
+//RLP-149695
+|*Changes—* The policy RQL will be updated to check only the appropriate GCP Cloud Function v1 that has an unsecured HTTP trigger.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals "ACTIVE" AND environment equals "GEN_1" AND serviceConfig.securityLevel does not equal "SECURE_ALWAYS"
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE AND environment equals GEN_1 AND serviceConfig.securityLevel exists AND serviceConfig.securityLevel does not equal SECURE_ALWAYS
+----
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts for the GCP Cloud Function v1 where the *Require HTTPS* configuration does not apply will be resolved as *Policy_Updated*.
+
+|===
+
+[#iam-policy-update]
+=== IAM Policy Updates
+
+The policy *Severity* levels for the following IAM policies will be adjusted to better align with the potential risks they pose.
+
+*Impact—* If your alert rules use the *Policy Severity* filter, you may notice a slight change in the number of alerts. However, this change will not affect custom policies or policies where you have manually set the severity levels. For policies included in alert rules that are not based on severity, the number of alerts will remain unchanged.
+
+If you have any questions, reach out to your Prisma Cloud Customer Success Representative.
+
+[cols="70%a,15%a,15%a"]
+|===
+|*Policy Name*
+|*Current Severity*
+|*Updated Severity*
+
+|AWS Administrators with IAM permissions are unused for 90 days
+|High
+|Medium
+
+|AWS Groups and IAM Roles with Administrative Permissions
+|High
+|Informational
+
+|AWS IAM Groups and Roles with Excessive Policies
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with Administrative Permissions
+|High
+|Informational
+
+|AWS Users and Machine Identities with Excessive Policies
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with Administrative Permissions
+|High
+|Informational
+
+|Azure AD Groups, Service Principals and Managed Identities with Excessive Policies
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure Administrators with IAM permissions are unused for 90 days
+|High
+|Medium
+
+|Azure Users and Machine Identities with Administrative Permissions
+|High
+|Informational
+
+|Azure Users and Machine Identities with Excessive Policies
+|High
+|Low
+
+|Azure Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure Users and Machine Identities with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|Azure Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|Azure Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|Cloud Service account is inactive for 90 days  
+|Low  
+|Medium  
+
+|Cloud Service account with Data Read Permissions is inactive for 90 days  
+|Low  
+|Medium  
+
+|Cloud Service account with Metadata Write Permissions is inactive for 90 days  
+|Low  
+|Medium  
+
+|GCP Administrators with IAM permissions are unused for 90 days  
+|High  
+|Medium  
+
+|GCP Groups and Service Accounts with Administrative Permissions  
+|High  
+|Informational  
+
+|GCP Groups and Service Accounts with Excessive Policies  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Data Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with Administrative Permissions  
+|High  
+|Informational  
+
+|GCP Users and Machine Identities with Excessive Policies  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Data Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*CSA CCM v4.0.12*
+//RLP-150804
+
+|Prisma Cloud now supports CSA CCM v4.0.12, Cloud Controls Matrix by Cloud Security Alliance. The CSA Cloud Controls Matrix (CCM) is a cybersecurity control framework for cloud computing. It can be used as a tool for the systematic assessment of a cloud implementation, and provides guidance on which security controls should be implemented by which actor within the cloud supply chain.
+
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|*HITRUST CSF v.11.2.0*
+//RLP-150747
+
+|New mappings will be introduced to the *HITRUST CSF v.11.2.0* compliance standard across all clouds.
+
+*Impact—* Changes in compliance scoring may occur due to the updated mappings.
+
+|*IT Security Risk Management*
+//RLP-150414
+
+|Prisma Cloud now supports ITSG-33 (IT Security Risk Management: A Lifecycle Approach) compliance standard. It is a framework developed by the Communications Security Establishment Canada (CSEC) to guide Government of Canada departments in managing IT security risks. By following this framework, organisations can effectively safeguard sensitive information and adapt to evolving threats.
+
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance with ITSG-33 over time.
+
+|*Microsoft Cloud Security Benchmark*
+//RLP-150487
+|Prisma Cloud now supports Microsoft Cloud Security Benchmark (MCSB) v1. The Microsoft cloud security benchmark (MCSB) provides prescriptive best practices and recommendations to help improve the security of workloads, data, and services on the multi-cloud environment.
+
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
 
 |===
 
 [#api-ingestions]
 === API Ingestions
 
-[cols="50%a,50%a"]
-|===
-|*Service*
-|*API Details*
+No API ingestions planned for 24.10.1 release.
 
-|*Amazon EC2*
-//RLP-137198 
 
-|*aws-ec2-vpc-ipam*
+//[cols="50%a,50%a"]
+//|===
+//|*Service*
+//|*API Details*
 
-Additional permission required:
+//APIs below are commented out becasue they will not be ready for 9.2. Uncomment for 9.2 LA as they will have a 10.1 fix version per Giri.
 
-* `ec2:DescribeIpams`
+// |*Amazon AppStream 2.0*
+//RLP-131272
 
-The Security Audit role includes the permission.
+// |*aws-app-stream-image*
 
-|*AWS Network Manager*
-//RLP-137195 
+//Additional permission required:
 
-|*aws-network-manager-global-network*
+//* `appstream:DescribeImages`
 
-Additional permission required:
+//The Security Audit role does not include the above permission.
 
-* `networkmanager:DescribeGlobalNetworks`
+// |*Amazon AppStream 2.0*
+//RLP-131580
 
-The Security Audit role includes the permission.
+// |*aws-app-stream-image-builder*
 
-|*AWS Network Manager*
-//RLP-137185 
+// Additional permission required:
 
-|*aws-network-manager-core-network*
+// * `appstream:DescribeImageBuilders`
 
-Additional permission required:
+// The Security Audit role does not include the above permission.
 
-* `networkmanager:GetCoreNetwork`
-* `networkmanager:ListCoreNetworks`
+// |*Amazon Comprehend*
+//RLP-149186
 
-The Security Audit role does not include the permission. You will need to add a new role/create a custom role for the permission. 
+// |*aws-comprehend-flywheel*
 
-|*Amazon SNS*
-//RLP-131263
+//Additional permissions required:
 
-|*aws-sns-data-protection-policy*
+//* `comprehend:ListFlywheels`
+//*  `comprehend:DescribeFlywheel`
+//*  `comprehend:ListTagsForResource`
 
-Additional permissions required:
+//The Security Audit role includes the above permissions.
 
-* `sns:ListTopics`
-* `sns:GetDataProtectionPolicy`
+// |*AWS Elastic Disaster Recovery*
+//RLP-149199
 
-The Security Audit role includes the `sns:ListTopics` permission.
-You must manually add the `sns:GetDataProtectionPolicy` permission to the CFT template to enable it.
+// |*aws-drs-source-network*
 
-|*Amazon FSx*
-//RLP-127615
+//Additional permission required:
 
-|*aws-fsx-backup*
+//* `drs:DescribeSourceNetworks`
 
-Additional permission required:
+//The Security Audit role includes the above permission.
 
-* `fsx:DescribeBackups`
+// |*AWS Control Tower*
+//RLP-149201
 
-The Security Audit role includes the permission. 
+// |*aws-controltower-landing-zone*
 
-|*Azure Express Route*
-//RLP-136427
+//Additional permissions required:
 
-|*azure-express-route-circuit-diagnostic-settings*
+//* `controltower:ListLandingZones`
+//* `controltower:GetLandingZone`
+//* `controltower:ListTagsForResource`
 
-Additional permission required:
+//The Security Audit role includes the above permissions.
 
-* `Microsoft.Network/expressRouteCircuits/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
+// |*Amazon DataZone*
+//RLP-145162
 
-The Reader role includes the permissions. 
+// |*aws-datazone-domain*
 
-|*Azure Cognitive Services*
-//RLP-136434
+// Additional permissions required:
 
-|*azure-cognitive-services-account-diagnostic-settings*
+//* `datazone:ListDomains`
+//* `datazone:GetDomain`
 
-Additional permission required:
+//The Security Audit role does not include the above permissions.
 
-* `Microsoft.CognitiveServices/accounts/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
+// |*Amazon QuickSight*
+//RLP-147089
 
-The Reader role includes the permissions. 
+// |*aws-quicksight-ip-restriction*
 
-|*Azure Synapse Analytics*
-//RLP-134913
+//Additional permission required:
 
-|*azure-synapse-workspace-diagnostic-settings*
+//* `quicksight:DescribeIpRestriction`
 
-Additional permission required:
+//The Security Audit role includes the above permission.
 
-* `Microsoft.Synapse/workspaces/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
 
-The Reader role includes the permissions. 
+// |*Azure Event Grid*
+//RLP-148912
 
-|*Azure Relay*
-//RLP-134918
+// |*azure-event-grid-topic-diagnostic-settings*
 
-|*azure-relay-namespaces*
+//Additional permissions required:
 
-Additional permission required:
+//* `Microsoft.EventGrid/topics/read`
+//* `Microsoft.Insights/DiagnosticSettings/Read`
 
-* `Microsoft.Relay/Namespaces/read`
+//The Reader role includes the above permissions.
 
-The Reader role includes the permission.
+// |*Azure Kusto*
+//RLP-148923
 
-|*Azure Relay*
-//RLP-134918
+// |*azure-kusto-clusters-diagnostic-settings*
 
-|*azure-relay-namespaces*
+//Additional permissions required:
 
-Additional permission required:
+//* `Microsoft.Kusto/clusters/read`
+//* `Microsoft.Insights/DiagnosticSettings/Read`
 
-* `Microsoft.Relay/Namespaces/read`
+//The Reader role includes the above permissions.
 
-The Reader role includes the permission.
+// |*Azure Synapse Analytics*
+//RLP-148928
 
-|tt:[Update] *Azure Cognitive Services Account Diagnostic Settings*
+// |*azure-kusto-clusters-diagnostic-settings*
 
-//RLP-137805
+//Additional permissions required:
 
-|*azure-cognitive-search-service-diagnostic-settings*
+//* `Microsoft.Synapse/workspaces/read`
+//* `Microsoft.Synapse/workspaces/sqlPools/read`
+//* `Microsoft.Synapse/workspaces/sqlPools/geoBackupPolicies/read`
 
-Updated Asset Type for `azure-cognitive-search-service-diagnostic-settings` resources.
+//The Reader role includes the above permissions.
 
-Previous name: "Azure Cognitive Services Account Diagnostic Settings"
+// |*Azure Database for PostgreSQL*
+//RLP-148932
 
-New name: "Azure Cognitive Search Service Diagnostic Settings"
+// |*azure-postgresql-flexible-server-database*
 
-|*Google Vertex AI Platform*
-//RLP-136571
+//Additional permissions required:
 
-|*gcloud-vertex-ai-aiplatform-notebook-runtime*
+//* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+//* `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
 
-Additional permission required:
+//The Reader role includes the above permissions.
 
-* `aiplatform.notebookRuntimes.list`
+// |*Azure Database for PostgreSQL*
+//RLP-148932
 
-The Viewer role includes the permission. 
+// |*azure-postgresql-flexible-server-database*
 
-|*Google Workspace*
-//RLP-135384
+//Additional permissions required:
 
-|*gcloud-domain-user-last-login-time*
+//* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+//* `Microsoft.DBforPostgreSQL/flexibleServers/databases/read`
 
-No additional permissions are required.
+//The Reader role includes the above permissions.
 
-|*Google Cloud VMware Engine*
-//RLP-135383
+// |*Azure Database for MySQL*
+//RLP-148935
 
-|*gcloud-vmware-engine-external-address*
+// |*azure-mysql-flexible-server-database*
 
-Additional permissions required:
+//Additional permissions required:
 
-* `vmwareengine.locations.list`
-* `vmwareengine.privateClouds.list`
-* `vmwareengine.externalAddresses.list`
+//* `Microsoft.DBforMySQL/flexibleServers/read`
+//* `Microsoft.DBforMySQL/flexibleServers/databases/read`
 
-The Viewer role includes the permission.
+// |*Google Cloud VM Manager*
+//RLP-149002
 
-|*Google Vertex AI Platform*
-//RLP-135381
+// |*gcloud-vm-manager-patch-deployment*
 
-|*gcloud-vertex-ai-aiplatform-feature-online-store*
+//Additional permission required:
 
-Additional permission required:
+//* `osconfig.patchDeployments.list`
 
-* `aiplatform.featureOnlineStores.list`
+//The Viewer role includes the above permission.
 
-The Viewer role includes the permission.
 
-|*Google Vertex AI Platform*
-//RLP-135380
+// |*Google Cloud VM Manager*
+//RLP-149029
 
-|*gcloud-vertex-ai-aiplatform-feature-group*
+// |*gcloud-vm-manager-feature-settings*
 
-Additional permission required:
+//Additional permission required:
 
-* `aiplatform.featureGroups.list`
+//* `osconfig.projectFeatureSettings.get`
 
-The Viewer role includes the permission.
+//The Viewer role includes the above permission.
 
-|*Google Cloud Support*
-//RLP-131425
 
-|*gcloud-cloud-support-case*
+// |*Google Cloud Dataflow*
+//RLP-149030
 
-Additional permission required:
+// |*gcloud-dataflow-job*
 
-* `cloudsupport.techCases.list`
+//Additional permission required:
 
-The Viewer role includes the permission.
+//* `dataflow.jobs.list`
 
-|===
+//The Viewer role includes the above permission.
+
+
+// |*Google Cloud Dataflow Data Pipeline*
+//RLP-149031
+
+// |*gcloud-dataflow-data-pipeline*
+
+//Additional permission required:
+
+//* `datapipelines.pipelines.list`
+
+//The Viewer role includes the above permission.
+
+
+// |*Google Cloud Looker*
+//RLP-149026
+
+// |*gcloud-cloud-looker-instance*
+
+//Additional permissions required:
+
+//* `looker.instances.list`
+//* `looker.instances.get` 
+
+//The Viewer role includes the above permissions.
+
+
+
+//|===
+
+
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
+
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
+
+//|
+
+//|
+
+//|===
+
 
 [#deprecation-notices]
 === Deprecation Notices
@@ -337,48 +699,78 @@ The Viewer role includes the permission.
 |*Sunset Release*
 |*Replacement Endpoints*
 
-|*End of support for Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services*
+|tt:[*Audit Logs API*]
+//RLP-151119
 
-//RLP-134902
+Starting from November 2024, you must transition to the new Audit Logs API. Prisma Cloud will provide a migration period of six months after which the https://pan.dev/prisma-cloud/api/cspm/rl-audit-logs/[current API] will be deprecated.
 
-|NA
-|24.5.2
-|The following APIs are planned for deprecation at the end of April 2024 because Azure has announced the retirement of Azure Data Lake Analytics and Azure Data Lake Storage Gen1 Services. Due to this, Prisma Cloud will no longer ingest metadata for the following APIs:
+Once the deprecation period is over, you will have access to only the new API with pagination and filter support.
 
-* azure-data-lake-analytics-account
-* azure-data-lake-analytics-diagnostic-settings
-* azure-data-lake-store-gen1-account
-* azure-data-lake-store-gen1-diagnostic-settings
+|24.11.1
 
-In RQL, the key will not available in the `api.name` attribute auto-completion.
+|25.5.1
 
-*Impact—* If you have a saved search or custom policies based on this API, you must delete them manually. The policy alerts will be resolved as Policy_Deleted.
+|Will be provided in the 24.11.1 Release Notes.
+
+
+|tt:[*Vulnerabilities Dashboard APIs*]
+//RLP-147410
+
+* *Get Vulnerability Overview Endpoints*
+
+** https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview/[GET /uve/api/v1/dashboard/vulnerabilities/overview]
+
+** https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/overview]
+
+* *Get Prioritized Vulnerabilities Endpoints*
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability/[GET /uve/api/v1/dashboard/vulnerabilities/prioritised]
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/prioritised]
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-3/[GET /uve/api/v3/dashboard/vulnerabilities/prioritised]
+
+* *Get Top Impacting Vulnerabilities Endpoint*
+
+** https://pan.dev/prisma-cloud/api/cspm/top-prioritised-vulnerability/[GET /uve/api/v1/dashboard/vulnerabilities/prioritised-vuln]
+
+* *Get CVE Overview Endpoint*
+** https://pan.dev/prisma-cloud/api/cspm/cve-overview/[GET /uve/api/v1/dashboard/vulnerabilities/cve-overview]
+
+|24.8.1
+|24.11.1
+
+|* *Get Vulnerability Overview Endpoint*
+
+** https://pan.dev/prisma-cloud/api/cspm/vulnerability-dashboard-overview-v-3/[GET /uve/api/v3/dashboard/vulnerabilities/overview]
+
+* *Get Prioritized Vulnerabilities Endpoint* 
+
+** https://pan.dev/prisma-cloud/api/cspm/prioritised-vulnerability-v-4/[GET /uve/api/v4/dashboard/vulnerabilities/prioritised]
+
+* *Get Top Impacting Vulnerabilities*
+** https://pan.dev/prisma-cloud/api/cspm/top-prioritised-vulnerability-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/prioritised-vuln]
+
+* *Get CVE Overview Endpoint*
+** https://pan.dev/prisma-cloud/api/cspm/cve-overview-v-2/[GET /uve/api/v2/dashboard/vulnerabilities/cve-overview]
+
 
 |tt:[*Resource Explorer API*]
 
-//RLP-131482
+//RLP-131482, RLP-115752
 
 * https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
 * https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
 * https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
 
 |23.9.2
-|24.6.2
+|24.10.1
 |* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
 
 
-|tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
-//RLP-126719, need to check if this notice can be moved to current features in 24.1.2
-| - 
-| - 
-|To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
-The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
+|tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
-|The following endpoints are deprecated as the date filters—time object or time string in query parameters or the request body—used by these APIs will be removed in the updated API endpoints. The updated API endpoints will always return current data.
-
-tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
-
-//RLP-120514
+//RLP-120514, RLP-145823, Abinaya - They are not planning to sunset the APIs anytime soon and they want the sunset column to be left blank.
 
 * https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture/[get /compliance/posture]
 * https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture/[post /compliance/posture]
@@ -409,7 +801,7 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 
 |23.10.1
 
-|24.6.1
+|NA
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
@@ -438,6 +830,25 @@ tt:[*Prisma Cloud CSPM REST API for Asset Inventory*]
 * https://pan.dev/prisma-cloud/api/cspm/post-method-for-asset-inventory-v-3/[post /v3/inventory]
 * https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-3/[get /v3/inventory/trend]
 * https://pan.dev/prisma-cloud/api/cspm/post-method-asset-inventory-trend-v-3/[post /v3/inventory/trend]
+
+|tt:[*Asset Explorer APIs*]
+//RLP-139337
+|24.8.1
+|NA
+
+|The `accountGroup` response parameter was introduced in error and is now deprecated for Get Asset - https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[GET - uai/v1/asset] API endpoint.
+
+
+|tt:[*End of support for Google Cloud Function v1 API*]
+//RLP-142340
+
+|NA
+|24.10.1
+|`gcloud-cloud-function-v1` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for `gcloud-cloud-function-v1 API`. 
+
+In RQL, the key will not be available in the api.name attribute auto-completion. As a replacement, it is recommended to use the `gcloud-cloud-function-v2` API.
+
+*Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
 
 
 |tt:[*Deprecation of End Timestamp in Config Search*]
@@ -481,5 +892,11 @@ Response object property `risk.grade.options` is deprecated for the following re
 | -
 | NA
 
+//tt:[*Change to Compliance Trendline and Deprecation of Compliance Filters*]
+//RLP-126719, need to check if this notice can be moved to current features in 24.1.2
+//- 
+//- 
+//To provide better performance, the *Compliance trendline* will start displaying data only from the past one year. Prisma Cloud will not retain the snapshots of data older than one year.
+//The Compliance-related filters (*Compliance Requirement, Compliance Standard, and Compliance Section*) will not be available on Asset Inventory (*Inventory > Assets*).
 
 |===

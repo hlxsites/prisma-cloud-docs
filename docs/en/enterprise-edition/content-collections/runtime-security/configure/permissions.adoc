@@ -41,6 +41,9 @@ Go to the https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html
 [#gcp]
 === GCP
 
+//CWP-53019
+https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/agentless-scanning/onboard-accounts/configure-gcp#gcp-encrypted-volumes[Follow these instructions] to scan encrypted volumes with the hub mode.
+
 The following table lists the required permissions needed if you are using GCP.
 
 [format=csv, options="header"]
@@ -48,6 +51,14 @@ The following table lists the required permissions needed if you are using GCP.
 https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/assets/compute-feature-wise-permissions?sheet=gcp-used-in-docs-for-22.12
 |===
 
+//CWP-58230
+[NOTE]
+=====
+The purpose for `Microsoft.Web/sites/config/list/Action` is to list Web App's security sensitive settings, such as publishing credentials, app settings, and connection strings.
+
+The purpose for `Microsoft.ContainerInstance/containerGroups/containers/exec/action` is to allow execution within a specific container, which is essential for compute workload discovery. Get/list permissions only provide external cloud object information and do not access critical node-level details like container runtime or Kubernetes version. This permission is necessary to ensure accurate and comprehensive workload discovery.
+
+=====
 [#gcp-agentless]
 ==== GCP Agentless Permissions
 
@@ -71,9 +82,9 @@ https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/
 [#azure-agentless]
 ==== Azure Agentless Permissions
 
-Azure Agentless Scanning permissions listed in the table below are scoped under the resource group `PCC_agentless_resource_group` instead of the Root Management group, for both Azure Tenant and Subscription onboarding. The tenant onboarding Terraform template creates `PCC_agentless_resource_group` under the subscriptions in the tenant, if not already present with the `prisma-agentless-scan tag`, and scopes these permissions under that resource group. 
+Azure Agentless Scanning permissions listed in the table below are scoped under the resource group `PCCAgentlessScanResourceGroup` instead of the Root Management group, for both Azure Tenant and Subscription onboarding. The tenant onboarding Terraform template creates `PCCAgentlessScanResourceGroup` under the subscriptions in the tenant, if not already present with the `prisma-agentless-scan` tag, and scopes these permissions under that resource group. 
 
-In addition, you can also add custom tags to the `PCC_agentless_resource_group`, by running the Terraform with `PCC_agentless_resource_group_tags` as shown below:
+In addition, you can also add custom tags to the `PCCAgentlessScanResourceGroup`, by running the Terraform with `PCC_agentless_resource_group_tags` as shown below:
 
 ----
 `terraform apply -var="PCC_agentless_resource_group_tags=key1=value1 key2=value2"`
@@ -83,4 +94,3 @@ In addition, you can also add custom tags to the `PCC_agentless_resource_group`,
 |===
 https://main\--prisma-cloud-docs-website\--hlxsites.hlx.live/en/compute-edition/assets/compute-feature-wise-permissions?sheet=azure-agentless-30-03
 |===
-

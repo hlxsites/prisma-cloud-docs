@@ -1,0 +1,76 @@
+== Unsafe use of globals or locals function
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 6122e9ac-e879-492d-81e9-d9d9f655bbac
+
+|Checkov ID 
+|CKV3_SAST_190
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|Python
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/96.html[CWE-96: Improper Neutralization of Directives in Statically Saved Code ('Static Code Injection')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+
+
+=== Description
+
+This policy detects whether Python applications use the `globals()` or `locals()` functions with user input. Using these functions without proper validation can lead to code injection and namespace pollution, potentially allowing attackers to execute arbitrary code or manipulate the application's behavior.
+
+In this example, user input from `request.form['data']` is directly used to update the `globals()` dictionary without any validation. This exposes the application to code injection attacks, where an attacker could potentially inject malicious code through user input.
+
+[source,Python]
+----
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/update_globals', methods=['POST'])
+def update_globals():
+    user_input = request.form['data']
+    globals()[user_input] = 'This is unsafe!'
+    return 'Globals updated'
+----
+
+
+=== Fix - Buildtime
+
+In this example, the code replaces the use of `globals()` with a controlled dictionary to manage application data, enhancing security by preventing arbitrary modifications to the application's global namespace. This change improves maintainability and reduces the risk of security vulnerabilities associated with dynamic global state changes.
+
+[source,Python]
+----
+from flask import Flask, request
+
+app = Flask(__name__)
+
+# Using a dictionary to safely store and manage data
+app_data = {}
+
+@app.route('/update_data', methods=['POST'])
+def update_data():
+    key = request.form['key']
+    value = request.form['value']
+    app_data[key] = value
+    return 'Data updated successfully'
+
+if __name__ == '__main__':
+    app.run()
+----

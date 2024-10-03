@@ -1,11 +1,11 @@
 [#protections]
 == App Firewall Settings
 
-WAAS Firewall settings control the application firewall's protections, actions and exceptions.
+WAAS Firewall settings control the application firewall's protections, actions, and exceptions.
 
 image::./waas_firewall_protections.png[width=750]
 
-NOTE: The following protections are available for Container, Host and App-Embedded rules. Serverless rules have a limited set of protections focusing mostly on OWASP Top-10 attacks.
+NOTE: The following protections are available for Container, Host, and App-Embedded rules. Serverless rules have a limited set of protections focusing mostly on OWASP Top-10 attacks.
 
 === OWASP Top 10 Protection
 
@@ -20,7 +20,7 @@ WAAS parses and tokenizes input streams (request data) and then detects maliciou
 
 ==== Cross Site Scripting
 
-Cross-Site Scripting (XSS) is a type of injection attack, in which malicious JavaScript snippets are injected into otherwise benign and trusted web sites. Attackers try to trick the browser into switching to a Javascript context, and executing arbitrary code.
+Cross-Site Scripting (XSS) is a type of injection attack, in which malicious JavaScript snippets are injected into otherwise benign and trusted web sites. Attackers try to trick the browser into switching to a Javascript context and executing arbitrary code.
 
 WAAS parses and tokenizes input streams (request data) and then searches for matching fingerprints of known malicious attack patterns.
 
@@ -49,7 +49,7 @@ Vulnerability scanners are automated tools that scan web applications for known 
 
 Web crawlers are automated tools designed to systematically access and enumerate the content of web applications. Crawling can lead to data breaches by exposing resources that should not be publicly available, or revealing opportunities for hacking by exposing software versions, environment data, and so on.
 
-WAAS is continuously updated with new signatures of widely used web attack arsenal, crawlers and penetration testing tools.
+WAAS is continuously updated with new signatures of widely used web attack arsenal, crawlers, and penetration testing tools.
 
 
 [#api-protection]
@@ -57,7 +57,7 @@ WAAS is continuously updated with new signatures of widely used web attack arsen
 
 WAAS is able to enforce API security based on specifications provided in the form of https://swagger.io/[Swagger] or https://www.openapis.org/[OpenAPI] files.
 WAAS also allows for manual API definition. E.g. paths, allowed HTTP methods, parameter names, input types, value ranges, etc.
-Once defined, users can choose WAAS actions to apply for requests which do not comply with the API's expected behavior.
+Once defined, users can choose WAAS actions to apply for requests that do not comply with the API's expected behavior.
 
 For further detail on configuring API protection please refer to the xref:./waas-api-protection.adoc[API Protection] help page.
 
@@ -92,18 +92,18 @@ WAAS mitigates CSRF attacks by intercepting responses and setting the 'SameSite'
 The 'SameSite' attribute prevents browsers from sending the cookie along with cross-site requests.
 It only permits the cookie to be sent along with same-site requests.
 
-There are several techniques for mitigating CSRF, including synchronizer (anti-CSRF) tokens, which developers must implement as part of your web application.
+There are several techniques for mitigating CSRF, including synchronizer (anti-CSRF) tokens, which developers must implement as part of their web application.
 The synchronizer token pattern generates random challenge tokens associated with a user's session.
 These tokens are inserted into forms as a hidden field, to be submitted along with your forms.
 If the server cannot validate the token, the server rejects the requested action.
 
-The SameSite cookie attribute works as a complementary defense against CSRF, and helps mitigate against things such as faulty implementation of the synchronizer token pattern.
+The SameSite cookie attribute works as a complementary defense against CSRF and helps mitigate against things such as the faulty implementation of the synchronizer token pattern.
 
 - When the SameSite attribute is not set, the cookie is always sent.
 
-- With SameSite attribute set to strict, the cookie is never sent in cross-site requests.
+- With the SameSite attribute set to strict, the cookie is never sent in cross-site requests.
 
-- With SameSite attribute set to lax, the cookie is only sent on same-site requests or top-level navigation with a safe HTTP method, such as GET.
+- With the SameSite attribute set to lax, the cookie is only sent on same-site requests or top-level navigation with a safe HTTP method, such as GET.
 
 It is not sent with cross-domain POST requests or when loading the site in a cross-origin frame.
 It is sent when you navigate to a site by clicking on a <a href=...> link that changes the URL in your browser's address bar.
@@ -119,7 +119,7 @@ For more information about the SameSite attribute, see https://tools.ietf.org/ht
 
 ==== Clickjacking
 
-Web applications that permit their content to be embedded in a frame are at risk of clickjacking attacks. Attackers can exploit permissive settings to invisibly load the target website into their own site and trick users into clicking on links which they never intended to click.
+Web applications that permit their content to be embedded in a frame are at risk of clickjacking attacks. Attackers can exploit permissive settings to invisibly load the target website into their own site and trick users into clicking on links that they never intended to click.
 
 WAAS modifies all response headers, setting the `X-Frame-Options` response header value to `SAMEORIGIN`. The `SAMEORIGIN` directive only permits a page to be displayed in a frame on the same origin as the page itself.
 
@@ -147,7 +147,7 @@ WAAS detects situations where the contents of critical files, such as _/etc/shad
 [.section]
 ==== Prisma Cloud Advanced Threat Protection
 
-Prisma Cloud Advanced Threat Protection (ATP) is a collection of malware signatures and IP reputation lists aggregated from commercial threat feeds, open source threat feeds, and Prisma Cloud Labs. It is delivered to your installation via the Prisma Cloud Intelligence Stream.
+Prisma Cloud Advanced Threat Protection (ATP) is a collection of malware signatures and IP reputation lists aggregated from commercial threat feeds, open-source threat feeds, and Prisma Cloud Labs. It is delivered to your installation via the Prisma Cloud Intelligence Stream.
 The data in ATP is used by WAAS to detect suspicious communication with attacker controlled clients such as a botnet herders or C2 servers.  
 For more details please click xref:../technology-overviews/twistlock-advanced-threat-protection.adoc[here].
 
@@ -160,11 +160,11 @@ Requests that trigger a WAAS protection are subject to one of the following acti
 
 * *Alert* - The request is passed to the protected application and an audit is generated for visibility.
 * *Prevent* - The request is denied from reaching the protected application, an audit is generated and WAAS responds with an HTML page indicating the request was blocked.
-* *Ban* - Can be applied on either IP or <<./waas-advanced-settings.adoc#prisma-session,Prisma Session IDs>>. All requests originating from the same IP/Prisma Session to the protected application are denied for the configured time period (default is 5 minutes) following the last detected attack.
+* *Ban* - Can be applied on either IP or <<./waas-advanced-settings.adoc#prisma-session, Prisma Session IDs>>. All requests originating from the same IP/Prisma Session to the protected application are denied for the configured time period (default is 5 minutes) following the last detected attack.
 
-NOTE: A message at the top of the page indicates the entity by which the ban will be applied (IP or Prisma Session ID). When the X-Forwarded-For HTTP header is included in the request headers, ban will apply based on the first IP listed in the header value (true client IP).
+NOTE: A message at the top of the page indicates the entity by which the ban will be applied (IP or Prisma Session ID). When the X-Forwarded-For HTTP header is included in the request headers, the ban will apply to the first public IP; and if the rest of the X-Forwarded-For HTTP values are private IPs, the RemoteAddr addresses are used instead of the true client IP.
 
-NOTE: To enable ban by Prisma Session ID, <<./waas-advanced-settings.adoc#prisma-session,Prisma Session Cookies>> has to be enabled in the Advanced Settings tab. for more information please refer to the xref:./waas-advanced-settings.adoc#prisma-session[Advanced Settings] help page.
+NOTE: To enable ban by Prisma Session ID, <<./waas-advanced-settings.adoc#prisma-session, Prisma Session Cookies>> has to be enabled in the Advanced Settings tab. For more information please refer to the xref:./waas-advanced-settings.adoc#prisma-session[Advanced Settings] help page.
 
 NOTE: WAAS implements state, which is required for banning user sessions by IP address or Prisma Sessions.
 Because Defenders do not share state, any application that is replicated across multiple nodes must enable IP stickiness on the load balancer.
@@ -173,8 +173,8 @@ Because Defenders do not share state, any application that is replicated across 
 [#firewall-exceptions]
 === Firewall Exceptions
 
-WAAS allows for fine-tuning to reduce false positive and tailor its protection to the application needs.
-Firewall exception will instruct WAAS to ignore a the value of a parameter or HTTP Header when inspecting an HTTP request e.g. WAAS can ignore a query parameter named `comments` when inspecting a request for SQL injection attacks.
+WAAS allows for fine-tuning to reduce false positives and tailor its protection to the application needs.
+Firewall exception will instruct WAAS to ignore the value of a parameter or HTTP Header when inspecting an HTTP request e.g. WAAS can ignore a query parameter named `comments` when inspecting a request for SQL injection attacks.
 
 WAAS supports the following locations:
 
@@ -184,9 +184,9 @@ WAAS supports the following locations:
 * *form/multipart* - specify the name of a body parameter (of type application/x-www-form-urlencoded or sent via a multipart HTTP request) to be excluded in the form of a regular expression (https://github.com/google/re2/wiki/Syntax[re2]), e.g. `^comment$` 
 * *header* - specify the name of an HTTP header to be excluded in the form of a regular expression (re2), e.g. `^X-API-.{3,5}$` or `^Host$`.
 * *user-Agent* - specify the User-Agent HTTP header value to be excluded in the form of a regular expression (re2), e.g. `^X-API-.{3,5}$` or `^Host$`.
-* *cookie* - specify the name of cookie to be excluded in the form of a regular expression (https://github.com/google/re2/wiki/Syntax[re2]), e.g. `^sessionID$`.
-* *XML (body)* - specify an XML element to be excluded. Object can be of any data type. Path to the object should be specified in a custom path format - define an absolute path to the element, notation supports word characters (a-z, A-Z, 0-9, `_`, `-`) separated by `/` character. e.g: `/root/nested`, `/root/nested/id`. Excluding all objects by specifying only `/` is not supported. 
-* *JSON (body)* - specify an object path to be excluded. Object can be of any data type. Path to the object should be specified in a custom path format - define an absolute path to the element, notation supports word characters (a-z, A-Z, 0-9, `_`, `-`) separated by `/` character. e.g: `/root/nested`, `/root/nested/id`. Excluding all objects by specifying only `/` is not supported.
+* *cookie* - specify the name of the cookie to be excluded in the form of a regular expression (https://github.com/google/re2/wiki/Syntax[re2]), e.g. `^sessionID$`.
+* *XML (body)* - specify an XML element to be excluded. Objects can be of any data type. Path to the object should be specified in a custom path format - define an absolute path to the element, notation supports word characters (a-z, A-Z, 0-9, `_`, `-`) separated by `/` character. e.g: `/root/nested`, `/root/nested/id`. Excluding all objects by specifying only `/` is not supported. 
+* *JSON (body)* - specify an object path to be excluded. Objects can be of any data type. Path to the object should be specified in a custom path format - define an absolute path to the element, notation supports word characters (a-z, A-Z, 0-9, `_`, `-`) separated by `/` character. e.g: `/root/nested`, `/root/nested/id`. Excluding all objects by specifying only `/` is not supported.
 * *body* - specify a payload pattern to be excluded in the form of a regular expression (https://github.com/google/re2/wiki/Syntax[re2]), e.g. `^.*test[1-9]{1,6}$`.
 
 NOTE: *Body* exception type will match the provided pattern on the raw inspected body (based on the inspection size limit) even when not parsed. Other firewall exceptions are based on parameter names and will only be applied on requests that WAAS was able to parse correctly.
@@ -198,7 +198,7 @@ NOTE: Every protection will have different locations available for exclusion bas
 ==== Adding a new exception
 
 [.procedure]
-. In the *App firewall* menu click on the image:./waas_manage_exceptions.png[] icon for one of the OWASP Top-10 protection.
+. In the *App firewall* menu click on the image:./waas_manage_exceptions.png[] icon for one of the OWASP Top-10 protections.
 
 . Click on the image:./waas_add_exception.png[] button
 
@@ -217,7 +217,7 @@ NOTE: Every protection will have different locations available for exclusion bas
 ==== Managing exceptions
 
 [.procedure]
-. In the *App firewall* menu click on the image:./waas_manage_exceptions.png[] icon for one of the OWASP Top-10 protection.
+. In the *App firewall* menu click on the image:./waas_manage_exceptions.png[] icon for one of the OWASP Top-10 protections.
 
 . In the table, click on the exception you'd like to edit.
 

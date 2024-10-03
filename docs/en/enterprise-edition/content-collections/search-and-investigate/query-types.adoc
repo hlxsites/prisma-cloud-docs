@@ -1,10 +1,10 @@
-== Query Types
+== Query Types and Required Permissions
 
-Prisma Cloud supports the following query types. You can review the query types, RQL prefixes, and RQL operators to understand and build customized queries that help you secure your environment. 
+Prisma Cloud supports the query types listed in the below table. You can review the query types, RQL prefixes, and RQL operators to understand and build customized queries that help you secure your environment. 
 
 [cols="10%a,10%a,30%a,30%a,20%a"]
 |===
-|*Types*
+|*Query Type*
 |*Supported Mode*
 |*Description*
 |*RQL Prefix* 
@@ -17,13 +17,13 @@ Prisma Cloud supports the following query types. You can review the query types,
 //asset where
 |Attack Path, Workload Vulnerability
 
-|xref:asset-config-queries/asset-config-queries.adoc[Asset Configuration] 
+|xref:asset-config-queries/asset-config-queries.adoc[Asset Configuration] (Config)
 |Simple and Advanced
 |Search configuration files based on cloud APIs and JSON rules.
 |config from cloud.resource where
 |Config
 
-|xref:application-asset-queries/application-asset-queries.adoc[Application Asset] 
+|xref:application-asset-queries/application-asset-queries.adoc[Application Asset] (AppSec)
 |Simple
 |Explore your software delivery chains and engineering attack surfaces.
 |Not applicable
@@ -36,13 +36,13 @@ Prisma Cloud supports the following query types. You can review the query types,
 //vulnerablility where
 |Workload Vulnerability
 
-|xref:permissions-queries/permissions-queries.adoc[Permissions] 
+|xref:permissions-queries/permissions-queries.adoc[Permissions] (IAM)
 |Advanced
 |View net resource permissions based on ingested IAM policies.
 |config from iam where
 |IAM
 
-|xref:network-queries/network-config-queries.adoc[Network Configuration] 
+|xref:network-queries/network-config-queries.adoc[Network Configuration] (CNS)
 |Advanced
 |Explore network paths and identify assets exposed to the internet.
 |config from network where 
@@ -63,3 +63,96 @@ Prisma Cloud supports the following query types. You can review the query types,
 |Audit Event
 
 |===
+
+//From: https://redlock.atlassian.net/browse/PCSUP-21498?focusedCommentId=959159 and https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA14u0000008XISCA2
+
+The above query types are supported on all Prisma Cloud tenants and all Prisma Cloud https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/prisma-cloud-admin-permissions#roles-all[Out of the Box] (OOTB) roles, for example System Admins have permissions to all of these query types.
+
+//The AppDNA query type is https://docs.prismacloud.io/en/enterprise-edition/rn/limited-ga-features-prisma-cloud/lga-features[Limited GA]. For more details, see the https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/app-dna-lga.pdf[AppDNA PDF]. 
+ 
+The supported query types for *Custom* roles are listed under *Settings > Access Control > Permission Group > Add Permission Group*. The *Custom* roles (as defined by granular RBAC features) only support the following query types:
+
+* Asset
+* Asset Configuration
+* Audit Event
+* Permissions
+* Network
+* Network Configuration 
+ 
+The Application Asset and Vulnerability query types are out of scope for granular RBAC and not supported for *Custom* roles.
+
+//https://redlock.atlassian.net/browse/PCSUP-21868?focusedCommentId=972725
+//Verify if "Available for all license types" or "Not applicable"
+
+[NOTE]
+====
+The query types that you see in the Prisma Cloud UI not only depend on the roles and permissions, but also if a feature (module) is enabled on the tenant or not. 
+====
+
+[cols="10%a,30%a,30%a,30%a"]
+|===
+|*Query Type*
+|*License and Module*
+|*Stack*
+|*Permissions Required*
+
+|Asset 
+|Not applicable
+|All except app.gov and app.cn
+|Investigate > Asset > READ
+
+
+|Asset Configuration (Config)
+|Not applicable
+|All
+|Investigate > Config > READ
+
+
+|Application Asset (AppSec)
+|Only available for Enterprise License 
+//AppDNA (LGA) feature flag should be enabled (do we need to mention this?)
+|All except app.gov and app.cn
+|Default System Admins
+
+
+|Vulnerability 
+|Only available for Enterprise License
+|All except app.gov and app.cn
+|Only available for the following OOTB roles:
+
+* System Admin
+* Account Group Admin
+* Account and Cloud Provisioning Admin
+* Account Group Read Only
+* Appsec
+
+
+|Permissions (IAM)
+|Only available for Enterprise License and IAM module should be provisioned and enabled for the tenant
+|All except app.cn
+|Investigate > Config > READ
+
+
+|Network Configuration (CNS)
+|Not applicable
+|All
+|* Investigate > Config > READ, and
+* Investigate > Network > READ
+
+
+|Network 
+|Only available for Enterprise License
+|All
+|Investigate > Network > READ
+
+
+|Audit Event
+|Not applicable
+|All
+|Investigate > Audit Events > READ
+
+//App Sec | Code Security module should be provisioned and enabled for the tenant | Not available for app.cn
+//Only available for below OOB roles: System Admin, Account Group Admin, Account and Cloud Provisioning Admin, Account Group Read Only, Appsec
+
+|===
+
