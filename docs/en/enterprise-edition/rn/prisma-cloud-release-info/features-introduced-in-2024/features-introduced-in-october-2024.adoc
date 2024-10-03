@@ -92,8 +92,6 @@ tt:[24.10.1]
 Use the https://docs.prismacloud.io/en/enterprise-edition/content-collections/cloud-and-software-inventory/applications-inventory[Applications Inventory] page to inspect and analyze your applications. You can also search and investigate applications using the https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/application-queries/application-queries[Application query attributes] available on the *Investigate* page.
 
 
- 
-
 
 |*AWS Role Chaining Detection*
 //IVG-16193
@@ -103,6 +101,8 @@ tt:[24.10.1]
 |Prisma Cloud Identity and Entitlement Management (CIEM) enhancements now allow you to be alerted when role chaining is present in your cloud environment. Role chaining occurs when you use a primary role to assume a secondary role. This results in the newly granted role assuming all the configured permissions granted for the first role. 
 
 Granting a new identity, permissions that belong to a different role, to edit and run cloud resources may lead to a scenario where multiple roles and trust relationships lead to a privilege escalation. https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/permissions-queries/permissions-query-attributes[Role chaining detection] allows you to better detect and manage complex permissions configurations.
+
+To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
 
 
 |===
@@ -117,41 +117,25 @@ Granting a new identity, permissions that belong to a different role, to edit an
 |*Description*
 
 |*Amazon Elastic Container Registry (ECR)*
-//RLP-150134; Added in LA in 9.1; updated text in 9.2; move to Features Introduced in October > Changes in Existing Behavior.
+//RLP-150134; Added in LA in 9.1; updated text in 9.2
 
-|Starting with the current release, the format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
+tt:[24.10.1]
+
+|The format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
 
 Prisma Cloud will automatically fetch all the live ECR images from your cloud accounts and create them as new resources with the new `external_asset_id` format. New alerts will be generated for resources that match the active policies in your tenant.
 
 *Impact—* You may notice a temporary drop in `aws-ecr-image` resource count and open alert count. However, after the `aws-ecr-image` resources are automatically ingested, the corresponding live resource count and open alert count will return to the previous levels.
 
-|*GCP API Update*
-
-//RLP-150422
-
-|*API*: gcloud-container-describe-clusters
-
-*Change*: The Prisma cloud API will be updated to compute attributes "isMasterVersionSupported" and "isNodeVersionSupported" to provide results based on the latest improvements made by the GCP team with respect to the GetServerConfig API. This enhancement is planned to provide more accurate results for the alerts based on the default policies.
-
-*Issue*: The default policies GCP GKE unsupported Master node version and GCP GKE unsupported node version are currently checking the GCP GKE version based on major and minor values. To provide accurate results, we are enhancing the Prisma API attribute to compare complete versions from the GCP API.
-
-*Impact*: New alerts might be triggered based on the complete GKE version used for clusters and nodes.If you have custom policies, you must manually update them to check using the updated attribute.
-
 
 |*VPC Peering Connections API Changes*
-
 //RLP-150898
+
+tt:[24.10.1]
 
 |*API*: aws-ec2-describe-vpc-peering-connections
 
 *Change*: Ingestion of VPC peering connections will now be performed only for the requester account. This update will remove all related resources from the connection accepter account.
-
-
-|*GCP Granular Permissions Addition*
-
-//RLP-150820
-
-|Starting with the current release, we will return all the granular permissions from viewer role under custom role, which are used for ingesting APIs. Viewer role will still be part of terraform. In addition, granular permissions will also be provided. which is similar to AWS.
 
 
 // |*Amazon Elastic Container Registry (ECR)*
@@ -164,36 +148,25 @@ Prisma Cloud will automatically fetch all the live ECR images from your cloud ac
 |*Amazon EC2 Ingestion*
 //RLP-145171
 
+tt:[24.10.1]
+
 |Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
 
 *Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
 
 If you have any questions, contact your Prisma Cloud Customer Success Representative.
 
-|*Alerts for Role Chaining*
-//IVG-15421
 
-|Enhancements to Prisma Cloud Identity and Entitlement Management (CIEM) capabilities alert users when role chaining is present in their environment. Role chaining occurs when you use a role to assume a second role. This results in the newly granted role assuming all the permissions granted to the first role.
-
-*Impact—* To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
-
-
-|*Google Kubernetes Engine*
-//RLP-150422, Check the fixversion again before moving the blurb in 10.1. The Fixversion may change to 11.1.
-
-|Starting with the current release, the JSON resource attributes `isMasterVersionSupported` and `isNodeVersionSupported` for *gcloud-container-describe-clusters* API will be updated to align with the CSP *GetServerConfig* API. This change will provide accurate results for policy violation alerts related to the default policies— *GCP GKE unsupported Master node version* and *GCP GKE unsupported node version*.
-
-*Impact—* No impact on existing alerts. New alerts will be generated against policy violations based on the complete GKE version used for clusters and nodes. If you have custom policies, you must manually update them to receive the alerts.
-
-
-|*Updates to GCP Terraform Template*
+|*Addition of GCP Granular Permissions**
 //RLP-150820
 
-|Starting with the current release, a subset of Viewer role permissions needed for API ingestions will be added to the existing Custom role present in the Google Terraform template. Also, the original Viewer role containing necessary permissions will still be available in the template.
+tt:[24.10.1]
+
+|A subset of *Viewer* role permissions needed for API ingestions will be added to the existing *Custom* role present in the Google Terraform template. Also, the original Viewer role containing necessary permissions will still be available in the template.
 
 With this change, you need not manually enter the necessary API permissions under custom roles in case you decide not to grant Prisma Cloud Viewer role permissions.
 
-*Impact—* This change will not affect the onboarding *Status* of your accounts.
+*Impact—* This change will not affect the onboarding status of your accounts.
 
 |===
 
@@ -450,12 +423,14 @@ It is recommended to enable Integrity Monitoring for Workbench instances to dete
 
 [#iam-policy-updates]
 === IAM Policy Updates
+//RLP-149750
 
 The policy *Severity* levels for the following IAM policies will be adjusted to better align with the potential risks they pose.
 
 *Impact—* If your alert rules use the *Policy Severity* filter, you may notice a slight change in the number of alerts. However, this change will not affect custom policies or policies where you have manually set the severity levels. For policies included in alert rules that are not based on severity, the number of alerts will remain unchanged.
 
 If you have any questions, reach out to your Prisma Cloud Customer Success Representative.
+
 
 [cols="70%a,15%a,15%a"]
 |===
@@ -632,6 +607,7 @@ If you have any questions, reach out to your Prisma Cloud Customer Success Repre
 |Low  
 
 |===
+
 
 [#policy-updates]
 === Policy Updates

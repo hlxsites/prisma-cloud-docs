@@ -50,6 +50,24 @@ The *GET /v2/policy* endpoint will have a new query parameter `resource.type` to
 
 The CSV download from the *Governance* page will also include a new column *Asset Type*.
 
+|*Google Kubernetes Engine*
+//RLP-150422
+
+|Starting with the 11.1 release, the JSON resource attributes `isMasterVersionSupported` and `isNodeVersionSupported` for *gcloud-container-describe-clusters* API will be updated to align with the CSP *GetServerConfig* API. This change will provide accurate results for policy violation alerts related to the default policies— *GCP GKE unsupported Master node version* and *GCP GKE unsupported node version*.
+
+*Impact—* No impact on existing alerts. New alerts will be generated against policy violations based on the complete GKE version used for clusters and nodes. If you have custom policies, you must manually update them to receive the alerts.
+
+// |*GCP API Update*
+//RLP-150422 (Older version of blurb above, remove after confirming)
+
+// |*API*: gcloud-container-describe-clusters
+
+// *Change*: The Prisma cloud API will be updated to compute attributes `isMasterVersionSupported` and `isNodeVersionSupported` to provide results based on the latest improvements made by the GCP team with respect to the GetServerConfig API. This enhancement is planned to provide more accurate results for the alerts based on the default policies.
+
+// *Issue*: The default policies GCP GKE unsupported Master node version and GCP GKE unsupported node version are currently checking the GCP GKE version based on major and minor values. To provide accurate results, we are enhancing the Prisma API attribute to compare complete versions from the GCP API.
+
+//*Impact*: New alerts might be triggered based on the complete GKE version used for clusters and nodes.If you have custom policies, you must manually update them to check using the updated attribute.
+
 
 // |*RQL API Rate Limits* 
 //to create RLP
@@ -101,12 +119,12 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 |RQL will be updated to avoid false positives in case the Logic App has public access disabled using default behavior with a private endpoint configured.
 
-*Current RQL*: 
+*Current RQL–*: 
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'properties.state equal ignore case running and kind contains workflowapp and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
 ----
 
-*Proposed RQL*:
+*Updated RQL–*:
 ----
 config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'properties.state equal ignore case running and kind contains workflowapp and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist and (properties.privateLinkIdentifiers does not exist or properties.privateLinkIdentifiers is empty))) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
 ----
@@ -123,11 +141,11 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 |*GCP SQL Instances do not have valid SSL configuration*
 //RLP-150532
 
-|*Current Policy Description*:
+|*Current Policy Description–*
 
 This policy identifies GCP SQL instances that do not have valid SSL configuration with an unexpired SSL certificate. Cloud SQL supports connecting to an instance using the Secure Socket Layer (SSL) protocol. If Cloud SQL Auth proxy is not used for authentication, it is recommended to utilize SSL for connection to SQL Instance, ensuring the security for data in transit.
 
-*Proposed Policy Description*:
+*Updated Policy Description–*
 
 This policy identifies GCP SQL instances that do not have valid SSL configuration with an expired SSL certificate. 
 
@@ -135,38 +153,15 @@ In case the SQL instance is not configured to use the SSL connections then the S
 
 It is a best practice to enable SSL configuration to ensure data security and integrity when communicating with a GCP SQL instance.
 
-*Current Policy RQL*:
+*Current Policy RQL–*
 ----
 config from cloud.resource where cloud.type = 'gcp' AND api.name='gcloud-sql-instances-list' and json.rule = "(settings.ipConfiguration.requireSsl is true and _DateTime.ageInDays(serverCaCert.expirationTime) > -1) or not (settings.ipConfiguration.requireSsl is true)"
 ----
-*Proposed Policy RQL*:
+*Updated Policy RQL–*
 ----
 config from cloud.resource where cloud.type = 'gcp' AND api.name='gcloud-sql-instances-list' and json.rule = "(settings.ipConfiguration.sslMode equal ignore case TRUSTED_CLIENT_CERTIFICATE_REQUIRED and _DateTime.ageInDays(serverCaCert.expirationTime) > -1) or settings.ipConfiguration.sslMode equal ignore case ALLOW_UNENCRYPTED_AND_ENCRYPTED"
 ----
-*Current Policy Remediation*:
-
-Reference Google's https://cloud.google.com/sql/docs/mysql/configure-ssl-instance[documentation] to renew / update the SSL certificate.  
-
-*Proposed policy Remediation*:
-
-To configure SQL instance with SSL configuration,follow the steps mentioned below:
-
-. Log in to google cloud console
-. Navigate to 'Cloud SQL Instances'
-. Click on the alerted instance and navigate to 'Security' under 'Connections' tab
-. Select one of the following under 'Manage SSL mode':
-.. Allow only SSL connections
-.. Require trusted client certificates
-
-To verify the validity of the current certificate, follow the steps mentioned below:
-
-. Log in to google cloud console
-. Navigate to 'Cloud SQL Instances'
-. Click on the alerted instance and navigate to 'Security' under 'Connections' tab
-. Verify the expiration date of your server certificate under 'Manage server CA certificates' table
-
-Review these https://cloud.google.com/sql/docs/mysql/configure-ssl-instance#client-certs[steps] to create a new client certificate. 
-
+ 
 *Policy Type*: Config
 
 *Policy Severity*: Low
@@ -180,6 +175,430 @@ Open Alerts will be resolved in case the SQL instance is configured with SSL mod
 |===
 
 
+[#iam-policy-update]
+=== IAM Policy Updates
+
+The policy *Severity* levels for the following IAM policies will be adjusted to better align with the potential risks they pose.
+
+*Impact—* If your alert rules use the *Policy Severity* filter, you may notice a slight change in the number of alerts. However, this change will not affect custom policies or policies where you have manually set the severity levels. For policies included in alert rules that are not based on severity, the number of alerts will remain unchanged.
+
+If you have any questions, reach out to your Prisma Cloud Customer Success Representative.
+
+[cols="70%a,15%a,15%a"]
+|===
+|*Policy Name*
+|*Current Severity*
+|*Updated Severity*
+
+|AWS IAM effective permissions are over-privileged (7 days) 
+|Low 
+|Informational 
+
+|AWS IAM User with AWS Organization management permissions 
+|Low 
+|Informational 
+
+|AWS IAM User with IAM policy management permissions 
+|High 
+|Informational 
+
+|AWS IAM User with IAM write permissions 
+|Low 
+|Informational 
+
+|AWS Okta User with AWS Organization management permissions 
+|Low 
+|Informational 
+
+|AWS Okta User with IAM write permissions 
+|Low 
+|Informational 
+
+|Azure AD user with the Azure built-in roles of Contributor 
+|High 
+|Informational 
+
+|Azure AD user with the Azure built-in roles of Owner 
+|High 
+|Informational 
+
+|Azure AD user with the Azure built-in roles of Reader 
+|Low 
+|Informational 
+
+|Azure AD users with broad Key Vault access through Built-in Azure roles 
+|High 
+|Informational 
+
+|Azure AD users with broad Key Vault management access 
+|Critical 
+|Informational 
+
+|Azure entities with risky permissions 
+|Low 
+|Informational 
+
+|Azure IAM effective permissions are over-privileged (7 days) 
+|Low 
+|Informational 
+
+|Azure Managed Identity (user assigned or system assigned) with broad Key Vault access through Built-in Azure roles 
+|High 
+|Informational 
+
+|Azure Managed Identity (user assigned or system assigned) with broad Key Vault management access 
+|High 
+|Informational 
+
+|Azure Managed Identity (user assigned or system assigned) with the Azure built-in roles of Contributor 
+|High 
+|Informational 
+
+|Azure Managed Identity (user assigned or system assigned) with the Azure built-in roles of Owner 
+|High 
+|Informational 
+
+|Azure Managed Identity (user assigned or system assigned) with the Azure built-in roles of Reader 
+|Low 
+|Informational 
+
+|Azure Service Principals with broad Key Vault access through Built-in Azure roles 
+|High 
+|Informational 
+
+|Azure Service Principals with broad Key Vault management access 
+|Low 
+|Informational 
+
+|GCP IAM effective permissions are over-privileged (7 days) 
+|Low 
+|Informational 
+
+|GCP service accounts with permissions to deploy new resources 
+|High 
+|Informational 
+
+|GCP User with IAM write access level permissions 
+|Low 
+|Informational 
+
+|GCP users with permissions to deploy new resources 
+|High 
+|Informational 
+
+|GCP users with Service Account Token Creator role 
+|High 
+|Informational 
+
+|Okta user with effective permissions to create AWS IAM users 
+|Low 
+|Informational 
+
+|AWS EC2 instance with data destruction permissions 
+|High 
+|Low 
+
+|AWS EC2 instance with privilege escalation risk permissions 
+|High 
+|Low 
+
+|AWS Lateral Movement to Data Services Through Redshift Cluster Creation 
+|High 
+|Low 
+
+|AWS Okta User with IAM policy management permissions 
+|High 
+|Low 
+
+|Azure AD user with effective permissions to create AWS IAM users 
+|High 
+|Low 
+
+|Azure VM associated with entities that have risky permissions 
+|High 
+|Low 
+
+|GCP App Engine Web Service Assigned Cloud Function Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP App Engine Web Service Assigned Cloud Function IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP App Engine Web Service Assigned Cloud Run Creation Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP App Engine Web Service Assigned Cloud Run IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP App Engine Web Service Assigned Cloud Run Jobs IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP App Engine Web Service Assigned Resource Manager Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Cloud Run Instance Assigned Cloud Function Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Cloud Run Instance Assigned Cloud Function IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Cloud Run Instance Assigned Cloud Run Creation Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Cloud Run Instance Assigned Cloud Run Jobs IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Cloud Run Instance Assigned Resource Manager Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Cloud Run Job Public Execution via Default Compute SA Modification 
+|High 
+|Low 
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Function Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Run Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Run IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Run Jobs IAM Policy Edit Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Resource Manager Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Low 
+
+|GCP entities with permissions to impersonate a service account in another project 
+|High 
+|Low 
+
+|GCP Lateral Access Expansion by Making Cloud Run Publicly Executable 
+|High 
+|Low 
+
+|Publicly Readable Lambda 
+|Medium 
+|Low 
+
+|Third-party service account with a Lateral Movement to Data Services Through Redshift Cluster Creation 
+|High 
+|Low 
+
+|Third-party Service Account With Lateral Movement Through CloudFormation Stack Creation 
+|High 
+|Low 
+
+|AWS Compute Instance (EC2/Lambda) Assigned CloudFormation Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|AWS Compute Instance (EC2/Lambda) Assigned Glue DevEndpoint Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|AWS Compute Instance (EC2/Lambda) Assigned Lambda Creation Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|AWS Compute Instance (EC2/Lambda) Assigned Permissions to Run EC2 Instances Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|AWS EC2 machine with write access permission to resource-based policies 
+|Low 
+|Medium 
+
+|AWS EC2 with IAM role attached has credentials exposure permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via Codestar create project and associate team member permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via EC2 describe and SSM list and send command permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via EC2 describe and SSM session permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via EC2 Instance Connect permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via Glue Dev Endpoint permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via PassRole & Lambda create & invoke Function permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & add permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via PassRole & SageMaker create notebook permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via PassRole & SageMaker create processing job permissions 
+|Low 
+|Medium 
+
+|AWS IAM policy allows Privilege escalation via PassRole & SageMaker create training job permissions 
+|Low 
+|Medium 
+
+|AWS Lambda Function with data destruction permissions 
+|High 
+|Medium 
+
+|AWS Lambda with IAM role attached has credentials exposure permissions 
+|Low 
+|Medium 
+
+|Azure AD user with permissions to manage Azure permissions broadly that was not used in the last 90 days 
+|High 
+|Medium 
+
+|Azure IAM effective permissions are over-privileged (90 days) 
+|Low 
+|Medium 
+
+|Azure VM instance associated managed identities with Key Vault management access (data access is not included) 
+|High 
+|Medium 
+
+|Azure VM instance with data destruction permissions 
+|High 
+|Medium 
+
+|GCP App Engine Web Service Assigned IAM Role Update Permissions Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|GCP App Engine Web Service Assigned Permissions to Edit IAM Policy for Service Accounts Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|GCP Cloud Run Instance Assigned Permissions to Retrieve Service Account Tokens Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|GCP Compute Engine entities with predefined Admin roles 
+|High 
+|Medium 
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Permissions to Retrieve Service Account Tokens Which Could Lead to Privilege Escalation 
+|High 
+|Medium 
+
+|GCP IAM effective permissions are over-privileged (90 days) 
+|Low 
+|Medium 
+
+|GCP service accounts with 'Editor' role on folder level 
+|High 
+|Medium 
+
+|GCP service accounts with 'Editor' role on org level 
+|High 
+|Medium 
+
+|GCP service accounts with 'Owner' role on folder level 
+|High 
+|Medium 
+
+|GCP service accounts with 'Owner' role on org level 
+|High 
+|Medium 
+
+|GCP VM instance with data destruction permissions 
+|High 
+|Medium 
+
+|GCP VM instance with database management write access permissions 
+|Low 
+|Medium 
+
+|GCP VM instance with permissions to impersonate a service account 
+|High 
+|Medium 
+
+|AWS EC2 instance with the creation of a new Group with attached policy permission 
+|Critical 
+|High 
+
+|AWS EC2 instance with the creation of a new Role with attached policy permission 
+|Critical 
+|High 
+
+|AWS EC2 instance with the creation of a new User with attached policy permission 
+|Critical 
+|High 
+
+|AWS IAM policy allows access and decrypt Secrets Manager Secrets permissions 
+|Low 
+|High 
+
+|AWS S3 Bucket with Data Destruction Permissions is Publicly Accessible Through Resource-Based Policies 
+|Low 
+|High 
+
+|Azure Lateral Movement Through SSH Key Replacement and Managed Identity Exploitation on VM 
+|Medium 
+|High 
+
+|Azure Lateral Movement via VM Command Execution Leveraging Managed Identity 
+|Medium 
+|High 
+
+|Cloud Service account with high privileges is inactive for 90 days and is assigned to a resource 
+|Medium 
+|High 
+
+|Service Account with Cross Cloud Administrative Access 
+|Medium 
+|High 
+
+|Third-Party Service Account with High Privileges at the Folder or Organization Level 
+|Medium 
+|High 
+
+|User with Administrative Permissions Has Active Access Keys Which Are Unused Over 90 Days 
+|Medium 
+|High 
+
+|AWS Role With Administrative Permissions Can Be Assumed By All Users 
+|High 
+|Critical 
+
+|AWS Secret Manager Secret is Publicly Accessible Through Resource-Based Policies 
+|High 
+|Critical 
+
+|===
 
 //[#new-compliance-benchmarks-and-updates]
 //=== New Compliance Benchmarks and Updates
@@ -335,6 +754,16 @@ Additional permission required:
 * `quicksight:DescribeIpRestriction`
 
 The Security Audit role includes the above permission.
+
+
+|*Amazon Cognito*
+//RLP-149194
+
+|*aws-cognito-user-pool*
+
+This API has been updated to include the following new field in the resource JSON:
+
+* `mfaConfiguration`
 
 
 |*AWS Signer*
