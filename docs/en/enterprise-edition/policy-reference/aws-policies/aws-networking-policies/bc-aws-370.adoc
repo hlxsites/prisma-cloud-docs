@@ -1,0 +1,64 @@
+
+== AWS SageMaker model does not use network isolation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 77949af0-d80d-4d7b-8a21-b34d13b96a1c
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerModelWithNetworkIsolation.py[CKV_AWS_370]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy checks whether Amazon SageMaker models leverage network isolation. Network isolation restricts unauthorized network communication between computing resources, enhancing security. When enabled for SageMaker models, it ensures inference code runs in an internet-free environment, safeguarding your models and data sets from potential breaches. A violation of this policy indicates that the SageMaker model's network isolation is disabled, potentially exposing your models and data to security threats. Enabling network isolation strengthens your security posture and protects your valuable assets.
+
+
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_model
+* *Arguments:* enable_network_isolation
+
+Enable the network isolation parameter in your Terraform configuration for Amazon SageMaker models. This restricts unauthorized network access, strengthening your security posture.
+
+[source,go]
+----
+resource "aws_sagemaker_model" "default" {
+  ...
++  enable_network_isolation = true
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::Model
+* *Arguments:* Properties/EnableNetworkIsolation
+
+Enable the network isolation parameter within the AWS::SageMaker::Model resource in your CloudFormation template. This restricts unauthorized network access and strengthens your security posture.
+
+[source,yaml]
+----
+Resources:
+  SageMakerModelPass:
+    Type: 'AWS::SageMaker::Model'
+    Properties:
+      ...
++      EnableNetworkIsolation: True
+----

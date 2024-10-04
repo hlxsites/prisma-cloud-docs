@@ -1,0 +1,73 @@
+== AWS Sagemaker data quality job not encrypting model artifacts with KMS
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 9ce055f8-7939-4888-9bb7-544605c0a87a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SagemakerDataQualityJobDefinitionEncryption.py[CKV_AWS_367]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan,CloudFormation
+
+|===
+
+=== Description
+
+This policy checks whether Amazon SageMaker Data Quality Jobs leverage AWS Key Management Service (KMS) to encrypt model artifacts. Unencrypted model artifacts pose a significant security concern. Without encryption, sensitive information within your models could be exposed to malicious actors. This could lead to data breaches, compromising the integrity and confidentiality of the data used by your models. KMS provides a secure solution for managing encryption keys, ensuring the protection of your machine learning assets.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_data_quality_job_definition
+* *Arguments:* data_quality_job_output_config/kms_key_id
+
+Encrypt your AWS SageMaker Data Quality Job output. Specify the KMS key in the data_quality_job_output_config block of your Terraform configuration file, as displayed in the example below.
+
+[source,go]
+----
+resource "aws_sagemaker_data_quality_job_definition" "example" {
+  ...
+
+  data_quality_job_output_config {
++    kms_key_id = "arn:aws:kms:us-west-2:123456789012:key/my-existing-kms-key-id"
+    ...
+  }
+
+  ...
+}
+----
+
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::DataQualityJobDefinition
+* *Arguments:* Properties/DataQualityJobOutputConfig/KmsKeyId
+
+Encrypt your AWS SageMaker Data Quality Job output. Specify the KMS key in the DataQualityJobOutputConfig block of your CloudFormation configuration file, as displayed in the example below.
+
+[source,yaml]
+----
+...
+  AWSTemplateFormatVersion: '2010-09-09'
+  ...
+  MyDataQualityJobDefinitionPass:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      ...
+      DataQualityJobOutputConfig:
++        KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-existing-kms-key-id"
+    ...
+----
+

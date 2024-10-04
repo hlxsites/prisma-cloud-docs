@@ -3,13 +3,13 @@
 
 Create a custom policy to meet your specific needs for compliance or monitoring of cloud resources.
 
-Create a custom policy with remediation rules that are tailored to meet the requirements of your organization. When creating a new policy, you can either build the query using xref:../search-and-investigate/search-and-investigate.adoc[RQL] or you use a saved search to automatically populate the query you need to match on your cloud resources. For xref:../application-security/get-started/get-started.adoc[Cloud Application Security], you can also create configuration policies to scan your Infrastructure as Code (IaC) templates that are used to deploy cloud resources. The policies used for scanning IaC templates use a JSON query instead of RQL.
+You can create a custom policy with remediation rules that are tailored to meet the requirements of your organization. When creating a new policy, you can either build the query using xref:../search-and-investigate/search-and-investigate.adoc[RQL] or you use a saved search to automatically populate the query you need to match on your cloud resources. For xref:../application-security/get-started/get-started.adoc[Cloud Application Security], you can also create configuration policies to scan your Infrastructure as Code (IaC) templates that are used to deploy cloud resources. The policies used for scanning IaC templates use a JSON query instead of RQL.
 
-If you want to enable auto-remediation, Prisma Cloud requires write access to Cloud platform to successfully execute the remediation commands.
+If you want to enable auto-remediation, Prisma Cloud requires write access to your cloud platform to successfully execute the remediation commands.
 
-You can create any of the following types of custom policies:
+You can create the following types of custom policies:
 
-* *Attack Path* - Attack path policies monitor the high risk attack paths for possible breaches. See xref:attack-path-policies.adoc[Attack Path Policies].
+* *Attack Path*—Attack path policies monitor the high risk attack paths for possible breaches. See xref:attack-path-policies.adoc[Attack Path Policies].
 
 * *Audit Event*—Event policies monitor audit events in your environment for potential policy violations. You create audit policies to flag sensitive events such as root activities or configuration changes that may potentially put your cloud environment at risk. See xref:#create-an-audit-event-policy[Create a Network or Audit Event Policy].
 
@@ -52,7 +52,7 @@ image::governance/add-new-config-policy.png[]
 
 . Select the *Severity* for the policy and select *Next*.
 +
-For a Run policy, an alert will be generated on a policy violation.
+For a *Run* policy, an alert will be generated on a policy violation.
 
 . Build the query to define the match criteria for your policy.
 +
@@ -80,19 +80,15 @@ config cloud.resource where api.name = 'aws-ec2-describe-internet-gateways' as X
 config from cloud.resource where resource.status = Active AND api.name = 'aws-acm-describe-certificate' AND json.rule = 'domainValidationOptions[*].domainName contains *'
 ----
 +
-[NOTE]
-====
-When creating a custom policy, as a best practice do not include cloud.account, cloud.accountgroup, cloud.region or tag attributes in the RQL query. If you have a saved search that includes these attributes, make sure to edit the RQL before you create a custom policy. While these attributes are useful to filter the results you see on the *Investigate* tab, they are ignored when used in a custom policy.
-====
+*NOTE:*
+When creating a custom policy, as a best practice *do not* include `cloud.account`, `cloud.accountgroup`, `cloud.region`, `resource.status`, or `tag` attributes in the RQL query. If you have a saved search that includes these attributes, make sure to edit the RQL before you create a custom policy. While these attributes are useful to filter the results you see on the *Investigate* tab, they are ignored when used in a custom policy.
 
 .. [[idbdc1e8bb-8c17-4b05-b428-0bb4fd6f5a2a]]Add a rule for the *Build* phase.
 +
 If your policy will include both Run and Build checks, and you have added the RQL query, your cloud type for the build rule is automatically selected. It is based on the cloud type referenced in the RQL query.
 +
-[NOTE]
-====
+*NOTE:*
 If you have activated the Application Security module, see xref:custom-build-policies/custom-build-policies.adoc[Create a custom build policy] to continue with creating a build policy rule.
-====
 
 . [[id50be0f15-ebdd-45e6-b9fc-ec84885da9bb]]Add the compliance standards to your policy.
 
@@ -123,10 +119,8 @@ CLI remediation is available for `config from` queries only. You can add up to 5
 +
 If you would like to see an example of the CLI syntax in the default remediable policies on Prisma Cloud, xref:manage-prisma-cloud-policies.adoc[Manage Prisma Cloud Policies] any existing policy and edit it.
 +
-[NOTE]
-====
+*NOTE:*
 The default policies include additional variables that are restricted for use in default policies only, and are not supported in custom policies. Syntax validation displays an error if you use the restricted variables.
-====
 
 .. Select *Submit*.
 +
@@ -178,3 +172,36 @@ Compliance standards can be only associated with custom policies for Audit Event
 CLI commands to enable automatic remediation are not supported on Audit Event or Network policy.
 
 . *Save* the policy.
+
+
+[.task]
+[#create-an-attack-path-policy]
+=== Create an Attack Path Policy
+
+Use the following instructions to add an Attack Path policy on Prisma Cloud.
+
+[.procedure]
+. Select *Governance*.
+
+. Select *Add Policy > Attack Path*. 
+
+. Enter a *Policy Name* and select the *Severity*.
+
+. (tt:[Optional]) Add a *Description* and *Labels*.
++
+image::governance/add-attack-path-policy-1.png[]
+
+. Click *Next*.
+
+. Click *Select saved search* dropdown to select from one of the existing Asset Search queries. 
++
+*NOTE:* 
+You cannot run a *New Search* in this workflow. However, you can run a new search from the xref:../search-and-investigate/explore-data.adoc[Investigate] page and save the query as a custom Attack Path policy.
++
+image::governance/add-attack-path-policy-2.png[]
+
+. Click *Next*. 
+
+. (tt:[Optional]) Provide a *Recommendation for Remediation*.
+
+. Click *Submit* to save the policy.

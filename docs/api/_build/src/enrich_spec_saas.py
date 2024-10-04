@@ -8,6 +8,8 @@ import yaml
 from yaml.representer import Representer
 import subprocess
 import time
+import errno
+import sys
 
 FIXUPS = (
   ("A P I", "API"),
@@ -62,7 +64,7 @@ def load_topic_map(f):
       print(f'Error loading {f}: Invalid YAML. {e}')
       sys.exit(1)
     except OSError as e:
-      print('Error loading {f}: {e}')
+      print(f"Error loading f{f}: {e}")
       sys.exit(1)
 
   return data
@@ -87,7 +89,7 @@ def add_api_desc(config):
   if config.local:
     spec['info']['description']['$ref'] = "../descriptions/intro.md"
   else:
-    spec['info']['description']['$ref'] = f"https://raw.githubusercontent.com/hlxsites/prisma-cloud-docs/{config.branch}/docs/api/descriptions/intro.md"
+    spec['info']['description']['$ref'] = f"desc/intro.md"
 
 
 def add_resource_desc(config):
@@ -220,39 +222,42 @@ def lookup_summary(topic_map, route, method):
   """
   # Debug
   #print(f"Look up summary for {method} {route}")
+  try:
+    route_key1 = None
+    route_key2 = None
 
-  route_key1 = None
-  route_key2 = None
+    parts = route.split('/')
+    if len(parts) >= 4:
+      route_key1 = '/'
+      route_key1 += parts[3]
+      #print(f"route_key1 = {route_key1}")
 
-  parts = route.split('/')
+    if len(parts) > 4:
+      route_key2 = ''
+      for part in parts[4:]:
+        route_key2 += '/'
+        route_key2 += part
+      #print(f"route_key2 = {route_key2}")
 
-  if len(parts) >= 4:
-    route_key1 = '/'
-    route_key1 += parts[3]
-    #print(f"route_key1 = {route_key1}")
+    if route_key1 and not route_key2:
+      if route_key1 in topic_map:
+        if method in topic_map[route_key1]:
+          if 'summary' in topic_map[route_key1][method]:
+            return topic_map[route_key1][method]["summary"]
 
-  if len(parts) > 4:
-    route_key2 = ''
-    for part in parts[4:]:
-      route_key2 += '/'
-      route_key2 += part
-    #print(f"route_key2 = {route_key2}")
-
-  if route_key1 and not route_key2:
-    if route_key1 in topic_map:
-      if method in topic_map[route_key1]:
-        if 'summary' in topic_map[route_key1][method]:
-          return topic_map[route_key1][method]["summary"]
-
-  if route_key1 and route_key2:
-    if route_key1 in topic_map:
-      if route_key2 in topic_map[route_key1]:
-        if method in topic_map[route_key1][route_key2]:
-          if 'summary' in topic_map[route_key1][route_key2][method]:
-            return topic_map[route_key1][route_key2][method]["summary"]
-
-  return None
-
+    if route_key1 and route_key2:
+      if route_key1 in topic_map:
+        if route_key2 in topic_map[route_key1]:
+          if method in topic_map[route_key1][route_key2]:
+            if 'summary' in topic_map[route_key1][route_key2][method]:
+              return topic_map[route_key1][route_key2][method]["summary"]
+    return None
+  except yaml.YAMLError as e:
+      print(f'Error loading {f}: Invalid YAML. {e}')
+      sys.exit(1)
+  except OSError as e:
+      print('Error loading {method}: {route}')
+      sys.exit(1)
 
 
 def lookup_resource_attr(topic_map, resource, key):
@@ -371,6 +376,7 @@ class IncludeFile(object):
   def __init__(self, path):
    # print(path)
     self.path = path
+   # print(path)
     if not self.validate(path):
       raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
@@ -385,8 +391,8 @@ class IncludeFile(object):
       link = self.path
     else:
       p = pathlib.PurePosixPath(self.path)
-      rel_p = p.relative_to('../')
-      link = f"https://raw.githubusercontent.com/hlxsites/prisma-cloud-docs/{config.branch}/docs/api/{rel_p}"
+      rel_p = p.relative_to('../descriptions')
+      link = f"desc/{rel_p}"
     return link
 
   def append_role(self, role):

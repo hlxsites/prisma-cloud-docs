@@ -75,7 +75,7 @@ def gen_spec(spec_file, config_file):
 
   # Generate a spec that contains supported endpoints only.
   filter_spec(config.spec)
-
+  remove_x_public(config.spec)
   return config.spec
 
 
@@ -188,10 +188,21 @@ def filter_spec(spec):
       env = spec['paths'][path][method]['x-prisma-cloud-target-env']
       tags = ep.get('tags', [])
       saas = env.get('saas')
+      if 'saas' in env: #remove the details that are needed to be published on pan.dev
+        env.pop('saas')
+      if 'self-hosted' in env:
+        env.pop('self-hosted')
       if (('Supported API' in tags) and (saas is True)):
         supported_paths[path][method] = copy.copy(ep)
   spec['paths'] = copy.copy(supported_paths)
 
+def remove_x_public(spec):
+    for path in spec['paths']:
+      for method in spec['paths'][path]:
+        ep = spec['paths'][path][method]
+        x_public_val = ep.get('x-public')
+        if x_public_val:
+          ep.pop('x-public')
 
 def output_spec(spec,outputFilename):
   """

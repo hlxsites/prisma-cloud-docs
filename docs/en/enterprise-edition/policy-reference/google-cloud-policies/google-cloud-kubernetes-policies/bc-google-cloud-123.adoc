@@ -1,0 +1,81 @@
+
+== GKE NodePool configuration managed at cluster level
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 7d82bdac-74df-4719-9cfd-16ae0946c6ca
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GKEDontUseNodePools.py[CKV_GCP_123]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether Google Kubernetes Engine (GKE) clusters uses NodePools within their configuration. The reason for this check is that using NodePools in the cluster configuration can unnecessarily complicate cluster management.
+
+
+When NodePools are used at the cluster level, modifying the node configuration creates a new NodePool, increasing operational complexity. Additionally, failing to delete older NodePools after creating new ones can lead to excess resource consumption. It is recommended to manage node configurations separately from the cluster to prevent these issues.
+
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_container_cluster
+* *Arguments:* node_pool
+
+To fix the issue, separate the node pool configuration from your cluster configuration. By doing so, you can manage and scale your node pools independently from the cluster. This approach makes it easier to manage resources and make changes to your cluster without affecting your applications. Additionally, it prevents the reuse of the default node pool, which could lead to unintended consequences. Here's an example of how you can achieve this in your configuration
+
+[source,go]
+----
+resource "google_container_cluster" "my_cluster" {
+  name               = "my-cluster"
+  location           = "us-central1"
+  initial_node_count = 1
+
+  master_auth {
+    username = ""
+    password = ""
+
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
+}
+
+
+resource "google_container_node_pool" "my_nodes" {
+  name       = "my-nodes"
+  location   = "us-central1"
+  cluster    = google_container_cluster.my_cluster.name
+  node_count = 1
+
+  node_config {
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+    ]
+
+    labels = {
+      my-label = "my-label-value"
+    }
+
+    tags = ["my-tag"]
+  }
+}
+----
+

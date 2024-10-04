@@ -6,6 +6,7 @@ import pathlib
 import re
 import yaml
 from yaml.representer import Representer
+import errno
 
 FIXUPS = (
   ("A P I", "API"),

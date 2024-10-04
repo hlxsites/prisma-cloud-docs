@@ -1,0 +1,52 @@
+== Vertex AI workbench instances are not private
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 19c51087-64e6-4d07-a6e6-1ced6a1f9586
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPVertexWorkbenchInstanceNoPublicIp.yaml[CKV2_GCP_28]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that Vertex AI workbench instances are set to private. 
+
+The policy is primarily concerned with data privacy and security. When AI workbench instances are public, they may be accessed, viewed, or modified by unauthorized individuals. This could result in the loss or corruption of data and the potential exposure of sensitive information. By setting these instances to private, access is restricted thus enhancing data security. Therefore, non-compliance with this policy compromises data security, confidentiality, and potentially, the proper functioning of the AI applications.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_workbench_instance
+* *Arguments:* gce_setup.disable_public_ip
+
+To fix the issue, make sure that `disable_public_ip` attribute is set to `true` inside the `gce_setup` block in the Vertex AI workbench instance configuration. 
+
+[source,go]
+----
+resource "google_workbench_instance" "instance_good" {
+  ...
+  gce_setup {
+    ...
+    disable_public_ip = true
+  }
+}
+----
+
+The above Terraform code is secure because it ensures that the Vertex AI workbench instance is not exposed to the public internet. This is a best practice as it minimizes the attack surface by preventing direct attacks on the VMs from the internet. Private instances can only be accessed within the same VPC network, via a Cloud VPN tunnel, or through Cloud Interconnect from on-premises.
+

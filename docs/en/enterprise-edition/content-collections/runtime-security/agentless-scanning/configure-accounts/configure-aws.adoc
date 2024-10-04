@@ -25,7 +25,7 @@ image::runtime-security/agentless-hub-toggle.png[]
 
 . Expand the *Advanced settings* and provide the appropriate values based on your deployment for the following items.
 +
-image::runtime-security/agentless-aws-configuration.png[width=540]
+image::runtime-security/agentless-aws-configuration.png[]
 
 . Click *Save* to return to *Compute > Manage > Cloud accounts*.
 
@@ -75,7 +75,7 @@ Apply custom tags to any resources Prisma Cloud creates during agentless scannin
 
 Under *Scan scope* you can refine the scope of the scanning by *Regions* or using tags.
 
-image::runtime-security/tags-scope.png[width=300]
+image::runtime-security/tags-scope.png[]
 
 * *All regions*: Scan in all AWS regions.
 
@@ -127,6 +127,65 @@ The following combinations are possible for the network resources.
 * If you only configure the *Security group name*, Prisma Cloud uses the configured security group and attaches a random subnet and VPC to that security group.
 
 * If you only configure the *Subnet name*, Prisma Cloud validates that the subnet exists and assumes that all required network resources exist and are attached to that subnet. Prisma Cloud uses the default security group created by AWS for that subnet.
+
+=== Resource Tagging
+This section lists the conventions used for identifying resources that are created by agentless scanning in Amazon Web Services (AWS). These conventions ensure that resources are effectively managed and uniformly identified in AWS cloud environments. 
+
+In Amazon Web Services (AWS), tags are used to identify resources created by agentless scanning. Here are the details for various types of resources.
+
+*Agentless Scanner VMs*
+
+* Name format: `prismacloud-scan-<scan-unique-id>`
+
+* Tags:
+
+** `created-by: prismacloud-agentless-scan`
+
+** `Name: prismacloud-scan-<scan-unique-id>`
+
+** `prismacloud-agentless-unique-id: <console-unique-id>`
+
+`scan-unique-id` is a unique identifier generated for each scan. It changes with every scan, resulting in a distinct name for the resources created during that scan.
+
+`console-unique-id` is a unique number associated with each console. For Prisma Cloud SaaS customers, it remains constant even after upgrades. For on-premises setups, it may change if a new console is created without using data from the previous console. This ID is used to track resources and facilitate their cleanup after the scan is completed.
+
+*Security Groups (SG)*
+
+* Name format: `sg-<ID>-prismacloud-scan-<scan-unique-id>`
+
+* Tags: Not applicable
+
+sg-ID is an AWS ID generated during agentless scanning. It is derived from the `scan-unique-id` and `console-unique-id`. If these IDs are missing, the SG-ID value will remain empty.
+
+*Subnets*
+
+* Name format: `subnet-<subnetId> / prismacloud-scan-<scan-unique-id>`
+
+* Tags:
+
+** `created-by: prismacloud-agentless-scan`
+
+** `Name: prismacloud-scan-<scan-unique-id>`
+
+`subnetId` is the identifier for a subnet within the cloud environment.
+
+*Snapshots*
+
+* Name format: `snap-<snapshotId>(prismacloud-scan-<scan-unique-id>)`
+
+* Tags:
+
+** `created-by: prismacloud-agentless-scan`
+
+** `Name: prismacloud-scan-<scan-unique-id>`
+
+** `prismacloud-agentless-unique-id: <console-unique-id>`
+
+`snapshotId` is the identifier for a snapshot, a point-in-time copy of a resource in the cloud environment.
+
+*Volumes*
+
+Volumes are not tagged by Prisma Cloud.
 
 === Known Limitations
 

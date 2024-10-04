@@ -5,6 +5,7 @@ Learn what's new on Prisma® Cloud in April 2024.
 * <<new-features>>
 * <<api-ingestions>>
 * <<new-policies>>
+* <<iam-policies>>
 * <<policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
@@ -1182,6 +1183,110 @@ tt:[*24.4.1*]
 
 *Impact-* You will view policy violations for these policies on Prisma Cloud switcher *Application Security > Projects*. Enforcement levels for IaC Misconfigurations will now be applied to pipelines with these findings.
 You are required to enable the additional modules on *Application Security > Settings* to view violations and alerts for these policies.
+
+|===
+
+[#iam-policies]
+=== IAM Policies
+
+The following OOTB IAM policies are newly added in 24.4.2 release.
+//RLP-139756
+
+[cols="20%a,30%a,30%a,10%a,10%a"]
+|===
+|*Policy Name*
+|*Description*
+|*RQL*
+|*Cloud*
+|*Policy Severity*
+
+|*User account with excessive admin privileges*
+|Identifies users in Azure, AWS, and GCP which have administrative permissions that have not been used in the last 90 days.
+|----
+config from iam where source.cloud.resource.type = 'user' AND action.access.isAdministrative = true AND action.lastaccess.days > 90
+----
+|All
+|Medium
+
+|*Cloud service account with excessive admin privileges*
+|Identifies cloud service accounts in Azure, AWS and GCP which have administrative permissions that have not been used in the last 90 days.
+|----
+config from iam where grantedby.cloud.entity.type IN ('service principal', 'system assigned', 'user assigned', 'serviceaccount', 'role') AND action.access.isAdministrative = true AND action.lastaccess.days > 90
+----
+|All
+|Medium
+
+|*Roles with high privileges can be assumed by a service in an external account*
+|Identifies roles which have administrative permissions and can be assumed by an identity in an external account.
+|----
+config from iam where dest.cloud.type = 'AWS' AND grantedby.cloud.entity.type = 'role' AND action.access.isAdministrative = true AND source.cloud.accountgroup != 'Default Account Group'
+----
+|AWS
+|High
+
+|*AWS Lateral Movement to Data Services Through Redshift Cluster Creation*
+|With access to the iam:PassRole, redshift:CreateCluster permissions, an adversary can create a Redshift cluster with a more privileged existing role, allowing access to more datasources.
+|----
+config from iam where dest.cloud.type = 'AWS' AND action.name CONTAINS ALL ('iam:PassRole', 'redshift:CreateCluster') and grantedby.cloud.entity.type = 'role' AND dest.cloud.wildcardscope = true and grantedby.cloud.policy.condition ('iam:PassedToService') does not exist
+----
+|AWS
+|High
+
+|*Azure Lateral Movement via VM Command Execution Leveraging Managed Identity*
+|Using this role allows running commands on any virtual machine in the subscription. With 'Microsoft.Compute/virtualMachines/runCommand/action', an adversary can steal credentials connected to the VM and perform lateral movements.	
+|----
+config from iam where dest.cloud.type = 'AZURE' AND action.name = 'Microsoft.Compute/virtualMachines/runCommand/action' AND grantedby.level.type = 'Azure Subscription'
+----
+|Azure
+|Medium
+
+|*Azure Lateral Movement Through SSH Key Replacement and Managed Identity Exploitation on VM*
+|Using this role allows creating and changing virtual machines in the subscription. With 'Microsoft.ClassicCompute/virtualMachines/write' and 'Microsoft.ClassicCompute/virtualMachines/extensions/write', an adversary can update SSH keys for a VM.
+|----
+config from iam where dest.cloud.type = 'AZURE' AND action.name CONTAINS ALL ('Microsoft.ClassicCompute/virtualMachines/write', 'Microsoft.ClassicCompute/virtualMachines/extensions/write') AND grantedby.cloud.entity.type IN ('user assigned', 'system assigned', 'service principal', 'user') AND grantedby.level.type = 'Azure Subscription'
+----
+|Azure
+|Medium
+
+|*GCP Cloud Run with basic role*
+|Identifies Cloud Run instances granted broad access due to highly permissive basic roles attached ('Viewer', 'Editor', 'Owner').
+|----
+config from iam where dest.cloud.type = 'GCP' AND source.cloud.service.name = 'run' AND grantedby.cloud.policy.name IN ('Viewer', 'Editor', 'Owner')
+----
+|GCP
+|Medium
+
+|*GCP Cloud Run with administrative permissions*
+|Identifies Cloud Run instances granted administrative permissions, increasing the blast radius in case of a potential compromise.
+|----
+config from iam where dest.cloud.type = 'GCP' AND source.cloud.service.name = 'run' AND action.access.isAdministrative = true
+----
+|GCP
+|Medium
+
+|*GCP Cloud Run Job Public Execution via Default Compute SA Modification*
+|An entity can update Cloud Run job code and public execution permissions, potentially with high permissions.
+|----
+config from iam where dest.cloud.type = 'GCP' AND action.name = 'run.jobs.setIamPolicy' AND grantedby.level.type = 'GCP Project'
+----
+|GCP
+|High
+
+|*GCP Lateral Access Expansion by Making Cloud Run Publicly Executable*
+|An entity can update Cloud Run instance code and public execution permissions, potentially with high permissions.
+|----
+config from iam where dest.cloud.type = 'GCP' AND action.name = 'run.services.setIamPolicy' AND grantedby.level.type = 'GCP Project'
+----
+|GCP
+|High
+
+|*GCP Project-Wide Lateral Movement via SSH Key Modification for VMs*
+|An entity can update VM instance metadata for all project VMs and modify SSH keys for virtual machines inside the project, allowing a lateral movement and hijacking of VMs.
+|----
+config from iam where dest.cloud.type = 'GCP' AND action.name = 'compute.projects.setCommonInstanceMetadata'
+----
+|GCP
+|High
 
 |===
 

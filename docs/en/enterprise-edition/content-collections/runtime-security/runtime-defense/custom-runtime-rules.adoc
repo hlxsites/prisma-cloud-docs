@@ -124,6 +124,14 @@ Any write operation to a disk fires a file system event.
 All properties of the process with `write` operations are accessible from this context.
 Expressions can examine the following attributes of file system `write` activity.
 
+//CWP-57290
+[NOTE]
+====
+File creation and file location change operations do not generate a runtime audit event. 
+
+However, even when the prevention rule is active for creating or writing, file creation is allowed under certain restrictions. For example, when using the `touch` command, which is commonly used to create empty files, the file creation itself is allowed, even if write operations are blocked. While the system prevents any actual writing to the file, the attempt triggers a write audit due to the way the file system processes these operations.
+====
+
 [cols="1,1,2", options="header"]
 |===
 |Attribute |Type |Description
@@ -230,11 +238,11 @@ The order of evaluation of each event type is as follows:
 
 . Specify an *Effect* for each rule.
 +
-image::runtime-security/custom-rules-effect.png[width=600]
+image::runtime-security/custom-rules-effect.png[]
 
 . Specify how to log the event for each rule.
 +
-image::runtime-security/custom-runtime-rules-log-as.png[width=600]
+image::runtime-security/custom-runtime-rules-log-as.png[]
 
 . Select *Save*.
 
@@ -250,13 +258,14 @@ The same logic applies to custom rules that try to allow processes that are prev
 For example, consider process 'foo' that is explicitly denied by a runtime rule, with the effect set to *Prevent*.
 You cannot allow 'foo -bar' in a custom runtime rule by analyzing proc.cmdline for '-bar'.
 
-* Prisma Cloud doesn't support the action *Prevent* on `write` operations to existing files.
-For example, consider the following expression:
-+
- file.path = "/tmp/file"
-+
-If this expression is added to a runtime rule, and the effect is set to prevent, then Prisma Cloud will prevent the creation of such a file.
-If the file already exists, however, Prisma Cloud won't prevent any write operation to it, but will raise an alert.
+//CWP-57290 (removed the following bullet point)
+//* Prisma Cloud doesn't support the action *Prevent* on `write` operations to existing files.
+//For example, consider the following expression:
+//+
+// file.path = "/tmp/file"
+//+
+//If this expression is added to a runtime rule, and the effect is set to prevent, then Prisma Cloud will prevent the creation of such a file.
+//If the file already exists, however, Prisma Cloud won't prevent any write operation to it, but will raise an alert.
 
 * App-Embedded custom rules support Processes and Outbound Connection rule types. The Block action is not supported, while Prevent is supported for both Processes and Outbound Connection rule types.
 

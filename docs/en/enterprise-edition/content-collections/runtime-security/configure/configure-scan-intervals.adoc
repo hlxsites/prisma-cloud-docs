@@ -46,7 +46,7 @@ Console reports the last time Defender scanned your environment.
 Go to *Manage > Defenders > Manage*, and click a row in the table to get a detailed status report for each deployed Defender.
 The sidecar shows the last time Defender scanned the containers and images on the host where it runs.
 
-image::runtime-security/configure-scan-intervals-defender-details.png[width=350]
+image::runtime-security/configure-scan-intervals-defender-details.png[]
 
 
 === Scan performance
@@ -66,8 +66,16 @@ If this option is enabled, Prisma Cloud supports the following archive file type
 * JAR
 * EAR
 
-Note: If the archive is over 512Mb, Prisma Cloud will not scan it.
+NOTE: If the archive is over 512Mb, Prisma Cloud will not scan it.
 
+=== Scan Running Images
+
+The scan Running Images toggle optimizes resource usage by limiting scans to images tied to active containers. This is especially useful in production environments, where many images on a host may never be executed, making their scanning unnecessary.
+
+* When enabled, Defenders will scan only images linked to currently running containers.
+* When disabled, Defenders will scan all images on the host, regardless of their container status.
+
+NOTE: In dynamic environments, it’s possible for images that were recently running to still be scanned, even if they are no longer active at the time of the scan. This may give the impression that non-running images are being scanned.
 
 === Scan JavaScript components in manifest but not on disk
 
@@ -82,7 +90,14 @@ This option isn't recommended for production scenarios because it can generate a
 If this option is disabled (default), Prisma Cloud only evaluates the packages that are actually found on disk during scan.
 This is the recommended setting for production scenarios.
 
-NOTE: When scanning images with twistcli, use `--include-js-dependencies` to enable this option.
+// See CWP-61459 for agentless scanning note
+
+[NOTE]
+====
+* When scanning images with twistcli, use `--include-js-dependencies` to enable this option.
+
+* For agentless scanning, this option is always enabled by default and cannot be disabled. The agentless scan includes all JavaScript package dependencies listed in the `package.json` file, which may result in identifying vulnerabilities in dependencies that are not physically present on the disk. This can lead to differences in reported vulnerabilities compared to other scanning methods.
+====
 
 
 === Unrated vulnerabilities
