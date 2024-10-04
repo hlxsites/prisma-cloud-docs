@@ -12,7 +12,7 @@ To create code-based policies for your infrastructure, use these examples as gui
 [#bicep-example]
 === Bicep Example
 
-The following example demonstrates how to create a Bicep policy.
+The following example demonstrates how to create a Bicep policy. This policy ensures that auditing is enabled for Microsoft SQL servers and their databases. It filters resources to include only Microsoft.Sql/servers and Microsoft.Sql/servers/databases, then checks for a connection with auditing settings for both resource types and that the settings are enabled.
 
 ----
 metadata:
@@ -71,7 +71,7 @@ If you are creating policies for Terraform, here are some examples you can use t
 [#t-basic-policy-definition]
 ==== Basic Policy Definition
 
-Use the sample guideline to create a basic policy definition using one attribute.
+In the follow example, the attribute is “tags.env”, where tags is the attribute and “env” is the key name you are searching for in a key:value pair of tags. If instead, you would like to ensure that every resource has a tag of Department:<something>, change the attribute to “tags.Department”. Note that this is case sensitive. Use the operator `equals_ignore_case` if you prefer a case insensitive check.
 
 [source,yaml]
 ----
@@ -79,7 +79,6 @@ metadata:
   name: "Check that all resources are tagged with the key - env"
   guidelines: "Tags Governance - in case of the matched condition below -> add a tag of env with one of the values: prod/dev1/dev2/test/stage"
   category: "general"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -100,7 +99,6 @@ metadata:
   name: "Org's compute instances should not be t3.micro or t3.nano"
   guidelines: "In order to avoid compute issues in this account - change manually instances to be at least from type t3.small"
   category: "networking"
-  severity: "high"
 scope:
   provider: "aws"
 definition:
@@ -125,7 +123,6 @@ metadata:
   name: "AWS Security rule check"
   guidelines: "AWS Security rule check"
   category: "general"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -155,7 +152,6 @@ metadata:
   name: "Check that all encrypted RDS clusters are tagged with encrypted: true"
   guidelines: "Tags Governance - in case of the matched condition below -> add/modify a tag of encrypted:true"
   category: "secrets"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -191,7 +187,6 @@ metadata:
   name: "Ensure all AWS databases have Backup Policy"
   guidelines: "In case of non-compliant resource - add a backup policy configuration for the resource"
   category: "storage"
-  severity: "medium"
 scope:
   provider: "aws"
 definition:
@@ -239,7 +234,6 @@ metadata:
   name: "Ensure all EC2s are connected only to encrypted EBS volumes"
   guidelines: "In case of non-compliant resource - change attached EBS volume's attribute into encrypted=true"
   category: "storage"
-  severity: "high"
 scope:
   provider: "aws"
 definition:
@@ -271,7 +265,6 @@ metadata:
   name: "Ensure all ALBs are connected only to HTTPS listeners"
   guidelines: "In case of non-compliant resource - change the definition of the listener/listener_rul protocol value into HTTPS"
   category: "networking"
-  severity: "high"
 scope:
   provider: "aws"
 definition:
@@ -363,7 +356,6 @@ metadata:
   name: "Ensure resources allows encrypted ingress communication (SSH)"
   guidelines: "In case of non-compliant resource - change the definition of the security groups protocol into 22"
   category: "networking"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -467,7 +459,6 @@ metadata:
   name: "Ensure security groups do not allow traffic from all IPs"
   guidelines: "..."
   category: "networking"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -499,7 +490,6 @@ metadata:
   name: "Ensure MSK Cluster logging is enabled"
   guidelines: "..."
   category: "logging"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -521,7 +511,6 @@ metadata:
   name: "Ensure MSK Cluster logging is enabled"
   guidelines: "..."
   category: "logging"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -557,7 +546,6 @@ metadata:
   name: "Ensure that ALB redirects HTTP requests into HTTPS ones"
   guidelines: "..."
   category: "networking"
-  severity: "critical"
 scope:
   provider: "aws"
 definition:
@@ -759,7 +747,6 @@ metadata:
   name: "Detect password definition"
   guidelines: "Find passwords starting with password|pwd and the value format is not {var}.{var}"
   category: "secrets"
-  severity: "high"
 definition: 
   cond_type: "secrets"
   value:
