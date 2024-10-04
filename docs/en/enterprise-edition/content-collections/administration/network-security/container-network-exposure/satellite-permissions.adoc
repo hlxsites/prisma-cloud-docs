@@ -44,6 +44,7 @@ Satellite can only use these permissions within its own namespace:
   verbs: [ "get", "list", "create", "update", "patch"]
 ----
 
+
 === Discovery/Job Role
 
 ----
@@ -59,4 +60,43 @@ Satellite can only use these permissions within its own namespace:
 - apiGroups: ["apps"]
   resources: ["deployments","statefulsets","replicasets","daemonsets"]
   verbs: ["list", "get", "watch"]
+----
+
+=== Satellite Role
+
+For operator-manager-role: 
+
+----
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: [ "get", "list", "create", "update", "patch", "delete"]
+  - apiGroups: [ "" ]
+    resources: [ "pods" ]
+    verbs: [ "get", "list", "watch" ]
+----
+
+=== Runner Role
+
+For task-logshipper-role: 
+
+----
+  - apiGroups: [ "batch" ]
+    resources: [ "jobs" ]
+    verbs: [ "list", "watch" ]
+  - apiGroups: [""]
+    resources: ["events","pods","pods/status","pods/log"]
+    verbs: ["get","list","watch"]
+----
+
+=== Runner Cluster Role
+
+For task-kubeapi-role: 
+
+----
+  - apiGroups: [""]
+    resources: ["pods","pods/log","services","endpoints","nodes","namespaces","serviceaccounts"]
+    verbs: ["get","list","watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles","rolebindings","clusterroles","clusterrolebindings"]
+    verbs: ["list", "get", "watch"]
 ----
