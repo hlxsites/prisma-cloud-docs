@@ -1,11 +1,11 @@
 == Network Configuration Query Examples
 
-Here are few examples showing you how to use xref:network-config-query-attributes.adoc[Network Configuration Query Attributes] in RQL for investigating network exposure issues.
+The following examples show you how to use xref:network-config-query-attributes.adoc[Network Configuration Query Attributes] in RQL for investigating network and container exposure issues.
 
-[cols="1,1", options="header"]
+[cols="40%a,60%a"]
 |===
-|AWS USE CASES
-|RQL
+|*AWS Use Cases*
+|*RQL*
 
 |Find all AWS EC2 instances that are accessible from any untrusted Internet source on administrative ports via SSH/RDP.
 |----
@@ -94,10 +94,12 @@ config from network where source.network = '20.0.0.0/24' and address.match.crite
 
 |===
 
-[cols="1,1", options="header"]
+//NOTE: You can save your custom RQL queries for config from network, however you cannot yet download the query result as a CSV from the console.
+
+[cols="40%a,60%a"]
 |===
-|AZURE USE CASES
-|RQL
+|*Azure Use Cases*
+|*RQL*
 
 
 |Find Azure PostgreSQL (PaaS) instance reachable from untrust Internet source on TCP port 5432.
@@ -117,4 +119,56 @@ config from network where source.network = UNTRUST_INTERNET and dest.resource.ty
 
 |===
 
-NOTE: You can save your custom RQL queries for config from network, however you cannot yet download the query result as a CSV from the console.
+[cols="40%a,60%a"]
+|===
+|*Kubernetes Use Cases*
+|*RQL*
+
+|Find K8s Services that are Internet Facing on EKS clusters on AWS.
+|----
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'AWS'
+----
+
+|Find K8s Services that are Internet Facing on AKS clusters in Azure.
+|----
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'Azure'
+----
+
+|Find K8s Services that are Internet Facing on GKE clusters in GCP.
+|----
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP'
+----
+
+// |Scope down searches by a specific cluster.
+// |----
+// config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP' and dest.k8s.cluster.name = 'yourClusterID'
+// ----
+
+// |Scope down searches by a specific namespace.
+// |----
+// config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP' and dest.k8s.cluster.name = 'yourClusterID' and dest.k8s.namespace = 'yourNamespaceName' 
+// ----
+
+|Scope down searches on a specific cluster and namespace.
+|----
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP' and dest.k8s.cluster.name = 'yourClusterID'
+
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP' and dest.k8s.cluster.name = 'yourClusterID' and dest.k8s.namespace = 'yourNamespaceName'
+----
+
+|Search by using tags.
+|----
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP' and dest.k8s.cluster.name = 'yourClusterID' and dest.k8s.label = 'app=dev'
+----
+
+|Identify K8s Services that are Internet Facing over a non-standard port.
+|----
+config from network where source.network = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'AWS' and protocol.ports = 'tcp/9090' 
+----
+
+|Find if a specific container image is associated with deployed pods that are Internet exposed.
+|----
+config from network where source.network = = 'Untrusted_Internet' and dest.resource.type = 'K8s Service' and dest.cloud.type = 'GCP' and dest.k8s.container.image = 'nginx:latest'
+----
+
+|===

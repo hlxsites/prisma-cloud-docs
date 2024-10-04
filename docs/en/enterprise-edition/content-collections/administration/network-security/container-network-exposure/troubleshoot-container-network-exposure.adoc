@@ -1,0 +1,70 @@
+== Troubleshoot Container Network Exposure Issues
+
+=== Onboarding Issues
+
+If Container Exposure is not generating any alerts or your RQL queries always return empty:
+
+//ask PM about resources vs. assets?
+
+* Make sure all Prisma Cloud resources in the specific cluster are in the *Running* state.
+
+* Check the Satellite status in the Prisma Cloud UI (*Settings > Providers > K8s Satellite*):
++
+** If the resources in the cluster are running and the Satellite status is *Active*:
++
+*** Make sure the cluster is onboarded and the Satellite operator is installed successfully,
+
+*** Wait until the first ingestion cycle is completed (24 hours).
+
+** If the Satellite status is *Pending Install*:
++
+*** Ensure resources under K8s `pc-satellite` namespace are in the *Running* or *Completed* state,
+
+*** Check `prismacloud-satellite-manager` pod logs: `kubectl logs <pod name> -n pc-satellite`,
+
+*** Ensure that the K8s Node has sufficient resources.
+
+** If the Satellite status is *Offline*:
++
+*** The K8s cluster may not be active in the respective cloud service provider.
+
+
+=== Search and Investigate Issues
+
+If the SLA for resource ingestion is met and there aren't any results for the query:
+
+* Run the same RQL search as the previous time, however change the `effective.action` value to `Any` and check if you see a 'Reject' path.
++
+** If you see a 'Reject' path, it indicates that certain security configurations, such as security groups, NACLS, firewalls, NSGs, or Kubernetes network policies, are hindering the flow of traffic.
+
+** If you do not see a 'Reject' path, that is no path is observed to K8s Service, run the same RQL query without any Kubernetes-specific filters, ensure that the `effective.action` is `Any` and `dest.resource.type` is set to `Instance`.
+
+** If you see an 'Allow' path for the new RQL query above, that is to the K8s Nodes within the K8s cluster, follow the steps listed below to troubleshoot:
++
+*** Ensure that the K8s service is of type 'LoadBalancer'
++
+**** Verify that the service slated for exposure has been assigned an External-IP.
+//if not issue with provisioning the load balancer.
+
+**** Ensure that the K8s service intended for investigation has endpoints, by running the `kubectl describe service <service name> -n <namespace name>` command. If no endpoints are observed, check the selectors used in the K8s service because there may be a problem with the K8s deployment.
+
+**** Check if the target port in the K8s Service aligns with the actual container port where the application runs inside the pod. 
+
+NOTE: If each of the above troubleshooting steps work as expected, there can be an issue with K8s resource ingestion.
+
+* If there is a 'Reject' path to the nodes, it indicates that certain security configurations, such as security groups, NACLS, firewalls, NSGS are hindering the flow of traffic.
+
+* If there is no path, there might be an issue with resource ingestion of non-k8s resources, such as instances or load balancers.
+
+
+=== Uninstall Satellite
+
+To uninstall the Satellite operator: 
+
+. Use the following command to uninstall Helm:
++
+`prismacloud-satellite -n pc-satellite`
+
+. Delete the cluster from the Satellite UI:
++
+On *Settings > K8s Satellite* select *Delete* under Actions for the corresponding cluster entry.
