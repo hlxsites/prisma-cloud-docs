@@ -122,6 +122,31 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+
+|*Azure DNS Zone having dangling DNS Record vulnerable to subdomain takeover associated with Web App Service*
+//RLP-152208
+
+|The policy logic will be updated to prevent false positives for resources that are stopped but still valid. This will ensure that only genuinely dangling DNS records are flagged as alerts.
+
+*Current RQL–*: 
+----
+config from cloud.resource where api.name = 'azure-dns-recordsets' AND json.rule = type contains CNAME and properties.CNAMERecord.cname contains "azurewebsites.net" as X; config from cloud.resource where api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running as Y;  filter 'not ($.Y.properties.hostNames contains $.X.properties.CNAMERecord.cname) '; show X;
+----
+
+*Updated RQL–*:
+----
+config from cloud.resource where api.name = 'azure-dns-recordsets' AND json.rule = type contains CNAME and properties.CNAMERecord.cname contains "azurewebsites.net" as X; config from cloud.resource where api.name = 'azure-app-service' as Y; filter 'not ($.Y.properties.hostNames contains $.X.properties.CNAMERecord.cname) '; show X;
+----
+
+*Policy Type*: Config
+
+*Policy Severity*: High
+
+*Alert Impact*: Low
+
+*Impact*: Open alerts on the Logic App have public access disabled using default behavior with a private endpoint configured will be resolved.
+
+
 |*Azure Logic App configured with public network access*
 //RLP-150603
 
