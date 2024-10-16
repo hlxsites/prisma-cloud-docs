@@ -122,6 +122,31 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+
+|*Azure DNS Zone having dangling DNS Record vulnerable to subdomain takeover associated with Web App Service*
+//RLP-152208
+
+|The policy that flags Azure DNS zones with dangling DNS records will be updated. This change will prevent false positives for stopped resources and ensure only genuine vulnerabilities are flagged.
+
+*Current RQL–*: 
+----
+config from cloud.resource where api.name = 'azure-dns-recordsets' AND json.rule = type contains CNAME and properties.CNAMERecord.cname contains "azurewebsites.net" as X; config from cloud.resource where api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case Running as Y;  filter 'not ($.Y.properties.hostNames contains $.X.properties.CNAMERecord.cname) '; show X;
+----
+
+*Updated RQL–*:
+----
+config from cloud.resource where api.name = 'azure-dns-recordsets' AND json.rule = type contains CNAME and properties.CNAMERecord.cname contains "azurewebsites.net" as X; config from cloud.resource where api.name = 'azure-app-service' as Y; filter 'not ($.Y.properties.hostNames contains $.X.properties.CNAMERecord.cname) '; show X;
+----
+
+*Policy Type*: Config
+
+*Policy Severity*: High
+
+*Alert Impact*: Low
+
+*Impact*: Alerts will be reduced as existing false positives will be resolved as `Policy Updated`.
+
+
 |*Azure Logic App configured with public network access*
 //RLP-150603
 
