@@ -1,0 +1,83 @@
+== Customize Satellite Deployment
+
+You can use a Secret Manager to store Satellite information and customize your Satellite deployment:
+
+* Use Kubernetes Secrets (default option) or third-party https://kubernetes.io/docs/concepts/configuration/secret/#uses-for-secrets[Secrets Managers] and mount it as a dot file into the deployment as volume.  
++
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prismacloud-satellite-secret
+  labels:
+    {{- include "prismacloud-satellite.labels" . | nindent 4 }}
+type: Opaque
+data:
+  .PRISMA_API_SECRET: {{ .Values.global.satellite.accessKey | b64enc }}
+  .PROXY_PASSWORD: {{ .Values.global.proxy.password | quote | b64enc }}
+  .PROXY_USER: {{ .Values.global.proxy.user | quote | b64enc }}
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-dotfiles-pod
+spec:
+  volumes:
+    - name: prisma-api-secret
+      secret:
+        secretName: prismacloud-satellite-secret
+  containers:
+    - name: test-container
+      image: registry.k8s.io/busybox
+      command:
+        - ls
+        - "-l"
+        - "/etc/secret-volume"
+      volumeMounts:
+        - name: prisma-api-secret
+          readOnly: true
+          mountPath: "/etc/secrets"
+----
+
+* Use the GCP CSI driver secrets add on, which mounts the https://cloud.google.com/secret-manager/docs/secret-manager-managed-csi-component[GCP managed secrets] as volume.
++
+Define which secrets to mount, create a `SecretProviderClass` yaml manifest, and list the secrets to mount and the filename to mount them as. 
++
+----
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: gke-secrets
+spec:
+  provider: gke
+  parameters:
+    secrets: |
+      - resourceName: "projects/<your-project-id>/secrets/<my-api-token>/versions/latest"
+        path: "<secret-filename>"
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-dotfiles-pod
+spec:
+  volumes:
+    - name: prisma-api-secret
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "gke-secrets"
+  containers:
+    - name: test-container
+      image: registry.k8s.io/busybox
+      command:
+        - ls
+        - "-l"
+        - "/etc/secret-volume"
+      volumeMounts:
+        - name: prisma-api-secret
+          readOnly: true
+          mountPath: "/etc/secrets"
+----
