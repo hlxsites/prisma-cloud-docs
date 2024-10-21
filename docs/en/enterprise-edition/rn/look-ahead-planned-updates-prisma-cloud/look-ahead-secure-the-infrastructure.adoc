@@ -46,7 +46,7 @@ The details and functionalities listed below are a preview and the actual releas
 
 |Starting with the 24.11.1 release, a new filter option for *Asset Type* will be added to the *Governance* page. This will allow users to filter the policy list based on the type of asset associated with the policy.
 
-The https://api.prismacloud.io/v2/policy[GET /v2/policy] endpoint will have a new query parameter `resource.type` to enable filtering the policy list by asset type. The response will also include the `resource.type` to indicate the Asset Type associated with each returned policy.
+The https://pan.dev/prisma-cloud/api/cspm/get-policies-v-2/[GET /v2/policy] endpoint will have a new query parameter `resource.type` to enable filtering the policy list by asset type. The response will also include the `resource.type` to indicate the Asset Type associated with each returned policy.
 
 The CSV download from the *Governance* page will also include a new column *Asset Type*.
 
@@ -121,6 +121,53 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |===
 |*Policy Updates*
 |*Description*
+
+|*AWS KMS Key policy overly permissive*
+//RLP-151215
+
+|The RQL will be updated to consider the “effect” field, which also defines whether the Key policy is overly permissive. 
+
+*Current RQL–*: 
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and policies.default.Statement[?any(Principal.AWS equals * and Condition does not exist)] exists
+----
+
+*Updated RQL–*:
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and policies.default.Statement[?any(Principal.AWS equals * and Effect equal ignore case allow and Condition does not exist)] exists
+----
+
+*Policy Type*: Config
+
+*Policy Severity*: Medium
+
+*Alert Impact*: Low
+
+*Impact*:  Open alerts where the key policy contains effect as Deny would be resolved.
+
+
+|*AWS MFA not enabled for IAM users*
+//RLP-151568
+
+|Policy RQL is being updated to exclude alerting for root users. 
+
+*Current RQL–*: 
+----
+config from cloud.resource where cloud.type = 'aws' and api.name='aws-iam-get-credential-report' AND json.rule='password_enabled equals true and mfa_active is false'
+----
+
+*Updated RQL–*:
+----
+config from cloud.resource where cloud.type = 'aws' and api.name='aws-iam-get-credential-report' AND json.rule='user does not equal "<root_account>" and password_enabled equals true and mfa_active is false'
+----
+
+*Policy Type*: Config
+
+*Policy Severity*: Low
+
+*Alert Impact*: Low
+
+*Impact*: Open Alerts for root users will be resolved
 
 
 |*Azure DNS Zone having dangling DNS Record vulnerable to subdomain takeover associated with Web App Service*
