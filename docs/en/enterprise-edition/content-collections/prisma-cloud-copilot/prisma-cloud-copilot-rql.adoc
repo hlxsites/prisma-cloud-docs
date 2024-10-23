@@ -1,0 +1,147 @@
+== Text to RQL Examples
+
+With Prisma Cloud Copilot, you can type questions that are automatically translated to an RQL query that is then executed.
+
+=== Asset RQL Examples
+
+The table below lists examples of asset-related questions (prompts) that you can type and the Copilot generates the corresponding RQL query.
+
+[cols="40%a,60%a"]
+|===
+
+|*Text*
+|*RQL Queries*
+
+|Are the IAM resources making attempts to abuse credentials?
+|`asset where asset.class = 'Identity & Security' and finding.type in ('CREDENTIAL_ACCESS')`
+
+|Which users making attempts to abuse credentials?
+|`asset where asset.class = 'Identity & Security' and finding.type in ('CREDENTIAL_ACCESS')`
+
+|Find S3 buckets with internet exposure or unencrypted storage.
+|`asset where asset.type = 'aws-s3api-get-bucket-acl' and finding.type IN ('INTERNET_EXPOSURE','UNENCRYPTED_DATA')`
+
+|Find GCP storage buckets in privilege escalation alerts.
+|`asset where asset.type in ('gcloud-storage-buckets-list') and finding.type in ('PRIVILEGE_ESCALATION')`
+
+|Show me an asset with OPENSSL vulnerability.
+|`asset where asset.class = 'Compute' AND WITH : vuln where id IN ( 'CVE-2003-0545', 'CVE-2022-1292', 'CVE-2022-2068', 'CVE-2022-2274', 'CVE-2023-4807' )`
+
+|Which are the AWS instances with vulnerabilities with a score of at least 8?
+|`asset WHERE asset.type = 'aws-ec2-describe-instances' AND WITH : Vuln WHERE cvss.score >= 8`
+
+|Show me assets with vulnerabilities.
+|`asset where asset.class = 'Compute' AND WITH : vuln`
+
+|Show me a list of compute instances using a new protocol to connect outside the cloud.
+|`asset where asset.class = 'Compute' and finding.name = ('Traffic with unusual protocol to a server outside monitored cloud accounts')`
+
+|Users connecting from Tor network to Storage services.
+|`asset where asset.class = 'Identity & Security' and finding.name = ('Suspicious activity in Storage services')`
+
+|Compute instances scanning inside my environment.
+|`asset where asset.class = 'Compute' and finding.type in ('DISCOVERY')`
+
+|Find port scan attempts from Oracle cloud instances inside monitored accounts.
+|`asset where asset.type = 'oci-compute-instance' and finding.name = ('Port Scan attempt from inside monitored cloud accounts')`
+
+|AWS Lambda Function with IAM permissions management access level.
+|`asset where asset.class = 'Compute' and finding.name = ('AWS Lambda Function with IAM permissions management access level')`
+
+|ECS task definitions with high privileged roles.
+|`asset where asset.type = 'aws-ecs-describe-task-definition' and finding.type in ('HIGH_PRIVILEGED_ROLE')`
+
+|Okta user with IAM permissions management access level.
+|`asset where asset.class = 'Identity & Security' and finding.name = ('Okta User with IAM permissions management access level')`
+
+|List of Azure AD users with high privileged roles.
+|`asset where asset.type = 'azure-ad-user-list' and finding.type in ('HIGH_PRIVILEGED_ROLE')`
+
+|Suspicious hosts associated with Rootkit activity talking to compute instances.
+|`asset where asset.class = 'Compute' and finding.name = ('Traffic from a suspicious IP address associated with Rootkit activity')`
+
+|AWS SageMaker notebook instances configured with direct internet access feature.
+|`asset where asset.class in ('Other') and finding.name = ('AWS SageMaker notebook instance configured with direct internet access feature')`
+
+|GCP managed service accounts with key misconfigurations.
+|`asset where asset.type in ('gcloud-iam-service-accounts-list') and finding.type in ('KEYS_AND_SECRETS')`
+
+|Find Alibaba cloud ram users with multiple access keys or types.
+|`asset where asset.type in ('alibaba-cloud-ram-user') and finding.type in ('KEYS_AND_SECRETS')`
+
+|Find Azure AD users with privilege escalation problems.
+|`asset where asset.type in ('azure-ad-user-list') and finding.type in ('PRIVILEGE_ESCALATION')`
+
+|===
+
+=== Vulnerability RQL Examples
+
+The table below lists examples of vulnerability-related questions (prompts) that you can type and the Copilot generates the corresponding RQL query.
+
+[cols="40%a,60%a"]
+|===
+
+|*Questions*
+|*RQL Queries*
+
+|Find vulnerable assets in runtime environment.
+|`vulnerability where asset.lifecycle IN ('Run')`
+
+|Find vulnerabilities that have persisted for a minimum of 30 days.
+|`vulnerability where age >= 30 days`
+
+|Show vulnerabilities in code repos.
+|`vulnerability where asset.lifecycle IN ('Code')`
+
+|Show me vulnerabilities data where asset lifecycle is in run and severity is greater than high.
+|`vulnerability where asset.lifecycle IN ('Run') and severity IN ('critical')`
+
+|Find all vulnerable assets across all cloud workloads.
+|`vulnerability where asset.type IN ( 'Container Registry Image', 'Deployed Image', 'Host', 'IaC', 'Package', 'Serverless Function', 'VM Image')`
+
+|Am I impacted by CVE-2022-42889?
+|`vulnerability where cve.id = 'CVE-2022-42889'`
+
+|Show me vulnerability where CVSS score is greater than 5.
+|`vulnerability where cvss.score > 5`
+
+|Show the vulnerabilities with CVSS score is higher than 7.5 on infrastructure-as-code assets.
+|`Vulnerability where cvss.score > 7.5 and asset.type IN ( 'IaC')`
+
+|Show vulnerabilities with a CVSS score higher than 8 and at least 30 days old.
+|`vulnerability where cvss.score > 8.0 and age >= 30 days`
+
+|Get cve which is coming from package git-commit-info.
+|`vulnerability where package.name = 'git-commit-info'`
+
+|List vulnerabilities for package MOVEit 2021.0.6.
+|`vulnerability where package.name = 'moveit' and version = '2021.0.6'`
+
+|Do I have any log4j vulnerabilities that are public facing?
+|`vulnerability where package.name = 'org.apache.logging.log4j_log4j-core' and risk.factors in ('reachable from the internet')`
+
+|Find vulnerabilities that are not prioritized.
+|`vulnerability where prioritized = false`
+
+|Show vulnerabilities that are both exploitable and have a high possibility of causing denial of service.
+|`vulnerability where risk.factors CONTAINS ALL ('Denial of service', 'Exploitable')`
+
+|Do I have any Internet facing PII?
+|`vulnerability where risk.factors contains all ('reachable from the internet', 'sensitive information')`
+
+|Which critical vulnerabilities exist in my cloud account?
+|`vulnerability where severity IN ('critical')`
+
+|Which vulnerability is critical and must be fixed asap.
+|`vulnerability where severity IN ('critical') and risk.factors IN ('Has fix', 'Exploitable', 'Urgent')`
+
+|Show vulnerabilities found by Bridgecrew module.
+|`vulnerability where source IN ('bridgecrew')`
+
+|Find vulnerabilities from either the Compute or Bridgecrew source.
+|`vulnerability where source IN ('compute', 'bridgecrew')`
+
+|Show me any XZ Utils vulnerabilities.
+|`vulnerability where package.name = 'xz-utils'`
+
+|===
