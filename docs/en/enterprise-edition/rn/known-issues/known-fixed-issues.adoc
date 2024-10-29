@@ -24,15 +24,31 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 //On *Inventory > Assets*, if you filter based on the _Key-Value_ *Asset Tag* and your environment has more that 1 million assets, the results will be inconclusive.
 //Contact your Prisma Cloud Customer Success representative for more details.
 
+|*RLP-151696*
+//added on 10/11/2024
+
+|Some invalid assets related to accounts for which the cloud scan was not completed will be deleted.
+
+*Impact*: Open alerts on such existing invalid assets, where asset type is `Account Aggregate Entity` will get resolved.
+
+
+|*RLP-152263*
+//added on 10/10/2024, revised on 10/11
+
+|In certain cases, a system processing issue is causing deviations in the total, passed, and failed assets count. 
+
+
+*Imapct*: Inaccurate overall asset counts will be displayed on *Asset Inventory* and *Compliance Dashboard* for some customers. 
+
+//move blurb under fixed-issues once fix/patch is deployed in 24.10.1 or .2? -- Fixed a race condition (Was causing deviations in total, pass, fail counts on the asset inventory and compliance pages) in Asset Inventory and Compliance Dashboard. This fix will provide more accurate overall asset counts for some customers. 
+
 |*RLP-149425*
 
 |To ingest the `gcloud-cloud-domains-registration` API, you need the Viewer role or any least permissive built in roles such as Cloud Domains Viewer or Cloud Domains Admin, which includes the permissions `domains.registrations.list` and `domains.registrations.getIamPolicy`.
 
 Custom roles cannot be configured to include these permissions, as Google Cloud Platform (GCP) does not permit it. As a result, Prisma Cloud will be unable to ingest the `gcloud-cloud-domains-registration` API when using a custom role.
 
-*Impact*:
-
-If the Viewer role or domain related built in role is correctly configured, ingestion of the `gcloud-cloud-domains-registration` API will proceed as expected.
+*Impact*: If the Viewer role or domain related built in role is correctly configured, ingestion of the `gcloud-cloud-domains-registration` API will proceed as expected.
 
 If the Viewer role or domain related built in role is not configured, the API ingestion will fail, and `'Missing Permissions'` warning for the above permissions will not be displayed on the account status page.
 
@@ -88,13 +104,6 @@ To verify successful onboarding, go to *Settings > Providers > Cloud Accounts* a
 
 |When configuring Jira fields in the Prisma Cloud Notification template, it is important to note that the automatic population is limited to fields specifically of types `user` and `labels`. Other field types may not be populated as expected during the setup process. This is a known issue.
 
-|*RLP-113952*
-//Added in 24.1.1. Plan is to fix it in 24.5.2. This must be moved to fixed issues then.
-|While onboarding your Azure China tenant to Prisma Cloud, you might see an inaccurate warning within the *Review Status > Security Capabilities and Permissions* section, even if you have granted the necessary permissions.
-
-`Prisma Cloud application is not assigned following role(s): GroupMember.Read.All, Domain.Read.All, Reports.Read.All, Application.Read.All, Policy.Read.All;`
-
-This is a known issue and can be disregarded. This will be fixed in the upcoming release.
 
 |*RLP-104295*
 //Added in 23.7.2. 
@@ -377,6 +386,86 @@ CVE-2024-3154 - Arbitrary Systemd Property Injection as Defender does not direct
 |===
 |*ISSUE ID*
 |*DESCRIPTION*
+
+|*RLP-113952*
+//Added in 24.1.1. Plan is to fix it in 24.5.2. This must be moved to fixed issues then. Moved to Fixed 10/16 remove in 11.1
+|While onboarding your Azure China tenant to Prisma Cloud, you might see an inaccurate warning within the *Review Status > Security Capabilities and Permissions* section, even if you have granted the necessary permissions.
+
+`Prisma Cloud application is not assigned following role(s): GroupMember.Read.All, Domain.Read.All, Reports.Read.All, Application.Read.All, Policy.Read.All;`
+
+This issue is resolved and can be disregarded.
+
+|*CWP-62084*
+
+tt:[Secure the Runtime]
+
+tt:[Fixed in 33.01.137]
+
+| *Updating the list of binaries exposed to a vulnerability after rerunning a scan*
+
+//Fixed an issue, where the scan results displayed in the *Image details* dialog (*Monitor > Vulnerabilities* page, *Images* tab) did not display the binary packages impacted by a vulnerability.
+
+Rerunning a scan didn't update the binary packages exposed to a vulnerability. This issue is fixed now.
+
+|*CWP-61947*
+
+tt:[Secure the Runtime]
+
+tt:[Fixed in 33.01.137]
+
+|*Boot volume encryption in agentless scanning*
+
+Fixed an issue with the agentless scanner boot volume default encryption.
+
+|*CWP-61606*
+
+tt:[Secure the Runtime]
+
+tt:[Fixed in 33.01.137]
+
+|*CSV Export Compatibility with Excel*
+
+The exported CSV file from the *Monitor > Vulnerabilities > Images > Deployed* page could not be opened in Excel when the Hosts field exceeded the maximum character limit of 32,768 per column. 
+
+This issue is resolved. The fix ensures that the CSV now lists all the hostnames running the same image. However, if the total length exceeds 32,757 characters, the list is truncated, and the number of truncated hostnames is indicated in the CSV.
+
+|*CWP-59281*
+
+tt:[Secure the Runtime]
+
+tt:[Fixed in 33.01.137]
+
+|*Improved vulnerability reporting for Debian images*
+
+When scanning Debian images, Prisma Cloud occasionally missed some CVEs related to specific package versions. This issue is fixed.
+
+The fix prioritizes CVE matches from the security repository and Prisma Cloud now reports all previously missing CVEs for packages in Debian images.
+
+|*CWP-58952*
+
+tt:[Secure the Runtime]
+
+tt:[Fixed in 33.01.137]
+
+| *Improved vulnerability detection for multiple Python versions*
+
+In previous versions of Defender, vulnerabilities were only detected and reported for a single Python installation on a host, even if multiple Python versions were installed. This resulted in False Negatives (FN), where vulnerabilities in other Python versions were missed.
+
+The issue is fixed. Prisma Cloud will now scan and report vulnerabilities for each installed Python version on a host.
+
+|*CWP-59654*
+
+tt:[Secure the Runtime]
+
+tt:[Fixed in 33.01.137]
+
+| *Support for Amazon Linux CVEs*
+
+Previously, Prisma Cloud reported several false positive vulnerabilities for Amazon Linux CVEs that were marked as "not affected" by Amazon.
+
+Prisma Cloud now fully supports CVEs classified as “not affected” by Amazon, improving the accuracy of vulnerability reporting for Amazon products and resolving the false positive issue. The supported Amazon Linux distributions include Amazon Linux, Amazon Linux 2, and Amazon Linux 2023.
+
+NOTE: Prisma Cloud does not support CVEs labeled as "pending fix" or "no fix planned," as Amazon does not provide the required package version details for precise CVE status reporting.
 
 // CWP-61444
 |tt:[Fixed in 33.00.169]
