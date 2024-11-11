@@ -1,0 +1,56 @@
+
+== AWS Elastic Load Balancer with listener TLS/SSL is not configured
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 836a7c8c-34c2-4861-be1e-df2f8cd27aab
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ELBwListenerNotTLSSSL.py[CKV_AWS_376]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy is checking for the use of TLS/SSL protocols in AWS Elastic Load Balancer (ELB) listeners. The purpose of this check is to ensure that data transmitted between clients and the load balancer is encrypted and secure. TLS/SSL (Transport Layer Security/Secure Sockets Layer) are cryptographic protocols designed to provide secure communication over a network by encrypting the data exchanged.
+
+Without TLS/SSL, data transmitted over the network is susceptible to being intercepted, read, or tampered with by malicious actors. This can lead to data breaches, loss of sensitive information, and other security vulnerabilities. Therefore, it is important for ELB listeners to use TLS/SSL to protect the integrity and confidentiality of data in transit, ensuring secure communication channels for applications.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_elb
+* *Arguments:* instance_protocol
+
+Ensure the AWS Elastic Load Balancer listener uses TLS/SSL by specifying the `instance_protocol` as `HTTPS` or `SSL` in your `aws_elb` resource configuration.
+
+To fix this issue, you should update your Terraform configuration to use `HTTPS` or `SSL` as the protocol for the load balancer listener. This will ensure that traffic between clients and the load balancer is encrypted.
+
+[source,go]
+----
+resource "aws_elb" "example" {
+  ...
+  listener {
+    instance_port     = 8000
+-    instance_protocol = "http"
++    instance_protocol = "https"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+}
+----
+

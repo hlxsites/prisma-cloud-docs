@@ -1,0 +1,65 @@
+
+== AWS S3 bucket not configured with secure data transport policy
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 7b0df373-006a-40d6-9f3d-68e6ea0bdd5d
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/S3SecureDataTransport.py[CKV_AWS_379]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy is checking to ensure that an AWS S3 bucket is configured to enforce secure data transport, specifically by requiring the use of HTTPS for data transfer. This is important because transmitting data over HTTPS ensures that the data is encrypted during transit. This encryption helps protect the data from interception or eavesdropping by unauthorized parties during transmission between clients and the S3 bucket. By requiring secure data transport, the risk of cyberattacks, such as man-in-the-middle attacks, is reduced, thereby enhancing the overall security posture of the cloud environment.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_s3_bucket_acl
+* *Arguments:* aws_s3_bucket_public_access_block, access_control_policy
+
+To ensure secure data transport, configure your AWS S3 bucket to either be public, block public access or else explicitly enforce `aws:SecureTransport = true`.
+
+
+[source,go]
+----
+resource "aws_s3_bucket_policy" "example" {
+  ...
+  policy = jsonencode({
+    ...
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.example.arn
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "true"
+          }
+        }
+      }
+    ]
+  })
+}
+----
+

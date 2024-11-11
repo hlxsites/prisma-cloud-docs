@@ -1,0 +1,49 @@
+
+== AWS Transfer Server not using latest Security Policy
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/TransferServerLatestPolicy.py[CKV_AWS_380]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that an AWS Transfer Server is configured to use the latest security policy, as defined as no older than 24 months. In the context of AWS Transfer, security policies dictate the encryption algorithms and protocols that are used during file transfers. Using outdated security policies can be detrimental because they may include deprecated or weaker encryption methods, which can be more susceptible to security vulnerabilities and attacks. By ensuring that the latest security policy is used, it helps to maintain strong encryption standards, enhance data protection, and comply with best practices for secure communications. This can protect sensitive data being transferred to and from the server from unauthorized access and potential breaches.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_transfer_server
+* *Arguments:* security_policy_name
+
+Ensure your AWS Transfer Server uses the latest security policy to secure data transfers. Associate each `aws_transfer_server` resource with the latest available `security_policy_name` to maintain high security standards.
+
+In this example, a security policy for an AWS Transfer Server is updated to the latest version using Terraform.
+
+[source,go]
+----
+resource "aws_transfer_server" "example" {
+   ...
++  security_policy_name = "TransferSecurityPolicy-2024-01"
+   ...
+}
+----
+

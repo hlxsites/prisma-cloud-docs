@@ -1,0 +1,50 @@
+
+== AWS SQS queue encryption using default KMS key instead of CMK
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 45f307ff-288c-4f87-92ec-bee6d0318b27
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/SQSEncryptionCMK.yaml[CKV2_AWS_73]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking whether AWS Simple Queue Service (SQS) queues are using Customer Master Keys (CMK) instead of the default AWS-managed keys for encryption. 
+
+The use of CMK over default keys is encouraged because CMKs allow for enhanced security and control. CMKs enable users to manage key policies, set usage permissions, and closely monitor access controls and key rotations. Using AWS-managed keys, on the other hand, places these controls in the hands of AWS, potentially broadening access and reducing oversight for the user. By ensuring SQS queues use CMK, organizations can enforce stricter access control and auditing, thus improving the security of data stored in and transmitted through SQS.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sqs_queue
+* *Arguments:* kms_master_key_id
+
+To ensure AWS SQS uses a Customer Managed Key (CMK) rather than the default AWS keys, you need to specify the `kms_master_key_id` in your `aws_sqs_queue` resource. This attribute should reference the ARN of the CMK you intend to use for encryption.
+
+Here's how you can update the SQS queue resource in Terraform to use a CMK for encryption:
+
+[source,go]
+----
+resource "aws_sqs_queue" "example" {
+   ...
++  kms_master_key_id = aws_kms_key.example.arn
+   ...
+}
+----

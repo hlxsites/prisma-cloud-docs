@@ -1,0 +1,48 @@
+== Route 53 domains do not have transfer lock protection
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/Route53TransferLock.py[CKV_AWS_377]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that Route 53 domains have transfer lock protection enabled. The transfer lock feature is crucial because it prevents unauthorized domain transfers to another registrar. Whenever a domain is locked, it cannot be transferred without explicit permission from the domain owner, safeguarding against accidental or malicious domain hijacking. Without this protection, a domain could be transferred away without the knowledge or approval of the owner, leading to potential service disruptions, loss of business, and security issues, especially if the domain is critical for business operations or brand presence.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_route53domains_registered_domain
+* *Arguments:* transfer_lock
+
+Ensure that your Route 53 domains have transfer lock protection enabled. The domain transfer lock is a security feature that prevents unauthorized domain transfers. For each `aws_route53domains_registered_domain` resource, set the `transfer_lock` attribute to `true`.
+
+In this example, the transfer lock protection for an AWS Route 53 domain is enabled using Terraform templates.
+
+[source,go]
+----
+resource "aws_route53domains_registered_domain" "example" {
+   ...
++   transfer_lock = true
+   ...
+}
+----
+
