@@ -15,9 +15,9 @@ The details and functionalities listed below are a preview and the actual releas
 //* <<announcement>>
 * <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
-//* <<iam-policy-update>>
-//* <<new-compliance-benchmarks-and-updates>>
+* <<policy-updates>>
+* <<iam-policy-update>>
+* <<new-compliance-benchmarks-and-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -96,59 +96,238 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 //There are no policy updates as of October 31, 2024. 
 
 //Check and update this section before final publish on November 1, 2024.
 
-//[cols="35%a,65%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+[cols="35%a,65%a"]
+|===
+|*Policy Updates*
+|*Description*
 
-//|**
-//RLP-
+2+|*Policy Updates—RQL*
 
-//|
+|*AWS EMR cluster is not enabled with local disk encryption*
+//RLP-151949
 
-//*Current RQL–*: 
-//----
+|The policy will be updated to exclude different `TERMINATED` states of the EMR cluster while triggering alerts to provide more accurate results.
 
-//----
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration contains $.Y.name) and ($.Y.EncryptionConfiguration.EnableAtRestEncryption is true) and ($.Y.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration does not exist)' ; show X;
+----
 
-//*Updated RQL–*:
-//----
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING and $.X.status.state does not contain TERMINATED and $.X.status.state does not contain TERMINATED_WITH_ERRORS) and ($.X.securityConfiguration contains $.Y.name) and ($.Y.EncryptionConfiguration.EnableAtRestEncryption is true) and ($.Y.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration does not exist)' ; show X;
+----
 
-//----
+*Policy Type–* Config
 
-//*Policy Type*: 
+*Policy Severity–* Low
 
-//*Policy Severity*: 
-
-//*Alert Impact*: 
-
-//*Impact*: 
-
-//|===
+*Impact–* Low. Existing alerts where the state of the EMR cluster is `TERMINATED` or `TERMINATED_WITH_ERRORS` will be resolved.
 
 
-//[#new-compliance-benchmarks-and-updates]
-//=== New Compliance Benchmarks and Updates
-//[cols="50%a,50%a"]
-//|===
-//|*Compliance Benchmark*
-//|*Description*
-//|===
+|*AWS EMR cluster is not enabled with local disk encryption using Custom key provider*
+//RLP-152866
+
+|The policy RQL will be updated to exclude different `TERMINATED` states of the EMR cluster  while triggering alerts to provide more accurate results.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING) and ($.X.securityConfiguration equals $.Y.name) and ($.Y.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration exists and $.Y.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration.EncryptionKeyProviderType does not equal Custom)' ; show X;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'aws-emr-describe-cluster' as X; config from cloud.resource where api.name = 'aws-emr-security-configuration' as Y; filter '($.X.status.state does not contain TERMINATING and $.X.status.state does not contain TERMINATED and $.X.status.state does not contain TERMINATED_WITH_ERRORS) and ($.X.securityConfiguration equals $.Y.name) and ($.Y.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration exists and $.Y.EncryptionConfiguration.AtRestEncryptionConfiguration.LocalDiskEncryptionConfiguration.EncryptionKeyProviderType does not equal Custom)'; show X;
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. Existing alerts where the state of the EMR cluster is `TERMINATED` or `TERMINATED_WITH_ERRORS` will be resolved.
+
+
+|*GCP PostgreSQL instance database flag log_hostname is not set to off*
+//RLP-153056
+
+|The policy RQL will be updated to not generate false positive alerts in case the `log_hostname` is not set by default.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = "state equals RUNNABLE and databaseVersion contains POSTGRES and (settings.databaseFlags[*].name does not contain log_hostname or settings.databaseFlags[?any(name contains log_hostname and value contains on)] exists)"  
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = "state equals RUNNABLE and databaseVersion contains POSTGRES and settings.databaseFlags[?any(name contains log_hostname and value contains on)] exists" 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Existing alerts where the `log_hostname` flag is not set will be resolved.
+
+|*GCP GKE unsupported node version*
+//RLP-152864
+
+|The policy RQL will be updated to provide accurate results.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.") 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isNodeVersionSupported exists AND isNodeVersionSupported does not equal "true"
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Medium
+
+*Impact–* Medium. New alerts may be triggered when the GKE version is not supported since the policy RQL is updated to check for the complete version.
+
+|*GCP GKE unsupported Master node version*
+//RLP-151935
+
+|The policy RQL will be updated to provide accurate results.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = NOT ( currentNodeVersion starts with "1.27." or currentNodeVersion starts with "1.28." or currentNodeVersion starts with "1.29." or currentNodeVersion starts with "1.30."  or currentNodeVersion starts with "1.31.")
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-container-describe-clusters' AND json.rule = isMasterVersionSupported exists AND isMasterVersionSupported does not equal "true"
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Medium
+
+*Impact–* Medium. New alerts may be triggered when the GKE version is not supported since the policy RQL is updated to check for the complete version.
+
+2+|*Policy Delete*
+
+|*GCP VM instance is assigned with public IP*
+//RLP-152838
+
+|This policy will be deleted and combined with *GCP VM instance with the external IP address* as a single policy.
+
+*Impact–* Low. Existing alerts will be resolved as *POLICY_DELETED*.
+
+
+|===
+
+[#iam-policy-update]
+=== IAM Policy Update
+//RLP-153086
+
+The remediation steps for the following IAM policies will be updated in 24.12.1 release. 
+
+* GCP Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+* GCP Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+* GCP Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+* GCP Users and Machine Identities with IAM Data Read permissions are unused for 90 daysGCP Groups and Service Accounts with IAM Metadata Write permissions are unused for 90 days
+* GCP Groups and Service Accounts with IAM Metadata Read permissions are unused for 90 days
+* GCP Groups and Service Accounts with IAM Data Write permissions are unused for 90 days
+* GCP Groups and Service Accounts with IAM Data Read permissions are unused for 90 daysGCP Administrators with IAM permissions are unused for 90 daysGCP Users and Machine Identities with Administrative Permissions
+* GCP Groups and Service Accounts with Administrative Permissions
+
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*PCI DSS v4.0.1*
+//RLP-153448
+
+|Prisma Cloud now supports the latest version of PCI DSS v4.0.1 compliance framework. This latest revision emphasizes a risk-based approach, incorporating new requirements that address evolving threats such as phishing and e-skimming attacks. Notably, the updated standard mandates stricter multi-factor authentication measures, increased password complexity, and enhanced controls for managing client-side scripts to safeguard against unauthorized modifications.
+
+You can now access this built-in compliance standard and related policies on the *Compliance > Standards* page. Additionally, users can generate reports for immediate viewing or downloading, as well as set up scheduled reports to continuously monitor compliance with the ACSC Information Security Manual (ISM) framework over time.
+
+|*ACSC Information Security Manual (ISM)*
+//RLP-153446
+
+|Prisma Cloud now supports the latest version (September 2024) of ACSC Information Security Manual (ISM) compliance framework. This framework provides a structured approach for managing compliance risks, ensuring that sensitive information is safeguarded while adapting to changing regulations.
+
+You can now access this built-in compliance standard and related policies on the *Compliance > Standards* page. Additionally, users can generate reports for immediate viewing or downloading, as well as set up scheduled reports to continuously monitor compliance with the ACSC Information Security Manual (ISM) framework over time. 
+
+|tt:[Update] *MLPS 2.0, MLPS 2.0 (Level 2) & MLPS 2.0 (Level 3)*
+//RLP-153385
+
+|New mappings are added for Multi-Level Protection Scheme 2.0 - MLPS 2.0, MLPS 2.0 (Level 2) & MLPS 2.0 (Level 3) compliance standards for enhanced coverage.
+
+*Impact—* As new mappings are added, compliance score may vary
+
+|===
 
 [#api-ingestions]
 === API Ingestions
-
 
 [cols="50%a,50%a"]
 |===
 |*Service*
 |*API Details*
+
+|*Amazon Cognito*
+//RLP-152575
+
+|*aws-cognito-user-pool-client*
+
+Additional permissions required:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListUserPoolClients`
+* `cognito-idp:DescribeUserPoolClient`
+
+The Security Audit role includes the above permissions.
+
+|*Amazon Data Lifecycle Manager*
+//RLP-152595
+|*aws-dlm-lifecycle-policy*
+
+Additional permissions required:
+
+* `dlm:GetLifecyclePolicies`
+* `dlm:GetLifecyclePolicy`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|*Amazon EC2*
+//RLP-152556
+
+|*aws-ec2-network-insights-analysis*
+
+Additional permission required:
+
+* `ec2:DescribeNetworkInsightsAnalyses`
+
+The Security Audit role includes the above permission.
+
+|*Amazon EC2*
+//RLP-152588
+
+|*aws-ec2-egress-only-internet-gateway*
+
+Additional permission required:
+
+* `ec2:DescribeEgressOnlyInternetGateways`
+
+The Security Audit role includes the above permission.
+
 
 |*Amazon EventBridge*
 //RLP-152572
@@ -162,6 +341,43 @@ Additional permissions required:
 
 The Security Audit role includes the above permissions.
 
+|*Amazon EventBridge*
+//RLP-152593
+
+|*aws-events-connection*
+
+Additional permissions required:
+
+* `events:ListConnections`
+* `events:DescribeConnection`
+
+The Security Audit role includes the above permissions.
+
+
+|*Amazon IVS*
+//RLP-153175
+
+|*aws-ivs-channel*
+
+Additional permissions required:
+
+* `ivs:ListChannels` 
+* `ivs:GetChannel`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+
+|*Amazon Lightsail*
+//RLP-153174
+
+|*aws-lightsail-storage-bucket*
+
+Additional permission required:
+
+* `lightsail:GetBuckets`
+
+The Security Audit role includes the above permission.
+
 |*Amazon Lightsail Disk*
 //RLP-152570
 
@@ -172,6 +388,79 @@ Additional permission required:
 * `lightsail:GetDisks`
 
 The Security Audit role includes the above permission.
+
+|*Amazon MemoryDB*
+//RLP-153172
+|*aws-memorydb-subnet-group*
+
+Additional permissions required:
+
+* `memorydb:DescribeSubnetGroups`
+* `memorydb:ListTags`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|*Amazon MemoryDB*
+//RLP-153171
+|*aws-memorydb-snapshot*
+
+Additional permissions required:
+
+* `memorydb:DescribeSnapshots`
+* `memorydb:ListTags`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|*AWS Application Migration Service*
+//RLP-152978
+|*aws-mgn-source-server*
+
+Additional permission required:
+
+* `mgn:DescribeSourceServers`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+|*AWS Fault Injection Service*
+//RLP-149977
+
+|*aws-fis-experiment-template*
+
+Additional permissions required:
+
+* `fis:ListExperimentTemplates`
+* `fis:GetExperimentTemplate`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+
+|*AWS Network Manager*
+//RLP-153173
+
+|*aws-network-manager-global-network-site*
+
+Additional permissions required:
+
+* `networkmanager:DescribeGlobalNetworks`
+* `networkmanager:GetSites`
+
+The Security Audit role only includes `networkmanager:DescribeGlobalNetworks` permission.
+
+You must manually include `networkmanager:GetSites` permission in the CFT template to enable it.
+
+|*Amazon Recycle Bin*
+//RLP-153169
+
+|*aws-recycle-bin-ebs-snapshot-rule*
+
+Additional permissions required:
+
+* `rbin:ListRules`
+* `rbin:GetRule`
+* `rbin:ListTagsForResource`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
 
 |*Amazon SageMaker*
 //RLP-152567
@@ -196,16 +485,127 @@ Additional permission required:
 
 The Security Audit role includes the above permission.
 
-|*Amazon EC2*
-//RLP-152556
+|*Amazon Transcribe*
+//RLP-152594
 
-|*aws-ec2-network-insights-analysis*
+|*aws-transcribe-transcription-job*
+
+Additional permissions required:
+
+* `transcribe:ListTranscriptionJobs`
+* `transcribe:GetTranscriptionJob`
+
+The Security Audit role only includes `transcribe:ListTranscriptionJobs` permission.
+
+You must manually include `transcribe:GetTranscriptionJob` permission in the CFT template to enable it.
+
+
+|*Azure Active Directory*
+//RLP-152710
+
+|*azure-active-directory-role-assignment-schedules*
 
 Additional permission required:
 
-* `ec2:DescribeNetworkInsightsAnalyses`
+* `RoleAssignmentSchedule.Read.Directory`
 
-The Security Audit role includes the above permission.
+The Reader role includes the above permission.
+
+
+|*Azure Application Insights*
+//RLP-152944
+
+|*azure-application-insights-workbooks*
+
+Additional permission required:
+
+* `Microsoft.Insights/Workbooks/Read`
+
+The Reader role includes the above permission.
+
+|*Azure API Management*
+//RLP-152712
+
+|*azure-api-management-service-subscriptions*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read` 
+* `Microsoft.ApiManagement/service/subscriptions/read`
+
+The Reader role includes the above permissions.
+
+|*Azure App Service*
+//RLP-152983
+
+|*azure-app-service-connections*
+
+Additional permission required:
+
+* `Microsoft.Web/connections/Read`
+
+The Reader role includes the above permission.
+
+
+|*Azure Automation Accounts*
+//RLP-152714
+
+|*azure-automation-account-hybrid-runbook-workers*
+
+Additional permissions required:
+
+* `Microsoft.Automation/automationAccounts/read` 
+* `Microsoft.Automation/automationAccounts/hybridRunbookWorkerGroups/hybridRunbookWorkers/read`
+
+The Reader role includes the above permissions.
+
+
+|*Azure Compute*
+//RLP-152979
+
+|*azure-compute-restore-point-collections*
+
+Additional permission required:
+
+* `Microsoft.Compute/restorePointCollections/read`
+
+The Reader role includes the above permission.
+
+|*Azure Compute*
+//RLP-152976
+
+|*azure-compute-proximity-placement-groups*
+
+Additional permission required:
+
+* `Microsoft.Compute/proximityPlacementGroups/read`
+
+The Reader role includes the above permission.
+
+|*Azure Machine Learning*
+//RLP-152705
+
+|*azure-machine-learning-workspace-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.MachineLearningServices/workspaces/read`
+* `Microsoft.Insights/DiagnosticSettings/Read`
+
+The Reader role includes the above permissions.
+
+
+|*Azure Virtual WAN*
+//RLP-152956
+
+|*azure-virtual-wan-virtual-hubs*
+
+Additional permission required:
+
+* `Microsoft.Network/virtualHubs/read`
+
+The Reader role includes the above permission.
+
 
 |*Google App Engine*
 //RLP-152631
@@ -242,6 +642,19 @@ Additional permission required:
 
 The Viewer role includes the above permission.
 
+|*Google Bigquery Data Policy*
+//RLP-152706
+
+|*gcloud-bigquery-data-policy*
+
+Additional permissions required:
+
+* `bigquery.dataPolicies.list`
+* `bigquery.dataPolicies.getIamPolicy`
+
+The Viewer role includes the above permissions.
+
+
 |*Google Integration Connectors*
 //RLP-152611
 
@@ -276,6 +689,18 @@ Additional permission required:
 
 The Viewer role includes the above permission.
 
+|*OCI Vaults*
+//RLP-149812
+
+|*oci-vault-secret-versions*
+
+Additional permissions required:
+
+* `SECRET_INSPECT`
+* `SECRET_VERSION_INSPECT`
+
+The Reader role includes the above permissions.
+
 |===
 
 
@@ -306,7 +731,7 @@ The Viewer role includes the above permission.
 |*Replacement Endpoints*
 
 |tt:[*End of support for AWS Polly Voices API*]
-//RLP-150335
+//RLP-150335, RLP-152490
 	
 `aws-polly-voices` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for the `aws-polly-voices` API.
 
