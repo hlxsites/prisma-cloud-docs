@@ -6,7 +6,9 @@
 Prisma Cloud supports Code Editor capability where you can  create a policy rule for custom Configuration policies during Build-time checks. Code Editor is the default view for Build  policy rule and as an example a YAML policy template is always available on the Prisma Cloud console.
 The Code Editor is a suitable option when you want to create complex custom policies that include both Attribute and Connection-State with a support of AND/OR logic. However, for custom secrets Code Editor supports only an OR logic.
 
-* *Attribute*
+=== Key Features
+
+==== Attribute-Based Policies
 +
 Attribute when defined in a policy describes attribute configurations for resources. Each resource must contain values the attribute configuration has specified or display the presence or absence of the attribute configuration. The syntax and attribute configurations used in YAML templates  is similar to Terraform.
 +
@@ -146,7 +148,7 @@ cond_type: "secrets"
    - "my-super-secret-password-regex"
 ----
 
-* *Connection State*
+==== Connection-Based Policies
 +
 Connection State when defined in a policy specifies a connect or disconnect between resources of different types.
 +
@@ -206,7 +208,7 @@ The table below provides instructions on how to use Connection State Operators.
 
 |===
 
-* *AND/OR Logic*
+=== Logical (AND/OR) Operators 
 +
 A policy may include layers of defined Attributes and Connection State, or both. To define the connection between the two AND/OR logic is used. Using Code Editor you can customize the Attribute, Connection State or both at multiple layers.
 +
@@ -403,3 +405,20 @@ If there are errors in your custom code during a test, the console displays a so
 //image::governance/code-editor-6.png
 +
 NOTE: You are in *Step 2* of Create Custom Policies for Build-Time Checks. You are required to complete the rest of the steps to see your new custom Build-time check policy on the Prisma Cloud console.
+
+=== Limitation
+
+Nesting``NOT` conditions within connection blocks is currently not supported.
+
+EXAMPLE
+
+----
+definition:
+  not:
+    cond_type: "connection"
+    resource_types:
+      - "aws_elb"
+    connected_resource_types:
+      - "aws_security_group"
+    operator: "exists"
+----
