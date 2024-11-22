@@ -5,11 +5,11 @@
 
 [width=45%]
 [cols="1,1"]
-|=== 
-|Prisma Cloud Policy ID 
+|===
+|Prisma Cloud Policy ID
 | 6f4b530b-d1e3-406d-8a46-339f417e0065
 
-|Checkov ID 
+|Checkov ID
 | https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/azure/AKSUpgradeChannel.py[CKV_AZURE_171]
 
 |Severity
@@ -21,7 +21,7 @@
 |Frameworks
 |Terraform, Terraform Plan
 
-|=== 
+|===
 
 *Description*
 
@@ -34,7 +34,7 @@ This policy checks to make sure that an upgrade channel other than "None" is sel
 *Terraform*
 
 * *Resource:* azurerm_kubernetes_cluster
-* *Arguments:* automatic_channel_upgrade
+* *Arguments:* automatic_upgrade_channel
 
 [source,terraform]
 ----
@@ -43,7 +43,10 @@ resource "azurerm_kubernetes_cluster" "example" {
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
+  # If using azurerm version below 4.0
 + automatic_channel_upgrade = "stable"
+  # If using azurerm version 4.0 and above
++ automatic_upgrade_channel = "stable"
 
   default_node_pool {
     name       = "default"
