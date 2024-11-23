@@ -2,9 +2,9 @@
 
 Learn about permissions query attributes.
 
-Review your options when using userinput:[config from iam where]. Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion feature shows the available expressions and the operators that are applicable for each attribute.
+Review your options when using `config from iam where`. Each attribute allows you to narrow your search criteria. As you use these attributes, the auto-suggestion feature shows the available expressions and the operators that are applicable for each attribute.
 
-* *Source*—an identity that takes action on other cloud resources. A source can be any resource with permissions such as an IAM user, Azure Active Directory user, EC2 instance, Lambda function, and Azure virtual machine.
+* *Source*—an identity that takes action on other cloud resources. A source can be any resource with permissions such as an AWS IAM Role, IAM user, Azure Active Directory user, EC2 instance, Lambda function, and Azure virtual machine.
 
 * *Destination*—any cloud resource on which an action has occurred on or is the target of the action.
 
@@ -33,7 +33,7 @@ config from iam where source.cloud.account != dest.cloud.account
 Narrows down the permissions to the cloud accounts in your cloud account group. The following example list permissions of all EC2 instances in any of your AWS accounts:
 +
 ----
-onfig from iam where source.cloud.accountgroup = 'All my AWS accounts' AND source.cloud.service.name = 'ec2' AND source.cloud.resource.type = 'instance'
+config from iam where source.cloud.accountgroup = 'All my AWS accounts' AND source.cloud.service.name = 'ec2' AND source.cloud.resource.type = 'instance'
 ----
 Lists permissions of all Azure virtual machine instances in any of your Azure subscriptions:
 +
@@ -144,47 +144,9 @@ The following example lists all Azure function permissions:
 config from iam where source.cloud.service.name = 'Microsoft.Compute' and source.cloud.resource.type = 'function'
 ----
 
-* *source.cloud.account.isvendor*
-+
-This query retrieves all known vendor accounts. Available for AWS, Azure, and GCP environments.
-+
-----
-config from iam where source.cloud.account.isvendor = true
-----
-+
-The following example retrieves all vendor accounts that do not start with Red.
-+
-----
-config from iam where source.cloud.account DOES NOT START WITH 'Red' and source.cloud.account.isvendor = true 
-----
-
-* *source.cloud.type = GCP and dest.cloud.type = AWS and dest.cloud.resource.access.isadministrative = True*
-+
-This query extracts relevant information about GCP service accounts with access to your AWS environment.
-+
-----
-config from IAM where source.cloud.type = GCP and dest.cloud.type = AWS and dest.cloud.resource.access.isadministrative = True
-----
-
-* *source.cloud.accesskey.activekeys*
-+
-Queries the number of active access keys held by a user.
-+
-----
-config from IAM where source.cloud.accesskey.activekeys = 2
-----
-
-* *source.cloud.accesskey.lastused.days*
-+
-Queries the number of days passed since the last usage of an access key.
-+
-----
-config from IAM where source.cloud.accesskey.lastused.days > 2
-----
-
 * *source.email*
 +
-Queries permissions of a user by their email address. The following example lists all effective permissions of my@email.com:
+Queries permissions of a user by its email address. The following example lists all effective permissions of my@email.com:
 +
 ----
 config from iam where source.email = 'my@email.com'
@@ -268,10 +230,10 @@ This feature requires IdP integration.
 
 * *source.MFAenabled*
 +
- Identifies users without MFA enabled. The query returns True/False values (whether MFA is active/inactive).
+Identifies users without MFA enabled. The query returns True/False values (whether MFA is active/inactive).
 +
 ----
-config from iam where source.MFAenabled = true 
+config from iam where source.MFAenabled = true
 ----
 
 * *source.public*
@@ -281,11 +243,6 @@ Queries all S3 buckets that are publicly accessible. All GCP public resources–
 ----
 config from iam where source.public = true AND dest.cloud.service.name = 'S3' AND dest.cloud.resource.type = 'bucket'
 ----
-+
-[NOTE]
-====
-This attribute is supported for AWS and GCP only.
-====
 
 * *grantedby.cloud.type*
 +
@@ -357,18 +314,6 @@ Queries permissions that have been granted by a specific entity type, such as AW
 config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.entity.type = 'group'
 ----
 
-* *grantedby.cloud.entity.lastlogin*
-+
-Detects unused credentials, by querying their last used status. Available for AWS, Azure, and GCP, this RQL clause allows you to determine the days passed since last access:
-+
-----
-config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.entity.lastlogin
-----
-+
-*Attribute Type*: Number (Days since the last login/activity)
-+
-*Values*: - <, >, ⇐, >=, =, =!
-
 * *grantedby.level.id*
 +
 Identifies the group role or policy by level id that grants permissions to the source to interact with the destination. For instance, roles with access to GCP organization/Folder/Project/Service ID.
@@ -414,22 +359,6 @@ Queries permissions granted to a specific level type. For example:
 ** Azure: Groups with access to Azure management group/Subscriptions/Resources.
 ** GCP: Users with access to GCP organization/Folder/Project/Service.
 
-* *grantedby.cloud.policy.isExcessive*
-
-** true
-
-** false
-+
-Identifies excessive access in IAM policies (AWS IAM Policies/Azure Roles/GCP Roles)/ Include the “*” character in the action and scope sections as specified below:
-** AWS
-*** Action - Full * or service::*
-*** Scope - Full *
-*** Both - Action & Scope
-** Azure
-*** Action - Any *
-** GCP
-*** Action - list of IAM roles defined by the security research team
-
 * *dest.cloud.account*
 +
 Narrows down your effective permissions search to one or more cloud accounts that you have connected to Prisma Cloud. The following example lists all effective permissions to all buckets in your AWS Production account:
@@ -441,7 +370,7 @@ config from iam where dest.cloud.account = 'Production' AND dest.cloud.resouce.t
 Used the following to find cross-account connection: 
 +
 ----
-config from iam where dest.cloud.account != source.cloud.account]
+config from iam where dest.cloud.account != source.cloud.account
 ----
 +
 The following example uses the `LIKE` operator to display results where IAM permissions have been granted on the cloud service provider using the wildcard (*) character to authorize access:
@@ -546,7 +475,7 @@ config from iam where action.name CONTAINS ALL ( 'Microsoft.AgFoodPlatform/farmB
 Displays when a specific permission was actually last used. The following example lists all the effective permissions to get an object from an AWS S3 bucket that was not used more than 90 days ago.
 +
 ----
-config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90
+config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90`
 ----
 +
 [NOTE]
@@ -558,14 +487,14 @@ config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.typ
 * *action.access.level*
 +
 Displays the access level at which a resource was last accessed. Access level values are limited to the following:
-
++
 * Data Write
 * Data Read
 * Metadata Write
 * Metadata Read
-
++
 Sample RQL:
-
++
 ----
 config from iam where source.cloud.type = 'AWS' and source.cloud.resource.type = 'user' and action.access.level = 'Data Read' and dest.cloud.service.name = 's3' 
 ----
@@ -573,7 +502,7 @@ config from iam where source.cloud.type = 'AWS' and source.cloud.resource.type =
 * *action.access.isAdministrative*
 +
 Identifies if a resource was accessed with Administrative rights. 
-
++
 Sample RQL:
 ----
 config from iam where source.cloud.type = 'AWS' and source.cloud.resource.type = 'user' and action.access.isadministrative = true
