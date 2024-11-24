@@ -25,9 +25,9 @@
 
 === Description
 
-This policy is checking whether AWS Simple Queue Service (SQS) queues are using Customer Master Keys (CMK) instead of the default AWS-managed keys for encryption. 
+This policy detects whether AWS Simple Queue Service (SQS) queues are encrypted with default AWS-managed keys instead of customer-managed keys (CMKs). 
 
-The use of CMK over default keys is encouraged because CMKs allow for enhanced security and control. CMKs enable users to manage key policies, set usage permissions, and closely monitor access controls and key rotations. Using AWS-managed keys, on the other hand, places these controls in the hands of AWS, potentially broadening access and reducing oversight for the user. By ensuring SQS queues use CMK, organizations can enforce stricter access control and auditing, thus improving the security of data stored in and transmitted through SQS.
+Using a customer-managed key (CMK) is recommended over default AWS-managed keys as CMKs provide enhanced security and greater control. With CMKs, users can define key policies, manage usage permissions, and monitor access controls and key rotations. By ensuring SQS queues use CMKs, organizations can enforce stricter access control and auditing, improving the security of data stored in and transmitted through SQS. In contrast, relying on AWS-managed keys shifts these controls to AWS, potentially broadening access and reducing user oversight.
 
 === Fix - Buildtime
 
@@ -36,9 +36,10 @@ The use of CMK over default keys is encouraged because CMKs allow for enhanced s
 * *Resource:* aws_sqs_queue
 * *Arguments:* kms_master_key_id
 
-To ensure AWS SQS uses a Customer Managed Key (CMK) rather than the default AWS keys, you need to specify the `kms_master_key_id` in your `aws_sqs_queue` resource. This attribute should reference the ARN of the CMK you intend to use for encryption.
+Specify the `kms_master_key_id` attribute in your `aws_sqs_queue` resource to ensure AWS SQS uses a Customer Managed Key (CMK) for AWS SQS encryption instead of the default AWS-managed keys. Provide the ARN of the CMK you intend to use for encryption in this attribute.
 
-Here's how you can update the SQS queue resource in Terraform to use a CMK for encryption:
+This example shows how to modify an SQS queue resource in Terraform to use a CMK for encryption.
+
 
 [source,go]
 ----
