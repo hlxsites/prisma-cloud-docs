@@ -5,11 +5,11 @@
 
 [width=45%]
 [cols="1,1"]
-|=== 
-|Prisma Cloud Policy ID 
+|===
+|Prisma Cloud Policy ID
 | 10ba14d8-1b1b-41c7-b1d1-83ee03660354
 
-|Checkov ID 
+|Checkov ID
 | https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/azure/ACRUseSignedImages.py[CKV_AZURE_164]
 
 |Severity
@@ -21,7 +21,7 @@
 |Frameworks
 |Terraform, Terraform Plan
 
-|=== 
+|===
 
 === Description
 
@@ -34,7 +34,7 @@ This policy checks whether Azure Container Registry has trust policy enabled for
 *Terraform*
 
 * *Resource:* azurerm_container_registry
-* *Arguments:* trust_policy
+* *Arguments:* trust_policy_enabled
 
 [source,terraform]
 ----
@@ -45,8 +45,12 @@ resource "azurerm_container_registry" "example" {
   sku                      = "Standard"
   admin_enabled            = false
 
+  # If using azurerm version below 4.0
 + trust_policy {
 +   enabled = true
 + }
+
+  # If using azurerm version 4.0 and above
++ trust_policy_enabled     = true
 }
 ----
