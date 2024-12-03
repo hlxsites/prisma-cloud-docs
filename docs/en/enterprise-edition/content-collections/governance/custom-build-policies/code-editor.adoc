@@ -3,7 +3,8 @@
 [.task]
 == Code Editor
 
-Prisma Cloud supports Code Editor capability where you can create a policy rule for custom Configuration policies during Build-time checks. Code Editor is the default view for Build  policy rule and as an example a YAML policy template is always available on the Prisma Cloud console.
+Prisma Cloud's Code Editor allows you to define advanced custom policies for build-time checks. Users can leverage YAML templates, logic operators, and framework support to create complex policies tailored to specific compliance or security requirements.
+
 The Code Editor is a suitable option when you want to create complex custom policies that include both Attribute and Connection-State with a support of AND/OR logic. However, for custom secrets Code Editor supports only an OR logic.
 
 === How to Create Custom Policies
@@ -14,9 +15,18 @@ The Code Editor is a suitable option when you want to create complex custom poli
 //+
 //image::governance/code-editor.png
 +
-The Code Editor is as a default view with an example of a YAML template.
-+
-In this example, you see the YAML template with custom secrets where `secrets` is a `category`.
+The Code Editor provides a default view with an example of a YAML template.
+
+THe Yaml file includes the following arguments:
+
+* *guidelines*: Sets general rules for policy creation
+* *category*: Specifies the type of policy
+* *frameworks*: Identifies the applicable framework. If no framework is specified, the policy applies to all frameworks. If a framework is specified, the policy applies only to the selected framework.
+* *scope*: Defines the level of applicability for the policy
+* *provider*: Specifies the cloud provider or source for the resources
+* *definition*: Contains the logic and conditions for the policy, including attributes, operators, and resource connections
+//+
+//In this example, you see the YAML template with custom secrets where `secrets` is a `category`.
 //+
 //image::governance/code-editor-7.png
 
@@ -425,3 +435,11 @@ definition:
     - "my-super-secret-password-regex"
 
 
+=== ARM capabilities in the Code editor
+
+* ARM is an Azure-specific framework
+* You can define a policy that either applies to both ARM and Bicep with shared arguments and syntax, or you can limit the policy to either ARM or Bicep
+* The ARM framework supports explicit and implicit dependencies. This does not include embedded child and loop dependencies 
+* ARM amd Bicep share the same resource types. By default, an ARM policy applies to both ARM and Bicep unless unless explicitly restricted to ARM
+* If you select ARM as the framework, the definitions are automatically updated to align with ARM's requirements
+* ARM supports periodic scans, PR scans, IDEscans and CLI scans
