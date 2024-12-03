@@ -4,49 +4,32 @@ To simplify upgrades, older versions of Defenders, Jenkins plugins, and twistcli
 With this capability, you have a larger window to plan upgrades for connected components.
 
 
-=== Window of support
+=== Window of Support
 
 Any supported version of Defender, twistcli, and the Jenkins plugin can connect to Console.
 Prisma Cloud supports the latest release and the previous two releases (n, n-1, and n-2).
 
-*There are some exceptions to this policy as explained here.*
+With the v33.00 release, the Defender versions supported (n, n-1, and n-2) are v33.00, v32.00, and v31.00
+respectively. In addition, starting from this release (version 33.00), Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 version. So the current release will allow Defenders and REST API calls from release 30.xx also. However, to maintain full support, you must upgrade your Defenders to v31.xx or a higher release. 
 
-For Defenders:
+Failure to upgrade Defenders below version v30.00, such as v22.12, will result in disconnection of the Defenders from the Console. 
 
-* 21.08 supports n and n-1 (21.04) only.
-* 22.01 and later supports n, n-1, and n-2.
+To summarize, the level of support for the different versions of Defenders is as follows:
 
-For twistcli and the Jenkins plugin:
+* Defender versions 33.xx, 32.xx, and 31.xx have full support.
+* Defender versions 30.xx are functional (will be able to connect to version 33.xx Console) but support is not available for such Defenders.
+* Defender versions previous to 30.xx, such as 22.12, are neither supported nor functional (cannot connect to version 33.xx Console).
 
-* 21.08 supports itself (n) only.
-* 22.01 (Joule), Console support is for n and n-1.
-* 22.06 and later (Kepler and later), Console support is for n, n-1, n-2.
+=== Defender's Connection Status
 
-For example, if Console runs version 30.xx, it will support Defenders, twistcli, and the Jenkins plugin running either version 22.12 or 22.06:
-
-image::timeline_supported_versions.png[width=800]
-
-Defender's connection status on the Defender management page indicates how it interoperates with Console.
-Defenders that match Console's version show the status of Connected.
-Defenders still supported, but running a previous version, show the connected status with a message that upgrade is available (but not mandatory).
+Defender's connection status on the Defender management page indicates how it interoperates with Console. Defenders that match Console's version show the status of Connected. Defenders still supported, but running a previous version, show the connected status with a message that upgrade is available (but not mandatory).
 
 image::defenders_connected_diff_versions.png[width=800]
 
-Twistcli and the Jenkins plugin function as normal, with an indictor that an upgrade is available shown in the scan reports in the Console web UI.
+Twistcli and the Jenkins plugin function as normal, with an indication in the scan reports in the Console that an upgrade is available.
 
+=== End of Support
 
-=== End of support
+With Prisma Cloud release 33.00, version 22.12 and earlier are not supported. Such Defenders cannot connect to the Console and will be listed with a Connection status of *Disconnected* on the Defender management page.  
 
-Once a version is no longer supported, any Defenders based on that version must be upgraded (mandatory).
-For example, if Console runs 30.xx, it will support Defenders running either 22.12 or 22.06, but will no longer support Defenders running on 22.01.
-
-image::timeline_unsupported_version.png[width=800]
-
-Defenders which are no longer within the support lifecycle will not be able to connect to the Console.
-That state will be reflected on the Defender management page, with a status of *Disconnected* and an associated message that upgrade is required: 
-
-image::defenders_diconnected.png[width=800]
-
-Versions of twistcli and Jenkins plugin outside of the support lifecycle fail open.
-Their requests to Console will be refused, but builds will pass.
-Console returns a status of 400 Bad Request, which indicates an error due to the fact that the plugin version is no longer supported.
+Versions 22.12 and earlier of twistcli and Jenkins plugin fail to open. Their requests to Console are refused, but builds will pass. Console returns a status of 400 Bad Request, which indicates an error due to the fact that the plugin version is no longer supported.

@@ -1,3 +1,10 @@
+## [1.0.68](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.67...v1.0.68) (2024-10-16)
+
+
+### Bug Fixes
+
+* deprecate classic docset ([1946bf7](https://github.com/hlxsites/prisma-cloud-docs/commit/1946bf781e233e760a9761eb75ab12c80cd4cbc8))
+
 ## [1.0.67](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.66...v1.0.67) (2024-08-22)
 
 
