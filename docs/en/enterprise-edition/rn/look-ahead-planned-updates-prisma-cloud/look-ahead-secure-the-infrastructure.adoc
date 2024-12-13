@@ -80,18 +80,189 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-There are no policy updates planned till December 15th, 2024. 
+[cols="35%a,65%a"]
+|===
+|*Policy Updates*
+|*Description*
 
-//Check and update this section before final publish on November 29, 2024.
+2+|*Policy Updates—Metadata*
 
-//[cols="35%a,65%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+|*Azure VM disk configured with public network access*
+//RLP-153728
 
-//|Placeholder
-//|Placeholder
-//|===
+|The policy name and description will be updated.
+
+*Current Policy Name–* Azure VM disk configured with public network access
+
+*Updated Policy Name–* Azure VM disk configured with overly permissive network access
+
+*Current Policy Description–* This policy identifies Azure Virtual Machine disks that are configured with public network access.
+
+Allowing public access to Azure Virtual Machine disk resources increases the risk of unauthorized access and potential security breaches. Public network access exposes sensitive data to external threats, which attackers could exploit to compromise VM disks. Disabling public access and using Azure Private Link reduces exposure, ensuring only trusted networks have access and enhancing the security of your Azure environment by minimizing the risk of data leaks and breaches.
+
+As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks.
+
+*Updated Policy Description–* This policy identifies Azure Virtual Machine disks that are configured with overly permissive network access.
+
+Enabling public network access provides overly permissive network access on Azure Virtual Machine disks, increasing the risk of unauthorized access and potential security breaches. Public network access exposes sensitive data to external threats, which attackers could exploit to compromise VM disks. Disabling public access and using Azure Private Link reduces exposure, ensuring only trusted networks have access and enhancing the security of your Azure environment by minimizing the risk of data leaks and breaches. 
+
+As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks. 
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* No impact on alerts.
+
+2+|*Policy Updates—RQL*
+
+|*Azure Cosmos DB Virtual network is not configured*
+//RLP-153625
+
+|The policy RQL will be updated to reduce false positives by considering the public network access property. 
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded and properties.virtualNetworkRules[*] does not exist
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Medium. New alerts will be generated when the public network access is set to `all` networks. Existing alerts where the public network access is not set to `all` networks will be resolved.
+
+|*Azure storage account has a blob container with public access*
+//RLP-153630
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*Azure Storage account container storing activity logs is publicly accessible*
+//RLP-153630
+
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule= publicContainersList[*] contains insights-operational-logs and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter'$.X.id contains $.Y.properties.storageAccountId'; show X;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule= 'publicContainersList[*] contains insights-operational-logs and (totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist))' as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter '$.X.id contains $.Y.properties.storageAccountId'; show X; 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible*
+//RLP-153630
+
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y; 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*Azure Storage Account storing Cognitive service diagnostic logs is publicly accessible*
+//RLP-153630
+
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Medium
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*GCP VPC Flow logs for the subnet is set to Off*
+//RLP-153624
+
+|The policy RQL and recommendation steps will be updated to reduce false positives by excluding unsupported subnet purposes.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose does not contain INTERNAL_HTTPS_LOAD_BALANCER and purpose does not contain REGIONAL_MANAGED_PROXY and (enableFlowLogs is false or enableFlowLogs does not exist)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose does not contain INTERNAL_HTTPS_LOAD_BALANCER and purpose does not contain REGIONAL_MANAGED_PROXY and purpose does not contain GLOBAL_MANAGED_PROXY and purpose does not contain PRIVATE_SERVICE_CONNECT and (enableFlowLogs is false or enableFlowLogs does not exist)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Existing alerts where subnets with purpose `GLOBAL_MANAGED_PROXY` and `PRIVATE_SERVICE_CONNECT` will be resolved.
+
+|*GCP VPC Network subnets have Private Google access disabled*
+//RLP-153623
+
+|The policy RQL and recommendation steps will be updated to reduce false positives by excluding unsupported subnet purposes.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose is not member of (REGIONAL_MANAGED_PROXY, PRIVATE_SERVICE_CONNECT) and (privateIpGoogleAccess does not exist or privateIpGoogleAccess is false)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose is not member of (REGIONAL_MANAGED_PROXY, PRIVATE_SERVICE_CONNECT, GLOBAL_MANAGED_PROXY, PRIVATE_NAT) and (privateIpGoogleAccess does not exist or privateIpGoogleAccess is false)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. Existing alerts related to `GLOBAL_MANAGED_PROXY` and `PRIVATE_NAT` purposes will be resolved.
+
+|===
 
 //[#iam-policy-update]
 //=== IAM Policy Update
@@ -103,6 +274,19 @@ There are no policy updates planned till December 15th, 2024.
 |===
 |*Service*
 |*API Details*
+
+|*Amazon Athena*
+//RLP-153371
+|*aws-athena-table-metadata*
+
+Additional permissions needed:
+
+* `athena:ListDataCatalogs`
+* `athena:ListDatabases`
+* `athena:ListTableMetadata`
+* `glue:GetTables`
+
+The Security Audit role includes the permissions.
 
 |tt:[Update] *Amazon CodePipeline*
 //RLP-153691
@@ -129,16 +313,28 @@ The Security Audit role only includes the `cognito-idp:ListUserPools` and `cogni
 
 You must manually update the `cognito-idp:GetGroup` permission in the CFT template and enable it.
 
-|*Amazon Connect High Volume Outbound Communications*
-//RLP-153462
-|*aws-connect-high-volume-outbound-campaign*
+|*Amazon Cognito*
+//RLP-153820
+|*aws-cognito-user*
 
 Additional permissions needed:
 
-* `connect-campaigns:ListCampaigns`
-* `connect-campaigns:DescribeCampaign`
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListUsers`
 
-The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+The Security Audit role includes the permissions.
+
+
+|*AWS Directory Service*
+//RLP-153814
+|*aws-ds-directory-trust*
+
+Additional permission needed:
+
+* `ds:DescribeTrusts`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
 
 |*Amazon EC2*
 //RLP-153463
@@ -149,6 +345,24 @@ Additional permission needed:
 * `ec2:DescribeSpotFleetRequests`
 
 The Security Audit role includes the permission.
+
+|*Amazon EC2*
+//RLP-153463
+|*aws-ec2-serial-console-access-status*
+
+Additional permission needed:
+
+* `ec2:GetSerialConsoleAccessStatus`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+|tt:[Update] *Amazon EC2*
+//RLP-153817
+
+|*aws-ec2-describe-images*
+
+The resource JSON for this API includes the `deprecationTime` field.
+
 
 |*Amazon ElastiCache*
 //RLP-152949
@@ -161,6 +375,27 @@ Additional permissions needed:
 
 The Security Audit role includes the permissions.
 
+|*Amazon Elasticsearch Service*
+//RLP-153323
+|*aws-es-batch-get-collection*
+
+Additional permissions needed:
+
+* `aoss:ListCollections`
+* `aoss:BatchGetCollection`
+* `aoss:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+|*Amazon Elasticsearch Service*
+//RLP-153320
+|*aws-es-security-config*
+
+Additional permission needed:
+
+* `aoss:ListSecurityConfigs`
+
+The Security Audit role includes the permission.
 
 |*Amazon Fraud Detector*
 //RLP-153298
@@ -194,6 +429,33 @@ Additional permission needed:
 
 The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
 
+|*AWS Global Accelerator*
+//RLP-153286
+|*aws-global-accelerator-endpoint-group*
+
+Additional permissions needed:
+
+* `globalaccelerator:ListAccelerators`
+* `globalaccelerator:ListListeners`
+* `globalaccelerator:DescribeListener`
+* `globalaccelerator:ListEndpointGroups`
+* `globalaccelerator:DescribeEndpointGroup`
+
+The Security Audit role includes the permissions.
+
+|*AWS Global Accelerator*
+//RLP-153284
+|*aws-global-accelerator-listener*
+
+Additional permissions needed:
+
+* `globalaccelerator:ListAccelerators`
+* `globalaccelerator:ListListeners`
+* `globalaccelerator:DescribeListener`
+
+The Security Audit role includes the permissions.
+
+
 |*AWS Glue*
 //RLP-153177
 |*aws-glue-dev-endpoint*
@@ -204,6 +466,26 @@ Additional permission needed:
 
 The Security Audit role includes the permission.
 
+|*AWS IAM*
+//RLP-153314
+|*aws-iam-service-specific-credential*
+
+Additional permissions needed:
+
+* `iam:ListUsers`
+* `iam:ListServiceSpecificCredentials`
+
+The Security Audit role includes the permissions.
+
+|*AWS IAM Identity Center*
+//RLP-153622
+|*aws-iam-identity-center-instance*
+
+Additional permission needed:
+
+* `sso:ListInstances`
+
+The Security Audit role includes the permission.
 
 |*Amazon Lightsail*
 //RLP-153464
@@ -250,6 +532,17 @@ The Security Audit role only includes the `networkmanager:DescribeGlobalNetworks
 
 You must manually update the `networkmanager:GetDevices` permission in the CFT template and enable it.
 
+|*Amazon Personalize*
+//RLP-153305
+|*aws-personalize-dataset-import-job*
+
+Additional permission needed:
+
+* `personalize:ListDatasetImportJobs`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+
 |*Amazon Recycle Bin*
 //RLP-153461
 |*aws-recycle-bin-ami-rule*
@@ -284,6 +577,14 @@ Additional permissions needed:
 * `ses:GetTemplate`
 
 The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|tt:[Update] *AWS Step Functions*
+//RLP-153816
+
+|*aws-step-functions-statemachine*
+
+The resource JSON for this API includes the `definition` field.
+
 
 |*Amazon Translate*
 //RLP-153288
@@ -322,6 +623,27 @@ Additional permissions needed:
 
 The Security Audit role includes the permissions.
 
+|*Azure Active Directory*
+//RLP-153823
+|*azure-active-directory-group-lifecycle-policies*
+
+Additional permission needed:
+
+* `Directory.Read.All`
+
+The Reader role includes the permission.
+
+|*Azure API Management Service*
+//RLP-153821
+|*azure-api-management-service-apis*
+
+Additional permission needed:
+
+* `Microsoft.ApiManagement/service/apis/read`
+
+The Reader role includes the permission.
+
+
 |*Azure App Service*
 //RLP-153586
 |*azure-app-service-web-apps-app-settings*
@@ -343,6 +665,18 @@ Additional permissions needed:
 * `Microsoft.DBforPostgreSQL/flexibleServers/configurations/read`
 
 The Reader role includes the permissions.
+
+|*OCI Vaults*
+//RLP-123337
+|*oci-vault-key*
+
+Additional permissions needed:
+
+* `KEY_INSPECT`
+* `KEY_READ`
+
+You must update the Terraform template to enable the permissions.
+
 
 
 
