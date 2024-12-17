@@ -55,6 +55,46 @@ Lists permissions of all Azure virtual machine instances in any of your Azure su
 config from iam where source.cloud.accountgroup = 'All my Azure accounts' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'virtualMachines'
 ----
 
+* *source.cloud.azure.user.isAppRegistrationOwner*
++
+Identifies user accounts that owns an Entra ID service account with the permission to add members to a group with admin privileges at the subscription/management group level:
++
+----
+config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.isAppRegistrationOwner = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('AppRoleAssignment.ReadWrite.AllRole', 'Management.ReadWrite.Directory'), ('Azure Management Group', 'Azure Subscription' ) )
+----
+
+* *source.cloud.azure.user.isAppRegistrationAdmin*
++
+Identifies user accounts Entra ID service account administration privileges including permission to add members to a group with admin privileges at the subscription/management group level:
++
+----
+config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.isAppRegistrationAdmin = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('AppRoleAssignment.ReadWrite.AllRole', 'Management.ReadWrite.Directory'), ('Azure Management Group', 'Azure Subscription' ) )
+----
+
+* *source.cloud.azure.user.canImpersonateAppReg*
++
+Identifies Entra ID users that can impersonate an Entra ID application with the permission to add members to a group with admin privileges at the subscription/management group level:
++
+----
+config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.canImpersonateAppReg = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('AppRoleAssignment.ReadWrite.AllRole', 'Management.ReadWrite.Directory'), ('Azure Management Group', 'Azure Subscription' ) )
+----
+
+* *source.cloud.azure.servicePrincipal.has.machineAttached*
++
+Identifies Virtual Machines assigned with `System Managed Identity` or `User Managed Identity` and Azure Active Directory permissions:
++
+----
+config from iam where source.cloud.type = 'AZURE' AND source.cloud.service.name = 'Microsoft.Compute' and source.cloud.resource.type ='virtualMachines' AND action.name IN ('GroupMember.ReadWrite.All', 'RoleManagement.ReadWrite.Directory', 'AppRoleAssignment.ReadWrite.All', 'RoleManagement.ReadWrite.Directory', 'RoleManagement.ReadWrite.Directory') 
+----
+
+* *source.cloud.azure.servicePrincipal.isGraphAdmin*
++
+Identifies user/system managed identities connected to a Virtual Machine or any other Compute resource with the permission to create credentials for a registered application with Microsoft Graph API permissions:
++
+----
+config from iam where source.cloud.type = 'AZURE' AND source.cloud.service.name = 'Microsoft.Compute' and source.cloud.resource.type ='virtualMachines' and grantedby.cloud.entity.type = 'AppRegistration' and grantedby.cloud.policy.type = 'Microsoft Graph' and action.name in ('Files.Read.All', 'Files.ReadWrite.All','Sites.Read.All','Sites.ReadWrite.All','Sites.FullControl.All','Sites.Selected','Mail.ReadWrite','Mail.Read')
+----
+
 * *source.cloud.type*
 +
 Narrows down your search option to specific clouds. The following example lists all effective permissions where the sources are in your AWS cloud accounts:
@@ -440,6 +480,14 @@ Queries permissions to a specific cloud service such as AWS Lambda function, AWS
 +
 ----
 config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function' AND dest.cloud.resource.name = 'my-function'
+----
+
+* *dest.cloud.resource.grantedbylevel*
++
+Queries `grantedbyLevel` for groups as a destination resource to help identify groups with permissions on Management/Subscription levels:
++
+----
+config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.isAppRegistrationOwner = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('AppRoleAssignment.ReadWrite.AllRole', 'Management.ReadWrite.Directory'), ('Azure Management Group', 'Azure Subscription' ) )
 ----
 
 * *dest.cloud.resource.id*
