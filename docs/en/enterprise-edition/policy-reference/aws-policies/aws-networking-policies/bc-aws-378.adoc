@@ -1,0 +1,45 @@
+== AWS Load Balancer uses HTTP protocol
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/LBTargetGroup.yaml[CKV_AWS_378]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,Terraform Plan
+
+|===
+
+=== Description
+
+This policy identifies AWS Load Balancer Target Groups or Listeners configured to use the HTTP protocol. Using HTTP instead of HTTPS for load balancer communication can expose sensitive traffic to interception and compromise. It is a security best practice to ensure that AWS Load Balancers use HTTPS to encrypt data in transit.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_lb_target_group, aws_alb_target_group, aws_lb_listener, aws_alb_listener
+* *Arguments:* protocol
+
+To fix this issue, update the `protocol` attribute for `aws_lb_target_group`, `aws_alb_target_group`, `aws_lb_listener`, or `aws_alb_listener` to use `HTTPS` instead of `HTTP`.
+
+[source,go]
+----
+resource "aws_lb_target_group" "example" {
+  ...
+-  protocal    = "HTTP"
++  protocol    = "HTTPS"
+}
+----

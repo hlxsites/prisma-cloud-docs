@@ -1,0 +1,44 @@
+== Azure Spring Cloud app end-to-end TLS is disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 424a5e77-8997-47d9-b0e0-daaca8b81b01
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureSpringCloudTLSDisabled.yaml[CKV2_AZURE_55]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,Terraform Plan
+
+|===
+
+=== Description
+
+This policy identifies Azure Spring Cloud apps in which end-to-end TLS is disabled. Enabling end-to-end TLS/SSL will secure traffic from ingress controller to apps. After you enable end-to-end TLS and load a cert from the key vault, all communications within Azure Spring Cloud are secured with TLS. As a security best practice, it is recommended to have an end-to-end TLS to secure Spring Cloud apps traffic.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_spring_cloud_service, azurerm_spring_cloud_app
+* *Arguments:* tls_enabled
+
+To fix this issue, ensure that the `tls_enabled` attribute is set to `true` in your Terraform configuration for Azure Spring Cloud applications.
+
+[source,go]
+----
+resource "azurerm_spring_cloud_app" "example" {
+  ...
++ tls_enabled         = true
+}
+----

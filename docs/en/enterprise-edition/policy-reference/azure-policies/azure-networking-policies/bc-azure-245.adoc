@@ -1,0 +1,45 @@
+== Azure Container Instance is not configured with virtual network
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| d480c1d2-06b3-4e53-81c9-a21ed83cb5fc
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AzureContainerInstancePublicIPAddressType.py[CKV_AZURE_245]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,Terraform Plan
+
+|===
+
+=== Description
+
+This policy identifies Azure Container Instances (ACI) that are not configured with a virtual network. Making container instances public makes an internet routable network. By deploying container instances into an Azure virtual network, your containers can communicate securely with other resources in the virtual network. So it is recommended to configure all your container instances within a virtual network.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_container_group
+* *Arguments:* ip_address_type
+
+To fix this issue, ensure that the `ip_address_type` attribute is set to `Private` or `None` in your Terraform configuration.
+
+[source,go]
+----
+resource "azurerm_container_group" "example" {
+  ...
+-  ip_address_type = "Public"
++  ip_address_type = "Private"
+}
+----
