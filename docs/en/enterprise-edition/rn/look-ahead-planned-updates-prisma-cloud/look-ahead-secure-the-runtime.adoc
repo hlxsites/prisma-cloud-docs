@@ -1,15 +1,16 @@
 == Look Ahead—Planned Updates to Secure the Runtime
 
-Currently, there are no previews or announcements for updates.
+//Currently, there are no previews or announcements for updates.
 
-//The following sections provide a preview of the planned updates for the `v33.02` release of Runtime Security. 
+The following sections provide a preview of the planned updates for the `v33.03` release of Runtime Security. 
 
-//*NOTE*: 
+*NOTE*: 
 
-//The details and functionality listed below provide a preview of what is planned for the `v33.02` release. Both the updates and the actual release date are subject to change.
+The details and functionality listed below provide a preview of what is planned for the `v33.03` release. Both the updates and their actual release dates are subject to potential changes.
+
 
 //*<<announcement>>
-
+//*<<intelligence-stream-updates>>
 //*<<enhancements>>
 
 //* <<changes-in-existing-behavior>>
@@ -20,74 +21,48 @@ Currently, there are no previews or announcements for updates.
 //* <<api-ingestions>>
 //* <<deprecation-notices>>
 
-//=== Announcement
-//CWP-61660
-//CWP-62319
-//Prisma Cloud plans to use the following additional NAT IP addresses on the Google Cloud for the respective Prisma Cloud Enterprise Edition (SaaS) regions.
+=== Intelligence Stream Updates
 
-//The following table lists the regions and the additional reserved Ingress IP addresses.
+==== Enhancements to Vulnerability Reporting for Red Hat Enterprise Linux (RHEL) Versions 8 and 9
+//CWP-30827
+To ensure accurate vulnerability reporting, Intelligence Stream will include RPM module and stream information for RHEL. This approach improves detection of vulnerabilities and ensures that all associated RPM packages installed by a module are examined during the scan.
 
-//[cols="50%a,50%a"]
-//|===
-//| *Region* | *Additional Ingress IP Addresses*
+*What are RPM Modules and Streams?*
 
-//|  us-east1 | * 34.23.229.147  
-//* 34.74.93.165
-//* 35.185.127.202
-//|  us-west1 | * 34.19.57.46  
-//* 34.83.186.93
-//* 34.168.3.165
-//| northamerica-northeast1 | * 34.118.176.160  
-//* 34.47.2.35
-//| europe-west9            | * 34.163.241.103  
-//* 34.163.12.56
-//| europe-west3            | * 35.198.174.6  
-//* 34.141.93.246
-//* 34.141.89.174
-//* 34.141.2.56
-//* 35.198.185.51
-//| europe-west2            | * 34.142.29.59  
-//* 34.89.33.47
-//| australia-southeast1    | * 34.116.88.189  
-//* 35.189.14.189
-//| asia-southeast1         | * 35.186.153.185  
-//* 34.87.100.14
-//| asia-south1             | * 34.93.124.157  
-//* 34.47.154.73
-//| asia-northeast1         | * 35.187.195.198  
-//* 34.85.99.145
-//|===
-//*NOTE*: 
+In Red Hat Enterprise Linux (RHEL), an RPM module is a collection of related RPM packages that represent a software component, such as an application, its dependencies, and helper utilities. Starting with RHEL 6 and 7, modules replaced the Software Collections mechanism.
 
-//No changes have been made at this time. These additional IP addresses will be activated with the upcoming release.
+Modules are structured in the following way:
+
+* *Module Streams*: Virtual repositories within the AppStream repository. Each stream corresponds to a specific version of the module and receives independent updates.
+
+* *Stream Activation*: At any time, only one stream of a module can be active, meaning only one version of a component can be installed on a system.
+
+For example, the notation `python39:3.9/python39` indicates the module `python39`, the stream `3.9`, and the source package `python39`.
+
+*Enhancements to Vulnerability Reporting*
+
+* *Module-Based Vulnerability Identification*: Scans will report vulnerabilities based on the module and stream configuration. This ensures accurate detection and avoids false positives or false negatives caused by discrepancies in versioning or backported fixes.
+
+* *Inclusion of RPM Module Metadata in Scan Results*: The enhanced implementation associates RPM packages with their respective modules and streams. The Prisma Cloud console will include this module information in vulnerability scan results.
 
 
-//=== Enhancements
-//The following enhancements are planned. Detailed information will be available at release.
+*Benefits of Module-Aware Vulnerability Reporting*
 
-//[cols="50%a,50%a"]
-//|===
-//| *Feature* | *Description*
-//CWP-32911
-// |Scanning Support for Red Hat UBI Micro-images 
-// |In the upcoming release, Prisma Cloud will introduce support for scanning of Red Hat UBI micro-images (versions 7, 8, and 9). 
-//|Improved Vulnerability Detection for non-RPM OpenShift Packages 
-//CWP-61504
+* *Improved Accuracy*: Matches CVE fixes to the correct module stream.
+* *Reduced False Positives*: Avoids misreporting of vulnerabilities fixed in older streams.
+* *Comprehensive Coverage*: Links all RPM packages installed by a module to its vulnerabilities.
 
-//|In the upcoming release, vulnerability reporting for OpenShift non-RPM container components will be enhanced to ensure consistent vulnerability matching across all OpenShift packages. 
+==== Enhanced Vulnerability Reporting for NuGet Packages 
+//CWP-49786
+Previously, the scanning process included NuGet packages listed in the `.deps.json` files, which were essential for the runtime environment but not related to the application itself. These unrelated packages result in false positives in vulnerability reporting. 
 
-//This improvement will reduce false positives by applying only relevant CVEs and excluding CVEs that have already been patched.
+With this enhancement, the scanning process excludes runtime-specific dependencies that are not directly related to the application. This provides a more accurate view of vulnerabilities directly associated with the application, and reduces false positive alerts.
 
-//CWP-61508
-//|Improved Vulnerability Detection for Google Kubernetes Engine (GKE) Clusters 
 
-//|In the upcoming release, vulnerability detection for Google Kubernetes Engine (GKE) Clusters will include the following enhancements:
+*NOTE*: 
 
-//* Integration with Google security bulletins
+* This enhancement requires upgrading Defenders to the latest version. 
 
-//* Aligning CVEs with specific GKE cluster types and versions
+* The updated Defender accurately identifies package dependencies, which leads to fewer false positives.
 
-//* Expanded support for all GKE modes, including Autopilot
-
-//|===
-
+* Older Defender versions will remain unaffected by this change, and their behavior remains unchanged.
