@@ -1,0 +1,108 @@
+[.task]
+== Connect Veracode 
+
+Connect Prisma Cloud directly to Veracode to ingest SAST findings, allowing you to utilize Prisma Cloud's analysis and visualization tools for identifying critical vulnerabilities, prioritizing remediation efforts, and enhancing application security.
+
+[.procedure]
+
+=== How to connect Veracode with Prisma Cloud
+
+. Before you begin.
+.. Activate at least one CAS module that includes version control system (VCS) and repository integrations.
+.. https://docs.veracode.com/r/c_api_credentials3[Generate and copy a Veracode access key] to enable access to Prisma Cloud. The access key includes a key ID and secret.
+.. Add the Prisma Cloud IP addresses and hostname for Application Security to Vercode's xref:../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud console.
+.. Grant the user integrating Veracode with the following permissions:
++
+* In Prisma Cloud: 'System Admin', 'AppSec Admin' or GRBAC permissions 
+* In Veracode: At minimum, 'Reviewer' permissions are required 
+
+. Under *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers*.
+. Select *Veracode* under the '3rd Party Ingestion' section in the catalog.
+
+. In the Configure Integration step of the integration wizard.
+.. Fill in the provided fields:
++
+* Enter the Prisma Cloud key ID and secret from *step 1b* into their respective fields
+* Select your Veracode region from the *Region* dropdown
+.. Click *Authorize*.
+
+. On the Select Applications step of the integration wizard.
+.. Select which Veracode applications will be scanned:
++
+* All current applications
+* All current and future applications (This is the recommended option to ensure complete coverage and successful operation of all features)
+* Only selected applications > select the applications from the menu that is displayed
+.. Click *Next*.
++
+NOTE: 'Applications' in Veracode and 'Repositories' in Prisma Cloud are identical artifacts. 
+
+. On the Map to Repositories step of the wizard.
+.. Select an option:
++
+* Accept the displayed mapping as detected by Prisma Cloud. This does not require any action on your part
+* Manually configure mapping if Prisma Cloud could not match a project to a repository: Select *Set* in the Prisma Cloud Repository column, and select a repository from the list that is displayed
+* Reject mapping: Select the *Don't map any applications box*
+* Manually modify mapping: Select *Replace* next to the existing mapped Prisma Cloud repository. This will open an option to select a different repository from the displayed list, allowing you to update the mapping
++
+NOTE: Mapping establishes relationships between Veracode projects and Prisma Cloud code repositories, simplifying access management and enabling risk analysis at the repository level, including displaying findings on the Prisma Cloud console.
+
+.. Select *Next*.
+
+. Select *Done* on the 'Status' step of the wizard to complete the integration, initiating an automatic ingestion of data from the integrated Veracode projects. 
+
+=== Verify Integration
+
+. On Application Security select *Settings* > *3rd Party Ingestion*.
+. Verify that the status of the relevant Veracode project is listed as *Connected*.
++
+NOTE: 'Veracode project' in *step 2* above refers to a Veracode application. Periodic scans for Prisma Cloud scanners will not fail if 3rd party ingestion fails.
+
+=== Manage Connections
+
+Manage integrations from the *Providers* page under *Settings*.
+
+. On Application Security select *Settings* > *3rd Party Ingestion*.
+. Select an action under the *Actions* column of a project:
++
+* *Reselect Applications*: Redirects to the Select Application step of the integration wizard, allowing you to manage selected applications
+* *Change Mapping*: Redirects to the Map to Repositories step of the wizard, allowing you to manage mapping
+* *Delete Application*: Deletes the application. Mapped repositories will be deleted accordingly.  This option is available only if 'All current and future applications' is not selected
+
+* *Delete Entire Integration*: Deletes the integration
+
+=== CWE Findings
+
+Findings detected in ingested scans are displayed on the Application Security *Dashboard*, *Projects* and *Repositories* pages.
+
+==== Findings in Dashboard
+
+[#findings-projects]
+==== Findings in Projects 
+
+To view ingested Veracode SAST findings on the Projects page:
+
+. Navigate to the *Projects* page and choose one of the following options:
++
+* Select the *3rd Party Weaknesses* tab to view an inventory of ingested Veracode SAST issues  
+* The Overview tab, opened by default, displays all issues detected by Prisma Cloud, including ingested 3rd party weaknesses. To only view SAST issues in the Overview, select *3rd Party* Weaknesses under the *Code Categories* tab
++
+The table displays a list of findings, including details such as the violated policy, when first detected, the type of vulnerability (CWE), and the location of the finding. You can filter the table using 'Group by Policy' or 'Group by Resource', which displays the file including the weakness.   
+
+. Click on a CWE finding to open a sidecar with additional information, including the Veracode policy that was violated and the Veracode description. Additionally you can see the data that the violation is based on, including the file, line and function. 
++
+NOTE: Clicking on the link in the Source field opens the finding in Veracode.
+
+====  Findings in Repositories
+The Issues column of the Repositories page displays the total sum of SAST findings detected from all sources, including ingestions.
+Clicking on *SAST* redirects to the *Projects* page. Refer to <<findings-projects,Findings in Projects>> above for more information.
+
+=== Limitations
+
+* The current Veracode SAST ingestion supports Veracode periodic and CLI scans. Pull Request scans and other types are not supported.
+* History, deduplication and DevEx features such as PR comments, IDE integration and enforcement are not supported
+
+
+
+
+
+
