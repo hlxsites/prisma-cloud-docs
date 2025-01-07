@@ -2,27 +2,19 @@
 
 Learn what's new on Prisma® Cloud in January 2025.
 
-* <<enhancements>>
-//* <<intelligence-stream-updates>>
-//* <<announcement>>
 //* <<new-features>>
+* <<enhancements>>
+* <<changes-in-existing-behavior>>
+//* <<announcement>>
+//* <<intelligence-stream-updates>>
 //* <<api-ingestions>>
 //* <<new-policies>>
 //* <<policy-updates>>
 //* <<policy-updates-iam>>
 //* <<new-compliance-benchmarks-and-updates>>
 //* <<rest-api-updates>>
-//* <<changes-in-existing-behavior>>
 //* <<deprecation-notices>>
 
-//[#announcement]
-//=== Announcement
-
-//[cols="50%a,50%a"]
-//|===
-//|*Feature*
-//|*Description*
-//|===
 
 [#enhancements]
 === Enhancements
@@ -30,7 +22,17 @@ Learn what's new on Prisma® Cloud in January 2025.
 |===
 |*Feature*
 |*Description*
-|Enhancements to Vulnerability Reporting for Red Hat Enterprise Linux (RHEL) Versions 8 and 9
+
+|*Microsoft Entra ID Visibility*
+
+tt:[Secure the Infrastructure]
+
+tt:[25.1.1]
+
+|Enhancements to Prisma Cloud's Cloud Infrastructure and Entitlement Management (CIEM) capabilities provide greater visibility and control over Microsoft Azure Entra ID permissions, helping you secure your identities with greater efficiency. You can now investigate not only Azure but also Entra ID specific permissions, such as identifying entities with the Global Administrator role. Use the `grantedby.level.type` attribute in combination with all existing RQL queries to investigate Entra ID permissions.
+
+
+|*Enhancements to Vulnerability Reporting for Red Hat Enterprise Linux (RHEL) Versions 8 and 9*
 //CWP-30827
 
 tt:[Secure the Runtime]
@@ -69,7 +71,7 @@ For example, the notation `python39:3.9/python39` indicates the module `python39
 
 * The older versions of Defender will remain unaffected by this change, and their behavior remains unchanged.
 
-|Enhanced Vulnerability Reporting for NuGet Packages
+|*Enhanced Vulnerability Reporting for NuGet Packages*
 //CWP-49786
 
 tt:[Secure the Runtime]
@@ -87,7 +89,7 @@ With this enhancement, the scanning process excludes runtime-specific dependenci
 
 * The older versions of Defender will remain unaffected by this change, and their behavior remains unchanged.
 
-|Enhancement to Prevent Action with `fsmon_v2`
+|*Enhancement to Prevent Action with `fsmon_v2`*
 //CWP-62711
 
 tt:[Secure the Runtime]
@@ -109,20 +111,506 @@ tt:[33.03.138]
 |A new field, last-connected, has been added to each Defender stats log. This field records the last confirmed connection time between the Defender and the Console, even when the Connected flag is set to false. The timestamp is represented in epoch seconds (UTC), providing customers with a reliable way to track connection history.
 |===
 
-//[#intelligence-stream-updates]
-//=== Intelligence Stream Updates
-//[cols="30%a,70%a"]
-//|===
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
 
-//[#new-features]
-//=== New Features
+[cols="50%a,50%a"]
 
-//[cols="50%a,50%a"]
-//|===
-//|*Feature*
-//|*Description*
+|===
+|*Feature*
+|*Description*
 
-//|===
+|*Custom IAM Policies Alert Triggers*
+
+tt:[24.1.1]
+//RLP-153861
+
+|Starting with the current release, custom policies regarding unused permissions will trigger alerts when there is zero usage of the action with `""` regex across any of the destinations. If the action has been used on at least one resource that matches the `""` regex, the alert will be resolved.
+
+*Impact—* This change may impact existing alerts for unused permissions with `*` and could potentially dismiss them.
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+
+[cols="50%a,50%a"]
+|===
+|*Service*
+|*API Details*
+
+|*Amazon Athena*
+//RLP-153371
+|*aws-athena-table-metadata*
+
+Additional permissions needed:
+
+* `athena:ListDataCatalogs`
+* `athena:ListDatabases`
+* `athena:ListTableMetadata`
+* `glue:GetTables`
+
+The Security Audit role includes the permissions.
+
+|tt:[Update] *Amazon CodePipeline*
+//RLP-153691
+|*aws-code-pipeline-pipeline*
+
+The resource JSON for the API has been updated to include new fields:
+
+* `stages`
+* `Deploy`
+* `Source`
+* `Build`
+
+|*Amazon Cognito*
+//RLP-152946
+|*aws-cognito-user-pool-group*
+
+Additional permissions needed:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListGroups`
+* `cognito-idp:GetGroup`
+
+The Security Audit role only includes the `cognito-idp:ListUserPools` and `cognito-idp:ListGroups` permissions.
+
+You must manually update the `cognito-idp:GetGroup` permission in the CFT template and enable it.
+
+|*Amazon Cognito*
+//RLP-153820
+|*aws-cognito-user*
+
+Additional permissions needed:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListUsers`
+
+The Security Audit role includes the permissions.
+
+
+|*AWS Directory Service*
+//RLP-153814
+|*aws-ds-directory-trust*
+
+Additional permission needed:
+
+* `ds:DescribeTrusts`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+
+|*Amazon EC2*
+//RLP-153463
+|*aws-ec2-spot-fleet-request*
+
+Additional permission needed:
+
+* `ec2:DescribeSpotFleetRequests`
+
+The Security Audit role includes the permission.
+
+|*Amazon EC2*
+//RLP-153463/RLP-153318
+|*aws-ec2-serial-console-access-status*
+
+Additional permission needed:
+
+* `ec2:GetSerialConsoleAccessStatus`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+|tt:[Update] *Amazon EC2*
+//RLP-153817
+
+|*aws-ec2-describe-images*
+
+The resource JSON for this API includes the `deprecationTime` field.
+
+|*Amazon ElastiCache*
+//RLP-152949
+|*aws-elasticache-serverless-cache*
+
+Additional permissions needed:
+
+* `elasticache:DescribeServerlessCaches`
+* `elasticache:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+|*Amazon Elasticsearch Service*
+//RLP-153323
+|*aws-es-batch-get-collection*
+
+Additional permissions needed:
+
+* `aoss:ListCollections`
+* `aoss:BatchGetCollection`
+* `aoss:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+|*Amazon Elasticsearch Service*
+//RLP-153320
+|*aws-es-security-config*
+
+Additional permission needed:
+
+* `aoss:ListSecurityConfigs`
+
+The Security Audit role includes the permission.
+
+|*Amazon Fraud Detector*
+//RLP-153298
+|*aws-fraud-detector-entity-type*
+
+Additional permissions needed:
+
+* `frauddetector:GetEntityTypes`
+* `frauddetector:ListTagsForResource`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|*Amazon Fraud Detector*
+//RLP-152954
+|*aws-fraud-detector-label*
+
+Additional permissions needed:
+
+* `frauddetector:GetLabels`
+* `frauddetector:ListTagsForResource`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|*Amazon Fraud Detector*
+//RLP-152945
+|*aws-fraud-detector-variable*
+
+Additional permission needed:
+
+* `frauddetector:GetVariables`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+|*AWS Global Accelerator*
+//RLP-153286
+|*aws-global-accelerator-endpoint-group*
+
+Additional permissions needed:
+
+* `globalaccelerator:ListAccelerators`
+* `globalaccelerator:ListListeners`
+* `globalaccelerator:DescribeListener`
+* `globalaccelerator:ListEndpointGroups`
+* `globalaccelerator:DescribeEndpointGroup`
+
+The Security Audit role includes the permissions.
+
+|*AWS Global Accelerator*
+//RLP-153284
+|*aws-global-accelerator-listener*
+
+Additional permissions needed:
+
+* `globalaccelerator:ListAccelerators`
+* `globalaccelerator:ListListeners`
+* `globalaccelerator:DescribeListener`
+
+The Security Audit role includes the permissions.
+
+
+|*AWS Glue*
+//RLP-153177
+|*aws-glue-dev-endpoint*
+
+Additional permission needed:
+
+* `glue:GetDevEndpoints`
+
+The Security Audit role includes the permission.
+
+|*AWS IAM*
+//RLP-153314
+|*aws-iam-service-specific-credential*
+
+Additional permissions needed:
+
+* `iam:ListUsers`
+* `iam:ListServiceSpecificCredentials`
+
+The Security Audit role includes the permissions.
+
+|*AWS IAM Identity Center*
+//RLP-153622
+|*aws-iam-identity-center-instance*
+
+Additional permission needed:
+
+* `sso:ListInstances`
+
+The Security Audit role includes the permission.
+
+|*Amazon Lightsail*
+//RLP-153464
+|*aws-lightsail-container-service*
+
+Additional permission needed:
+
+* `lightsail:GetContainerServices`
+
+The Security Audit role includes the permission.
+
+|*Amazon Lightsail*
+//RLP-152947
+|*aws-lightsail-key-pair*
+
+Additional permission needed:
+
+* `lightsail:GetKeyPairs`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+
+|*Amazon MSK*
+//RLP-153302
+|*aws-msk-configuration*
+
+Additional permissions needed:
+
+* `kafka:ListConfigurations`
+* `kafka:DescribeConfiguration`
+
+The Security Audit role includes the permissions.
+
+|*AWS Network Manager*
+//RLP-153465
+|*aws-network-manager-global-network-device*
+
+Additional permissions needed:
+
+* `networkmanager:DescribeGlobalNetworks`
+* `networkmanager:GetDevices`
+
+The Security Audit role only includes the `networkmanager:DescribeGlobalNetworks` permission.
+
+You must manually update the `networkmanager:GetDevices` permission in the CFT template and enable it.
+
+|*Amazon Personalize*
+//RLP-153305
+|*aws-personalize-dataset-import-job*
+
+Additional permission needed:
+
+* `personalize:ListDatasetImportJobs`
+
+The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+
+
+|*Amazon Recycle Bin*
+//RLP-153461
+|*aws-recycle-bin-ami-rule*
+
+Additional permissions needed:
+
+* `rbin:ListRules`
+* `rbin:GetRule`
+* `rbin:ListTagsForResource`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+
+|*Amazon SageMaker*
+//RLP-153466
+|*aws-sagemaker-studio-lifecycle-config*
+
+Additional permissions needed:
+
+* `sagemaker:ListStudioLifecycleConfigs`
+* `sagemaker:DescribeStudioLifecycleConfig`
+
+The Security Audit role includes the permissions.
+
+|*Amazon SES*
+//RLP-153304
+|*aws-ses-template*
+
+Additional permissions needed:
+
+* `ses:ListTemplates`
+* `ses:GetTemplate`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+|tt:[Update] *AWS Step Functions*
+//RLP-153816
+
+|*aws-step-functions-statemachine*
+
+The resource JSON for this API includes the `definition` field.
+
+
+|*Amazon Translate*
+//RLP-153288
+|*aws-translate-text-translation-job*
+
+Additional permissions needed:
+
+* `translate:ListTextTranslationJobs`
+* `translate:DescribeTextTranslationJob`
+
+The Security Audit role only includes `translate:ListTextTranslationJobs` permission.
+
+You must manually include `translate:DescribeTextTranslationJob` permission in the CFT template to enable it.
+
+
+|*Amazon VPC Lattice*
+//RLP-153467
+|*aws-vpc-lattice-service-network*
+
+Additional permissions needed:
+
+* `vpc-lattice:ListServiceNetworks`
+* `vpc-lattice:GetServiceNetwork`
+* `vpc-lattice:TagResource`
+
+The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+
+
+|*AWS Glue DataBrew*
+//RLP-153178
+|*aws-glue-data-brew-project*
+
+Additional permissions needed:
+
+* `databrew:ListProjects`
+* `databrew:DescribeProject`
+
+The Security Audit role includes the permissions.
+
+|*Azure Active Directory*
+//RLP-153823
+|*azure-active-directory-group-lifecycle-policies*
+
+Additional permission needed:
+
+* `Directory.Read.All`
+
+The Reader role includes the permission.
+
+|*Azure API Management Service*
+//RLP-153821
+|*azure-api-management-service-apis*
+
+Additional permission needed:
+
+* `Microsoft.ApiManagement/service/apis/read`
+
+The Reader role includes the permission.
+
+
+|*Azure App Service*
+//RLP-153586
+|*azure-app-service-web-apps-app-settings*
+
+Additional permissions needed:
+
+* `Microsoft.Web/sites/Read`
+* `Microsoft.Web/sites/config/list/Action`
+
+The Reader role includes the permissions.
+
+|*Azure Batch Account*
+//RLP-154060
+|*azure-batch-account-application*
+
+Additional permissions needed:
+
+* `Microsoft.Batch/batchAccounts/read`
+* `Microsoft.Batch/batchAccounts/applications/read`
+
+The Reader role includes the permissions.
+
+
+|*Azure Database for PostgreSQL*
+//RLP-153589
+|*azure-postgresql-flexible-server-configurations*
+
+Additional permissions needed:
+
+* `Microsoft.DBforPostgreSQL/flexibleServers/read`
+* `Microsoft.DBforPostgreSQL/flexibleServers/configurations/read`
+
+The Reader role includes the permissions.
+
+|*Azure Load Testing*
+//RLP-154066
+|*azure-loadtest-service-outbound-network-endpoint*
+
+Additional permissions needed:
+
+* `Microsoft.LoadTestService/loadTests/read`
+* `Microsoft.LoadTestService/loadTests/outboundNetworkDependenciesEndpoints/read`
+
+The Reader role includes the permissions.
+
+
+|*Google Identity Aware Proxy*
+//RLP-153771
+|*gcloud-identity-aware-proxy-all-web-services-settings*
+
+Additional permission needed:
+
+* `iap.web.getSettings`
+
+The Viewer role includes the above permission.
+
+
+|*Google Identity Aware Proxy*
+//RLP-153774
+|*gcloud-identity-aware-proxy-compute-settings*
+
+Additional permission needed:
+
+* `iap.webTypes.getSettings`
+
+The Viewer role includes the above permission.
+
+
+|*Google Identity Aware Proxy Forwarding*
+//RLP-153813
+|*gcloud-identity-aware-proxy-forwarding-rule-settings*
+
+Additional permission needed:
+
+* `iap.webTypes.getSettings`
+
+The Viewer role includes the above permission.
+
+
+|*Google Identity Aware Proxy*
+//RLP-153769
+|*gcloud-identity-aware-proxy-project-settings*
+
+Additional permission needed:
+
+* `iap.webTypes.getSettings`
+
+The Viewer role includes the above permission.
+
+|*OCI Vaults*
+//RLP-123337
+|*oci-vault-key*
+
+Additional permissions needed:
+
+* `KEY_INSPECT`
+* `KEY_READ`
+
+You must update the Terraform template to enable the permissions.
+
+|===
 
 //[#policy-updates]
 //=== Policy Updates
