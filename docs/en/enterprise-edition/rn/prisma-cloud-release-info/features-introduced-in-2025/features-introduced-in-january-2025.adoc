@@ -7,12 +7,12 @@ Learn what's new on Prisma® Cloud in January 2025.
 * <<changes-in-existing-behavior>>
 //* <<announcement>>
 //* <<intelligence-stream-updates>>
-//* <<api-ingestions>>
-//* <<new-policies>>
-//* <<policy-updates>>
-//* <<policy-updates-iam>>
-//* <<new-compliance-benchmarks-and-updates>>
-//* <<rest-api-updates>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+* <<iam-policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<rest-api-updates>>
 //* <<deprecation-notices>>
 
 
@@ -134,7 +134,6 @@ tt:[24.1.1]
 
 [#api-ingestions]
 === API Ingestions
-
 
 [cols="50%a,50%a"]
 |===
@@ -612,34 +611,540 @@ You must update the Terraform template to enable the permissions.
 
 |===
 
-//[#policy-updates]
-//=== Policy Updates
+[#new-policies]
+=== New Policies
 
-//[cols="50%a,50%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+[cols="40%a,60%a"]
+|===
+|*Policies*
+|*Description*
 
-//|===
+|*AWS Connect instance not configured with contact flow logs*
+//RLP-154132
 
+|This Policy identifies the Amazon Connect instance configured with CONTACTFLOW_LOGS set to false in Amazon Connect. Enabling CONTACTFLOW_LOGS in Amazon Connect is crucial as it allows real-time logging of contact flow executions to CloudWatch. This helps in debugging, monitoring, and optimizing customer interactions by tracking steps, conditions, and errors.
 
-//[#new-compliance-benchmarks-and-updates]
-//=== New Compliance Benchmarks and Updates
+It is recommended to enable CONTACTFLOW_LOGS to enhance monitoring and ensure adherence to security policies and regulations.
 
-//[cols="50%a,50%a"]
-//|===
-//|*Compliance Benchmark*
-//|*Description*
+*Policy Severity—* Informational
 
-//|===
+*Policy Type—* Config
 
-//[#rest-api-updates]
-//=== REST API Updates
-
-//[cols="37%a,63%a"]
-//|===
-//|*Change*
-//|*Description*
+*RQL—* 
+----
+config from cloud.resource where api.name = 'aws-connect-instance' AND json.rule = InstanceStatus equals "ACTIVE" and attributes[?any( AttributeType equals "CONTACTFLOW_LOGS" and Value equals "false" )] exists
+----
 
 
-//|===
+|*AWS Connect instance using publicly accessible S3 bucket*
+//RLP-154134
+
+|This policy identifies the S3 bucket used by AWS Connect instances  for storing CHAT_TRANSCRIPTS, CALL_RECORDINGS, and SCREEN_RECORDINGS, which are publicly accessible.The S3 bucket containing CHAT_TRANSCRIPTS, CALL_RECORDINGS, or SCREEN_RECORDINGS being publicly accessible is significant, as it exposes sensitive customer data and internal data to the public.
+
+It is recommended to secure the identified S3 buckets by enforcing stricter access controls and eliminating public read permissions for the reported S3 bucket used for AWS Connect instances.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'aws-connect-instance' AND json.rule = InstanceStatus equals "ACTIVE" and storageConfig[?any( resourceType is member of ('CHAT_TRANSCRIPTS','CALL_RECORDINGS','SCREEN_RECORDINGS') and storageConfigs[*] exists )] exists as X; config from cloud.resource where api.name='aws-s3api-get-bucket-acl' AND json.rule = "((((acl.grants[?(@.grantee=='AllUsers')] size > 0) or policyStatus.isPublic is true) and publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration does not exist) or ((acl.grants[?(@.grantee=='AllUsers')] size > 0) and ((publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false) or (publicAccessBlockConfiguration.ignorePublicAcls is false and accountLevelPublicAccessBlockConfiguration.ignorePublicAcls is false))) or (policyStatus.isPublic is true and ((publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration does not exist) or (publicAccessBlockConfiguration does not exist and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false) or (publicAccessBlockConfiguration.restrictPublicBuckets is false and accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))))" as Y; filter ' $.X.storageConfig[*].storageConfigs[*].S3Config.BucketName intersects $.Y.bucketName' ; show Y;
+----
+
+|*AWS Connect instance not configured with contact flow logs*
+//RLP-154132
+
+|This Policy identifies the Amazon Connect instance configured with CONTACTFLOW_LOGS set to false in Amazon Connect. Enabling CONTACTFLOW_LOGS in Amazon Connect is crucial as it allows real-time logging of contact flow executions to CloudWatch. This helps in debugging, monitoring, and optimizing customer interactions by tracking steps, conditions, and errors.
+
+It is recommended to enable CONTACTFLOW_LOGS to enhance monitoring and ensure adherence to security policies and regulations.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'aws-connect-instance' AND json.rule = InstanceStatus equals "ACTIVE" and attributes[?any( AttributeType equals "CONTACTFLOW_LOGS" and Value equals "false" )] exists
+----
+
+|*Azure Blob Storage utilized for Azure Machine Learning training job data*
+//RLP-153631
+
+|This policy identifies Azure Blob Storage accounts used for storing data utilized in Azure Machine Learning training jobs. This policy provides visibility into storage utilization for Machine Learning workloads but does not indicate a security or compliance risk.
+
+Azure Blob Storage serves as a robust storage solution for large-scale Machine Learning training data. This policy emphasizes the importance of securing stored data by employing encryption and additional security parameters like firewalls, private endpoints, and access policies to safeguard sensitive information.
+
+As a security best practice, it is recommended to properly configure Azure Blob Storage utilized in Azure Machine Learning training jobs.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'azure-machine-learning-datastores' AND json.rule = properties.datastoreType equal ignore case AzureBlob as X; config from cloud.resource where api.name = 'azure-storage-account-list' as Y; filter ' $.X.properties.accountName equal ignore case $.Y.name ' ; show Y;
+----
+
+|*Azure Function App with public access linked to Blob Storage*
+//RLP-153632
+
+|This policy identifies Azure Function Apps configured with public access and linked to Azure Blob Storage.
+
+Azure Function Apps often access Blob Storage to retrieve or store data. When public access is enabled for the Function App, it exposes the application and, potentially, the associated Blob Storage to unauthorized access, leading to potential security risks.
+
+As a security best practice, it is recommended to evaluate public access for Azure Function Apps and secure Azure Blob Storage.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' as X; config from cloud.resource where api.name = 'azure-app-service-web-apps-configurations' as Y; config from cloud.resource where api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists' as Z; filter ' $.Y.properties.azureStorageAccounts contains $.X.name and $.Z.name equal ignore case $.Y.name' ; show Z;
+----
+
+|*Azure Container Registry with anonymous authentication enabled*
+//RLP-153633
+
+|This policy identifies Azure Container Registries with anonymous authentication enabled, allowing unauthenticated access to the registry.
+
+Allowing anonymous pull or access to container registries poses a significant security risk, exposing them to unauthorized users who may retrieve or manipulate container images. To enhance security, disable anonymous access and require authentication through Azure Active Directory (Azure AD). Additionally, turn off local authentication methods such as admin user, repository-scoped access tokens, and anonymous pull to ensure authentication relies solely on Azure AD, providing improved control and accountability.
+
+As a security best practice, it is recommended to disable anonymous authentication for Azure Container Registries.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'azure-container-registry' AND json.rule = (skuName contains Standard or skuName contains Premium) and properties.provisioningState equal ignore case Succeeded and properties.anonymousPullEnabled is false 
+----
+
+|*Azure Container Registry with ARM audience token authentication enabled*
+//RLP-153634
+
+|This policy identifies Azure Container Registries that permit ARM audience tokens for authentication.
+
+When ARM audience tokens are enabled, they allow authentication intended for broader Azure services, which could introduce potential security risks. Disabling ARM audience tokens ensures that only ACR-specific tokens are valid, enhancing security by limiting authentication exclusively to Azure Container Registry audience tokens.
+
+As a security best practice, it is recommended to disable ARM audience tokens for Azure Container Registries.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'azure-container-registry' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.policies.azureADAuthenticationAsArmPolicy.status contains enabled 
+----
+
+|*Azure Container Registry with local admin account enabled*
+//RLP-154109
+
+|This policy identifies Azure Container Registries having local admin account enabled.
+
+Enabling the admin account allows access to the registry through username and password, bypassing Microsoft Entra ID authentication. Disabling the local admin account improves security by enforcing exclusive use of Microsoft Entra ID identities, which provide centralized management, enhanced auditing, and better control over permissions. By relying solely on Microsoft Entra ID for authentication, the risk of unauthorized access through local credentials is mitigated, ensuring stronger protection for your container registry.
+
+As a security best practice, it is recommended to disable local admin account for Azure Container Registries.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-container-registry' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.adminUserEnabled is true 
+----
+
+|*Azure Container Registry with repository scoped access token enabled*
+//RLP-154110
+
+|This policy identifies Azure Container Registries having repository scoped access tokens enabled.
+
+Disable repository-scoped access tokens for your registry to prevent access via tokens. Enhancing security involves disabling local authentication methods, including admin user, repository-scoped access tokens, and anonymous pull. This ensures that container registries rely solely on Microsoft Entra ID identities for authentication.
+
+As a security best practice, it is recommended to disable repository scoped access token for Azure Container Registries.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-container-registry' AND json.rule = properties.provisioningState equal ignore case Succeeded and tokens[?any( properties.status contains enabled )] exists 
+----
+
+|*Azure Container Registry not encrypted with Customer Managed Key (CMK)*
+//RLP-154111
+
+|This policy identifies Azure Container Registries that are not encrypted with Customer-Managed Keys (CMK).
+
+By default, Azure Container Registry encrypts data at rest with Microsoft-managed keys. However, for enhanced control, regulatory compliance, and improved security, customer-managed keys enable organizations to encrypt Azure Container Registry data using Azure Key Vault keys that they create, own, and manage. Using CMK ensures that the encryption process aligns with organizational policies, allowing complete control over key lifecycle management, including rotation, access management, and retirement.
+
+As a security best practice, it is recommended to encrypt Azure Container Registries with Customer-Managed Keys (CMK).
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-container-registry' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.encryption.status equal ignore case disabled 
+----
+
+|*Azure Container Registry with exports enabled*
+//RLP-154112
+
+|This policy identifies Azure Container Registries with exports enabled.
+
+Azure Container Registries with exports enabled allows data in the registry to be moved out using commands like acr import or acr transfer. Export functionality can expose registry data, increasing the risk of unauthorized data movement. Disabling exports ensures that data in a registry is accessed only via the dataplane (e.g., docker pull) and cannot be moved out using other methods.
+
+As a security best practice, it is recommended to disable export configuration for Azure Container Registries.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-container-registry' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.policies.exportPolicy.status contains enabled or properties.publicNetworkAccess contains enabled) 
+----
+
+|*GCP Memorystore for Redis instance not encrypted with CMEK*
+//RLP-153619
+
+|This policy identifies Memorystore for Redis instances not encrypted with CMEK.
+
+GCP Memorystore for Redis is a fully managed in-memory data store that simplifies Redis deployment and scaling while ensuring high availability and low-latency access. By using CMEK with Redis instance, you retain complete control over the encryption keys protecting your sensitive data, ensuring that only authorized users with access to these keys can decrypt and access the information. Without CMEK, data is encrypted with Google-managed keys, which may not provide the level of control required for handling sensitive data in certain industries.
+
+It is recommended to encrypt Redis instance data using a Customer-Managed Encryption Key (CMEK).
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-redis-instances-list' AND json.rule = not(customerManagedKey contains cryptoKeys)
+----
+
+|*GCP Memorystore for Redis instance does not use in transit encryption*
+//RLP-153620
+
+|This policy identifies GCP Memorystore for Redis instances with no in transit encryption.
+
+GCP Memorystore for Redis is a fully managed in-memory data store that simplifies Redis deployment and scaling while ensuring high availability and low-latency access. When in-transit encryption is disabled, all data transmitted between your clients and Redis flows as plaintext over the network, making it vulnerable to man-in-the-middle attacks and packet sniffing, potentially exposing sensitive information like session tokens, personal data, or business secrets.
+
+It is recommended to enable In transit encryption for GCP Memorystore for Redis to prevent malicious actors from intercepting sensitive data.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-redis-instances-list' AND json.rule = transitEncryptionMode does not equal ignore case SERVER_AUTHENTICATION
+----
+
+|*GCP Memorystore for Redis instance has AUTH disabled*
+//RLP-153621
+
+|This policy identifies GCP Memorystore for Redis instances having AUTH disabled.
+
+GCP Memorystore for Redis is a fully managed in-memory data store that simplifies Redis deployment and scaling while ensuring high availability and low-latency access. When AUTH is disabled, any client that can reach the Redis instance over the network can freely connect and perform operations without providing any credentials, creating a significant security risk to your data.
+
+It is recommended to enable authentication (AUTH) on the GCP Memorystore for Redis to ensure only authorized clients can connect.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-redis-instances-list' AND json.rule = authEnabled is false
+----
+
+|*GCP Storage bucket with object versioning disabled*
+//RLP-154140
+
+|This policy identifies GCP Storage buckets that have object versioning disabled.
+
+Object versioning is a method of keeping multiple variants of an object in the same storage bucket. Enabling object versioning on storage log buckets will protect your cloud storage data from being overwritten or accidentally deleted.
+
+It is recommended to enable the object versioning feature on all storage buckets.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-storage-buckets-list' AND json.rule = versioning.enabled is false or versioning does not exist
+----
+
+|===
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—Metadata*
+
+|*Azure VM disk configured with public network access*
+//RLP-153728
+
+|The policy name and description will be updated.
+
+*Current Policy Name–* Azure VM disk configured with public network access
+
+*Updated Policy Name–* Azure VM disk configured with overly permissive network access
+
+*Current Policy Description–* This policy identifies Azure Virtual Machine disks that are configured with public network access.
+
+Allowing public access to Azure Virtual Machine disk resources increases the risk of unauthorized access and potential security breaches. Public network access exposes sensitive data to external threats, which attackers could exploit to compromise VM disks. Disabling public access and using Azure Private Link reduces exposure, ensuring only trusted networks have access and enhancing the security of your Azure environment by minimizing the risk of data leaks and breaches.
+
+As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks.
+
+*Updated Policy Description–* This policy identifies Azure Virtual Machine disks that are configured with overly permissive network access.
+
+Enabling public network access provides overly permissive network access on Azure Virtual Machine disks, increasing the risk of unauthorized access and potential security breaches. Public network access exposes sensitive data to external threats, which attackers could exploit to compromise VM disks. Disabling public access and using Azure Private Link reduces exposure, ensuring only trusted networks have access and enhancing the security of your Azure environment by minimizing the risk of data leaks and breaches. 
+
+As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks. 
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* No impact on alerts.
+
+|*AWS Security Group allows all traffic on CIFS port (445)*
+
+tt:[Policy-Fix]
+
+|With this new update, the policy search manager name changed from AWS Security Group allows all traffic on CIFS port (445) to AWS Security Group allows all ingress traffic on CIFS port (445)
+
+*Impact*: No impact on the alerts
+
+2+|*Policy Updates—RQL*
+
+|*Azure Storage account diagnostic setting for blob is disabled*
+//RLP-152815
+
+|The policy RQL is updated to reduce false positives when the diagnostic setting is enabled. 
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-blob-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-blob-diagnostic-settings' AND json.rule = (properties.logs[?(@.categoryGroup)] exists and properties.logs[*].enabled any true) or (properties.logs[?(@.category)] exists and properties.logs[*].enabled all true) as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X; 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts would be resolved when the diagnostic settings are enabled
+
+
+|*Azure Cosmos DB Virtual network is not configured*
+//RLP-153625
+
+|The policy RQL will be updated to reduce false positives by considering the public network access property. 
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded and properties.virtualNetworkRules[*] does not exist
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Medium. New alerts will be generated when the public network access is set to `all` networks. Existing alerts where the public network access is not set to `all` networks will be resolved.
+
+|*Azure storage account has a blob container with public access*
+//RLP-153630
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*Azure Storage account container storing activity logs is publicly accessible*
+//RLP-153630
+
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule= publicContainersList[*] contains insights-operational-logs and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter'$.X.id contains $.Y.properties.storageAccountId'; show X;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule= 'publicContainersList[*] contains insights-operational-logs and (totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist))' as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter '$.X.id contains $.Y.properties.storageAccountId'; show X; 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible*
+//RLP-153630
+
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y; 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*Azure Storage Account storing Cognitive service diagnostic logs is publicly accessible*
+//RLP-153630
+
+|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Medium
+
+*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
+
+|*GCP VPC Flow logs for the subnet is set to Off*
+//RLP-153624
+
+|The policy RQL and recommendation steps will be updated to reduce false positives by excluding unsupported subnet purposes.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose does not contain INTERNAL_HTTPS_LOAD_BALANCER and purpose does not contain REGIONAL_MANAGED_PROXY and (enableFlowLogs is false or enableFlowLogs does not exist)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose does not contain INTERNAL_HTTPS_LOAD_BALANCER and purpose does not contain REGIONAL_MANAGED_PROXY and purpose does not contain GLOBAL_MANAGED_PROXY and purpose does not contain PRIVATE_SERVICE_CONNECT and (enableFlowLogs is false or enableFlowLogs does not exist)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Existing alerts where subnets with purpose `GLOBAL_MANAGED_PROXY` and `PRIVATE_SERVICE_CONNECT` will be resolved.
+
+|*GCP VPC Network subnets have Private Google access disabled*
+//RLP-153623
+
+|The policy RQL and recommendation steps will be updated to reduce false positives by excluding unsupported subnet purposes.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose is not member of (REGIONAL_MANAGED_PROXY, PRIVATE_SERVICE_CONNECT) and (privateIpGoogleAccess does not exist or privateIpGoogleAccess is false)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose is not member of (REGIONAL_MANAGED_PROXY, PRIVATE_SERVICE_CONNECT, GLOBAL_MANAGED_PROXY, PRIVATE_NAT) and (privateIpGoogleAccess does not exist or privateIpGoogleAccess is false)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. Existing alerts related to `GLOBAL_MANAGED_PROXY` and `PRIVATE_NAT` purposes will be resolved.
+
+|*GCP VM instance Confidential VM service disabled*
+//RLP-153054
+
+|Policy RQL is updated to reduce the false positives by considering the CSP limitations{}.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-instances-list' AND json.rule = status equal ignore case "RUNNING" and (machineType contains "machineTypes/n2d-" or machineType contains "machineTypes/c2d-") and (confidentialInstanceConfig.enableConfidentialCompute does not exist or confidentialInstanceConfig.enableConfidentialCompute is false)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-instances-list' AND json.rule = status equal ignore case "RUNNING" and (machineType contains "machineTypes/n2d-" or machineType contains "machineTypes/c2d-" or machineType contains "machineTypes/c3d-" or machineType contains "machineTypes/c3-standard-")and (disks[*].guestOsFeatures[*].type contains "SEV_CAPABLE" or disks[*].guestOsFeatures[*].type contains "SEV_LIVE_MIGRATABLE_V2" or disks[*].guestOsFeatures[*].type contains "SEV_SNP_CAPABLE" or disks[*].guestOsFeatures[*].type contains "TDX_CAPABLE") and (confidentialInstanceConfig.enableConfidentialCompute does not exist or confidentialInstanceConfig.enableConfidentialCompute is false)
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Medium
+
+*Impact–* Medium. New Alerts would be triggered when the machine type is * c3-standard- and C3D. Open alerts with OS_FEATURE not containing SEV_CAPABLE, SEV_LIVE_MIGRATABLE_V2, SEV_SNP_CAPABLE, and TDX_CAPABLE will be resolved.
+
+
+|===
+
+[#iam-policy-updates]
+=== IAM Policy Updates
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+
+|===
