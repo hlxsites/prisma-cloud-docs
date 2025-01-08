@@ -1128,6 +1128,57 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compu
 [#iam-policy-updates]
 === IAM Policy Updates
 
+The 25.1.1 release includes two new IAM policies and two IAM policy updates.
+
+*New IAM Policies*
+
+[cols="25%a,25%a,30%a,10%a,10%a"]
+|===
+|*Policy Name*
+|*Description*
+|*RQL*
+|*Cloud*
+|*Severity*
+
+|Entra ID user owns an Entra ID service account with permission to add members to a group with admin privileges at the subscription/management group level
+|This policy identifies Entra ID users that are owners of an App Registration which is granted Graph API or Entra ID permissions allowing it to add members to a group with administrative permissions at the Subscription or Management Group level
+|`config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.isAppRegistrationOwner = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('Directory.ReadWrite.All','Group.ReadWrite.All','GroupMember.ReadWrite.All','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.security/allProperties/update','microsoft.directory/groups.security/dynamicMembershipRule/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update'), ('Azure Management Group', 'Azure Subscription' ) )`
+|Azure
+|High
+
+|Entra ID user can impersonate an Entra ID application with permission to add members to a group with admin privileges at the subscription/management group level
+|This policy identifies Entra ID users that can impersonate an App Registration using the 'Create Credentials' or 'Change Ownership' features, where the App Registration is granted Graph API or Entra ID permissions allowing it to add members to a group with administrative permissions at the Subscription or Management Group level
+|`config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.canImpersonateAppReg = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('Directory.ReadWrite.All','Group.ReadWrite.All','GroupMember.ReadWrite.All','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.security/allProperties/update','microsoft.directory/groups.security/dynamicMembershipRule/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update'), ('Azure Management Group', 'Azure Subscription' ) )`
+|Azure
+|High
+
+*IAM Policy Updates*
+
+[cols="25%a,25%a,30%a,10%a,10%a"]
+|===
+|*Policy Name*
+|*Description*
+|*RQL*
+|*Cloud*
+|*Severity*
+
+
+|System/User-assigned managed identity with critical Entra ID permissions
+|This policy detects Azure system-assigned and user-assigned managed identities that are granted critical Graph API permissions or assigned roles containing high-privilege Entra ID permissions. These permissions, such as the ability to create or modify critical resources, may lead to potential privilege escalation or data exfiltration risks.
+|`config from iam where source.cloud.type = 'AZURE' AND source.cloud.resource.type IN ('System Assigned','User Assigned','virtualMachines') and grantedby.cloud.entity.type in ('System Assigned','User Assigned') and action.name in ('Application.ReadWrite.All','Directory.ReadWrite.All','microsoft.directory/applications/owners/update','microsoft.directory/applications/credentials/update','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.unified/owners/update','microsoft.directory/groups.unified.assignedMembership/members/update','microsoft.directory/groups.unified/members/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','User.ReadWrite.All','microsoft.directory/users/password/update','AppRoleAssignment.ReadWrite.All','microsoft.directory/servicePrincipals/appRoleAssignedTo/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update','Mail.ReadWrite','Files.ReadWrite.All','Sites.ReadWrite.All','Sites.FullControl.All')`
+|Azure
+|High
+
+|AWS resources that are publicly accessible through IAM policies
+|
+|`config from iam where dest.cloud.type = ''AWS'' and source.public = true AND grantedby.cloud.policy.condition DOES NOT EXIST`
+|AWS
+|
+
+|===
+
+|===
+
 [#new-compliance-benchmarks-and-updates]
 === New Compliance Benchmarks and Updates
 
@@ -1136,15 +1187,62 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compu
 |*Compliance Benchmark*
 |*Description*
 
+|*Center for Internet Security (CIS) v3.0.0 (Azure) Level 1 and Level 2*
+//RLP-154121
+
+|Prisma Cloud now supports the latest version of the CIS Microsoft Azure Foundations Benchmark v3.0.0 compliance framework, including Level 1 and Level 2 assessments. The Level 1 benchmark focuses on essential security controls that are critical for protecting Azure resources, while Level 2 provides more stringent requirements for organizations seeking to implement advanced security measures. Noteworthy changes include updated syntax for procedures and a clear distinction between foundational and service category benchmarks.
+
+You can now access this built-in compliance standard and related policies on the "Compliance > Standards" page. Additionally, users can generate reports for immediate viewing or downloading, as well as set up scheduled reports to continuously monitor compliance with the CIS Microsoft Azure Foundations Benchmark v3.0.0 framework over time, ensuring robust governance and security across Azure deployments.
+
+|*Center for Internet Security (CIS) v4.0.0 (AWS) Level 1 and Level 2*
+//RLP-154188
+
+|Prisma Cloud now supports the latest version of the CIS Amazon Web Services Foundations Benchmark v4.0.0 compliance framework, including Level 1 and Level 2 assessments. The Level 1 benchmark focuses on essential security controls that are critical for protecting AWS resources, while Level 2 provides more stringent requirements for organizations seeking to implement advanced security measures. Noteworthy changes include updated syntax for procedures and a clear distinction between foundational and service category benchmarks.
+
+You can now access this built-in compliance standard and related policies on the *Compliance > Standards* page. Additionally, users can generate reports for immediate viewing or downloading, as well as set up scheduled reports to continuously monitor compliance with the CIS AWS Foundations Benchmark v4.0.0 framework over time, ensuring robust governance and security across AWS deployments.
+
+|*Health Insurance Portability and Accountability Act (HIPAA)*
+//RLP-154120
+
+tt:[Update]
+
+|New Policy mappings are added to HIPAA compliance standard.
+
+*Impact*: As new mappings are introduced, compliance scoring might vary.
+
+
+|*National Cyber Security Center (NCSC) - Cyber Essentials*
+//RLP-154202
+
+|Prisma Cloud now supports the NCSC - Cyber Essentials compliance framework.  The UK's National Cyber Security Centre provided Cyber Essentials as a government backed certification scheme that helps  keep your organisation’s and your customers’ data safe from cyber attacks. The NCSC recommends Cyber Essentials as the minimum standard of cyber security for all organisations.
+
+You can now access this built-in compliance standard and related policies on the *Compliance > Standards* page.
+
+
+|*National Cyber Security Center (NCSC) -  Cloud Security Principles*
+//RLP-154210
+
+|Prisma Cloud now supports the NCSC - Cyber Essentials compliance framework.  The UK's National Cyber Security Centre provided Cyber Essentials as a government backed certification scheme that helps organisations enhance theircloud security posture.  
+
+You can now access this built-in compliance standard and related policies on the *Compliance > Standards* page.
+
+
+|*Trusted Information Security Assessment Exchange (TISAX)* 
+//RLP-154119
+
+|Prisma Cloud now supports the latest version of the TISAX compliance framework. This updated standard emphasizes a structured approach to information security management, particularly for organizations in the automotive industry. Notably, TISAX requires companies to demonstrate their capability to manage information security risks through a defined maturity model, which includes various levels of assessment ranging from basic self-assessment to comprehensive audits by accredited providers.
+
+You can now access this built-in compliance standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports for immediate viewing or downloading, as well as set up scheduled reports to continuously monitor compliance with the TISAX framework over time. TISAX compliance helps you effectively manage and demonstrate your organization's adherence to stringent information security requirements to help safeguard sensitive automotive data against evolving threats.
+
 |===
 
-[#rest-api-updates]
-=== REST API Updates
+//[#rest-api-updates]
+//=== REST API Updates
 
-[cols="37%a,63%a"]
-|===
-|*Change*
-|*Description*
+//[cols="37%a,63%a"]
+//|===
+//|*Change*
+//|*Description*
 
 
-|===
+
