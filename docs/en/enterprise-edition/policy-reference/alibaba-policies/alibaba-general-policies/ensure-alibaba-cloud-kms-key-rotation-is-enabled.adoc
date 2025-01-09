@@ -26,27 +26,26 @@
 
 === Description
 
-A key is a named object representing a cryptographic key used for a specific purpose, including data protection.
-The key material, the actual bits used for encryption, can change over time as new key versions are created.
-A collection of files could be encrypted with the same key and people with decrypt permissions on that key would be able to decrypt those files.
-We recommend you set a key rotation period.
-A key can be created with a specified rotation period, which is the time when new key versions are generated automatically.
-A key can also be created with a specified next rotation time.
+A key is a named object representing a cryptographic key used for specific purposes, such as data protection and encryption. The key material—the actual bits used for encryption—can change over time as new key versions are generated. A single key can be used to encrypt multiple files, and individuals with decrypt permissions for that key can decrypt those files.
+
+To enhance security, it is recommended to set a key rotation period. Key rotation involves automatically generating new key versions at a specified interval, ensuring that the encryption remains robust and limiting the exposure time of any compromised key material. A key can be configured with a specified rotation period or a next rotation time, defining when new key versions should be created.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
+* *Resource:* alicloud_kms_key
+* *Arguments:* automatic_rotation
 
+To mitigate this issue, ensure the `automatic_rotation` attribute of the `alicloud_kms_key` resource is set to `Enabled`.
 
+Example:
 
 [source,go]
 ----
-resource "alicloud_kms_key" "pass" {
-  description             = "Hello KMS"
-  pending_window_in_days  = "7"
-  status                  = "Enabled"
-  automatic_rotation      = "Enabled"
+resource "alicloud_kms_key" "example" {
+  ...
++  automatic_rotation = "Enabled"
 }
 ----

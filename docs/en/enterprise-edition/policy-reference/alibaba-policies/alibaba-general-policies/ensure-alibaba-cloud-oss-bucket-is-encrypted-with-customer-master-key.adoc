@@ -27,27 +27,28 @@
 
 === Description 
 
+This policy ensures that Alibaba Cloud OSS (Object Storage Service) buckets are encrypted using a Customer Master Key (CMK). Encrypting buckets with a CMK enhances data security by providing granular control over key management, including key rotation, access policies, and auditing.
 
-Alibaba Cloud OSS buckets (OSS buckets) not encrypted with a customer master key renders the bucket vulnerable to unauthorized access and potential data breaches. If the bucket is accessed by an unauthorized party, the sensitive data on it can be easily compromised, leading to loss of confidentiality and integrity of the data. To prevent this risk encrypt OSS buckets with a CMK.
+Failing to use a CMK for encryption can increase the risk of unauthorized access to sensitive data and make it harder to meet compliance and security requirements.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
-Encrypt your OSS bucket by adding the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_oss_bucket
+* *Arguments:* server_side_encryption_rule.kms_master_key_id
 
+To mitigate this issue, ensure the `server_side_encryption_rule.kms_master_key_id` attribute is configured with a valid CMK ID in the `alicloud_oss_bucket` resource.
 
+Example:
 
 [source,go]
 ----
-resource "alicloud_oss_bucket" "pass" {
-  bucket = "bucket-123"
-  acl    = "private"
-
+resource "alicloud_oss_bucket" "example" {
+  ...
   server_side_encryption_rule {
-    sse_algorithm     = "KMS"
-    kms_master_key_id = "your kms key id"
++    kms_master_key_id = "1234abcd-12ab-34cd-56ef-1234567890ab" # Replace with your CMK ID
   }
 }
 ----
