@@ -12,7 +12,7 @@ Learn what's new on Prisma® Cloud in January 2025.
 * <<policy-updates>>
 * <<iam-policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
-* <<rest-api-updates>>
+//* <<rest-api-updates>>
 //* <<deprecation-notices>>
 
 
@@ -161,7 +161,7 @@ tt:[33.03.138]
 |*Custom IAM Policies Alert Triggers*
 //RLP-153861
 
-tt:[24.1.1]
+tt:[25.1.1]
 
 
 |Starting with the current release, custom policies regarding unused permissions will trigger alerts when there is zero usage of the action with `""` regex across any of the destinations. If the action has been used on at least one resource that matches the `""` regex, the alert will be resolved.
@@ -172,7 +172,7 @@ tt:[24.1.1]
 |*Downgraded permissions required to onboard GitLab*
 //RLP-153897
 
-tt:[24.1.1]
+tt:[25.1.1]
 
 
 |`Organization owner` permissions are no longer required for integrating https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/get-started/connect-code-and-build-providers/code-repositories/add-gitlab#user-permissions[GitLab SaaS] or https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/get-started/connect-code-and-build-providers/code-repositories/add-gitlab-selfmanaged[GitLab on-prem]. `Maintainer` permissions are sufficient. This change enhances security by adhering to the principle of least privilege.
@@ -1200,7 +1200,7 @@ The 25.1.1 release includes two new IAM policies and two IAM policy updates.
 
 |Entra ID user can impersonate an Entra ID application with permission to add members to a group with admin privileges at the subscription/management group level
 |This policy identifies Entra ID users that can impersonate an App Registration using the 'Create Credentials' or 'Change Ownership' features, where the App Registration is granted Graph API or Entra ID permissions allowing it to add members to a group with administrative permissions at the Subscription or Management Group level
-|`config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.canImpersonateAppReg = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('Directory.ReadWrite.All','Group.ReadWrite.All','GroupMember.ReadWrite.All','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.security/allProperties/update','microsoft.directory/groups.security/dynamicMembershipRule/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update'), ('Azure Management Group', 'Azure Subscription' ) )`
+|config from iam where source.cloud.type = 'AZURE' AND source.cloud.azure.user.canImpersonateAppReg = true AND grantedby.cloud.entity.type = 'Service Principal' AND dest.cloud.azure.group.isadministrative.grantedby.level.type in (('Directory.ReadWrite.All','Group.ReadWrite.All','GroupMember.ReadWrite.All','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.security/allProperties/update','microsoft.directory/groups.security/dynamicMembershipRule/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update'), ('Azure Management Group', 'Azure Subscription' ) )
 |Azure
 |High
 
@@ -1219,13 +1219,13 @@ The 25.1.1 release includes two new IAM policies and two IAM policy updates.
 
 |System/User-assigned managed identity with critical Entra ID permissions
 |This policy detects Azure system-assigned and user-assigned managed identities that are granted critical Graph API permissions or assigned roles containing high-privilege Entra ID permissions. These permissions, such as the ability to create or modify critical resources, may lead to potential privilege escalation or data exfiltration risks.
-|`config from iam where source.cloud.type = 'AZURE' AND source.cloud.resource.type IN ('System Assigned','User Assigned','virtualMachines') and grantedby.cloud.entity.type in ('System Assigned','User Assigned') and action.name in ('Application.ReadWrite.All','Directory.ReadWrite.All','microsoft.directory/applications/owners/update','microsoft.directory/applications/credentials/update','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.unified/owners/update','microsoft.directory/groups.unified.assignedMembership/members/update','microsoft.directory/groups.unified/members/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','User.ReadWrite.All','microsoft.directory/users/password/update','AppRoleAssignment.ReadWrite.All','microsoft.directory/servicePrincipals/appRoleAssignedTo/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update','Mail.ReadWrite','Files.ReadWrite.All','Sites.ReadWrite.All','Sites.FullControl.All')`
+|config from iam where source.cloud.type = 'AZURE' AND source.cloud.resource.type IN ('System Assigned','User Assigned','virtualMachines') and grantedby.cloud.entity.type in ('System Assigned','User Assigned') and action.name in ('Application.ReadWrite.All','Directory.ReadWrite.All','microsoft.directory/applications/owners/update','microsoft.directory/applications/credentials/update','RoleManagement.ReadWrite.Directory','microsoft.directory/groups.security/owners/update','microsoft.directory/groups.security.assignedMembership/members/update','microsoft.directory/groups.security/members/update','microsoft.directory/groups.unified/owners/update','microsoft.directory/groups.unified.assignedMembership/members/update','microsoft.directory/groups.unified/members/update','microsoft.directory/groupsAssignableToRoles/allProperties/update','User.ReadWrite.All','microsoft.directory/users/password/update','AppRoleAssignment.ReadWrite.All','microsoft.directory/servicePrincipals/appRoleAssignedTo/update','microsoft.directory/groups/members/update','microsoft.directory/groups/owners/update','Mail.ReadWrite','Files.ReadWrite.All','Sites.ReadWrite.All','Sites.FullControl.All')
 |Azure
 |High
 
 |AWS resources that are publicly accessible through IAM policies
 |This policy identifies the AWS resources which are publicly accessible through IAM policies. The policy considers AWS conditions that limit public access. Ensure that the AWS resources provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks.
-|`config from iam where dest.cloud.type = ''AWS'' and source.public = true AND grantedby.cloud.policy.condition DOES NOT EXIST`
+|config from iam where dest.cloud.type = ''AWS'' and source.public = true AND grantedby.cloud.policy.condition DOES NOT EXIST
 |AWS
 |Low
 
