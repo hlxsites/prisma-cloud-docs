@@ -3,7 +3,7 @@
 
 Here are the changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 25.1.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 25.2.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -756,16 +756,25 @@ Additional permissions needed:
 
 The Reader role includes the permissions.
 
+|*Azure SQL Databases*
+//RLP-154253/154255/154257
 
-|*Azure Data Protection*
-//RLP-154220
-|*azure-data-protection-backup-vaults*
+tt:[Update]
+|*azure-sql-db-data-masking-policies*
+*azure-sql-db-data-masking-rules*
+*azure-sql-db-transparent-data-encryption*
 
-Additional permission needed:
+This API now restricts data fetching to when the database is in the 'Online' or 'Ready' states. This ensures operations are only performed during these optimal states, This targeted approach prevents data fetching in any other non-active states effectively reducing costs and improving performance.
 
-* `Microsoft.DataProtection/backupVaults/read`
+Behaviour when the database transitions into a 'Paused' state or any other non-optimal state:
 
-The Reader role includes the permission.
+* Data ingestion for affected resources is suspended.
+* The deleted status for these specific resources in Prisma is set to "true".
+* All alerts related to the paused resources are automatically marked as resolved during this pause.
+* Upon the database's return to an 'Online' state, and when data ingestion recommences:
+
+* The "deleted" status in Prisma is reverted to "false".
+* Any alerts that were marked as resolved during the pause are reopened.
 
 
 |===
