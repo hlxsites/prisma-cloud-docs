@@ -26,6 +26,16 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 //On *Inventory > Assets*, if you filter based on the _Key-Value_ *Asset Tag* and your environment has more that 1 million assets, the results will be inconclusive.
 //Contact your Prisma Cloud Customer Success representative for more details.
 
+|*RLP-154249*
+
+|On the Prisma Cloud Console, Config policies that use the `azure-disk-list` API, such as "Azure VM disk configured with public network access," are generating false positive alerts. These alerts are automatically resolved as 'Resource_Updated' due to an ongoing issue with the Azure Cloud Service Provider (CSP). The Disks - List Azure Resource Manager REST API is returning inconsistent or partial JSON responses. Due to this, you may notice a discrepancy in the number of Alerts associated with such policies.
+
+*Resolution*—An Azure Support Ticket #2412030030007291 regarding the inconsistent responses from the Disks - List Azure Resource Manager REST API has been raised. We are currently awaiting a resolution from Azure CSP.
+
+*Workaround*— If you encounter alerts that appear to be incorrect, you have the option to manually Dismiss or Snooze those alerts. Alternatively, if you prefer to manage all alerts at once, you can disable the "Azure VM disk configured with public network access" policy and re-enable it once the issue is resolved.
+
+*Impact*— Disabling the affected policy will affect all resources governed by it. However, disabling the policy will resolve all the existing alerts and prevent new alerts from being triggered for policy violations.
+
 |*RLP-154164*
 
 |With 24.11.1 release, we updated rule metadata for config policies in the backend. This updated the last modified date of custom policies too. As a result you may see a recent `Last Modified date` for some custom config policies, even if no changes were made. This does not have any impact on the policy evaluation and does not change the functional behaviour of the policies.   
@@ -435,6 +445,16 @@ If defender and remote repository are in different subnet, the image tag pulling
 |===
 |*ISSUE ID*
 |*DESCRIPTION*
+
+|*PCSUP-26234*
+
+tt:[Fixed in 33.03.138]
+
+|*Storage issues during the Defender shutdown process*
+
+The Defender shutdown process in versions 32.02 through 32.05 (inclusive) shut down the storage component using a third-party package. This package used a flag to force storage to unmount during the shutdown, which lead to storage corruption in some cases. This issue was resolved in 32.06 by modifying the shutdown process to perform a non-forced unmount.
+
+For any Defender instance from the affected versions that has already been shut down, upgrade the defender to a non-affected version (32.06 or later) and then reboot the node to clean up any storage corruption.
 
 |*CWP-62576*
 
