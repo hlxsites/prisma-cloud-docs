@@ -1,0 +1,58 @@
+== AWS Security Group allows unrestricted egress traffic
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| dcc171fa-1582-4c80-a20e-ecad6e0c058f
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/SecurityGroupUnrestrictedEgressAny.py[CKV_AWS_382]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,Terraform Plan
+
+|===
+
+=== Description
+
+This policy detects whether AWS Security Groups allow unrestricted egress (outbound) traffic. Permitting unrestricted outbound traffic from your resources can increase the risk of data exfiltration and other security vulnerabilities. As a best practice, explicitly define egress rules in your Security Groups to limit outbound traffic to known and trusted destinations only.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_security_group
+* *Arguments:* egress
+
+To mitigate this issue, for Security Groups, explicitly define restricted outbound traffic rules within the egress block of your Terraform configuration.
+
+Example:
+
+[source,go]
+----
+resource "aws_security_group" "example" {
+  ...
+-  egress {
+-    from_port   = 0
+-    to_port     = 0
+-    protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
+-  }
+
++  egress {
++    from_port   = 443
++    to_port     = 443
++    protocol    = "tcp"
++    cidr_blocks = ["10.0.0.0/16"]  # Restrict to known, trusted destination
++  }
+}
+----
