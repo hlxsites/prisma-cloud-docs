@@ -24,35 +24,32 @@
 
 === Description
 
-This policy is checking to make sure that your Azure storage account has a Shared Access Signature (SAS) expiration policy configured. A SAS is a string containing a security token that can be appended to a URL granting access to resources in your storage account. If this does not have an expiration policy set, it can pose a significant security risk. It means that once someone obtains the SAS, they can have potentially ongoing access to sensitive data in your storage account, even if they should no longer have that access. Therefore, not having a SAS expiration policy can lead to unauthorized data access, data loss or corruption.
+This policy identifies Azure Storage accounts not configured with SAS expiration policy.
+
+A Shared Access Signature (SAS) expiration policy specifies a recommended interval over which the SAS is valid. SAS expiration policies apply to a service SAS or an account SAS. When a user generates service SAS or an account SAS with a validity interval that is larger than the recommended interval, they'll see a warning. If Azure Storage logging with Azure Monitor is enabled, then an entry is written to the Azure Storage logs. It is recommended that you limit the interval for a SAS in case it is compromised.
+
+For more details:
+https://learn.microsoft.com/en-us/azure/storage/common/sas-expiration-policy
 
 === Fix - Buildtime
 
 *Terraform*
 
 * *Resource:* azurerm_storage_account
-* *Arguments:* sas_policy.expiration_period
+* *Arguments:* shared_access_key_enabled, sas_policy.expiration_period
 
-To fix this issue, the shared_access_key_enabled is not mandatory, but if it is set to true, you need to configure your Azure Storage Account with a Shared Access Signature (SAS) expiration policy. This ensures that the SAS tokens, which are used for delegating access to your storage account resources, have an expiration time so as not to indefinitely expose your resources.
+To mitigate this issue, ensure that the `shared_access_key_enabled` attribute in the `azurerm_storage_account` resource is set to `false`, or configure a `sas_policy` with a defined `expiration_period` if `shared_access_key_enabled` is set to `true`.
+
+Example:
 
 [source,go]
 ----
-resource "azurerm_storage_account" "pass_1" {
-  name                     = "pud-storage2023abc1"
-  resource_group_name      = var.rg-name
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "GRS"
-  shared_access_key_enabled = false
+resource "azurerm_storage_account" "example" {
+  ...
+  shared_access_key_enabled = true
 
-  sas_policy {
-+   expiration_period = "90.00:00:00"
-    expiration_action = "Log"
-  }
-
-  tags = {
-    bc_status = "pass"
-  }
++  sas_policy {
++    expiration_period = "01.12:00:00"
++  }
 }
 ----
-
