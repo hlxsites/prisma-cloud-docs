@@ -68,10 +68,81 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
-|Policy updates to be added when merged. 
+2+|*Policy Updates—RQL*
 
-|
+|*Azure Function App doesn't use latest TLS version*
+//RLP-153936
 
+|The policy RQL will be updated to consider the latest TLS version 1.3.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.minTlsVersion does not equal "1.2"
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.minTlsVersion is not member of ("1.2", "1.3")
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts where the minTlsVersion is set to 1.3 will be resolved.
+
+|*Azure Storage Account default network access is set to 'Allow'*
+//RLP-154158
+
+|Policy RQL is updated to reduce false positives.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'networkRuleSet.defaultAction equals Allow' 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.publicNetworkAccess equal ignore case "Enabled" AND networkRuleSet.defaultAction equal ignore case "Allow" 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Open alerts where the storage account is not publicly accessible from all networks will be resolved.
+
+2+|*Policy Updates - Metadata*
+
+|*Azure App service HTTP logging is disabled*
+//RLP-153983
+
+|The recommendation steps will be updated.
+
+*Current Recommendation Steps–* 
+1. Log in to Azure Portal
+2. Go to App Services dashboard
+3. Click on the reported App service
+4. Under the 'Monitoring' menu, click on 'App Service logs'
+5. Under 'Web server logging', select Storage to store logs on blob storage, or File System to store logs on the App Service file system.
+6. In Retention Period (Days), set the number of days the logs should be retained.
+7. Click on 'Save' 
+
+As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks.
+
+*Updated Recommendation Steps–* 
+
+Configuring http logging via User Interface varies depending on the type of Azure App Service.
+
+Alternatively, you may use the CLI command below to configure http logging for all kinds of Azure App Service: 
+
+`az webapp log config --name <App name> --resource-group <Resource Group Name> --web-server-logging filesystem`
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* No impact on alerts.
 
 |===
 
