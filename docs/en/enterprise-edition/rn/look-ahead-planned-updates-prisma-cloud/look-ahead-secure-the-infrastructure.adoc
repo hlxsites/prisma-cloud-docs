@@ -3,7 +3,7 @@
 
 Here are the changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 25.1.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 25.2.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -13,41 +13,24 @@ The details and functionalities listed below are a preview and the actual releas
 ====
 
 //* <<announcement>>
-* <<changes-in-existing-behavior>>
+//* <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
-//* <<iam-policy-update>>
-//* <<new-compliance-benchmarks-and-updates>>
+* <<iam-policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
 
-[#changes-in-existing-behavior]
-=== Changes in Existing Behavior
+//[#changes-in-existing-behavior]
+//=== Changes in Existing Behavior
 
-[cols="50%a,50%a"]
-|===
-|*Feature*
-|*Description*
+//[cols="50%a,50%a"]
+//|===
+//|*Feature*
+//|*Description*
 
-|*New Rate Limits for Search API*
-//RLP-151274
-// Updated the release date from 24.12.1 to 25.1.1. Please check with Ashwini before moving this blurb to current features.
-
-|Starting with the 25.1.1 release, to improve user experience and enhance search performance, rate limits will be implemented for the following APIs:
-
-* *Config Search*
-** https://pan.dev/prisma-cloud/api/cspm/search-config/[search/config]
-** https://pan.dev/prisma-cloud/api/cspm/search-config-page/[search/config/page]
-
-* *Config Search v1*
-** https://pan.dev/prisma-cloud/api/cspm/search-config-by-query/[search/api/v1/config]
-
-Request Rate Limit = 150
-
-*Impact—* Requests exceeding the limits will result in an *HTTP 429* Too Many Requests response. See Prisma Cloud API guidance on https://pan.dev/prisma-cloud/api/cspm/rate-limits/[Rate Limits].
-
-|===
+//|===
 
 
 [#new-policies]
@@ -68,7 +51,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has 2 releases in a month, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-25.1.1.
+Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-25.2.1.
 
 . Review the updates.
 +
@@ -80,192 +63,522 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
-[cols="35%a,65%a"]
+[cols="50%a,50%a"]
 |===
 |*Policy Updates*
 |*Description*
 
-2+|*Policy Updates—Metadata*
-
-|*Azure VM disk configured with public network access*
-//RLP-153728
-
-|The policy name and description will be updated.
-
-*Current Policy Name–* Azure VM disk configured with public network access
-
-*Updated Policy Name–* Azure VM disk configured with overly permissive network access
-
-*Current Policy Description–* This policy identifies Azure Virtual Machine disks that are configured with public network access.
-
-Allowing public access to Azure Virtual Machine disk resources increases the risk of unauthorized access and potential security breaches. Public network access exposes sensitive data to external threats, which attackers could exploit to compromise VM disks. Disabling public access and using Azure Private Link reduces exposure, ensuring only trusted networks have access and enhancing the security of your Azure environment by minimizing the risk of data leaks and breaches.
-
-As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks.
-
-*Updated Policy Description–* This policy identifies Azure Virtual Machine disks that are configured with overly permissive network access.
-
-Enabling public network access provides overly permissive network access on Azure Virtual Machine disks, increasing the risk of unauthorized access and potential security breaches. Public network access exposes sensitive data to external threats, which attackers could exploit to compromise VM disks. Disabling public access and using Azure Private Link reduces exposure, ensuring only trusted networks have access and enhancing the security of your Azure environment by minimizing the risk of data leaks and breaches. 
-
-As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks. 
-
-*Policy Type–* Config
-
-*Policy Severity–* High
-
-*Impact–* No impact on alerts.
-
 2+|*Policy Updates—RQL*
 
-|*Azure Cosmos DB Virtual network is not configured*
-//RLP-153625
+|*Azure Function App doesn't use latest TLS version*
+//RLP-153936
 
-|The policy RQL will be updated to reduce false positives by considering the public network access property. 
+|The policy RQL will be updated to consider the latest TLS version 1.3.
 
 *Current RQL–* 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded and properties.virtualNetworkRules[*] does not exist
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.minTlsVersion does not equal "1.2"
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = properties.state equal ignore case "Running" AND kind contains "functionapp" AND kind does not contain "workflowapp" AND kind does not equal "app" AND config.minTlsVersion is not member of ("1.2", "1.3")
 ----
 
 *Policy Type–* Config
 
 *Policy Severity–* Low
 
-*Impact–* Medium. New alerts will be generated when the public network access is set to `all` networks. Existing alerts where the public network access is not set to `all` networks will be resolved.
+*Impact–* Low. Open alerts where the minTlsVersion is set to 1.3 will be resolved.
 
-|*Azure storage account has a blob container with public access*
-//RLP-153630
-|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.
+|*Azure Storage Account default network access is set to 'Allow'*
+//RLP-154158
+
+|Policy RQL is updated to reduce false positives.
 
 *Current RQL–* 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'networkRuleSet.defaultAction equals Allow' 
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* High
-
-*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
-
-|*Azure Storage account container storing activity logs is publicly accessible*
-//RLP-153630
-
-|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
-
-*Current RQL–* 
-----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule= publicContainersList[*] contains insights-operational-logs and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter'$.X.id contains $.Y.properties.storageAccountId'; show X;
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule= 'publicContainersList[*] contains insights-operational-logs and (totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist))' as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter '$.X.id contains $.Y.properties.storageAccountId'; show X; 
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Low
-
-*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
-
-|*Azure Storage Account storing Machine Learning workspace high business impact data is publicly accessible*
-//RLP-153630
-
-|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
-
-*Current RQL–* 
-----
-config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y;
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'azure-machine-learning-workspace' AND json.rule = 'properties.provisioningState equal ignore case Succeeded and properties.hbiWorkspace is true and properties.storageAccount exists' as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)' as Y; filter '$.X.properties.storageAccount contains $.Y.id'; show Y; 
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* High
-
-*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
-
-|*Azure Storage Account storing Cognitive service diagnostic logs is publicly accessible*
-//RLP-153630
-
-|The policy RQL will be updated to include Public network access and Private Endpoint check to increase the accuracy of RQL results.  
-
-*Current RQL–* 
-----
-config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'azure-cognitive-services-account-diagnostic-settings' AND json.rule = (properties.logs[?any(enabled equal ignore case "true")] exists or properties.metrics[?any( enabled equal ignore case "true" )] exists) and properties.storageAccountId exists as X; config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)' as Y; filter '$.X.properties.storageAccountId contains $.Y.id'; show Y;
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Medium
-
-*Impact–* Medium. Existing alerts will be resolved as `Policy_Updated`.
-
-|*GCP VPC Flow logs for the subnet is set to Off*
-//RLP-153624
-
-|The policy RQL and recommendation steps will be updated to reduce false positives by excluding unsupported subnet purposes.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose does not contain INTERNAL_HTTPS_LOAD_BALANCER and purpose does not contain REGIONAL_MANAGED_PROXY and (enableFlowLogs is false or enableFlowLogs does not exist)
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose does not contain INTERNAL_HTTPS_LOAD_BALANCER and purpose does not contain REGIONAL_MANAGED_PROXY and purpose does not contain GLOBAL_MANAGED_PROXY and purpose does not contain PRIVATE_SERVICE_CONNECT and (enableFlowLogs is false or enableFlowLogs does not exist)
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.publicNetworkAccess equal ignore case "Enabled" AND networkRuleSet.defaultAction equal ignore case "Allow" 
 ----
 
 *Policy Type–* Config
 
 *Policy Severity–* Informational
 
-*Impact–* Low. Existing alerts where subnets with purpose `GLOBAL_MANAGED_PROXY` and `PRIVATE_SERVICE_CONNECT` will be resolved.
+*Impact–* Low. Open alerts where the storage account is not publicly accessible from all networks will be resolved.
 
-|*GCP VPC Network subnets have Private Google access disabled*
-//RLP-153623
+2+|*Policy Updates - Metadata*
 
-|The policy RQL and recommendation steps will be updated to reduce false positives by excluding unsupported subnet purposes.
+|*Azure App service HTTP logging is disabled*
+//RLP-153983
 
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose is not member of (REGIONAL_MANAGED_PROXY, PRIVATE_SERVICE_CONNECT) and (privateIpGoogleAccess does not exist or privateIpGoogleAccess is false)
-----
+|The recommendation steps will be updated.
 
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-networks-subnets-list' AND json.rule = purpose is not member of (REGIONAL_MANAGED_PROXY, PRIVATE_SERVICE_CONNECT, GLOBAL_MANAGED_PROXY, PRIVATE_NAT) and (privateIpGoogleAccess does not exist or privateIpGoogleAccess is false)
-----
+*Current Recommendation Steps–* 
+1. Log in to Azure Portal
+2. Go to App Services dashboard
+3. Click on the reported App service
+4. Under the 'Monitoring' menu, click on 'App Service logs'
+5. Under 'Web server logging', select Storage to store logs on blob storage, or File System to store logs on the App Service file system.
+6. In Retention Period (Days), set the number of days the logs should be retained.
+7. Click on 'Save' 
+
+As a security best practice, it is recommended to disable public network access for Azure Virtual Machine disks.
+
+*Updated Recommendation Steps–* 
+
+Configuring http logging via User Interface varies depending on the type of Azure App Service.
+
+Alternatively, you may use the CLI command below to configure http logging for all kinds of Azure App Service: 
+
+`az webapp log config --name <App name> --resource-group <Resource Group Name> --web-server-logging filesystem`
 
 *Policy Type–* Config
 
 *Policy Severity–* Low
 
-*Impact–* Low. Existing alerts related to `GLOBAL_MANAGED_PROXY` and `PRIVATE_NAT` purposes will be resolved.
+*Impact–* No impact on alerts.
 
 |===
 
-//[#iam-policy-update]
-//=== IAM Policy Update
+
+[#iam-policy-updates]
+=== IAM Policy Updates
+//RLP-154372
+
+Prisma Cloud version 25.2.1 will include the following policy severity level changes based on our updated risk assessment. These changes are reflective of previously intended changes (version 24.11.1) which did not take place due to internal circumstances. The upcoming changes are outlined below.
+
+*Impact—* Policies not included under any alert rule after the severity change, will have its alerts disappear.
+
+[cols="70%a,15%a,15%a"]
+|===
+|*Policy Name*
+|*Current Severity*
+|*Updated Severity*
+
+|AWS IAM effective permissions are over-privileged (7 days)
+|Low
+|Informational
+
+|AWS IAM User with AWS Organization management permissions
+|Low
+|Informational
+
+|AWS IAM User with IAM policy management permissions
+|High
+|Informational
+
+|AWS IAM User with IAM write permissions
+|Low
+|Informational
+
+|AWS Okta User with AWS Organization management permissions
+|Low
+|Informational
+
+|AWS Okta User with IAM write permissions
+|Low
+|Informational
+
+|Azure AD user with the Azure built-in roles of Contributor
+|High
+|Informational
+
+|Azure AD user with the Azure built-in roles of Owner
+|High
+|Informational
+
+|Azure AD user with the Azure built-in roles of Reader
+|Low
+|Informational
+
+|Azure AD users with broad Key Vault access through Built-in Azure roles
+|High
+|Informational
+
+|Azure AD users with broad Key Vault management access
+|Critical
+|Informational
+
+|Azure entities with risky permissions
+|Low
+|Informational
+
+|Azure IAM effective permissions are over-privileged (7 days)
+|Low
+|Informational
+
+|Azure Managed Identity (user assigned or system assigned) with broad Key Vault access through Built-in Azure roles
+|High
+|Informational
+
+|Azure Managed Identity (user assigned or system assigned) with broad Key Vault management access
+|High
+|Informational
+
+|Azure Managed Identity (user assigned or system assigned) with the Azure built-in roles of Contributor
+|High
+|Informational
+
+|Azure Managed Identity (user assigned or system assigned) with the Azure built-in roles of Owner
+|High
+|Informational
+
+|Azure Managed Identity (user assigned or system assigned) with the Azure built-in roles of Reader
+|Low
+|Informational
+
+|Azure Service Principals with broad Key Vault access through Built-in Azure roles
+|High
+|Informational
+
+|Azure Service Principals with broad Key Vault management access
+|Low
+|Informational
+
+|GCP service accounts with permissions to deploy new resources
+|High
+|Informational
+
+|GCP User with IAM write access level permissions
+|Low
+|Informational
+
+|GCP users with permissions to deploy new resources
+|High
+|Informational
+
+|GCP users with Service Account Token Creator role
+|High
+|Informational
+
+|Okta user with effective permissions to create AWS IAM users
+|Low
+|Informational
+
+|AWS IAM policy allows access and decrypt Secrets Manager Secrets permissions
+|Low
+|Informational
+
+|AWS EC2 instance with data destruction permissions
+|High
+|Low
+
+|AWS Lateral Movement to Data Services Through Redshift Cluster Creation
+|High
+|Low
+
+|AWS Okta User with IAM policy management permissions
+|High
+|Low
+
+|Azure AD user with effective permissions to create AWS IAM users
+|High
+|Low
+
+|GCP App Engine Web Service Assigned Cloud Function Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP App Engine Web Service Assigned Cloud Function IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP App Engine Web Service Assigned Cloud Run Creation Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP App Engine Web Service Assigned Cloud Run IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP App Engine Web Service Assigned Cloud Run Jobs IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP App Engine Web Service Assigned Resource Manager Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Cloud Run Instance Assigned Cloud Function Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Cloud Run Instance Assigned Cloud Function IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Cloud Run Instance Assigned Cloud Run Creation Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Cloud Run Instance Assigned Cloud Run Jobs IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Cloud Run Instance Assigned Resource Manager Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Cloud Run Job Public Execution via Default Compute SA Modification
+|High
+|Low
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Function Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Run IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Run Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Cloud Run Jobs IAM Policy Edit Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Resource Manager Permissions Which Could Lead to Privilege Escalation
+|High
+|Low
+
+|GCP entities with permissions to impersonate a service account in another project
+|High
+|Low
+
+|GCP Lateral Access Expansion by Making Cloud Run Publicly Executable
+|High
+|Low
+
+|Publicly Readable Lambda
+|Medium
+|Low
+
+|Third-party service account with a Lateral Movement to Data Services Through Redshift Cluster Creation
+|High
+|Low
+
+|Third-party Service Account With Lateral Movement Through CloudFormation Stack Creation
+|High
+|Low
+
+|AWS Compute Instance (EC2/Lambda) Assigned CloudFormation Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|AWS Compute Instance (EC2/Lambda) Assigned Glue DevEndpoint Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|AWS Compute Instance (EC2/Lambda) Assigned Lambda Creation Permissions Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|AWS Compute Instance (EC2/Lambda) Assigned Permissions to Run EC2 Instances Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|AWS EC2 machine with write access permission to resource-based policies
+|Low
+|Medium
+
+|AWS EC2 with IAM role attached has credentials exposure permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via Codestar create project and associate team member permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via EC2 describe and SSM list and send command permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via EC2 describe and SSM session permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via EC2 Instance Connect permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via Glue Dev Endpoint permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via PassRole & Lambda create & invoke Function permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via PassRole & Lambda create Function & add permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via PassRole & SageMaker create notebook permissions
+|Low
+|Medium
+
+|AWS IAM policy allows Privilege escalation via PassRole & SageMaker create training job permissions
+|Low
+|Medium
+
+|AWS Lambda Function with data destruction permissions 
+|High
+|Medium
+
+|AWS Lambda with IAM role attached has credentials exposure permissions
+|Low
+|Medium
+
+|Azure AD user with permissions to manage Azure permissions broadly that was not used in the last 90 days
+|High
+|Medium
+
+|Azure IAM effective permissions are over-privileged (90 days)
+|Low
+|Medium
+
+|Azure VM instance associated managed identities with Key Vault management access (data access is not included)
+|High
+|Medium
+
+|GCP App Engine Web Service Assigned IAM Role Update Permissions Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|GCP App Engine Web Service Assigned Permissions to Edit IAM Policy for Service Accounts Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|GCP Cloud Run Instance Assigned Permissions to Retrieve Service Account Tokens Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|GCP Compute Engine entities with predefined Admin roles
+|High
+|Medium
+
+|GCP Compute Instance (VM/Cloud Function) Assigned Permissions to Retrieve Service Account Tokens Which Could Lead to Privilege Escalation
+|High
+|Medium
+
+|GCP IAM effective permissions are over-privileged (90 days)
+|Low
+|Medium
+
+|GCP service accounts with 'Editor' role on folder level
+|High
+|Medium
+
+|GCP service accounts with 'Editor' role on org level
+|High
+|Medium
+
+|GCP service accounts with 'Owner' role on folder level
+|High
+|Medium
+
+|GCP service accounts with 'Owner' role on org level
+|High
+|Medium
+
+|GCP VM instance with data destruction permissions
+|High
+|Medium
+
+|GCP VM instance with database management write access permissions
+|Low
+|Medium
+
+|GCP VM instance with permissions to impersonate a service account
+|High
+|Medium
+
+|AWS EC2 instance with the creation of a new Group with attached policy permission
+|Critical
+|High
+
+|AWS EC2 instance with the creation of a new Role with attached policy permission
+|Critical
+|High
+
+|AWS EC2 instance with the creation of a new User with attached policy permission
+|Critical
+|High
+
+|AWS S3 Bucket with Data Destruction Permissions is Publicly Accessible Through Resource-Based Policies
+|Low
+|High
+
+|Azure Lateral Movement Through SSH Key Replacement and Managed Identity Exploitation on VM
+|Medium
+|High
+
+|Azure Lateral Movement via VM Command Execution Leveraging Managed Identity 
+|Medium
+|High
+
+|AWS EC2 instance with the creation of a new Group with attached policy permission
+|Medium
+|High
+
+|Cloud Service account with high privileges is inactive for 90 days and is assigned to a resource
+|Medium
+|High
+
+|Service Account with Cross Cloud Administrative Access
+|Medium
+|High
+
+|Third-Party Service Account with High Privileges at the Folder or Organization Level
+|Medium
+|High
+
+|User with Administrative Permissions Has Active Access Keys Which Are Unused Over 90 Days
+|Medium
+|High
+
+|AWS Role With Administrative Permissions Can Be Assumed By All Users
+|High
+|Critical
+
+|AWS Secret Manager Secret is Publicly Accessible Through Resource-Based Policies
+|High
+|Critical
+
+|===
+
+Additionally, the following changes will be made:
+
+. AWS IAM policy allows access and decrypt Secrets Manager Secrets permissions
+will be renamed to: AWS EC2 with access to read and decrypt Secret Manager Secrets
+
+. AWS EC2 with IAM role with destruction permissions for AWS Key Management Service (KMS) - Will be removed. Instead, use the policy listed above.
+
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*MITRE ATT&CK v15.1 Cloud IaaS for Enterprise*
+
+|New Mappings are added for  MITRE ATT&CK v15.1 Cloud IaaS for Enterprise. As new mappings are added compliance score may vary.
+
+
+|===
+
+
 
 [#api-ingestions]
 === API Ingestions
@@ -275,427 +588,440 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compu
 |*Service*
 |*API Details*
 
-|*Amazon Athena*
-//RLP-153371
-|*aws-athena-table-metadata*
 
-Additional permissions needed:
-
-* `athena:ListDataCatalogs`
-* `athena:ListDatabases`
-* `athena:ListTableMetadata`
-* `glue:GetTables`
-
-The Security Audit role includes the permissions.
-
-|tt:[Update] *Amazon CodePipeline*
-//RLP-153691
-|*aws-code-pipeline-pipeline*
-
-The resource JSON for the API has been updated to include new fields:
-
-* `stages`
-* `Deploy`
-* `Source`
-* `Build`
-
-|*Amazon Cognito*
-//RLP-152946
-|*aws-cognito-user-pool-group*
-
-Additional permissions needed:
-
-* `cognito-idp:ListUserPools`
-* `cognito-idp:ListGroups`
-* `cognito-idp:GetGroup`
-
-The Security Audit role only includes the `cognito-idp:ListUserPools` and `cognito-idp:ListGroups` permissions.
-
-You must manually update the `cognito-idp:GetGroup` permission in the CFT template and enable it.
-
-|*Amazon Cognito*
-//RLP-153820
-|*aws-cognito-user*
-
-Additional permissions needed:
-
-* `cognito-idp:ListUserPools`
-* `cognito-idp:ListUsers`
-
-The Security Audit role includes the permissions.
-
-
-|*AWS Directory Service*
-//RLP-153814
-|*aws-ds-directory-trust*
+|*Amazon API Gateway*
+//RLP-153376
+|*aws-apigatewayv2-authorizer*
 
 Additional permission needed:
 
-* `ds:DescribeTrusts`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
-
-
-|*Amazon EC2*
-//RLP-153463
-|*aws-ec2-spot-fleet-request*
-
-Additional permission needed:
-
-* `ec2:DescribeSpotFleetRequests`
+* `apigateway:GET`
 
 The Security Audit role includes the permission.
 
-|*Amazon EC2*
-//RLP-153463
-|*aws-ec2-serial-console-access-status*
+
+|*Amazon API Gateway*
+//RLP-153377
+|*aws-apigatewayv2-domain-name*
 
 Additional permission needed:
 
-* `ec2:GetSerialConsoleAccessStatus`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
-
-|tt:[Update] *Amazon EC2*
-//RLP-153817
-
-|*aws-ec2-describe-images*
-
-The resource JSON for this API includes the `deprecationTime` field.
-
-
-|*Amazon ElastiCache*
-//RLP-152949
-|*aws-elasticache-serverless-cache*
-
-Additional permissions needed:
-
-* `elasticache:DescribeServerlessCaches`
-* `elasticache:ListTagsForResource`
-
-The Security Audit role includes the permissions.
-
-|*Amazon Elasticsearch Service*
-//RLP-153323
-|*aws-es-batch-get-collection*
-
-Additional permissions needed:
-
-* `aoss:ListCollections`
-* `aoss:BatchGetCollection`
-* `aoss:ListTagsForResource`
-
-The Security Audit role includes the permissions.
-
-|*Amazon Elasticsearch Service*
-//RLP-153320
-|*aws-es-security-config*
-
-Additional permission needed:
-
-* `aoss:ListSecurityConfigs`
+* `apigateway:GET`
 
 The Security Audit role includes the permission.
 
-|*Amazon Fraud Detector*
-//RLP-153298
-|*aws-fraud-detector-entity-type*
 
-Additional permissions needed:
-
-* `frauddetector:GetEntityTypes`
-* `frauddetector:ListTagsForResource`
-
-The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
-
-|*Amazon Fraud Detector*
-//RLP-152954
-|*aws-fraud-detector-label*
-
-Additional permissions needed:
-
-* `frauddetector:GetLabels`
-* `frauddetector:ListTagsForResource`
-
-The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
-
-|*Amazon Fraud Detector*
-//RLP-152945
-|*aws-fraud-detector-variable*
+|*Amazon CloudWatch Synthetics*
+//RLP-154503
+|*aws-cloudwatch-synthetics-canary*
 
 Additional permission needed:
 
-* `frauddetector:GetVariables`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
-
-|*AWS Global Accelerator*
-//RLP-153286
-|*aws-global-accelerator-endpoint-group*
-
-Additional permissions needed:
-
-* `globalaccelerator:ListAccelerators`
-* `globalaccelerator:ListListeners`
-* `globalaccelerator:DescribeListener`
-* `globalaccelerator:ListEndpointGroups`
-* `globalaccelerator:DescribeEndpointGroup`
-
-The Security Audit role includes the permissions.
-
-|*AWS Global Accelerator*
-//RLP-153284
-|*aws-global-accelerator-listener*
-
-Additional permissions needed:
-
-* `globalaccelerator:ListAccelerators`
-* `globalaccelerator:ListListeners`
-* `globalaccelerator:DescribeListener`
-
-The Security Audit role includes the permissions.
-
-
-|*AWS Glue*
-//RLP-153177
-|*aws-glue-dev-endpoint*
-
-Additional permission needed:
-
-* `glue:GetDevEndpoints`
+* `synthetics:DescribeCanaries`
 
 The Security Audit role includes the permission.
+
+
+|*Amazon API Gateway*
+//RLP-153378
+|*aws-apigatewayv2-integration*
+
+Additional permission needed:
+
+* `apigateway:GET`
+
+The Security Audit role includes the permission.
+
+
+|*Amazon DynamoDB*
+//RLP-154007
+|*aws-dynamo-db-global-table*
+
+Additional permissions needed:
+
+* `dynamodb:ListGlobalTables`
+* `dynamodb:DescribeGlobalTable`
+
+The Security Audit role includes the permissions.
+
+|*Amazon DynamoDB*
+//RLP-154419
+|*aws-dynamo-db-backup*
+
+Additional permissions needed:
+
+* `dynamodb:ListBackups`
+* `dynamodb:DescribeBackup`
+
+The Security Audit role does not include the permissions.
+
+|*Amazon DynamoDB*
+//RLP-154485
+
+tt:[Update]
+|*aws-dynamodb-describe-table*
+
+The attribute 'timeToLiveDescription' will be appended to this existing Prisma Cloud API.
+
+
+|*AWS Elemental MediaStore*
+//RLP-153325
+|*aws-elemental-media-store-container*
+
+Additional permissions needed:
+
+* `mediastore:ListContainers`
+* `mediastore:DescribeContainer`
+
+The Security Audit role does not include the permissions.
+
+
+|*Amazon EventBridge*
+//RLP-154083
+|*aws-event-bridge-global-endpoint*
+
+Additional permission needed:
+
+* `events:ListEndpoints`
+
+The Security Audit role includes the permission.
+
+
+|*Amazon EventBridge Scheduler*
+//RLP-154084
+|*aws-event-bridge-scheduler-schedule*
+
+Additional permissions needed:
+
+* `scheduler:ListSchedules`
+* `scheduler:GetSchedule`
+
+The Security Audit role does not include the permissions.
+
+
+|*Amazon GuardDuty*
+//RLP-154080
+|*aws-guardduty-member-account-admin-info*
+
+Additional permissions needed:
+
+* `guardduty:ListDetectors`
+* `guardduty:GetAdministratorAccount`
+
+The Security Audit role includes the permissions.
+
+
+|*Amazon GuardDuty*
+//RLP-154081
+|*aws-guardduty-trusted-ip-list*
+
+Additional permissions needed:
+
+* `guardduty:ListDetectors` 
+* `guardduty:ListIPSets`
+* `guardduty:GetIPSet`
+
+The Security Audit role includes the permissions.
+
+|*Amazon GuardDuty*
+//RLP-154082
+|*aws-guardduty-threat-ip-list*
+
+Additional permissions needed:
+
+* `guardduty:ListDetectors` 
+* `guardduty:ListThreatIntelSets`
+* `guardduty:GetThreatIntelSet`
+
+The Security Audit role includes the permissions.
+
 
 |*AWS IAM*
-//RLP-153314
-|*aws-iam-service-specific-credential*
+//RLP-153372
+|*aws-iam-instance-profile*
 
 Additional permissions needed:
 
-* `iam:ListUsers`
-* `iam:ListServiceSpecificCredentials`
+* `iam:ListInstanceProfiles`
+* `iam:GetInstanceProfile`
 
 The Security Audit role includes the permissions.
+
 
 |*AWS IAM Identity Center*
-//RLP-153622
-|*aws-iam-identity-center-instance*
+//RLP-154484
+|*aws-iam-identity-center-permission-set-provisioning-status*
 
-Additional permission needed:
+Additional permissions needed:
 
 * `sso:ListInstances`
+* `sso:ListPermissionSetProvisioningStatus`
+* `sso:DescribePermissionSetProvisioningStatus`
 
-The Security Audit role includes the permission.
-
-|*Amazon Lightsail*
-//RLP-153464
-|*aws-lightsail-container-service*
-
-Additional permission needed:
-
-* `lightsail:GetContainerServices`
-
-The Security Audit role includes the permission.
-
-|*Amazon Lightsail*
-//RLP-152947
-|*aws-lightsail-key-pair*
-
-Additional permission needed:
-
-* `lightsail:GetKeyPairs`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
+The Security Audit role includes the permissions with the exception of `sso:DescribePermissionSetProvisioningStatus`.
 
 
-|*Amazon MSK*
-//RLP-153302
-|*aws-msk-configuration*
+|*AWS IAM Identity Center*
+//RLP-154483
+|*aws-iam-identity-center-permission-set*
 
 Additional permissions needed:
 
-* `kafka:ListConfigurations`
-* `kafka:DescribeConfiguration`
+* `sso:ListInstances`
+* `sso:ListPermissionSets`
+* `sso:DescribePermissionSets`
 
 The Security Audit role includes the permissions.
 
-|*AWS Network Manager*
-//RLP-153465
-|*aws-network-manager-global-network-device*
+
+|*AWS IAM Identity Center*
+//RLP-154462
+|*aws-iam-identity-center-application*
 
 Additional permissions needed:
 
-* `networkmanager:DescribeGlobalNetworks`
-* `networkmanager:GetDevices`
-
-The Security Audit role only includes the `networkmanager:DescribeGlobalNetworks` permission.
-
-You must manually update the `networkmanager:GetDevices` permission in the CFT template and enable it.
-
-|*Amazon Personalize*
-//RLP-153305
-|*aws-personalize-dataset-import-job*
-
-Additional permission needed:
-
-* `personalize:ListDatasetImportJobs`
-
-The Security Audit role does not include the above permission. You must manually update the CFT template to enable it.
-
-
-|*Amazon Recycle Bin*
-//RLP-153461
-|*aws-recycle-bin-ami-rule*
-
-Additional permissions needed:
-
-* `rbin:ListRules`
-* `rbin:GetRule`
-* `rbin:ListTagsForResource`
-
-The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
-
-
-|*Amazon SageMaker*
-//RLP-153466
-|*aws-sagemaker-studio-lifecycle-config*
-
-Additional permissions needed:
-
-* `sagemaker:ListStudioLifecycleConfigs`
-* `sagemaker:DescribeStudioLifecycleConfig`
+* `sso:ListInstances`
+* `sso:ListApplications`
+* `sso:ListApplicationAssignments`
 
 The Security Audit role includes the permissions.
 
-|*Amazon SES*
-//RLP-153304
-|*aws-ses-template*
+
+|*AWS KMS*
+//RLP-154486
+
+tt:[Update]
+|*aws-kms-get-key-rotation-status*
 
 Additional permissions needed:
 
-* `ses:ListTemplates`
-* `ses:GetTemplate`
+* `kms:ListKeyRotations`
 
-The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
-
-|tt:[Update] *AWS Step Functions*
-//RLP-153816
-
-|*aws-step-functions-statemachine*
-
-The resource JSON for this API includes the `definition` field.
+The Security Audit role does not include the permissions. The attributes 'nextRotationDate', 'rotationPeriodInDays' and 'previousKeyRotations'
+will be appended to the existing prisma API 'aws-kms-get-key-rotation-status'.
 
 
-|*Amazon Translate*
-//RLP-153288
-|*aws-translate-text-translation-job*
+|*AWS Lambda*
+//RLP-153373
+|*aws-lambda-event-source-mapping*
 
 Additional permissions needed:
 
-* `translate:ListTextTranslationJobs`
-* `translate:DescribeTextTranslationJob`
+* `lambda:ListEventSourceMappings`
+* `lambda:GetEventSourceMapping`
 
-The Security Audit role only includes `translate:ListTextTranslationJobs` permission.
+The Security Audit role includes the `lambda:ListEventSourceMappings` permission. Create a new/custom role for `lambda:GetEventSourceMapping` permissions.
 
-You must manually include `translate:DescribeTextTranslationJob` permission in the CFT template to enable it.
+
+|*AWS Lambda*
+//RLP-153374
+|*aws-lambda-get-layer-version*
+
+Additional permissions needed:
+
+* `lambda:ListLayers`
+* `lambda:ListLayerVersions`
+* `lambda:GetLayerVersion`
+
+The Security Audit role includes the `lambda:ListLayers` permission. Create a new/custom role for the `lambda:GetLayerVersion` permission.
 
 
 |*Amazon VPC Lattice*
-//RLP-153467
-|*aws-vpc-lattice-service-network*
+//RLP-154086
+|*aws-vpc-lattice-service*
+
+Additional permissions needed:
+
+* `vpc-lattice:ListServices`
+* `vpc-lattice:GetService`
+* `vpc-lattice:ListTagsForResource`
+
+The Security Audit role does not include the permissions.
+
+
+|*Amazon VPC Lattice*
+//RLP-154085
+|*aws-vpc-lattice-target-group*
+
+Additional permissions needed:
+
+* `vpc-lattice:ListTargetGroups
+* `vpc-lattice:GetTargetGroup`
+* `vpc-lattice:ListTagsForResource`
+
+The Security Audit role does not include the permissions.
+
+
+|*Amazon VPC Lattice*
+//RLP-154502
+|*aws-vpc-lattice-service-listener*
+
+Additional permissions needed:
+
+* `vpc-lattice:ListServices`
+* `vpc-lattice:ListListeners` 
+* `vpc-lattice:GetListener`
+* `vpc-lattice:ListTagsForResource`
+
+The Security Audit role does not include the permissions.
+
+
+|*Amazon VPC Lattice*
+//RLP-154499
+|*aws-vpc-lattice-service-network-vpc-association*
 
 Additional permissions needed:
 
 * `vpc-lattice:ListServiceNetworks`
-* `vpc-lattice:GetServiceNetwork`
-* `vpc-lattice:TagResource`
+* `vpc-lattice:ListServiceNetworkVpcAssociations`
+* `vpc-lattice:ListTagsForResource`
 
-The Security Audit role does not include the above permissions. You must manually update the CFT template to enable them.
+The Security Audit role does not include the permissions.
 
-|*AWS Glue DataBrew*
-//RLP-153178
-|*aws-glue-data-brew-project*
+
+|*Azure Container Registry*
+//RLP-154500
+|*azure-container-registry-cache-rules*
 
 Additional permissions needed:
 
-* `databrew:ListProjects`
-* `databrew:DescribeProject`
+* `Microsoft.ContainerRegistry/registries/read`
+* `Microsoft.ContainerRegistry/registries/cacheRules/read`
 
-The Security Audit role includes the permissions.
+The Reader role includes the permissions.
 
-|*Azure Active Directory*
-//RLP-153823
-|*azure-active-directory-group-lifecycle-policies*
 
-Additional permission needed:
-
-* `Directory.Read.All`
-
-The Reader role includes the permission.
-
-|*Azure API Management Service*
-//RLP-153821
-|*azure-api-management-service-apis*
+|*Azure Data Protection*
+//RLP-154220
+|*azure-data-protection-backup-vaults*
 
 Additional permission needed:
 
-* `Microsoft.ApiManagement/service/apis/read`
+* `Microsoft.DataProtection/backupVaults/read`
 
 The Reader role includes the permission.
 
 
-|*Azure App Service*
-//RLP-153586
-|*azure-app-service-web-apps-app-settings*
+|*Azure Data Protection*
+//RLP-154223
+|*azure-data-protection-backup-instances*
 
 Additional permissions needed:
 
-* `Microsoft.Web/sites/Read`
-* `Microsoft.Web/sites/config/list/Action`
+* `Microsoft.DataProtection/backupVaults/read`
+* `Microsoft.DataProtection/backupVaults/backupInstances/read`
 
 The Reader role includes the permissions.
 
-|*Azure Database for PostgreSQL*
-//RLP-153589
-|*azure-postgresql-flexible-server-configurations*
+
+|*Azure Data Protection*
+//RLP-154225
+|*azure-data-protection-backup-policies*
 
 Additional permissions needed:
 
-* `Microsoft.DBforPostgreSQL/flexibleServers/read`
-* `Microsoft.DBforPostgreSQL/flexibleServers/configurations/read`
+* `Microsoft.DataProtection/backupVaults/read`
+* `Microsoft.DataProtection/backupVaults/backupPolicies/read`
 
 The Reader role includes the permissions.
 
-|*OCI Vaults*
-//RLP-123337
-|*oci-vault-key*
+
+|*Azure Data Protection*
+//RLP-154227
+|*azure-data-protection-jobs*
 
 Additional permissions needed:
 
-* `KEY_INSPECT`
-* `KEY_READ`
+* `Microsoft.DataProtection/backupVaults/read`
+* `Microsoft.DataProtection/backupVaults/backupJobs/read`
 
-You must update the Terraform template to enable the permissions.
+The Reader role includes the permissions.
 
 
+|*Azure Data Protection*
+//RLP-154229
+|*azure-data-protection-recovery-points*
 
+Additional permissions needed:
+
+* `Microsoft.DataProtection/backupVaults/read`
+* `Microsoft.DataProtection/backupVaults/backupInstances/read`
+* `Microsoft.DataProtection/backupVaults/backupInstances/recoveryPoints/read`
+
+The Reader role includes the permissions.
+
+
+|*Azure Network Manager*
+//RLP-154500
+|*azure-network-manager*
+
+Additional permission needed:
+
+* `Microsoft.Network/networkManagers/read`
+
+The Reader role includes the permission.
+
+
+|*Azure SQL Databases*
+//RLP-154253/154255/154257
+
+tt:[Update]
+|*azure-sql-db-data-masking-policies*
+*azure-sql-db-data-masking-rules*
+*azure-sql-db-transparent-data-encryption*
+
+This API now restricts data fetching to when the database is in the 'Online' or 'Ready' states. This ensures operations are only performed during these optimal states, This targeted approach prevents data fetching in any other non-active states effectively reducing costs and improving performance.
+
+Behaviour when the database transitions into a 'Paused' state or any other non-optimal state:
+
+* Data ingestion for affected resources is suspended.
+* The deleted status for these specific resources in Prisma is set to "true".
+* All alerts related to the paused resources are automatically marked as resolved during this pause.
+* Upon the database's return to an 'Online' state, and when data ingestion recommences:
+
+* The "deleted" status in Prisma is reverted to "false".
+* Any alerts that were marked as resolved during the pause are reopened.
+
+
+|*Google Dataproc Clusters*
+//RLP-154496
+
+|*gcloud-dataproc-serverless-batch*
+
+Additional permissions required:
+
+* `dataproc.batches.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Dataproc Clusters*
+//RLP-154497
+
+|*gcloud-dataproc-serverless-session*
+
+Additional permissions required:
+
+* `dataproc.sessions.list`
+
+The Viewer role includes the permission. 
+
+[NOTE:]
+Only ACTIVE sessions will be ingested and TERMINATED sessions will be deleted in the Prisma Cloud console.
+
+
+|*Google Dataproc Clusters*
+//RLP-154498
+
+|*gcloud-dataproc-serverless-session-template*
+
+Additional permissions required:
+
+* `dataproc.sessionTemplates.list`
+
+The Viewer role includes the permission.
 
 |===
-
-
-//[#new-compliance-benchmarks-and-updates]
-//=== New Compliance Benchmarks and Updates
-
-//[cols="50%a,50%a"]
-//|===
-//|*Compliance Benchmark*
-//|*Description*
-
-//|
-
-//|
-
-//|===
 
 
 [#deprecation-notices]
