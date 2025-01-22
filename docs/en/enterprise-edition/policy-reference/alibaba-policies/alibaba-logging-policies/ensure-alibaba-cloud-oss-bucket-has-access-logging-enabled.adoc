@@ -16,7 +16,7 @@
 |LOW
 
 |Subtype
-|Build
+|Build, Run
 
 |Frameworks
 |Terraform
@@ -27,30 +27,32 @@
 
 === Description 
 
+This policy identifies Alibaba Cloud Object Storage Service (OSS) buckets that do not have logging enabled.
 
-Enabling 'Access Logging' for an Alibaba Cloud OSS bucket allows you to record information about each request made to the bucket, including the request type, the source IP address, the object accessed, and the response status. This feature is beneficial for tracking and monitoring access to the bucket, identifying potential security risks or unauthorized access, and enhancing overall security and management of the bucket. In addition, access logging serves as a useful tool for auditing purposes, as it provides a comprehensive record of all requests made to the bucket.
+Enabling logging for OSS buckets helps capture access and operation events, which are critical for security monitoring, troubleshooting, and auditing. Without logging, you lack visibility into who accesses and interacts with your bucket, potentially missing unauthorized access or suspicious behaviour.
 
-
+As a security best practice, it is recommended to enable logging for OSS buckets.
 
 === Fix - Buildtime
 
 
-*Terraform* 
-To enable 'Access Logging' for an Alibaba Cloud OSS bucket, add the following code to your Terraform file during buildtime.
+*Terraform*
 
+* *Resource:* alicloud_oss_bucket
+* *Arguments:* logging
 
+To mitigate this issue, ensure the `logging` attribute in the `alicloud_oss_bucket` resource is configured.
 
+Example:
 
 [source,go]
 ----
-resource "alicloud_oss_bucket" "pass" {
-  bucket = "bucket-170309-logging"
+resource "alicloud_oss_bucket" "example" {
+  ...
 
-  logging {
-    target_bucket = alicloud_oss_bucket.bucket-target.id
-    target_prefix = "log/"
-  }
++  logging {
++    target_bucket = "my-log-bucket"
++    target_prefix = "log/"
++  }
 }
-Footer
 ----
-
