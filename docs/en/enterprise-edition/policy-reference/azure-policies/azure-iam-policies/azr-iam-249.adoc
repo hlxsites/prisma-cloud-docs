@@ -1,0 +1,61 @@
+== Azure GitHub Actions OIDC trust policy is insecurely configured
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| TBD
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/GithubActionsOIDCTrustPolicy.py[CKV_AZURE_249]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform, Terraform Plan
+
+|=== 
+
+=== Description
+
+Azure GitHub Actions OIDC trust policies must be configured securely to avoid potential security vulnerabilities. Misconfigured policies may allow unauthorized access or the introduction of security risks via wildcards, abusable claims, or improperly formatted repository claims.
+
+Ensure the `subject` claims are securely specified without using wildcards in critical positions and are conforming to recommended formats.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource: azuread_application_federated_identity_credential, azuread_application*
+* *Argument: identity_federation, subject* 
+
+To mitigate this issue, ensure your `azuread_application_federated_identity_credential` or `azuread_application` resources do not use insecure subject claims.
+- Avoids wildcards (`*`) or unsafe claim structures.
+- Ensures claims follow safe and restricted formats.
+- Uses a specific repository reference.
+
+
+Example:
+
+[source,go]
+----
+resource "azuread_application_federated_identity_credential" "fail3" {
+  ...
+-  subject = "*"
++  subject = "repo:organization/repository"
+}
+
+resource "azuread_application" "example" {
+  ...
+  identity_federation {
+-   subject = "*"
++   subject = "repo:organization/repository"
+  }
+}
+----

@@ -1,4 +1,4 @@
-== AWS IAM role has a GitHub Actions OIDC trust policy that does not specify a known organization
+== AWS GitHub Actions OIDC authorization policies allow for unsafe claims or claim order
 
 
 === Policy Details 
@@ -28,7 +28,12 @@
 === Description 
 
 
-This check is designed to examine AWS IAM policy documents to ensure that GitHub Actions OIDC trust policies only allow actions from a specific, known organization. It checks whether a GitHub Actions based OIDC IAM assume role policy doesn't contain a condition to filter access to only a specific GitHub org/repo, allowing every GitHub account to assume the role.
+This policy ensures that AWS IAM policies using GitHub Actions OIDC authorization are configured with safe claims and claim orders to prevent potential privilege escalation or abuse. Misconfigured claims can lead to security vulnerabilities by allowing unauthorized access or unsafe token usage.
+
+Specifically, the policy checks for:
+1. Missing or invalid conditions on the `sub` variable.
+2. Wildcard values or generic claims that could be abused.
+3. Unsafe claim formats or orders in the `sub` variable.
 
 
 === Fix - Buildtime
@@ -40,12 +45,16 @@ This check is designed to examine AWS IAM policy documents to ensure that GitHub
 * *Resource: aws_iam_policy_document*
 * *Argument: principals, condition* 
 
-If you are using federated access for GitHub Actions, add a `condition` with a specific organization.
+To mitigate this issue, ensure the `condition` in the `aws_iam_policy_document` resource:
+- Avoids wildcards (`*`) or unsafe claim structures.
+- Ensures claims follow safe and restricted formats.
+- Uses a specific repository reference.
 
+Example:
 
 [source,go]
 ----
-data "aws_iam_policy_document" "fail1" {
+data "aws_iam_policy_document" "example" {
   version = "2012-10-17"
 
   statement {
@@ -57,18 +66,13 @@ data "aws_iam_policy_document" "fail1" {
       identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
       type        = "Federated"
     }
+
     condition {
       test     = "StringEquals"
-      values   = ["sts.amazonaws.com"]
-      variable = "token.actions.githubusercontent.com:aud"
+-      values   = ["*"]
++      values = ["repo:myOrg/*"]
+      variable = "token.actions.githubusercontent.com:sub"
     }
-
-+   # Add this block with your organization name in the values
-+   condition {
-+     test     = "StringEquals"
-+     values   = ["repo:myOrg/*"]
-+     variable = "token.actions.githubusercontent.com:sub"
-+   }
   }
 }
 ----
