@@ -73,7 +73,17 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Azure Function App doesn't use latest TLS version*
 //RLP-153936
 
-|The policy RQL will be updated to consider the latest TLS version 1.3.
+|*Changes—* The policy description and reccomendation steps will be updated. The RQL policy will also be updated to consider the latest TLS version 1.3.
+
+*Current Description–* 
+This policy identifies Azure Function Apps that are not set with the latest version of TLS encryption. Azure currently allows the Function App to set TLS versions 1.0, 1.1, and 1.2. Using the latest TLS 1.2 version for Function App secure connections is highly recommended.
+
+*Updated Description–*
+This policy identifies Azure Function App which are not set with the latest version of TLS encryption.
+
+Azure currently allows the Function App to set TLS versions 1.0, 1.1, 1.2, and 1.3. TLS 1.0 and 1.1 are no longer regarded as secure protocols and are deemed outdated.
+
+As a security best practice, TLS 1.2 or above is typically advised as the minimum TLS version for Azure function apps. 
 
 *Current RQL–* 
 ----
@@ -89,12 +99,12 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 
 *Policy Severity–* Low
 
-*Impact–* Low. Open alerts where the minTlsVersion is set to 1.3 will be resolved.
+*Impact–* Low. Existing alerts where the minTlsVersion is set to 1.3 will be resolved.
 
 |*Azure Storage Account default network access is set to 'Allow'*
 //RLP-154158
 
-|Policy RQL is updated to reduce false positives.
+|*Changes—* The policy RQL will be updated to reduce false positives.
 
 *Current RQL–* 
 ----
@@ -110,14 +120,75 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-stor
 
 *Policy Severity–* Informational
 
-*Impact–* Low. Open alerts where the storage account is not publicly accessible from all networks will be resolved.
+*Impact–* Low. Existing alerts where the storage account is not publicly accessible from all networks will be resolved.
+
+|*GCP Log metric filter and alert does not exist for VPC network changes*
+//RLP-153451
+|*Changes—* The policy description and reccomendation steps will be updated align with current standards of the policy. Also, the RQL will be updated to stay in line with the CSP changes.
+
+*Current Description–* 
+This policy identifies the GCP account which does not have a log metric filter and alert for VPC network changes. Monitoring network insertion, patching, deletion, removePeering and addPeering activities will help in identifying VPC traffic flow is not getting impacted. It is recommended to create a metric filter and alarm to detect activities related to the insertion, patching, deletion, removePeering and addPeering of VPC network.
+
+*Updated Description–*
+This policy identifies GCP accounts that do not have a log metric filter and alert for VPC network changes.
+
+Without proper monitoring of activities like network insertions, patching, deletions, and peering modifications, organizations risk undetected misconfigurations that could compromise network security and impact traffic flow. Real-time alerts on these events are crucial for rapid response to malicious activity or accidental changes, ensuring network integrity and availability. Establishing these monitoring capabilities provides a critical layer of visibility and control over VPC network configurations.
+
+It is recommended to create a log metric filter and alert configuration in your GCP project for VPC network changes. This will enable proactive detection of unauthorized modifications and ensure the integrity and security of your VPC network.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'gcloud-logging-metric' as X; config from cloud.resource where api.name = 'gcloud-monitoring-policies-list' as Y; filter '$.Y.conditions[*].metricThresholdFilter contains $.X.name and ($.X.filter contains "resource.type =" or $.X.filter contains "resource.type=") and ($.X.filter does not contain "resource.type !=" and $.X.filter does not contain "resource.type!=") and $.X.filter contains "gce_network" and ($.X.filter contains "jsonPayload.event_subtype=" or $.X.filter contains "jsonPayload.event_subtype =") and ($.X.filter does not contain "jsonPayload.event_subtype!=" and $.X.filter does not contain "jsonPayload.event_subtype !=") and $.X.filter contains "compute.networks.insert" and $.X.filter contains "compute.networks.patch" and $.X.filter contains "compute.networks.delete" and $.X.filter contains "compute.networks.removePeering" and $.X.filter contains "compute.networks.addPeering"'; show X; count(X) less than 1
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-logging-metric' as X; config from cloud.resource where api.name = 'gcloud-monitoring-policies-list' as Y; filter '$.Y.conditions[*].metricThresholdFilter contains $.X.name and ($.X.filter contains "resource.type =" or $.X.filter contains "resource.type=") and ($.X.filter does not contain "resource.type !=" and $.X.filter does not contain "resource.type!=") and $.X.filter contains "gce_network" and ((($.X.filter contains "protoPayload.methodName=" or $.X.filter contains "protoPayload.methodName =") or ($.X.filter contains "protoPayload.methodName:" or $.X.filter contains "protoPayload.methodName :")) and (($.X.filter does not contain "protoPayload.methodName!=" and $.X.filter does not contain "protoPayload.methodName !=") or ($.X.filter does not contain "protoPayload.methodName!:" and $.X.filter does not contain "protoPayload.methodName !:"))) and $.X.filter contains "compute.networks.insert" and $.X.filter contains "compute.networks.patch" and $.X.filter contains "compute.networks.delete" and $.X.filter contains "compute.networks.removePeering" and $.X.filter contains "compute.networks.addPeering"'; show X; count(X) less than 1
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New alerts will be generated for failing resources.
+
+|*GCP Log metric filter and alert does not exist for VPC Network Firewall rule changes*
+//RLP-153453
+|*Changes—* The policy description and reccomendation steps will be updated align with current standards of the policy. Also, the RQL will be updated to stay in line with the CSP changes.
+
+*Current Description–* 
+This policy identifies the GCP account which does not have a log metric filter and alert for VPC network changes. Monitoring network insertion, patching, deletion, removePeering and addPeering activities will help in identifying VPC traffic flow is not getting impacted. It is recommended to create a metric filter and alarm to detect activities related to the insertion, patching, deletion, removePeering and addPeering of VPC network.
+
+*Updated Description–*
+This policy identifies GCP projects that do not have log metric filters and alerts for VPC Network Firewall rule modifications.
+
+VPC Network Firewall rules govern network traffic flow, and unauthorized changes can severely impact security and availability. Without real-time monitoring and alerting on rule modifications (additions, deletions, or updates), organizations are vulnerable to undetected attacks, misconfigurations, and performance issues. Proactive alerts enable swift responses to suspicious activity, preventing breaches and ensuring business continuity. Implementing this monitoring provides crucial visibility and control over network security posture.
+
+It is recommended to configure log metric filters and alerts within your GCP projects to monitor all VPC Network Firewall rule changes. This will enable prompt detection of unauthorized modifications, facilitating rapid remediation and maintaining the integrity and security of your network infrastructure.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'gcloud-logging-metric' as X; config from cloud.resource where api.name = 'gcloud-monitoring-policies-list' as Y; filter '($.Y.conditions[*].metricThresholdFilter contains $.X.name) and ($.X.filter contains "resource.type =" or $.X.filter contains "resource.type=") and ($.X.filter does not contain "resource.type !=" and $.X.filter does not contain "resource.type!=") and $.X.filter contains "gce_firewall_rule" and ($.X.filter contains "jsonPayload.event_subtype=" or $.X.filter contains "jsonPayload.event_subtype =") and ($.X.filter does not contain "jsonPayload.event_subtype!=" and $.X.filter does not contain "jsonPayload.event_subtype !=") and $.X.filter contains "compute.firewalls.patch" and $.X.filter contains "compute.firewalls.insert"'; show X; count(X) less than 1
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-logging-metric' as X; config from cloud.resource where api.name = 'gcloud-monitoring-policies-list' as Y; filter '($.Y.conditions[*].metricThresholdFilter contains $.X.name) and ($.X.filter contains "resource.type =" or $.X.filter contains "resource.type=") and ($.X.filter does not contain "resource.type !=" and $.X.filter does not contain "resource.type!=") and $.X.filter contains "gce_firewall_rule" and ((($.X.filter contains "protoPayload.methodName=" or $.X.filter contains "protoPayload.methodName =") or ($.X.filter contains "protoPayload.methodName:" or $.X.filter contains "protoPayload.methodName :")) and (($.X.filter does not contain "protoPayload.methodName!=" and $.X.filter does not contain "protoPayload.methodName !=") or ($.X.filter does not contain "protoPayload.methodName!:" and $.X.filter does not contain "protoPayload.methodName !:"))) and $.X.filter contains "compute.firewalls.patch" and $.X.filter contains "compute.firewalls.insert" and $.X.filter contains "compute.firewalls.delete"'; show X; count(X) less than 1
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New alerts will be generated for failing resources.
+
 
 2+|*Policy Updates - Metadata*
 
 |*Azure App service HTTP logging is disabled*
 //RLP-153983
 
-|The recommendation steps will be updated.
+|*Changes—* The recommendation steps will be updated.
 
 *Current Recommendation Steps–* 
 1. Log in to Azure Portal
@@ -143,6 +214,49 @@ Alternatively, you may use the CLI command below to configure http logging for a
 *Policy Severity–* Low
 
 *Impact–* No impact on alerts.
+
+|*GCP Log metric filter and alert does not exist for Project Ownership assignments/changes*
+//RLP-153450
+|*Changes—* The policy description will be updated to better align with the policy.
+
+*Current Description–* 
+This policy identifies the GCP account which does not have a log metric filter and alert for Project Ownership assignments/changes. Project Ownership Having highest level of privileges on a project, to avoid misuse of project resources project ownership assignment/change actions mentioned should be monitored and alerted to concerned recipients.
+
+*Updated Description–*
+This policy identifies GCP projects that do not have log metric filters and alert for project ownership assignments and changes.
+
+Project ownership grants extensive privileges. Without monitoring ownership changes, organizations risk unauthorized access, resource misappropriation, and potential security breaches. Real-time alerts on ownership transfers enable prompt detection of suspicious activity, facilitating rapid response and minimizing the impact of compromised accounts. Establishing this monitoring provides crucial visibility and control over project access, improving overall security posture.
+
+It is recommended to configure log metric filters and alerts for project ownership changes in all GCP projects. This proactive approach ensures that any changes to project ownership are immediately flagged, allowing for timely investigation and mitigation of potential risks.
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New alerts will be generated for the failing resources.
+
+|*GCP IAM user with service account privileges*
+//RLP-153760
+|*Changes—* The policy name and description will be updated to better align with the policy.
+
+*Current Policy Name–* GCP IAM user with service account privileges
+
+*Updated Policy Name–* GCP IAM principals with service account privileges
+
+*Current Description–* This policy identifies IAM users which have overly permissive service account privileges. Any user should not have Service Account Admin and Service Account User, both roles assigned at a time. Built-in/Predefined IAM role Service Account admin allows the user to create, delete, manage service accounts. Built-in/Predefined IAM role Service Account User allows the user to assign service accounts to Apps/Compute Instances. It is recommended to follow the principle of 'Separation of Duties' ensuring that one individual does not have all the necessary permissions to be able to complete a malicious action or meant to help avoid security or privacy incidents and errors.
+
+*Updated Description–* This policy identifies IAM principals which have overly permissive service account privileges.
+
+Assigning a principals the Service account role in Google Cloud allows them to  impersonate service accounts and use their permissions. This means the principals can perform actions on behalf of the service account, essentially inheriting all permissions granted to that service account.
+
+To maintain the security of your information and resources, it is crucial to assign this role only to authorized and trusted IAM Principals. 
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* No impact on alerts.
+
 
 |===
 
@@ -611,17 +725,6 @@ Additional permission needed:
 The Security Audit role includes the permission.
 
 
-|*Amazon CloudWatch Synthetics*
-//RLP-154503
-|*aws-cloudwatch-synthetics-canary*
-
-Additional permission needed:
-
-* `synthetics:DescribeCanaries`
-
-The Security Audit role includes the permission.
-
-
 |*Amazon API Gateway*
 //RLP-153378
 |*aws-apigatewayv2-integration*
@@ -629,6 +732,29 @@ The Security Audit role includes the permission.
 Additional permission needed:
 
 * `apigateway:GET`
+
+The Security Audit role includes the permission.
+
+|*Amazon Cognito*
+//RLP-153025
+|*aws-cognito-user-pool-client*
+
+Additional permissions needed:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListUserPoolClients`
+* `cognito-idp:DescribeUserPoolClient`
+
+The Security Audit role includes the permissions.
+
+
+|*Amazon CloudWatch Synthetics*
+//RLP-154503
+|*aws-cloudwatch-synthetics-canary*
+
+Additional permission needed:
+
+* `synthetics:DescribeCanaries`
 
 The Security Audit role includes the permission.
 
@@ -653,7 +779,7 @@ Additional permissions needed:
 * `dynamodb:ListBackups`
 * `dynamodb:DescribeBackup`
 
-The Security Audit role does not include the permissions.
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
 
 |*Amazon DynamoDB*
 //RLP-154485
@@ -662,19 +788,6 @@ tt:[Update]
 |*aws-dynamodb-describe-table*
 
 The attribute 'timeToLiveDescription' will be appended to this existing Prisma Cloud API.
-
-
-|*AWS Elemental MediaStore*
-//RLP-153325
-|*aws-elemental-media-store-container*
-
-Additional permissions needed:
-
-* `mediastore:ListContainers`
-* `mediastore:DescribeContainer`
-
-The Security Audit role does not include the permissions.
-
 
 |*Amazon EventBridge*
 //RLP-154083
@@ -696,7 +809,7 @@ Additional permissions needed:
 * `scheduler:ListSchedules`
 * `scheduler:GetSchedule`
 
-The Security Audit role does not include the permissions.
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
 
 
 |*Amazon GuardDuty*
@@ -836,7 +949,7 @@ Additional permissions needed:
 * `vpc-lattice:GetService`
 * `vpc-lattice:ListTagsForResource`
 
-The Security Audit role does not include the permissions.
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
 
 
 |*Amazon VPC Lattice*
@@ -849,7 +962,7 @@ Additional permissions needed:
 * `vpc-lattice:GetTargetGroup`
 * `vpc-lattice:ListTagsForResource`
 
-The Security Audit role does not include the permissions.
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
 
 
 |*Amazon VPC Lattice*
@@ -863,7 +976,7 @@ Additional permissions needed:
 * `vpc-lattice:GetListener`
 * `vpc-lattice:ListTagsForResource`
 
-The Security Audit role does not include the permissions.
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
 
 
 |*Amazon VPC Lattice*
@@ -876,7 +989,20 @@ Additional permissions needed:
 * `vpc-lattice:ListServiceNetworkVpcAssociations`
 * `vpc-lattice:ListTagsForResource`
 
-The Security Audit role does not include the permissions.
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
+
+|*Amazon VPC Lattice*
+//RLP-154501
+|*aws-vpc-lattice-service-network-service-association*
+
+Additional permissions needed:
+
+* `vpc-lattice:ListServices`
+* `vpc-lattice:ListServiceNetworkServiceAssociations`
+* `vpc-lattice:ListTagsForResource`
+
+The Security Audit role does not include the permissions. You must manually add the permissions to the CFT template to enable them.
+
 
 
 |*Azure Container Registry*
@@ -952,7 +1078,7 @@ The Reader role includes the permissions.
 
 
 |*Azure Network Manager*
-//RLP-154500
+//RLP-154459
 |*azure-network-manager*
 
 Additional permission needed:
