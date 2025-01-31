@@ -28,9 +28,8 @@
 === Description 
 
 
-Amazon S3 Block Public Access policy works at the account level and on individual buckets, including those created in the future.
-It provides the ability to block existing public access, whether specified by an ACL or a policy, and ensures public access is not granted to newly created items.
-If an AWS account is used to host a data lake or another business application, blocking public access will serve as an account-level guard against accidental public exposure.
+This policy ensures that Amazon S3 buckets have the `block public policy` setting enabled. Enabling this setting ensures that public bucket policies cannot be set, which helps prevent unauthorized access to the data stored in the S3 bucket. This policy checks whether the `BlockPublicPolicy` option is enabled in the `PublicAccessBlockConfiguration` of S3 buckets.
+
 
 === Fix - Buildtime
 
@@ -38,18 +37,32 @@ If an AWS account is used to host a data lake or another business application, b
 *Terraform* 
 
 
-* *Resource:* aws_s3_bucket_public_access_block Argument: block_public_policy
+To fix this issue, ensure that the `block_public_policy` property in the `aws_s3_bucket_public_access_block` resource is set to `true`.
 
 
-[source,text]
+[source,go]
 ----
 resource "aws_s3_bucket_public_access_block" "artifacts" {
-  count  = var.bucketname == "" ? 1 : 0
-  bucket = aws_s3_bucket.artifacts[0].id
-  
-  block_public_acls   = true
+  ...
 + block_public_policy = true
-  restrict_public_buckets = true
-  ignore_public_acls=true
 }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `BlockPublicPolicy` property in the `PublicAccessBlockConfiguration` of the `AWS::S3::Bucket` resource is set to `true`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: example-bucket
+      PublicAccessBlockConfiguration:
++        BlockPublicPolicy: true
+        ...
 ----
