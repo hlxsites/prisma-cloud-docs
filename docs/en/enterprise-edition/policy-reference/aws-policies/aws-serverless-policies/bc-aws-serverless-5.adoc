@@ -9,7 +9,7 @@
 | b3c159b3-00cb-42f3-8841-14e434421947
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/checks/resource/aws/LambdaEnvironmentEncryptionSettings.py[CKV_AWS_173]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/aws/LambdaEnvironmentEncryptionSettings.py[CKV_AWS_173]
 
 |Severity
 |LOW
@@ -26,50 +26,70 @@
 
 === Description
 
-You can use environment variables to adjust your function's behavior without updating code.
-An environment variable is a pair of strings that is stored in a function's version-specific configuration.
-The Lambda runtime makes environment variables available to your code and sets additional environment variables that contain information about the function and invocation request.
-Environment variables are not evaluated prior to the function invocation.
-Any value you define is considered a literal string and not expanded.
-Perform the variable evaluation in your function code.
+This policy checks the encryption settings for environment variables in AWS Lambda functions. It's essential to use a KMS key for encrypting environment variables to protect sensitive data. If environment variables are provided, a KMS key must be specified. This policy checks whether the `kms_key_arn` is set when environment variables are used in a Lambda function.
 
 === Fix - Buildtime
 
 
-*Terraform* 
+*Terraform*
 
+To fix this issue, ensure that when environment variables are specified in the `aws_lambda_function` resource, the `kms_key_arn` property is also set to a valid KMS key ARN.
 
-aws_lambda_function
-* *Resource:* aws_lambda_function
-* *Arguments:* kms_key_arn
-
+Example:
 
 [source,go]
 ----
-{
- "resource "aws_lambda_function" "test_lambda" {
-  filename      = "lambda_function_payload.zip"
-  function_name = "lambda_function_name"
-  role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "index.test"
-
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = filebase64sha256("lambda_function_payload.zip")
-
-  runtime = "nodejs12.x"
-  
-+ kms_key_arn = "ckv_km"
-  
+resource "aws_lambda_function" "example" {
+  ...
   environment {
     variables = {
-      foo = "bar"
+      EXAMPLE_VAR = "example-value"
     }
+  }
 
+  kms_key_arn = "arn:aws:kms:us-west-2:123456789012:key/example-key-arn"
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that when environment variables are specified in the `AWS::Lambda::Function` or `AWS::Serverless::Function` resource, the `KmsKeyArn` property is also set to a valid KMS key ARN.
+
+Example for AWS Lambda Function:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        ...
+        "Environment": {
+          "Variables": {
+            "EXAMPLE_VAR": "example-value"
+          }
+        },
++        "KmsKeyArn": "arn:aws:kms:us-west-2:123456789012:key/example-key-arn",
+        ...
+      }
+    }
   }
 }
+----
 
-",
-}
+Example for AWS Serverless Function:
+
+[source,yaml]
+----
+Resources:
+  MyServerlessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      ...
+      Environment:
+        Variables:
+          EXAMPLE_VAR: example-value
++      KmsKeyArn: arn:aws:kms:us-west-2:123456789012:key/example-key-arn
 ----

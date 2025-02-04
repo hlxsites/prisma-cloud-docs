@@ -19,13 +19,13 @@
 |Build
 
 |Frameworks
-|Terraform,TerraformPlan
+|Terraform, TerraformPlan, CloudFormation
 
 |===
 
 === Description
 
-This policy is checking to ensure that permissions granted to AWS Lambda functions by other AWS services are adequately restricted by either the SourceArn or SourceAccount. The importance of this check lies in securing the function against unnecessary or excessive access by limiting permissions to the specific AWS service that requires it. If such restrictions are not in place, the function could be open to misuse or unauthorized access, compromising the integrity and security of your applications and data in AWS. By limiting permissions using SourceArn or SourceAccount, you narrow the scope of access, reducing potential security risks.
+This policy ensures that AWS Lambda function permissions delegated to AWS services are restricted by `SourceArn` or `SourceAccount`. This helps prevent unauthorized access and limits the scope of permissions granted to Lambda functions.
 
 === Fix - Buildtime
 
@@ -43,9 +43,44 @@ resource "aws_lambda_permission" "with_sns" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.example.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = aws_sns_topic.example.arn
++  source_arn    = aws_sns_topic.example.arn
 }
 ----
 
 The above code is secure because it explicitly defines the source of the permissions using the source_arn attribute. This prevents malicious entities from granting themselves permissions to the Lambda function. The attribute source_arn limits the delegation of the permission to the supplied resource, preventing resources outside of the supplied ARN from invoking the Lambda Function.
 
+
+*CloudFormation*
+
+To mitigate this issue, ensure that the `AWS::Lambda::Permission` resource includes the `SourceArn` or `SourceAccount` property to limit the permissions delegated to AWS services.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": "MyFunction",
+        "Principal": "sns.amazonaws.com",
++        "SourceArn": "arn:aws:sns:us-east-1:123456789012:MyTopic"
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: MyFunction
+      Principal: sns.amazonaws.com
++      SourceArn: arn:aws:sns:us-east-1:123456789012:MyTopic
+----

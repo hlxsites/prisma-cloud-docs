@@ -9,7 +9,7 @@
 | 6cc22562-8bcd-4e12-8610-77e926cf4fa7
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/checks/resource/aws/MQBrokerAuditLogging.py[CKV_AWS_197]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/aws/MQBrokerAuditLogging.py[CKV_AWS_197]
 
 |Severity
 |LOW
@@ -26,32 +26,43 @@
 
 === Description
 
-It is recommended to have a proper logging process for AWS MQBroke in order to track configuration changes conducted manually and programmatically and trace back unapproved changes.
+This policy ensures that Amazon MQ Brokers have audit logging enabled. Audit logging is crucial for tracking access and changes to your MQ Brokers, thereby providing visibility into security-relevant events and supporting compliance requirements. This policy checks whether the `logs` property is configured to enable `audit` logging. Note that audit logging is not supported for RabbitMQ engine types.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
+To fix this issue, ensure that the `logs` property in the `aws_mq_broker` resource includes `audit` set to `true`, unless the engine type is `RabbitMQ`.
 
-
+Example:
 
 [source,go]
 ----
-resource "aws_mq_broker" "enabled" {
-  broker_name        = "example"
-  engine_type        = "ActiveMQ"
-  engine_version     = "5.16.3"
-  host_instance_type = "mq.t3.micro"
-
-  user {
-    password = "admin123"
-    username = "admin"
-  }
-
+resource "aws_mq_broker" "example" {
+  ...
   logs {
-    general = true
-    audit   = true
+    audit = true
   }
+  ...
 }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `Audit` property in the `Logs` configuration of the `AWS::AmazonMQ::Broker` resource is set to `true`, unless the engine type is `RabbitMQ`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyMQBroker:
+    Type: AWS::AmazonMQ::Broker
+    Properties:
+      ...
+      Logs:
+        Audit: true
+      ...
 ----

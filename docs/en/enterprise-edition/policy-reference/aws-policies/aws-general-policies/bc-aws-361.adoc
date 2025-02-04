@@ -33,18 +33,29 @@ The reason why this policy is important is that if automated backups are not ena
 
 *Terraform*
 
-* *Resource:* aws_neptune_cluster
-* *Arguments:* backup_retention_period
-
-The Neptune DB cluster must be configured with automated backups enabled and retention period of at least 7 days.
+To fix this issue, ensure that the `backup_retention_period` property in the `aws_neptune_cluster` resource is set to at least 7 days.
 
 [source,go]
 ----
 resource "aws_neptune_cluster" "default" {
-  cluster_identifier  = "neptune-cluster-demo"
-  engine              = "neptune"
+  ...
   backup_retention_period = 7
-  preferred_backup_window = "07:00-09:00"
 }
+----
+
+*CloudFormation*
+
+To fix this issue, ensure that the `BackupRetentionPeriod` property in the `AWS::Neptune::DBCluster` resource is set to at least 7 days.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyNeptuneDBCluster:
+    Type: AWS::Neptune::DBCluster
+    Properties:
+      BackupRetentionPeriod: 7
+      ...
 ----
 

@@ -28,9 +28,7 @@
 === Description 
 
 
-Enabling enhanced monitoring for Amazon RDS instances can provide you with additional visibility into the performance and health of your database instances.
-With enhanced monitoring, you can retrieve real-time performance metrics for your RDS instances at intervals of 1 second, rather than the standard interval of 60 seconds.
-This can be particularly useful for troubleshooting performance issues, identifying trends in resource utilization, and detecting potential issues before they become problems.
+This policy ensures that enhanced monitoring is enabled for Amazon RDS instances. Enhanced monitoring provides detailed metrics in real-time for the operating system that your DB instance runs on, which helps in identifying and diagnosing performance issues. This policy checks whether the `MonitoringInterval` property is set to a valid value for enabling enhanced monitoring.
 
 === Fix - Buildtime
 
@@ -49,4 +47,22 @@ resource "aws_db_instance" "default" {
   ...
 + monitoring_interval  = 5
   }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `MonitoringInterval` property in the `AWS::RDS::DBInstance` resource is set to a valid value (1, 5, 10, 15, 30, or 60 seconds).
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: example-instance
++      MonitoringInterval: 60
+      ...
 ----
