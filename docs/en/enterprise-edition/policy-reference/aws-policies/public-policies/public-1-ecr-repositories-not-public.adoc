@@ -10,14 +10,13 @@
 | 9f40d30b-97fd-4ec5-827b-f74b50a312b9
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/checks/resource/aws/ECRPolicy.py[CKV_AWS_32]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/aws/ECRPolicy.py[CKV_AWS_32]
 
 |Severity
 |MEDIUM
 
 |Subtype
-|Build
-//, Run
+|Build, Run
 
 |Frameworks
 |CloudFormation,Terraform,TerraformPlan,Serverless
@@ -28,36 +27,40 @@
 
 === Description 
 
+This policy identifies AWS Private ECR repositories that have overly permissive registry policies. An ECR(Elastic Container Registry) repository is a collection of Docker images available on the AWS cloud. These images might contain sensitive information which should be restricted to unauthorized users.
 
-AWS ECR is a managed Docker registry service that simplifies Docker container image management.
-The ECR repository is a collection of Docker images available on AWS.
-Access control to ECR repositories is governed using resource-based policies.
-A public ECR repository can expose internal Docker images that contain confidential business logic.
-We recommend you do not allow unrestricted public access to ECR repositories to help avoid data leakage.
-
-=== Fix - Runtime
-
-
-*AWS Console* 
-
-
-To change the policy using the AWS Console, follow these steps:
-
-. Log in to the AWS Management Console at https://console.aws.amazon.com/.
-
-. Open the https://console.aws.amazon.com/ecs/[Amazon ECS console].
-
-. Select *Amazon ECR **, then select **Repositories*.
-
-. Click the image repository that you want to configure.
-+
-To modify the permission policy, select *Permissions*.
-
-. In the *Permission statements*, select the _policy statement_ that has *Effect **set to **Allow* and *Principal* set to *****.
-
-. To select a restricted access policy, click *Edit* and make changes.
 
 === Fix - Buildtime
+
+*Terraform*
+
+To fix this issue, ensure that the `policy` property in the `aws_ecr_repository_policy` resource does not allow public access.
+
+Example:
+
+[source,go]
+----
+resource "aws_ecr_repository_policy" "example" {
+  repository = aws_ecr_repository.example.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = aws_ecr_repository.example.arn
+        Principal = {
+          AWS = "arn:aws:iam::123456789012:role/your-role"
+        }
+      }
+    ]
+  })
+}
+----
 
 
 *CloudFormation* 
