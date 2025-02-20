@@ -332,26 +332,25 @@ Additionally, no access logs were generated in the CloudWatch log file.
 
 *Workaround*
 
-* Customize the Nginx container's error logging behavior. Use the following steps to modify the `nginx.conf` file and build a new Docker image using the official Nginx base image.
+* Customize the Nginx container's error logging behavior by using the following steps.
 
 [source,ascii]
 ----
-#1: Edit the nginx.conf as below. 
-# Make sure that this file is copied from the official Nginx container, and not newly created.
-=
-error_log stderr;
-=
-#2: Use the above custom nginx.conf to build the image.
-=
-# Use the official Nginx image as the base
-FROM nginx:latest
-# Remove existing symlink for error.log if it exists
-RUN rm -f /var/log/nginx/error.log
-# Copy custom nginx.conf into the container
-COPY nginx.conf /etc/nginx/nginx.conf
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
-=
+_#1: Edit the nginx.conf as below._
+_# Make sure that this file is copied from the official Nginx container, and not newly created._
+
+*error_log stderr;*
+
+_#2: Use the above custom nginx.conf and the following Dockerfile to build a new Docker image._
+
+_# Use the official Nginx image as the base._
+*FROM nginx:latest*
+_# Remove existing symlink for error.log if it exists._
+*RUN rm -f /var/log/nginx/error.log*
+_# Copy custom nginx.conf into the container_
+*COPY nginx.conf /etc/nginx/nginx.conf*
+_# Start Nginx_
+*CMD ["nginx", "-g", "daemon off;"]*
 ----
 
 //CWP-59435
