@@ -322,6 +322,36 @@ The following table lists the known issues for 33.00 release.
 
 // In Prisma Cloud Compute Edition instances that have the Clustered DB mode enabled for the Console, the Console fails to start after upgrading to release 32.06.
 
+//CWP-62780
+|*PCSUP-26131*
+|When deploying a Fargate Defender with the Nginx server, the Nginx server was inaccessible through a browser, despite both containers being launched successfully. 
+Additionally, no access logs were generated in the CloudWatch log file.
+
+*Workaround*
+
+* Customize the Nginx container's error logging behavior by performing the following steps.
+
+[source,ascii]
+----
+#1: Edit the nginx.conf as below.
+# Make sure that this file is copied from the official Nginx container, and not newly created.
+=
+error_log stderr;
+=
+#2: Use the above custom nginx.conf and the following Dockerfile to build a new Docker image.
+=
+# Use the official Nginx image as the base
+FROM nginx:latest
+# Remove existing symlink for error.log if it exists
+RUN rm -f /var/log/nginx/error.log
+# Copy custom nginx.conf into the container
+COPY nginx.conf /etc/nginx/nginx.conf
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
+=
+----
+
+
 |*CWP-59515*
 
 |*K8s Defender Crash Loop on RKE2*
