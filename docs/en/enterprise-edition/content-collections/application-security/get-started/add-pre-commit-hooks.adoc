@@ -1,0 +1,107 @@
+== Pre-commit Hooks
+
+Install Prisma Cloud Application Security scanner (Prisma Cloud scanner) as a pre-commit hook into your workflows to automate the scanning of your code for Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) issues and Secrets vulnerabilities before a Pull Request is opened. Pre-commit hooks are local hooks that are triggered on the local machine when creating a commit or a specific action is performed, and these hooks enable you to enforce checks or actions before accepting any changes into the VCS.
+
+Installing the Prisma Cloud code scanner allows you to identify issues and take remediation steps before accepting the code into your repositories. This mitigates the risk of introducing potential issues downstream.
+
+[.task]
+
+[#local-install]
+=== Install Prisma Cloud Scanner as a Pre-Commit Hook on a Local Machine
+
+[.procedure]
+
+. Before you begin:
++
+* Install https://www.python.org/downloads/[Python] v3.9 - v3.13
+* (If using Docker image method) Install https://docs.docker.com/get-docker/[Docker]
+* Install the https://pre-commit.com/#install[pre-commit] tool
+* Install xref:../../connect-code-and-build-providers/ci-cd-runs/add-checkov.adoc[Checkov]
+
+
+. Set your Prisma Cloud credentials as environment variables. You can hardcode them in the pre-commit hook, but this is not recommened.
+
+*Mac/Linux*
+[source,shell]
+----
+export BC_API_KEY=<Your Prisma Cloud Access Key>::<Your Prisma Cloud Secret Key>
+export PRISMA_API_URL=<Your Prisma Cloud API, such as https://api3.prismacloud.io>
+----
+
+*Windows*
+[source,shell]
+----
+set BC_API_KEY=<Your Prisma Cloud Access Key>::<Your Prisma Cloud Secret Key>
+set PRISMA_API_URL=<Your Prisma Cloud API, such as https://api3.prismacloud.io>
+----
+
+. Add a file called `.pre-commit-config.yaml` to the base of your repository's directory. There are a few alternatives for configuring Prisma Cloud code scanning as a pre-commit hook. This configurations is the most basic that will scan the whole repository whenever there is a change to a Terraform file. Alternative options are at the bottom of the page: <<alternative-configs>>. In order to reduce duplicate uploading of results, it's recommended to use the `--skip-results-upload` flag.
+
+[source,yaml]
+----
+repos:
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: ' ' # It is recommended to change to tag or sha, such as 3.2.372
+    hooks:
+      - id: checkov # Alternatively, use checkov_container for an image based scan
+        args: [--skip-results-upload, --repo-id, organization/repository, --use-enforcement-rules]
+----
+
+. Add additional configuration settings to the args section, such as `--framework` and `--skip-check`. See the other configuration options https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[here].
+
+. After adding your file, install the hook with:
+
+[source,shell]
+----
+pre-commit install --install-hooks
+----
+
+. Test the pre-commit hook by making a change and attempting to make a commit.
+
+[#alternative-configs]
+=== Alternative configuration options
+
+There are a few alternative set ups you can use for pre-commit hooks. Below are just some examples.
+
+==== Secrets scanning only
+
+This is a common use case to identify and block secrets before they are added to a more exposed pull request.
+
+[source,yaml]
+----
+repos:
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: ' '  # change to tag or sha
+    hooks:
+      - id: checkov_secrets  # Alternatively, use checkov_secrets_container
+        args: [--skip-results-upload, --repo-id, organization/repository, --use-enforcement-rules, -f]
+----
+
+==== Scan modified files only
+
+This will only scan modified files. Note that this will not handle cross-file checks well, and you may want to consider skipping those for this configuration.
+
+[source,yaml]
+----
+repos:
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: ' '  # change to tag or sha
+    hooks:
+      - id: checkov_diff  # Alternatively, use checkov_diff_container
+        args: [--skip-results-upload, --repo-id, organization/repository, --use-enforcement-rules, --skip-check, "CKV2*", -f]
+----
+
+==== Complete override
+
+You can completely override the entrypoint to add most configuration options.
+
+[source,yaml]
+----
+repos:
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: ' ' # change to tag or sha
+    hooks:
+      - id: checkov_diff
+        entry: checkov --framework cloudformation --skip-results-upload --repo-id organization/repository --use-enforcement-rules -d .
+----
+
