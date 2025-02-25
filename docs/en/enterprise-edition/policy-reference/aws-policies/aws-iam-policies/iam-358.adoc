@@ -28,13 +28,13 @@
 === Description 
 
 
-This policy ensures that AWS IAM policies using GitHub Actions OIDC authorization are configured with safe claims and claim orders to prevent potential privilege escalation or abuse. Misconfigured claims can lead to security vulnerabilities by allowing unauthorized access or unsafe token usage.
+This policy detects whether AWS IAM policies using GitHub Actions OIDC authorization are configured with potentially unsafe claims or claim orders. Misconfigured claims can lead to security vulnerabilities by allowing unauthorized access or unsafe token usage, potentially resulting in privilege escalation or abuse.
 
 Specifically, the policy checks for:
 
-1. Missing or invalid conditions on the `sub` variable.
-2. Wildcard values or generic claims that could be abused.
-3. Unsafe claim formats or orders in the `sub` variable.
+* Missing or invalid conditions on the `sub` variable.
+* Wildcard values or generic claims that could be abused.
+* Unsafe claim formats or orders in the `sub` variable.
 
 
 === Fix - Buildtime
@@ -46,11 +46,11 @@ Specifically, the policy checks for:
 * *Resource: aws_iam_policy_document*
 * *Argument: principals, condition* 
 
-To mitigate this issue, ensure the `condition` in the `aws_iam_policy_document` resource is properly configured.
+To mitigate this issue, ensure the `condition` in the `aws_iam_policy_document` resource:
 
-- Avoid wildcards (`*`) or unsafe claim structures.
-- Ensure claims follow safe and restricted formats. Abusable claims include: "workflow", "environment", "ref", "context", "head_ref", "base_ref"
-- Use a specific repository reference.
+- Avoids wildcards (`*`) or unsafe claim structures
+- Ensures claims follow safe and restricted formats. Abusable claims include: "workflow", "environment", "ref", "context", "head_ref", "base_ref"
+- Uses a specific repository reference.
 
 Example:
 
