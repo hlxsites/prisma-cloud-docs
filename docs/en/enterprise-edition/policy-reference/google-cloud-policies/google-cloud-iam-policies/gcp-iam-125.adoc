@@ -1,0 +1,61 @@
+== GCP GitHub Actions OIDC trust policy is insecurely configured
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 70439453-40eb-46e4-99e4-e4688cf69092
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GithubActionsOIDCTrustPolicy.py[CKV_GCP_125]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+
+
+=== Description
+
+
+This policy detects whether GCP GitHub Actions OIDC trust policies are insecurely configured, potentially allowing security vulnerabilities. Misconfigured policies can allow unauthorized access or introduce potential exploits via wildcards, abusable claims, or improperly formatted repository claims.
+
+=== Fix - Buildtime
+
+
+*Terraform* 
+
+
+* *Resource:*  google_iam_workload_identity_pool_provider
+* *Arguments:* role
+
+To mitigate this issue, make sure your `google_iam_workload_identity_pool_provider` resource is properly configured without insecure claims.
+
+- Avoid wildcards (`*`) or unsafe claim structures.
+- Ensure claims follow safe and restricted formats. Abusable claims include: "workflow", "environment", "ref", "context", "head_ref", "base_ref"
+- Use a specific repository reference.
+
+Example:
+
+[source,go]
+----
+resource "google_iam_workload_identity_pool_provider" "example" {
+  ...
+  issuer_uri = "https://token.actions.githubusercontent.com"
+  attribute_mapping = {
+    "google.subject" = "assertion.sub"
+  }
+-  attribute_condition = "assertion.sub == 'repo:*'"
++  attribute_condition = "assertion.sub == 'repo:organization/repository'"
+}
+----
