@@ -1,0 +1,54 @@
+
+== AWS S3 bucket has global view ACL permissions enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 43c42760-5283-4bc4-ac43-a80e58c4139f
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/S3GlobalViewACL.py[CKV_AWS_375]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy detects whether AWS S3 buckets have global view ACL (Access Control List) permissions enabled. It aims to prevent buckets from being publicly accessible, which could occur if global read permissions are granted through its ACL settings.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_s3_bucket_acl
+* *Arguments:* access_control_policy
+
+Set your AWS S3 bucket ACL to private to avoid global view permissions. Do not use settings like public-read, public-read-write, or authenticated-read. Instead, use specific bucket policies and IAM roles to restrict access.
+
+This example demonstrates how to modify your Terraform configuration to ensure the S3 bucket's ACL does not have global view ACL permissions.
+
+[source,go]
+----
+resource "aws_s3_bucket_acl" "example" {
+  ...
+  access_control_policy {
+    grant {
+      grantee {
+        type = "Group"
+-        uri  = "http://acs.amazonaws.com/groups/global/AllUsers"
+      }
+      permission = "READ_ACP"
+    }
+}
+---- 
