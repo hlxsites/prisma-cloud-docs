@@ -2,26 +2,26 @@
 
 Learn what's new on Prisma® Cloud in March 2025.
 
-* <<new-features>>
+// * <<new-features>>
 //* <<changes-in-existing-behavior>>
 * <<api-ingestions>>
 * <<new-policies>>
 * <<policy-updates>>
-* <<iam-policy-updates>>
-//* <<new-compliance-benchmarks-and-updates>>
+//* <<iam-policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
 //* <<deprecation-notices>>
 
 
-[#new-features]
-=== New Features
-[cols="30%a,70%a"]
-|===
-|*Feature*
-|*Description*
+//[#new-features]
+//=== New Features
+//[cols="30%a,70%a"]
+//|===
+//|*Feature*
+//|*Description*
 
 
-|===
+//|===
 
 //[#changes-in-existing-behavior]
 //=== Changes in Existing Behavior
@@ -461,10 +461,6 @@ The Viewer role includes the permissions.
 
 
 
-
-
-
-
 |===
 
 [#new-policies]
@@ -594,22 +590,62 @@ network from vpc.flow_record where bytes > 0 AND dest.resource IN (resource wher
 
 *Impact–* Low.
 
+|*Azure Storage account encryption key is not rotated regularly*
+//RLP-153985
+
+|*Changes—* The policy RQL policy will be updated to consider internet network traffic as the source.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low.  Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
+
 |===
 
 
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
 
 
+|*Cloud Security Assurance Program*
+//RLP-155215
 
-//[#new-compliance-benchmarks-and-updates]
-//=== New Compliance Benchmarks and Updates
+|Prisma Cloud now supports the latest version of Cloud Security Assurance Program (CSAP). This compliance standard supports five different levels - IaaS, SaaS Standard,  SaaS Simplified, Low and Low SaaS.  CSAP aims to boost confidence among public and private sector users, promoting secure cloud adoption and enhancing overall national cybersecurity.
 
-//[cols="50%a,50%a"]
-//|===
-//|*Compliance Benchmark*
-//|*Description*
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
+
+|*[Update] Korea – Information Security Management System*
+//RLP-155226
+
+|New Policy mappings are added to Korea – Information Security Management System (ISMS) compliance standard.
+
+*Impact*: As new mappings are introduced, compliance scoring might vary.
+
+|*[Update] NIST CSF v2.0*
+//RLP-155206
+
+|New Policy mappings are added to the National Institute of Standards and Technology (NIST) Cybersecurity Framework (CSF) v2.0 compliance standard.
+
+*Impact*: As new mappings are introduced, compliance scoring might vary.
 
 
-//|===
+|===
 
 [#rest-api-updates]
 === REST API Updates
