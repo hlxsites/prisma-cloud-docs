@@ -9,6 +9,62 @@ The following table lists the fixed issues for 33.xx releases.
 |*ISSUE ID*
 |*DESCRIPTION*
 
+|*CWP-62576*
+
+tt:[Fixed in 33.03.138]
+
+| *Resolving Severity Scores and CVE Links for GO Vulnerabilities in OSV Feed*
+
+When processing CVEs sourced from both the GO and GitHub Security Advisories (GHSA) formats in the Open Source Vulnerability (OSV) feed, incorrect severity scores and CVE links were assigned. 
+
+This issue is resolved. The fix ensures that the severity scores, CVSS values, and CVE links for GO vulnerabilities are accurate and aligned with the official OSV GO feed.
+
+
+|*PCSUP-26234*
+
+tt:[Fixed in 33.03.138]
+
+| *Storage issues during the Defender shutdown process*
+
+The Defender shutdown process in versions 32.02 through 32.05 (inclusive) shut down the storage component using a third-party package. This package used a flag to force storage to unmount during the shutdown, which lead to storage corruption in some cases. This issue was resolved in 32.06 by modifying the shutdown process to perform a non-forced unmount.
+
+For any Defender instance from the affected versions that has already been shut down, upgrade the defender to a non-affected version (32.06 or later) and then reboot the node to clean up any storage corruption.
+
+|*CWP-62313*
+
+tt:[Fixed in 33.02.130]
+
+//tt:[Pending Approval]
+
+| *Improved Status Filter for Cloud Security Agent Page*
+
+The "Status" filter under *Prisma UI > Manage > Defenders > Cloud Security Agent* was displaying only the statuses present in the table, instead of all possible statuses.
+
+This issue has been resolved. The CSA status filter now shows a list of all available statuses: Connected, Disconnected, and Lost. This ensures users can filter the table by any status.
+
+|*CWP-35710*
+
+tt:[Fixed in 33.02.130]
+
+//tt:[Pending Approval]
+
+| *Removing Namespaces After Resource Deletion*
+
+In some cases, namespaces remained visible even after all resources within them had been deleted. This led to incorrect vulnerability assessments as the namespaces were not properly removed from the results. This issue is now resolved.
+
+
+|*CWP-62296*
+
+tt:[Fixed in 33.02.130]
+
+//tt:[Pending Approval]
+
+| *Consistent Vulnerability Data for Red Hat-Sourced Packages*
+
+Certain vulnerabilities for Red Hat packages showed a Red Hat severity but CVSS scores from NVD. 
+
+This mismatch is now resolved. The fix ensures that both the severity and CVSS score now align with Red Hat's data, eliminating inconsistencies.
+
 |*CWP-62084*
 
 tt:[Fixed in 33.01.137]
@@ -265,6 +321,55 @@ The following table lists the known issues for 33.00 release.
 // | *Console failed to start in Clustered DB mode*
 
 // In Prisma Cloud Compute Edition instances that have the Clustered DB mode enabled for the Console, the Console fails to start after upgrading to release 32.06.
+
+|*CWP-62780*
+|When deploying a Fargate Defender alongside an Nginx server, the Nginx server was inaccessible through a browser, despite both the Fargate Defender container and the Nginx server container launching successfully. Additionally, no access logs were generated in the CloudWatch log file.
+
+*Workaround*: Customize the Nginx container's error logging behavior by performing the following steps.
+
+[source,ascii]
+----
+#1: Edit the nginx.conf as below.
+# Make sure that this file is copied from the official Nginx container, and not newly created.
+=
+error_log stderr;
+=
+#2: Use the above custom nginx.conf and the following Dockerfile to build a new Docker image.
+=
+# Use the official Nginx image as the base
+FROM nginx:latest
+# Remove existing symlink for error.log if it exists
+RUN rm -f /var/log/nginx/error.log
+# Copy custom nginx.conf into the container
+COPY nginx.conf /etc/nginx/nginx.conf
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
+=
+----
+
+
+|*CWP-59515*
+
+|*K8s Defender Crash Loop on RKE2*
+
+The K8s defender pods on the RKE2 go into a crash loop if the defender is deployed using the default YAML file options.
+
+*Workaround*: For Kubernetes defenders on RKE2, create the YAML file with the “SELinux Policy” option. This workaround is applicable to RKE2 only.
+
+// |*CWP-62358*
+
+// |*Incorrect Version Detection for Go Binaries with Missing Dependencies*
+
+//When a Go binary has no listed dependencies in its build information (verified using `go version -m <path to binary>`), the version of its external dependencies is used to identify the version of the Go binary. This could result in incorrect vulnerability data.
+
+
+//PCSUP-25103
+|*CWP-62297*
+
+|*Twistlock console unable to list image tags from remote repo*
+
+If defender and remote repository are in different subnet, the image tag pulling using `podman search --list -tags` is not supported with the same access token issued by registry.twistlock.com. 
+
 
 //PCSUP-23081
 |*CWP-59435*

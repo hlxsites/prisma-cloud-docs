@@ -3,15 +3,73 @@
 [.task]
 == Code Editor
 
-Prisma Cloud supports Code Editor capability where you can  create a policy rule for custom Configuration policies during Build-time checks. Code Editor is the default view for Build  policy rule and as an example a YAML policy template is always available on the Prisma Cloud console.
+Prisma Cloud's Code Editor allows you to define advanced custom policies for build-time checks. Users can leverage YAML templates, logic operators, and framework support to create complex policies tailored to specific compliance or security requirements.
+
 The Code Editor is a suitable option when you want to create complex custom policies that include both Attribute and Connection-State with a support of AND/OR logic. However, for custom secrets Code Editor supports only an OR logic.
 
-* *Attribute*
+=== How to Create Custom Policies
+
+[.procedure]
+
+. Select *Governance* > Add Policy > Config > Add Policy Details* and then select *Next*.
 +
+The Code Editor provides a default view with an example of a YAML template. See <<#yml_attr,YAML Policy Attribute>> below for details of the YAML file attributes.
+
+. Select *More Options* and then select *Clear Editor* to remove the YAML template example.
+
+. Add your custom YAML code.
+
+. Select *Test* to test your custom code.
+//+
+//image::governance/code-editor-2.png
++
+Each test displays up to 30 results. Prisma Cloud scans all integrated repositories to identify resources that match your custom policy, providing a maximum of 30 results per test. You can review these results for detailed information about impacted resources and misconfigurations. If your custom code contains errors, the console will display suggested solutions.
+
+
+. Select *Validate and Next* to access *Compliance Standards* to complete the custom Build-time check policy.
+//+
+//image::governance/code-editor-6.png
++
+NOTE: You are in *Step 2* of Create Custom Policies for Build-Time Checks. You are required to complete the rest of the steps to see your new custom Build-time check policy on the Prisma Cloud console.
+
+[#yml_attr]
+=== YAML Policy Attributes
+
+The Yaml file includes the following arguments:
+
+* *guidelines*: Sets general rules for policy creation
+* *category*: Specifies the type of policy
+* *frameworks*: Identifies the applicable framework. If no framework is specified, the policy applies to all frameworks. If a framework is specified, the policy applies only to the selected framework
+* *scope*: Defines the level of applicability for the policy
+* *provider*: Specifies the cloud provider or source for the resources
+* *definition*: Contains the logic and conditions for the policy, including attributes, operators, and resource connections
+
+
+=== Limitation
+
+Nesting connection condition types within a 'NOT' block is not currently supported.
+
+EXAMPLE
+
+----
+definition:
+  not:
+    cond_type: "connection"
+    resource_types:
+      - "aws_elb"
+    connected_resource_types:
+      - "aws_security_group"
+    operator: "exists"
+----
+
+
+=== Key Capabilities of the Code Editor
+
+==== Attribute-Based Policies
 Attribute when defined in a policy describes attribute configurations for resources. Each resource must contain values the attribute configuration has specified or display the presence or absence of the attribute configuration. The syntax and attribute configurations used in YAML templates  is similar to Terraform.
-+
+
 In this example, the attribute defines a back-up configuration for Redshift clusters.
-+
+
 [source]
 definition:
      cond_type: "attribute"
@@ -146,12 +204,12 @@ cond_type: "secrets"
    - "my-super-secret-password-regex"
 ----
 
-* *Connection State*
-+
+==== Connection-Based Policies
+
 Connection State when defined in a policy specifies a connect or disconnect between resources of different types.
-+
+
 In this example, `aws_lb` and `aws_elb` must have connection with `aws_security_group` or `aws_default_secuirty_group` to be compliant.
-+
+
 [source]
 definition:
        cond_type: "connection"
@@ -206,12 +264,12 @@ The table below provides instructions on how to use Connection State Operators.
 
 |===
 
-* *AND/OR Logic*
-+
+=== Logical (AND/OR) Operators 
+
 A policy may include layers of defined Attributes and Connection State, or both. To define the connection between the two AND/OR logic is used. Using Code Editor you can customize the Attribute, Connection State or both at multiple layers.
-+
+
 In this example, you see the both AND/OR logic applied to Attribute.
-+
+
 [source]
 metadata:
  name: "Ensure all AWS databases have Backup Policy"
@@ -360,46 +418,25 @@ definition:
     - "my-super-secret-password-regex"
 
 
-[.procedure]
-
-.. Select *Policies > Add Policy > Config > Add Policy Details* and then select *Next*.
 //+
 //image::governance/code-editor.png
-+
-The Code Editor is as a default view with an example of a YAML template.
-+
-In this example, you see the YAML template with custom secrets where `secrets` is a `category`.
+//+
+//In this example, you see the YAML template with custom secrets where `secrets` is a `category`.
 //+
 //image::governance/code-editor-7.png
-
-.. Select *More Options* and then select *Clear Editor* to remove the YAML template example.
 //+
 //image::governance/code-editor-1.png
-
-.. Add your custom YAML code.
-
-.. Select *Test* to test your custom code.
-//+
-//image::governance/code-editor-2.png
-+
-For every test, the console displays up to 30 results. Each time you test your code, Prisma Cloud scans all integrated repositories to give you a list of up to 30 resources that match this custom code policy.
 //+
 //image::governance/code-editor-3.png
-+
-You can also review the results for more details on the impacted resource and misconfiguration.
+//+
+//You can also review the results for more details on the impacted resource and misconfiguration.
 //+
 //In this example you see the contextualized information about an impacted resource from your custom code.
 //+
 //image::governance/code-editor-4.png
-+
-If there are errors in your custom code during a test, the console displays a solution.
+//+
+//If there are errors in your custom code during a test, the console displays a solution.
 //+
 //In this example, you see solution for the errors from your code.
 //+
 //image::governance/code-editor-5.png
-
-.. Select *Validate and Next* to access *Compliance Standards* to complete the custom Build-time check policy.
-//+
-//image::governance/code-editor-6.png
-+
-NOTE: You are in *Step 2* of Create Custom Policies for Build-Time Checks. You are required to complete the rest of the steps to see your new custom Build-time check policy on the Prisma Cloud console.
