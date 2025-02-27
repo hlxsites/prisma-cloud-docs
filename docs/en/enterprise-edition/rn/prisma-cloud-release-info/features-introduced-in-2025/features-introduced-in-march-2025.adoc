@@ -490,6 +490,43 @@ To mitigate this risk, enable the 'Block all public access' setting for all S3 b
 config from cloud.resource where cloud.type = 'aws' AND api.name='aws-s3api-get-bucket-acl' AND json.rule = "((publicAccessBlockConfiguration does not exist or publicAccessBlockConfiguration.blockPublicPolicy is false) and (accountLevelPublicAccessBlockConfiguration does not exist or accountLevelPublicAccessBlockConfiguration.blockPublicPolicy is false)) or ((publicAccessBlockConfiguration does not exist or publicAccessBlockConfiguration.restrictPublicBuckets is false) and (accountLevelPublicAccessBlockConfiguration does not exist or accountLevelPublicAccessBlockConfiguration.restrictPublicBuckets is false))"
 ----
 
+|*AWS Lightsail bucket publicly readable*
+//RLP-155141
+
+|*Policy Description—* Publicly readable objects in AWS Lightsail buckets expose sensitive data to unauthorized access, increasing the risk of data breaches and reputational harm.
+
+AWS Lightsail provides object storage through buckets, enabling data storage and retrieval. A misconfiguration allowing public readability exposes all stored data. Untrusted parties can freely access this information, leading to data exfiltration, intellectual property theft, and financial losses.
+
+To mitigate this risk, enforce the principle of least privilege. Restricting bucket access to authorized users is crucial for maintaining data confidentiality and integrity.
+
+Configure bucket permissions to be private, only granting access to specific users or groups needing it. Regularly review and audit bucket access controls to detect and address any misconfigurations promptly.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-lightsail-storage-bucket' AND json.rule = accessRules.getObject equal ignore case public as X; config from cloud.resource where api.name = 'aws-s3control-public-access-block' AND json.rule = blockPublicAcls is false or blockPublicPolicy is false or ignorePublicAcls is false or restrictPublicBuckets is false as Y; filter '$.X.arn contains $.Y.accountId' ; show X;
+----
+
+|*AWS Lightsail bucket Object Versioning is disabled*
+//RLP-155138
+
+|*Policy Description—* AWS Lightsail buckets lacking object versioning are susceptible to data loss and unauthorized modification. Disabling this feature removes the ability to revert to previous versions of objects after accidental deletion or malicious alteration.
+
+Lightsail buckets provide object storage, allowing data access from anywhere. Object versioning creates version history for every object stored. Without versioning, accidental deletion or malicious overwrites result in permanent data loss, severely impacting data integrity and potentially leading to business disruption or data breaches. Attackers could exploit this misconfiguration to permanently delete or modify critical data.
+
+To mitigate this risk, enable object versioning on all AWS Lightsail buckets, this ensures data recoverability, protecting against accidental or malicious actions and mitigating the risk of significant data loss.
+
+Regularly review bucket configurations to ensure object versioning remains active. Implement robust access control mechanisms.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-lightsail-storage-bucket' AND json.rule = objectVersioning does not equal ignore case Enabled
+----
 
 
 |===
