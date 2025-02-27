@@ -3,7 +3,7 @@
 
 Here are the changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 25.3.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 25.4.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -16,7 +16,7 @@ The details and functionalities listed below are a preview and the actual releas
 //* <<changes-in-existing-behavior>>
 * <<new-policies>>
 * <<policy-updates>>
-* <<new-compliance-benchmarks-and-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -50,7 +50,7 @@ The folder contains RQL based Config, IAM, Network, and Audit Event policies in 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-25.3.1.
+Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<release-chronology, 1 or 2>. For example, PCS-25.4.1.
 
 . Review the updates.
 +
@@ -69,131 +69,41 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
-|*AWS CloudTrail is not enabled with multi-trail and not capturing all management events*
-//RLP-154181
+|*Azure Storage account encryption key is not rotated regularly*
+//RLP-153981
 
 |*Changes—* The policy RQL policy will be updated to reduce false positives when both management events and network activity events are configured.
 
 *Current RQL–* 
 ----
-config from cloud.resource where api.name= 'aws-cloudtrail-describe-trails' AND json.rule = 'isMultiRegionTrail is true and includeGlobalServiceEvents is true' as X; config from cloud.resource where api.name= 'aws-cloudtrail-get-trail-status' AND json.rule = 'status.isLogging equals true' as Y; config from cloud.resource where api.name= 'aws-cloudtrail-get-event-selectors' AND json.rule = '(eventSelectors[*].readWriteType contains All and eventSelectors[*].includeManagementEvents equal ignore case true) or (advancedEventSelectors[*].fieldSelectors[*].equals contains "Management" and advancedEventSelectors[*].fieldSelectors[*].field does not contain "readOnly" and advancedEventSelectors[*].fieldSelectors[*].field does not contain "eventSource")' as Z; filter '($.X.trailARN equals $.Z.trailARN) and ($.X.name equals $.Y.trail)'; show X; count(X) less than 1
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where api.name= 'aws-cloudtrail-describe-trails' AND json.rule = 'isMultiRegionTrail is true and includeGlobalServiceEvents is true' as X; config from cloud.resource where api.name= 'aws-cloudtrail-get-trail-status' AND json.rule = 'status.isLogging equals true' as Y; config from cloud.resource where api.name= 'aws-cloudtrail-get-event-selectors' AND json.rule = '(eventSelectors[*].readWriteType contains All and eventSelectors[*].includeManagementEvents equal ignore case true) or (advancedEventSelectors[?any(name exists and name contains "Management events selector" and fieldSelectors[*].field does not contain "readOnly" and fieldSelectors[*].field does not contain "eventSource")]exists)' as Z; filter '($.X.trailARN equals $.Z.trailARN) and ($.X.name equals $.Y.trail)'; show X; count(X) less than 1 
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
 ----
 
 *Policy Type–* Config
 
-*Policy Severity–* Informational
+*Policy Severity–* Low
 
-*Impact–* Low. Existing alerts where all management event is configured and the event selector is configured as part of network activity event will be resolved.
-
-|*Azure Container Registry with anonymous authentication enabled*
-//RLP-154856
-
-|*Changes—* The policy RQL will be updated to trigger an alert on Azure container registry when anonymous pull is enabled, resolving false alerts.
-
-*Current RQL–* 
-----
-config from cloud.resource where api.name = 'azure-container-registry' AND json.rule = (skuName contains Standard or skuName contains Premium) and properties.provisioningState equal ignore case Succeeded and properties.anonymousPullEnabled is false
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'azure-container-registry' AND json.rule = (skuName contains Standard or skuName contains Premium) and properties.provisioningState equal ignore case Succeeded and properties.anonymousPullEnabled is true
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* High
-
-*Impact–* High. Existing alerts where the anonymous pull is disabled will be resolved and new alerts will be generated where the anonymous pull is enabled.
-
-|*GCP Load balancer HTTPS target proxy is not configured with QUIC protocol*
-//RLP-154209
-
-|*Changes—* The policy RQL policy will be updated in the case of regional internal load balancers.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-target-https-proxies' AND json.rule = 'quicOverride does not contain ENABLE'
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-target-https-proxies' AND json.rule = 'quicOverride does not contain ENABLE' as X; config from cloud.resource where api.name = 'gcloud-compute-internal-lb-backend-service' as Y; filter 'not ($.Y.usedBy[*].reference contains $.X.urlMap)'; show X;
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Informational
-
-*Impact–* Low. Existing alerts for regional internal application load balancer will be resolved.
-
-|*Instance affected by Spring Cloud Function SpringShell vulnerability is exposed to network traffic from the internet [CVE-2022-22963]*
-//RLP-154951
-
-|*Changes—* The policy RQL policy will be updated to consider internet network traffic as the source.
-
-*Current RQL–* 
-----
-network from vpc.flow_record where bytes > 0 AND source.resource IN (resource where finding.type IN ( 'Host Vulnerability' ) AND finding.source IN ( 'Prisma Cloud' ) AND finding.name IN ('CVE-2022-22963')) AND destination.publicnetwork IN ('Internet IPs', 'Suspicious IPs')
-----
-
-*Updated RQL–*
-----
-network from vpc.flow_record where bytes > 0 AND dest.resource IN (resource where finding.type IN ( 'Host Vulnerability' ) AND finding.source IN ( 'Prisma Cloud' ) AND finding.name IN ('CVE-2022-22963')) AND source.publicnetwork IN ('Internet IPs', 'Suspicious IPs')
-----
-
-*Policy Type–* Network
-
-*Policy Severity–* Critical
-
-*Impact–* Low.
+*Impact–* Low. Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
 
 
 |===
 
-[#new-compliance-benchmarks-and-updates]
-=== New Compliance Benchmarks and Updates
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
 
-[cols="50%a,50%a"]
-|===
-|*Compliance Benchmark*
-|*Description*
-
-|*Cloud Security Assurance Program (CSAP)*
-//RLP-155215
-
-|Prisma Cloud now supports the latest version of Cloud Security Assurance Program (CSAP). This compliance standard supports five different levels - IaaS, SaaS Standard,  SaaS Simplified, Low, and Low SaaS.  CSAP aims to boost confidence among public and private sector users, promoting secure cloud adoption and enhancing overall national cybersecurity.
-
-You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
-
-|*MITRE ATT&CK v15.1 Cloud IaaS for Enterprise*
-//RLP-154211
-
-|New policy mappings are added to the MITRE ATT&CK v15.1 Cloud IaaS for Enterprise compliance standard. 
-
-*Impact–* As new mappings are introduced, your compliance score may vary.
-
-|*NIST CSF v2.0*
-//RLP-155206
-
-|New policy mappings are added to the NIST CSF v2.0 compliance standard. 
-
-*Impact–* As new mappings are introduced, your compliance score may vary.
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
 
 
-|*Korea – Information Security Management System (ISMS)*
-//RLP-155226
 
-|New policy mappings are added to Korea – Information Security Management System (ISMS) compliance standard.
-
-*Impact–* As new mappings are introduced, compliance scoring might vary.
-
-|===
+//|===
 
 
 [#api-ingestions]
@@ -204,323 +114,177 @@ You can now access this built-in standard and related policies on the *Complianc
 |*Service*
 |*API Details*
 
-|*Amazon Cognito*
-//RLP-154816
-|*aws-cognito-user-pool-role*
+|*AWS AppFabric*
+//RLP-155340
+|*aws-appfabric-app-authorization*
 
 Additional permissions needed:
 
-* `cognito-identity:ListIdentityPools`
-* `cognito-identity:GetIdentityPoolRoles`
+* `appfabric:ListAppBundles`
+* `appfabric:ListAppAuthorizations`
+* `appfabric:GetAppAuthorization`
+* `appfabric:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security audit role does not include the permissions.
 
-|tt:[Update] *Amazon EC2*
-//RLP-154720
-|*aws-ec2-describe-images*
-
-Additional permission needed:
-
-* `ec2:DescribeImageAttribute`
-
-The Security audit role includes the permission.
-
-Also, the JSON resource for this API includes a new `imageAttributes` field.
-
-|*Amazon EC2*
-//RLP-152589
-|*aws-ec2-instance-connect-endpoint*
-
-Additional permission needed:
-
-* `ec2:DescribeInstanceConnectEndpoints`
-
-The Security audit role includes the permission.
-
-|*Amazon EC2*
-//RLP-155008
-|*aws-ec2-image-block-public-access-state*
-
-Additional permission needed:
-
-* `ec2:GetImageBlockPublicAccessState`
-
-The Security audit role includes the permission.
-
-
-|*Amazon EC2*
-//RLP-155011
-|*aws-ec2-snapshot-block-public-access-state*
-
-Additional permission needed:
-
-* `ec2:GetSnapshotBlockPublicAccessState`
-
-The Security audit role does not include the permission. You must manually add the permission in the CFT template to enable it.
-
-
-|*Amazon EventBridge Pipes*
-//RLP-154730
-|*aws-event-bridge-pipe*
-
-Additional permissions needed:
-
-* `pipes:ListPipes`
-* `pipes:DescribePipe`
-
-The Security audit role does not include the permissions. You must manually add the permissions in the CFT template to enable them.
-
-|*Amazon RDS*
-//RLP-154775
-|*aws-rds-db-instance-automated-backup*
-
-Additional permission needed:
-
-* `rds:DescribeDBInstanceAutomatedBackups`
-
-The Security audit role includes the permission.
-
-|*Amazon RDS*
-//RLP-154773
-|*aws-rds-db-proxy*
-
-Additional permission needed:
-
-* `rds:DescribeDBProxies`
-
-The Security audit role includes the permission.
-
-|*Amazon RDS*
-//RLP-154771
-|*aws-rds-db-proxy-target*
-
-Additional permissions needed:
-
-* `rds:DescribeDBProxies`
-* `rds:DescribeDBProxyTargets`
-* `rds:DescribeDBProxyTargetGroups`
-
-The Security audit role includes the permissions.
-
-|tt:[Update] *Amazon RDS*
-//RLP-154718
-|*aws-rds-describe-db-instances*
-
-The JSON resource for the API will be updated to include a new field `latestRestorableTime`.
-
-|*Amazon S3*
-//RLP-154767
-|*aws-s3-storage-lens-configuration*
-
-Additional permission needed:
-
-* `s3:ListStorageLensConfigurations`
-
-The Security audit role does not include the permission. You must manually add the permission in the CFT template to enable it.
-
-|*Amazon SNS*
-//RLP-154818
-|*aws-sns-subscriptions-by-topic*
-
-Additional permissions needed:
-
-* `sns:ListTopics`
-* `sns:ListSubscriptionsByTopic`
-
-The Security audit role includes the permissions.
-
-
-|*Amazon SQS*
-//RLP-155006
-|*aws-sqs-message-move-task*
+|*AWS AppFabric*
+//RLP-155341
+|*aws-appfabric-app-bundle*
 
 Additional permissions needed:
 
 * `sqs:ListQueues`
 * `sqs:ListMessageMoveTasks`
 
-The Security audit role only includes the `sqs:ListQueues` permission. 
-You must manually include the `sqs:ListMessageMoveTasks` permission in the CFT template to enable it.
+The Security audit role does not include the permissions.
 
+|*Amazon Keyspaces*
+//RLP-155321
+|*aws-keyspaces-table*
 
-|tt:[Update] *AWS Glue*
-//RLP-154723
-|*aws-glue-connection*
+Additional permissions needed:
 
-Additional permission needed:
+* `cassandra:Select`
 
-* `glue:GetTags`
+The Security audit role does not include the permission.
+
+|*AWS Organization*
+//RLP-154816
+|*aws-organization-delegated-services-for-account*
+
+Additional permissions needed:
+
+* `organizations:ListDelegatedServicesForAccount`
 
 The Security audit role includes the permission.
 
-Also, the JSON resource for this API includes `tags` field.
-
-|*AWS Glue*
-//RLP-155004
-|*aws-glue-blueprint*
+|*AWS Organization*
+//RLP-155332
+|*aws-organization-aws-service-access-for-organization*
 
 Additional permissions needed:
 
-* `glue:ListBlueprints`
-* `glue:GetBlueprint`
-* `glue:GetTags`
+* `organizations:ListAWSServiceAccessForOrganization`
 
-The Security audit role does not include the permissions. You must manually add the permissions in the CFT template to enable them.
+The Security audit role includes the permission.
 
-|*AWS Glue*
-//RLP-154994
-|*aws-glue-blueprint-run*
+|*AWS Organization*
+//RLP-155332
+|*aws-organization-aws-service-access-for-organization*
 
 Additional permissions needed:
 
-* `glue:GetBlueprintRuns`
-* `glue:GetBlueprintRun`
+* `organizations:ListAWSServiceAccessForOrganization`
 
-The Security audit role does not include the permissions. You must manually add the permissions in the CFT template to enable them.
+The Security audit role includes the permission.
 
-|*AWS Lambda*
-//RLP-154713
-|*aws-lambda-function-event-invoke-config*
-
-Additional permissions needed:
-
-* `lambda:ListFunctions`
-* `lambda:GetFunctionEventInvokeConfig`
-
-The Security audit role includes the permissions.
-
-|*AWS Lambda*
-//RLP-154706
-|*aws-lambda-versions-by-function*
+|*Amazon QuickSight*
+//RLP-152590
+|*aws-quicksight-iam-policy-assignment*
 
 Additional permissions needed:
 
-* `lambda:ListFunctions`
-* `lambda:ListVersionsByFunction`
+* `quicksight:DescribeIAMPolicyAssignment`
+* `quicksight:ListNamespaces`
+* `quicksight:ListIAMPolicyAssignments`
 
-The Security audit role includes the permissions.
+The Security audit role does not include the permissions.
 
-|*AWS Lambda*
-//RLP-154710
-|*aws-lambda-function-concurrency*
-
-Additional permissions needed:
-
-* `lambda:ListFunctions`
-* `lambda:GetFunctionConcurrency`
-
-The Security audit role only includes the `lambda:ListFunctions` permission. You must manually include the `lambda:GetFunctionConcurrency` permission in the CFT template to enable it.
-
-|*AWS Lambda*
-//RLP-154701
-|*aws-lambda-runtime-management-config*
+|*Azure Event Grid*
+//RLP-155021
+|*azure-event-grid-domain-event-subscription*
 
 Additional permissions needed:
 
-* `lambda:ListFunctions`
-* `lambda:GetRuntimeManagementConfig`
-
-The Security audit role only includes the `lambda:ListFunctions` permission. You must manually include the `lambda:GetRuntimeManagementConfig` permission in the CFT template to enable it.
-
-|tt:[Update] *AWS Regions*
-//RLP-154718
-|*aws-region*
-
-The JSON resource for the API will be updated to include a new field `accountId`.
-
-
-|*Azure CDN*
-//RLP-154729
-|*azure-frontdoor-standardpremium-origin-groups-origin*
-
-Additional permissions needed:
-
-* `Microsoft.Cdn/profiles/read`
-* `Microsoft.Cdn/profiles/origingroups/read`
-* `Microsoft.Cdn/profiles/origingroups/origins/read`
+* `Microsoft.EventGrid/domains/read`
+* `Microsoft.EventGrid/domains/eventSubscriptions/read`
 
 The Reader role includes the permissions.
 
-|*Azure Kubernetes Service*
-//RLP-155179
-|*azure-kubernetes-connected-cluster*
-
-Additional permission needed:
-
-* `Microsoft.Kubernetes/connectedClusters/Read`
-
-The Reader role includes the permission.
-
-
-|*Azure Network Manager*
-//RLP-154727
-|*azure-network-manager-static-members*
+|*Azure Event Grid*
+//RLP-155044
+|*azure-event-grid-topic-event-subscription*
 
 Additional permissions needed:
 
-* `Microsoft.Network/networkManagers/read`
-* `Microsoft.Network/networkManagers/networkGroups/read`
-* `Microsoft.Network/networkManagers/networkGroups/staticMembers/read`
+* `Microsoft.EventGrid/topics/read`
+* `Microsoft.EventGrid/topics/eventSubscriptions/read`
 
 The Reader role includes the permissions.
 
-
-|*Azure Network Manager*
-//RLP-154784
-|*azure-network-manager-security-admin-configuration*
+|*Azure Event Grid*
+//RLP-155044
+|*azure-event-grid-topic-event-subscription*
 
 Additional permissions needed:
 
-* `Microsoft.Network/networkManagers/read` 
-* `Microsoft.Network/networkManagers/securityAdminConfigurations/read`
+* `Microsoft.EventGrid/topics/read`
+* `Microsoft.EventGrid/topics/eventSubscriptions/read`
 
 The Reader role includes the permissions.
 
-|*Azure Network Manager*
-//RLP-154783
-|*azure-network-manager-network-group*
+|*Google Backup and DR*
+//RLP-155293
+|*gcloud-backup-dr-backup-plan*
 
 Additional permissions needed:
 
-* `Microsoft.Network/networkManagers/read`
-* `Microsoft.Network/networkManagers/networkGroups/read`
+* `backupdr.backupPlans.list`
 
-The Reader role includes the permissions.
+The Viewer role includes the permission.
 
-|*Azure Storage*
-//RLP-154786
-|*azure-storage-account-blob-container*
-
-Additional permissions needed:
-
-* `Microsoft.Storage/storageAccounts/read`
-* `Microsoft.Storage/storageAccounts/blobServices/containers/read`
-
-The Reader role includes the permissions.
-
-|*Azure Storage*
-//RLP-154785
-|*azure-storage-account-file-service-property*
+|*Google Backup and DR*
+//RLP-155294
+|*gcloud-backup-dr-backup-plan-association*
 
 Additional permissions needed:
 
-* `Microsoft.Storage/storageAccounts/read`
-* `Microsoft.Storage/storageAccounts/fileServices/read`
+* `backupdr.backupPlanAssociations.list`
 
-The Reader role includes the permission.
+The Viewer role includes the permission.
 
-|*Google Data Catalog*
-//RLP-154782
-|*gcloud-data-catalog-tag-template*
+|*Google Backup and DR*
+//RLP-155294
+|*gcloud-backup-dr-backup-plan-association*
 
 Additional permissions needed:
 
-* `datacatalog.catalogs.searchAll`
-* `datacatalog.tagTemplates.get`
-* `datacatalog.tagTemplates.getIamPolicy`
+* `backupdr.backupPlanAssociations.list`
+
+The Viewer role includes the permission.
+
+|*Google Backup and DR*
+//RLP-155295
+|*gcloud-backup-dr-backup-vault*
+
+Additional permissions needed:
+
+* `backupdr.backupVaults.list`
+
+The Viewer role includes the permission.
+
+|*Google Backup and DR*
+//RLP-155298
+|*gcloud-backup-dr-backup-vault-data-source*
+
+Additional permissions needed:
+
+* `backupdr.backupVaults.list`
+* `backupdr.bvdataSources.list`
 
 The Viewer role includes the permissions.
 
+|*Google Backup and DR*
+//RLP-155299
+|*gcloud-backup-dr-backup-vault-data-source-backup*
+
+Additional permissions needed:
+
+* `backupdr.backupVaults.list`
+* `backupdr.bvdataSources.list`
+* `backupdr.bvbackups.list`
+
+The Viewer role includes the permissions.
 
 
 |===
