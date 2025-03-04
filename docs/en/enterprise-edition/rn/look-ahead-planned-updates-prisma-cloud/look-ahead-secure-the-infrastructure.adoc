@@ -69,27 +69,90 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
-|*Azure Storage account encryption key is not rotated regularly*
-//RLP-153981
+|*Azure Function app configured with public network access*
+//RLP-155139
 
-|*Changes—* The policy RQL policy will be updated to reduce false positives when both management events and network activity events are configured.
+|*Changes—* This policy checks for private endpoint in case `publicnetworkaccess` and reports accordingly.
 
 *Current RQL–* 
 ----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist and (properties.privateLinkIdentifiers does not exist or properties.privateLinkIdentifiers is empty))) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
+----
+
+*Policy Type–*  
+
+*Policy Severity–*  
+
+*Impact–*  
+
+|*Azure Function app configured with public network access*
+//RLP-151399
+
+|*Changes—* The Policy RQL is updated to check for notifications configured for Owner role as per the latest CSP updates.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[*].properties.email is empty or securityContacts[*].properties.alertsToAdmins equal ignore case Off) and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts.properties.email is empty or securityContacts[*].properties.notificationsByRole.roles[*] does not contain "Owner") and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New Alerts are generated if the Owner is not configured to receive email notifications. Open alerts for the security contact where the email is configured will be resolved.
+
+
+|*GCP SQL database instance deletion protection is disabled*
+//RLP-155109
+
+|*Changes—* The Policy RQL is updated with the right attribute to raise alerts on the vulnerable resources only.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equals "RUNNABLE" and deletionProtectionEnabled is false 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equals "RUNNABLE" and settings.deletionProtectionEnabled is false
 ----
 
 *Policy Type–* Config
 
-*Policy Severity–* Low
+*Policy Severity–* Informational
 
-*Impact–* Low. Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
+*Impact–* Low. Open Alerts where the deletion protection setting is enabled will be resolved.
 
+// |*Azure Storage account encryption key is not rotated regularly*
+//RLP-153981
+
+// |*Changes—* The policy RQL policy will be updated to reduce false positives when both management events and network activity events are configured.
+
+//*Current RQL–* 
+//----
+//config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+//----
+
+//*Updated RQL–*
+//----
+//config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
+//----
+
+//*Policy Type–* Config
+
+//*Policy Severity–* Low
+
+//*Impact–* Low. Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
 
 |===
 
@@ -133,8 +196,9 @@ The Security audit role does not include the permissions.
 
 Additional permissions needed:
 
-* `sqs:ListQueues`
-* `sqs:ListMessageMoveTasks`
+* `appfabric:ListAppBundles`
+* `appfabric:GetAppBundle`
+* `appfabric:ListTagsForResource`
 
 The Security audit role does not include the permissions.
 
@@ -148,9 +212,9 @@ Additional permissions needed:
 
 The Security audit role does not include the permission.
 
-|*AWS Organization*
+|*AWS Organizations*
 //RLP-154816
-|*aws-organization-delegated-services-for-account*
+|*aws-organizations-delegated-services-for-account*
 
 Additional permissions needed:
 
@@ -158,19 +222,9 @@ Additional permissions needed:
 
 The Security audit role includes the permission.
 
-|*AWS Organization*
+|*AWS Organizations*
 //RLP-155332
-|*aws-organization-aws-service-access-for-organization*
-
-Additional permissions needed:
-
-* `organizations:ListAWSServiceAccessForOrganization`
-
-The Security audit role includes the permission.
-
-|*AWS Organization*
-//RLP-155332
-|*aws-organization-aws-service-access-for-organization*
+|*aws-organizations-aws-service-access-for-organization*
 
 Additional permissions needed:
 
