@@ -10,7 +10,7 @@
 | 43727ea1-1037-4398-be4a-f07e3eff716c
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/cloudformation/checks/resource/aws/IAMStarActionPolicyDocument.py[CKV_AWS_63]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/cloudformation/checks/resource/aws/IAMStarActionPolicyDocument.py[CKV_AWS_63]
 
 |Severity
 |HIGH
@@ -28,54 +28,8 @@
 === Description 
 
 
-IAM policies should grant a minimum set of permissions, adding more as required, rather than grant full administrative privileges.
-Providing full administrative privileges when not required exposes resources to potentially unwanted actions.
+This policy ensures that IAM policy documents do not allow "*" as a statement's actions. Allowing "*" in the actions of an IAM policy grants permissions to all actions, which can lead to potential security risks and unauthorized access. This policy checks whether any IAM policy documents contain statements with `"Action": "*"`, which should be avoided.
 
-////
-=== Fix - Runtime
-
-
-* AWS Console* 
-
-
-
-. Log in to the AWS Management Console at https://console.aws.amazon.com/.
-
-. Open the https://console.aws.amazon.com/iam/ [Amazon IAM console].
-
-. In the navigation pane, click * Policies **and then search for the policy name found in the audit step.
-
-. Select the policy that needs to be deleted.
-
-. In the policy action menu, select first * Detach*.
-
-. Select all Users, Groups, Roles that have this policy attached.
-
-. Click * Detach Policy*.
-
-. In the policy action menu, select * Detach*.
-
-
-* CLI Command* 
-
-
-
-. List all IAM users, groups, and roles that the specified managed policy is attached to:
-+
-`aws iam list-entities-for-policy --policy-arn & lt;policy_arn>`
-
-. Detach the policy from all IAM Users:
-+
-`aws iam detach-user-policy --user-name & lt;iam_user> --policy-arn & lt;policy_arn>`
-
-. Detach the policy from all IAM Groups:
-+
-`aws iam detach-group-policy --group-name & lt;iam_group> --policy-arn & lt;policy_arn>`
-
-. Detach the policy from all IAM Roles:
-+
-`aws iam detach-role-policy --role-name &l t;iam_role> --policy-arn & lt;policy_arn>`
-////
 
 === Fix - Buildtime
 
@@ -112,4 +66,31 @@ resource "aws_iam_policy" "policy" {
 }
 EOF
 }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the IAM policy statements do not use "*" in the actions. Instead, specify the specific actions that are required.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ...
+      Policies:
+        - PolicyName: "example-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+-                  - "*"
+                Resource:
+                  - "arn:aws:s3:::example-bucket"
+                  - "arn:aws:s3:::example-bucket/*"
 ----

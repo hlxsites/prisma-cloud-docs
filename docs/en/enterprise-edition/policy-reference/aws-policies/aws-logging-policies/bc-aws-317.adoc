@@ -36,7 +36,7 @@ This policy is checking for the activation of audit logging on an Elasticsearch 
 
 To fix this issue, you need to enable the audit logs for the Elasticsearch Domain. This can be done by setting `log_publishing_options` in your AWS Elasticsearch resource configuration, then defining `audit_logs` with `enabled = true`.
 
-[source,hcl]
+[source,go]
 ----
 resource "aws_elasticsearch_domain" "example" {
   domain_name = "example"
@@ -60,3 +60,44 @@ resource "aws_cloudwatch_log_group" "example" {
 
 In the above secure code, `log_publishing_options` are activated where `log_type` is set to `AUDIT_LOGS` and `enabled = true`. This ensures that audit logging is enabled for the Elasticsearch domain which provides valuable insights on security and access patterns. Note that the logging destination is a CloudWatch log group which is specified by `cloudwatch_log_group_arn`.
 
+
+*CloudFormation*
+
+To fix this issue, ensure that the `Enabled` property under `AUDIT_LOGS` in the `LogPublishingOptions` configuration of the `AWS::Elasticsearch::Domain` or `AWS::OpenSearchService::Domain` resource is set to `true`.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyElasticsearchDomain": {
+      "Type": "AWS::Elasticsearch::Domain",
+      "Properties": {
+        "DomainName": "example-domain",
+        "LogPublishingOptions": {
+          "AUDIT_LOGS": {
+            "Enabled": true,
+            ...
+          }
+        },
+        ...
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyOpenSearchDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: example-domain
+      LogPublishingOptions:
+        AUDIT_LOGS:
+          Enabled: true
+          ...
+      ...
+----

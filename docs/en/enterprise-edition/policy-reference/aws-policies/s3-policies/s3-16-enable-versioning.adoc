@@ -16,8 +16,7 @@
 |LOW
 
 |Subtype
-|Build
-//, Run
+|Build, Run
 
 |Frameworks
 |CloudFormation,Terraform,TerraformPlan,Serverless
@@ -29,39 +28,7 @@
 === Description 
 
 
-S3 versioning is a managed data backup and recovery service provided by AWS.
-When enabled it allows users to retrieve and restore previous versions of their buckets.
-S3 versioning can be used for data protection and retention scenarios such as recovering objects that have been accidentally/intentionally deleted or overwritten.
-
-////
-=== Fix - Runtime
-
-
-* AWS Console* 
-
-
-To change the policy using the AWS Console, follow these steps:
-
-. Log in to the AWS Management Console at https://console.aws.amazon.com/.
-
-. Open the https://console.aws.amazon.com/s3/ [Amazon S3 console].
-
-. Select the bucket that you want to configure.
-
-. Select the * Properties* tab.
-
-. Navigate to the * Permissions* section.
-
-. Select * Edit bucket policy*.
-+
-If the selected bucket does not have an _access policy_, click * Add bucket policy*.
-
-. Select the * Versioning* tab from the * Properties* panel, and expand the * feature configuration* section.
-
-. To activate object versioning for the selected bucket, click * Enable Versioning*, then click * OK*.
-+
-The * feature status* should change to * versioning is currently enabled on this bucket*.
-////
+This policy identifies the S3 buckets which have Object Versioning disabled. S3 Object Versioning is an important capability in protecting your data within a bucket. Once you enable Object Versioning, you cannot remove it; you can suspend Object Versioning at any time on a bucket if you do not wish for it to persist. It is recommended to enable Object Versioning on S3.
 
 === Fix - Buildtime
 
@@ -69,8 +36,7 @@ The * feature status* should change to * versioning is currently enabled on this
 *Terraform* 
 
 
-* *Resource:* aws_s3_bucket, aws_s3_bucket_versioning
-
+To fix this issue, ensure that `aws_s3_bucket` resources either has `versioning.enabled` set to `true` or is connected to an `aws_s3_bucket_versioning` block with `versioning_configuration.status` set to `Enabled`.
 
 [source,go]
 ----
@@ -81,4 +47,23 @@ The * feature status* should change to * versioning is currently enabled on this
 +     status = "Enabled"
 +   }
 + }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `VersioningConfiguration` property in the `AWS::S3::Bucket` resource is configured with `Status` set to `Enabled`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: example-bucket
+      VersioningConfiguration:
+        Status: Enabled
+      ...
 ----

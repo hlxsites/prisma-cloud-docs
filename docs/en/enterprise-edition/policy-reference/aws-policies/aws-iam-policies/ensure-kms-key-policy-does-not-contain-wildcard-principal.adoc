@@ -10,14 +10,13 @@
 | 2b68ad79-4c8b-48dd-8459-2d86203e862b
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/checks/resource/aws/KMSKeyWildcardPrincipal.py[CKV_AWS_33]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/aws/KMSKeyWildcardPrincipal.py[CKV_AWS_33]
 
 |Severity
 |MEDIUM
 
 |Subtype
-|Build
-//, Run
+|Build, Run
 
 |Frameworks
 |CloudFormation,Terraform,TerraformPlan,Serverless
@@ -28,19 +27,46 @@
 
 === Description 
 
+This policy identifies KMS Keys that have a key policy overly permissive. Key policies are the primary way to control access to customer master keys (CMKs) in AWS KMS. It is recommended to follow the principle of least privilege ensuring that KMS key policy does not have all the permissions to be able to complete a malicious action.
 
-A wildcard principal is a placeholder that allows access to all users or accounts, and can potentially expose your KMS keys to unauthorized access.
-By removing wildcard principals from your key policies, you can ensure that only specific users or accounts have access to your KMS keys.
-This can help to improve the security of your keys and reduce the risk of unauthorized access.
+For more details:
+https://docs.aws.amazon.com/kms/latest/developerguide/control-access-overview.html#overview-policy-elements
 
 === Fix - Buildtime
 
 
+*Terraform*
+
+To fix this issue, ensure that the KMS key policy does not use wildcard (`*`) principals. Instead, specify specific AWS accounts or roles.
+
+Example:
+
+[source,go]
+----
+resource "aws_kms_key" "example" {
+  description = "example key"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Allow access for Key Administrators"
+        Effect = "Allow"
+        Principal = {
+-          AWS = "*"
++          AWS = "arn:aws:iam::123456789012:role/admin"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      }
+    ]
+  })
+}
+----
+
+
 *CloudFormation* 
 
-
-* *Resource:* AWS::KMS::Key
-* *Arguments:* Properties.Statement.Principal
+To fix this issue, ensure that the KMS key policy does not use wildcard (`*`) principals. Instead, specify specific AWS accounts or roles.
 
 
 [source,yaml]

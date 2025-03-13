@@ -28,8 +28,7 @@
 === Description 
 
 
-Ensure that Drop Invalid Header Fields feature is enabled for your Amazon Application Load Balancers (ALBs) in order to follow security best practices and meet compliance requirements.
-If Drop Invalid Header Fields security feature is enabled, HTTP headers with header fields that are not valid are removed by the Application Load Balancer instead of being routed to the associated targets.
+This policy ensures that Application Load Balancers (ALBs) are configured to drop HTTP headers that do not conform to RFC specifications. This improves security by preventing header injection attacks and other potential misuse of faulty headers.
 
 === Fix - Buildtime
 
@@ -44,10 +43,50 @@ If Drop Invalid Header Fields security feature is enabled, HTTP headers with hea
 [source,go]
 ----
 resource "aws_alb" "test_success" {
-                    name               = "test-lb-tf"
-                    internal           = false
+    name               = "test-lb-tf"
+    internal           = false
                     load_balancer_type = "network"
                     subnets            = aws_subnet.public.*.id
  +                  drop_invalid_header_fields = true
-                }
+}
+----
+
+*CloudFormation*
+
+To mitigate this issue, ensure the `LoadBalancerAttributes` parameter in the `AWS::ElasticLoadBalancingV2::LoadBalancer` resource includes the attribute `routing.http.drop_invalid_header_fields.enabled` set to `true`.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        ...
+        "Type": "application",
+        "LoadBalancerAttributes": [
+          {
+            "Key": "routing.http.drop_invalid_header_fields.enabled",
+            "Value": "true"
+          }
+        ]
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      ...
+      Type: application
+      LoadBalancerAttributes:
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: "true"
 ----
