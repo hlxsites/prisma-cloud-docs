@@ -93,6 +93,33 @@ Failed cleaning up network resources: UnauthorizedOperation: You are not authori
 This error is expected because the Prisma Cloud role doesn't have the permissions and the validation process generates this message.
 You can ignore the message if you deploy and maintain the networking infrastructure for the agentless scanning process.
 
+=== Configuring Custom AMIs
+
+To use a custom AMI for agentless scanning, set the following environment variables in Prisma Cloud’s Compute Console deployment:
+
+[options="header"]
+|===
+| Environment Variable                | Description                                         | Example Value
+| `AGENTLESS_USE_CUSTOM_AMI`          | Enables or disables the use of custom AMIs.        | `true`
+| `AGENTLESS_CUSTOM_AMI_PER_REGION`   | Specifies custom AMIs for different AWS regions.   | `'{"us-east-1":"ami-005fc0f236362e99f"}'`
+|===
+
+=== Example Configuration
+
+[source,shell]
+----
+export AGENTLESS_USE_CUSTOM_AMI=true
+export AGENTLESS_CUSTOM_AMI_PER_REGION='{"us-east-1":"ami-005fc0f236362e99f"}'
+----
+
+In this example, the custom AMI (`ami-005fc0f236362e99f`) is used in the `us-east-1` region.
+
+=== Behavior Based on Configuration
+
+- If `AGENTLESS_USE_CUSTOM_AMI` is `false`, Prisma Cloud defaults to the standard scanner image (Ubuntu 20.04).
+- If `AGENTLESS_USE_CUSTOM_AMI` is `true` but `AGENTLESS_CUSTOM_AMI_PER_REGION` is not set, Prisma Cloud selects an AMI from the default list managed via LaunchDarkly (LD).
+- If `AGENTLESS_USE_CUSTOM_AMI` is not set, Prisma Cloud defaults to the LD-managed AMI list.
+
 [#progress-and-statuses]
 === Scan Progress and Statuses
 

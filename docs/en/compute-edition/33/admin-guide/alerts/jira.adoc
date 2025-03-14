@@ -15,10 +15,6 @@ For example, an issue would be created when all of the following conditions are 
 * The rule is associated with your JIRA alert profile,
 * The Prisma Cloud scanner finds a critical vulnerability in an image in your environment.
 
-The following screenshot shows an example JIRA issue opened by Prisma Cloud.
-
-image::alerts_example_jira_issue.png[width=750]
-
 === Intelligent issue routing
 
 You can leverage image labels to intelligently route alerts to the right team, and eliminate manual ticket triage.
@@ -71,17 +67,9 @@ Configure the channel.
 [.procedure]
 . In *Base URL*, specify the location of your JIRA service.
 
-. In *Credential*, create the credentials required to access the account.
-
-.. Click *Add new*.
-
-.. Select *Basic authentication*.
-
-.. Enter a username and password.
+. In *Credential*, select the API Token that you added in the *Manage > Authentication > Credentials Store* page. 
 +
-NOTE: If you are using Jira Cloud, this will be an email address and API token respectively. You can generate your API token https://id.atlassian.com/manage-profile/security/api-tokens[here].
-
-.. Click *Save*.
+For more information, see <<Managing Jira Authentication in Prisma Cloud>>.
 
 . In *CA certificate*, enter a copy of the CA certificate in PEM format.
 
@@ -110,6 +98,74 @@ Click *Select labels...*, and select one or more labels.
 
 // Reusable content fragment.
 include::frag-config-triggers.adoc[leveloffset=0]
+
+=== Managing Jira Authentication in Prisma Cloud  
+
+To integrate Jira with Prisma Cloud, you must configure authentication using API tokens. Jira Cloud and Jira Data Center (DC) no longer support password-based authentication for REST API access. Instead:  
+
+- Jira Cloud requires an API token generated from your Atlassian account.  
+- Jira DC supports authentication using Personal Access Tokens.  
+
+This section provides procedures for adding API tokens to the Credentials Store, updating existing credentials, and replacing credentials in Jira alert profiles.  
+
+==== Adding API Tokens in Credentials Store for Jira DC Authentication
+
+To integrate Jira DC with Prisma Cloud, generate a Personal Access Token in Jira, store it in the Credentials Store in Prisma Cloud, and use it when adding a Jira profile. 
+
+Jira Data Center (DC) supports authentication with Personal Access Tokens instead of traditional passwords.
+For more information, see link:https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html[Using Personal Access Tokens].
+
+To add an API token for Jira DC authentication, do the following:
+
+. Navigate to *Manage > Authentication > Credentials Store*.  
+. Click *Add Credential*.  
+. In the *Create Credential* window, complete the following fields:  
+   * **Name** – Enter a name for the credential.  
+   * **Description** – Add a description.  
+   * **Type** – Select *API token*.  
+   * **Access Token** – Enter the API token (use the *Personal Access Token* created in Jira DC)  
+. Click *Save* to store the credential.  
+
+=== Adding API Tokens in Credentials Store for Jira Cloud Authentication
+
+Jira Cloud requires an *API token* for authentication instead of traditional passwords. To integrate Jira Cloud with Prisma Cloud, generate an API token in Jira Cloud, store it in the Credentials Store in Prisma Cloud, and use it when adding a Jira profile. 
+
+For more information on creating cloud token from your Jira Cloud account, see link:https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/[Manage API tokens for your Atlassian account]
+
+To add an API token for Jira Cloud authentication, do the following:
+
+. Navigate to *Manage > Authentication > Credentials Store*.  
+. Click *Add Credential*.  
+. In the *Create Credential* window, complete the following fields:  
+   * **Name** – Enter a name for the credential.  
+   * **Description** – Add a description.  
+   * **Type** – Select *Basic authentication*.  
+   * **Username** – Add the email address used for the Jira Cloud account.
+   * **Password**: Enter the API token (use the *API token* created in Jira Cloud)  
+. Click *Save* to store the credential.  
+
+==== Updating Jira Cloud Credentials to Use an API Token  
+
+Jira Cloud no longer supports basic authentication with passwords. If you previously stored Jira Cloud credentials using a password, you must update the credential by replacing the password with an API token.  
+
+To update Jira Cloud credentials, do the following:  
+
+. Navigate to *Manage > Authentication > Credentials Store*.  
+. Select the Jira Cloud credential in the table, and click the *Edit* icon.  
+. In the *Edit Credential* window, update the following fields:  
+   * **Password** – Replace the existing password with the API token generated in Jira Cloud.  
+. Click *Save* to update the credential.  
+
+==== Replacing Credentials in an Existing Jira DC Alert Profile  
+
+When updating Jira DC authentication, you must replace the old credential with a new API token in the existing Jira alert profile.  
+
+To update the Jira DC alert profile with a new credential:  
+
+. Navigate to *Manage > Alerts > Alert Profiles*.  
+. Select the Jira alert profile you want to update and click the *Edit* icon.    
+. In the *Settings* section, under *Credential*, select the API token that you added in the *Manage > Authentication > Credentials Store* page.  
+. Click *Next* and then click *Save*.
 
 === Troubleshooting
 
