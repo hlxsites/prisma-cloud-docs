@@ -22,18 +22,16 @@ In the host view, each host machine is depicted as a node in the graph.
 As you select a node, an overlay shows vulnerability, compliance, and runtime issues.
 The serverless view in Radar, visualize and inspect the attack surface of the serverless functions.
 
-Radar refreshes its view every 24 hours.
-The Refresh button has a red marker when new data is available to be displayed.
+Radar refreshes its view every 24 hours. The Refresh button has a red marker when new data is available to be displayed.
 To get full visibility into your environment, install a Defender on every host in your environment.
 
-toc::[]
+[NOTE]  
+Radar does not monitor or control traffic between Azure resources and services.
 
 [#cloud-pivot]
 === Cloud Pivot
 
-You can't secure what you don't know about.
-Prisma Cloud discovery finds all cloud-native services deployed in AWS, Azure, and Google Cloud.
-Cloud Radar helps you visualize what you've deployed across different cloud providers and accounts using a map interface.
+You can't secure what you don't know about. Prisma Cloud discovery finds all cloud-native services deployed in AWS, Azure, and Google Cloud. Cloud Radar helps you visualize what you've deployed across different cloud providers and accounts using a map interface.
 The map tells you what services are running in which data centers, which services are protected by Prisma Cloud, and their security posture.
 
 Select a marker on the map to see details about the services deployed in the account/region.
@@ -42,7 +40,7 @@ You can directly secure both the registries and the serverless functions by sele
 image::radar_cloud_pivot.png[scale=15]
 
 You can filter the data based on an entity to narrow down your search.
-For example, filters can narrow your view to just the serverless functions in your Azure development team accounts.
+For example, filters can narrow your view to just the serverless functions in your AWS development team accounts.
 
 By default, there's no data in Cloud Radar.
 
@@ -277,3 +275,26 @@ Radar helps you visualize the connections for a typical microservices app and vi
 image::cnns-container-radar.png[width=600]
 
 When a connection is observed, the dotted line becomes a solid line.
+
+=== Troubleshooting: Azure VM Backup Failure Due to Host Network Monitoring  
+
+*Problem*
+
+Azure VM backup service might fail when *Host Network Monitoring* is enabled in *Prisma Cloud Compute*, as the default *iptables* rules block traffic to `168.63.129.16`, which facilitates communication between Azure VMs and the Azure infrastructure.  
+
+*Cause*
+
+When *Host Network Monitoring* is enabled, some Linux distributions might lose packet ownership information. This, combined with Azure's default *iptables* rules in the security table, results in legitimate traffic being dropped.  
+
+*Workaround*
+
+Choose one of the following solutions:  
+
+. Disable Host Network Monitoring: Navigate to *Console > Radar > Settings*. In the Network monitoring section, toggle off the *Host network monitoring* option. 
+. Modify iptables rules by adding the following:  
+[source,sh]  
+----
+iptables -t raw -A OUTPUT -d 168.63.129.16/32 -p tcp -m owner --uid-owner <UID>
+iptables -I OUTPUT -t security -d 168.63.129.16/32 -p tcp -m mark --mark 11
+----  
+*Note:* The mark `"11"` can be changed, but it must not conflict with marks used by other applications on the host.  
