@@ -6,19 +6,19 @@ The following table outlines the release particulars:
 [cols="1,4"]
 |===
 |Build
-|34.00.XXX
+|34.00.137
 
 |Code name
 |Quinn
 
 |Release date
-|MONTH DAY, 2025
+|March 17, 2025
 
 |Type
 |Major release
 
 |SHA-256
-|TBD
+|84c4a3f8ec7debab19583159def8ef396ba27f32611f0f969b3f12d08ae0b3b9
 |===
 
 Review the https://docs.prismacloud.io/en/compute-edition/34/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtimes, tools, and orchestrators.
@@ -35,27 +35,27 @@ toc::[]
 [#upgrade-defender]
 ==== Upgrade Defenders
 
-With the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[Defender versions supported (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. In addition, starting from this release (version 33.00), Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 version. So the current release will allow Defenders and REST API calls from release 30.xx also. Failure to upgrade Defenders below version `v30.00`, such as `v22.12`, will result in disconnection of the Defenders from the Console.
+With the `v34.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Defender releases (n, n-1, and n-2)] are `v34`, `v33`, and `v32` respectively. In addition, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 releases. So the current release will allow Defenders and REST API calls from release `v31` also. Failure to upgrade Defenders below release `v31`, such as `v30.03`, will result in disconnection of the Defenders from the Console.
 
-However, to maintain full support, you must upgrade your Defenders to `v31.xx` or a higher release.
+However, to maintain full support, you must upgrade your Defenders to a `v32.00` or a higher release.
 
 To summarize, the level of support for the different versions of Defenders is as follows:
 
-* Defender versions 33.xx, 32.xx, and 31.xx have full support
-* Defender versions 30.xx are functional (will be able to connect to version 33.xx Console) but support is not available for such Defenders
-* Defender versions previous to 30.xx, such as 22.12, are neither supported nor functional (cannot connect to version 33.xx Console)
+* Defender versions 34.xx, 33.xx, and 32.xx have full support
+* Defender versions 31.xx are functional (will be able to connect to version 34.00 Console) but support is not available for such Defenders
+* Defender versions previous to 31.00, such as 30.03, are neither supported nor functional (cannot connect to version 34.xx Console)
 
 
 [#upgrade-console]
 ==== Upgrade the Prisma Cloud Console
 
-With the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Console versions (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. 
+With the `v34.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Console releases (n, n-1, and n-2)] are `v34`, `v33`, and `v32` respectively. 
 
-NOTE: Defenders from the n-3 release will remain functional as described above.    
+NOTE: Defenders from the n-3 release will remain functional as described above. 
 
-You can upgrade the Prisma Cloud console directly from any n-1 version to n. With `v33.00` as n and `v32.00` as n-1, you can upgrade directly from `v32.05.124` to `v33.00.169`.
+You can upgrade the Prisma Cloud console directly from any n-1 version to n. For example, with `v34` as n and `v33` as n-1, you can upgrade directly from `v33.01.137` to `v34.00.139`.
 
-NOTE: You have to upgrade any version of `v31.00` to `v32.00` before upgrading to `v33.00`. For example, you can upgrade from `v31.02.137` to `v32.07.123` and then upgrade to `v32.00.159`.
+NOTE: You have to upgrade any version of `v32` to `v33` before upgrading to `v34`. For example, you can upgrade from `v32.05.124` to `v33.03.138` before you upgrade to `v34.00.137`.
 
 
 // [#announcement]
@@ -64,11 +64,98 @@ NOTE: You have to upgrade any version of `v31.00` to `v32.00` before upgrading t
 // [#cve-coverage-update]
 // === CVE Coverage Update
 
-// [#enhancements]
-// === Enhancements
+[#enhancements]
+=== Enhancements
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
 
-// [#new-features-agentless-security]
-// === New Features in Agentless Security
+|A new Description Field in Create New User screen
+//CWP-63066
+
+|A Description field is added to the Create New User screen (Manage > Authentication > Users), allowing additional details to be included for each user.
+
+This field will also be visible in the Users table, which will enable you to refine searches based on the description.
+
+|Customization for Scanning Amazon Machine Images (AMIs)
+//CWP-49786
+
+|Prisma Cloud now offers on-prem users greater flexibility in selecting AMIs.
+
+For on-prem users, the following environment variables enable customization: 
+
+* `AGENTLESS_USE_CUSTOM_AMI` – Enables or disables the use of custom AMIs.
+
+* `AGENTLESS_CUSTOM_AMI_PER_REGION` – Specifies custom AMIs per AWS region
+
+*Example Configuration:*
+
+`AGENTLESS_USE_CUSTOM_AMI=true`
+`AGENTLESS_CUSTOM_AMI_PER_REGION='{"us-east-1":"ami-005fc0f236362e99f"}'`
+
+In this example, the custom AMI (`ami-005fc0f236362e99f`) is used in the 'us-east-1' region.
+ 
+*Behavior Based on Configuration:*
+
+* If `AGENTLESS_USE_CUSTOM_AMI` is `false`, Prisma Cloud falls back to the previous scanner image, which is Ubuntu 20.04.
+
+* If `AGENTLESS_USE_CUSTOM_AMI` is set to `true` but `AGENTLESS_CUSTOM_AMI_PER_REGION` is not set, Prisma Cloud uses the LaunchDarkly (LD) custom AMI list.
+
+* If `AGENTLESS_USE_CUSTOM_AMI` is not set, Prisma Cloud defaults to the LD custom AMI list.
+
+* For Cloud (SaaS) users, no action is required—Prisma Cloud automatically selects the latest optimized AMI.
+
+
+|Better utilization of vendor-specific feeds
+//CWP-62711
+
+|The National Vulnerability Database (NVD) provides a valuable baseline CVSS score for vulnerabilities. However, vendors often have a more granular understanding of how a specific vulnerability impacts their implementation of a component. This allows them to provide a more accurate CVSS score, especially when considering environmental factors and the specific ways their product utilizes the vulnerable component. Moreover, in some cases, vendor-specific vulnerability feeds may have the latest CVSS scores before they are reflected in NVD.
+
+This release of our Prisma Cloud leverages additional data from vendor-specific vulnerability feeds, such as those from RedHat, Photon OS, and Ruby Gems. Several improvements in the extraction and reporting of CVSS scores have been implemented. By integrating these feeds, our software can provide more accurate and timely CVSS scores, reflecting the latest vendor-specific mitigations, configurations, and environmental impacts.
+
+*RedHat Security Feed:*
+//CWP-62974
+
+* Previously, if a CVE had a CVSS score of 0 in the RedHat security feed, we used the CVSS score provided by NVD for that CVE.
+
+* Now, we use the CVE data and the CVSS score provided by the RedHat feed even if the CVSS score is 0 in the RedHat feed. This ensures that we consider RedHat's specific assessment, which might indicate a mitigated or non-impactful vulnerability in their context.
+
+*Photon OS Security Feed:*
+//CWP-62976
+
+* Previously, we extracted CVSS scores for CVEs from the NVD for Photon OS vulnerabilities.
+
+* Now, we use the CVSS scores provided in the Photon OS security feed. This allows us to reflect Photon OS-specific mitigations and impacts more accurately.
+
+*Ruby Gems Security Feed:*
+//CWP-62977
+
+* Previously, we ignored the CVSS scores reported by RubySec (https://github.com/rubysec and https://github.com/rubysec/ruby-advisory-db) and used the values from NVD.
+
+* Now, we use the CVSS values provided in the Ruby Advisory DB. This ensures we capture the precise impact and mitigations for Ruby Gems vulnerabilities as assessed by RubySec.
+
+*Fallback to NVD CVSS Scores*
+
+If the vendor feed does not provide a CVSS value for any CVE, then the CVSS value from the NVD will be used. This ensures that we always have a CVSS score to guide our risk assessment and mitigation efforts.
+|===
+
+
+[changes-in-existing-behavior]
+=== Changes in Existing Behavior
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|Removal of Stale Hosts and Images
+//CWP-62948
+
+|We’re implementing a fix that will remove outdated assets that are no longer protected by a Defender. These assets should have been automatically deleted previously, but were not.
+With this update, you might notice that certain stale assets are no longer present in your inventory. As a result, you might also see a reduction in vulnerabilities and compliance findings due to their removal.
+|===
+
+
 
 // [#new-features-core]
 // === New Features in Core
