@@ -1,6 +1,6 @@
-== Fixed and Known Issues in 33.xx
+== Fixed and Known Issues in 34.xx
 
-The following table lists the fixed issues for 33.xx releases.
+The following table lists the fixed issues for 34.xx releases.
 
 === Fixed Issues
 
@@ -9,447 +9,232 @@ The following table lists the fixed issues for 33.xx releases.
 |*ISSUE ID*
 |*DESCRIPTION*
 
-|*CWP-62576*
+|*CWP-59903*
 
-tt:[Fixed in 33.03.138]
+tt:[Fixed in 34.00.137]
 
-| *Resolving Severity Scores and CVE Links for GO Vulnerabilities in OSV Feed*
+| *Some previously scanned images fail to scan*
 
-When processing CVEs sourced from both the GO and GitHub Security Advisories (GHSA) formats in the Open Source Vulnerability (OSV) feed, incorrect severity scores and CVE links were assigned. 
+A new scanner tag is created when an image is pulled for scanning. In some cases, this tag was not removed after the scan. This caused subsequent scans to fail.  T
 
-This issue is resolved. The fix ensures that the severity scores, CVSS values, and CVE links for GO vulnerabilities are accurate and aligned with the official OSV GO feed.
+This issue is fixed now. 
 
+|*CWP-60416*
 
-|*PCSUP-26234*
+tt:[Fixed in 34.00.137]
 
-tt:[Fixed in 33.03.138]
+| *Incorrect parsing of Ruby advisories that use RC versions*
 
-| *Storage issues during the Defender shutdown process*
+Incorrect parsing of Ruby advisories that use RC versions (such as '3.0.0-rc.1') caused false positive CVE reporting.  
 
-The Defender shutdown process in versions 32.02 through 32.05 (inclusive) shut down the storage component using a third-party package. This package used a flag to force storage to unmount during the shutdown, which lead to storage corruption in some cases. This issue was resolved in 32.06 by modifying the shutdown process to perform a non-forced unmount.
+This issue is fixed now.
 
-For any Defender instance from the affected versions that has already been shut down, upgrade the defender to a non-affected version (32.06 or later) and then reboot the node to clean up any storage corruption.
+|*CWP-61862*
 
-|*CWP-62313*
+tt:[Fixed in 34.00.137]
 
-tt:[Fixed in 33.02.130]
+| *An incorrect fix date is reported for CVEs that did not provide a fix date initially*
 
-//tt:[Pending Approval]
+An incorrect fix date is reported for CVEs that did not provide a fix date initially and were then reopened and fixed (again) with a fix date that is later than the date when the issue was first reported as fixed. Prisma Cloud reported the date when the issue was first reported as fixed and did not update the fix date after the issue was reopened and fixed with a different date.           
 
-| *Improved Status Filter for Cloud Security Agent Page*
+This issue is fixed now.
 
-The "Status" filter under *Prisma UI > Manage > Defenders > Cloud Security Agent* was displaying only the statuses present in the table, instead of all possible statuses.
+|*CWP-62128*
 
-This issue has been resolved. The CSA status filter now shows a list of all available statuses: Connected, Disconnected, and Lost. This ensures users can filter the table by any status.
+tt:[Fixed in 34.00.137]
 
-|*CWP-35710*
+| *Changes in the Ubuntu feed caused false positives in some situations*
 
-tt:[Fixed in 33.02.130]
+Changes in the Ubuntu feed format added an asterisk in the condition for some CVE entries. This was not parsed correctly and led to false positives.  
 
-//tt:[Pending Approval]
+This issue is fixed now.
 
-| *Removing Namespaces After Resource Deletion*
+|*CWP-62193*
 
-In some cases, namespaces remained visible even after all resources within them had been deleted. This led to incorrect vulnerability assessments as the namespaces were not properly removed from the results. This issue is now resolved.
+tt:[Fixed in 34.00.137]
 
+| *Incorrect fixed version reported for some CVEs reported in NVD*
 
-|*CWP-62296*
+An issue with the parsing of NVD data led to an incorrect fixed version being reported in some cases.  
 
-tt:[Fixed in 33.02.130]
+This issue is fixed now.
 
-//tt:[Pending Approval]
+|*CWP-62290*
 
-| *Consistent Vulnerability Data for Red Hat-Sourced Packages*
+tt:[Fixed in 34.00.137]
 
-Certain vulnerabilities for Red Hat packages showed a Red Hat severity but CVSS scores from NVD. 
+| *Fixed Debian issues that have a CVE with the "nodsa\_reason" property set to "ignored" are reported as a vulnerability*
 
-This mismatch is now resolved. The fix ensures that both the severity and CVSS score now align with Red Hat's data, eliminating inconsistencies.
+Debian CVEs that have an Urgency of "unimportant" or a "nodsa\_reason" setting of "ignored" in the Debian feed were not reported as vulnerabilities when detected by Prisma Cloud Compute.  
 
-|*CWP-62084*
+This issue is fixed now. Now, such CVEs will be reported as vulnerabilities with the status 'will not fix' by Prisma Cloud Compute. 
 
-tt:[Fixed in 33.01.137]
+|*CWP-62394*
 
-| *Updating the list of binaries exposed to a vulnerability after rerunning a scan*
+tt:[Fixed in 34.00.137]
 
-Rerunning a scan didn’t update the binary packages exposed to a vulnerability. This issue is fixed now.
+| *In a few situations serverless credits were consumed even after disabling the serverless functionality* 
 
-|*CWP-61947*
+In setups/tenants that had a particular (core-serverless-scan-concurrent-flow-enabled) setting enabled, serverless scan results were not deleted. This caused some serverless credits to be consumed even after the serverless feature was disabled in the tenant.   
 
-tt:[Fixed in 33.01.137]
+This issue is fixed now.
 
-| *Boot volume encryption in agentless scanning*
+|*CWP-62552*
 
-Fixed an issue with the agentless scanner boot volume default encryption.
+tt:[Fixed in 34.00.137]
 
-|*CWP-61606*
+| *Defender is unable to identify the OpenShift installation on the OpenShift nodes*
 
-tt:[Fixed in 33.01.137]
+The OpenShift version is not available in the RELEASE\_VERSION environment variable in the running 'openshift-tuned' process due to a change in OpenShift. It has now been replaced by a new process called cluster-node-tuning-operator that receives 'openshift-tuned' via command line args. Defenders were unable to detect the OpenShift installation due to this change.  
 
-| *CSV Export Compatibility with Excel*
+This issue is fixed now. 
 
-The exported CSV file from the *Monitor > Vulnerabilities > Images > Deployed* page could not be opened in Excel when the Hosts field exceeded the maximum character limit of 32,768 per column. 
+|*CWP-62562*
 
-This issue is resolved. The fix ensures that the CSV now lists all the hostnames running the same image. However, if the total length exceeds 32,757 characters, the list is truncated, and the number of truncated hostnames is indicated in the CSV.
+tt:[Fixed in 34.00.137]
 
-|*CWP-59281*
+| *Fixed RHEL issues are incorrectly flagged as unresolved due to an issue in mapping CPEs to RHEL repositories*
 
-tt:[Fixed in 33.01.137]
+After Redhat switched to the new VEX format for reporting CVEs and fixes, some fixed RHEL issues were incorrectly flagged as unresolved due to an issue in mapping CPEs to RHEL repositories.   
 
-| *Improved vulnerability reporting for Debian images*
+This issue is fixed now.
 
-When scanning Debian images, Prisma Cloud occasionally missed some CVEs related to specific package versions. This issue is fixed. 
+|*CWP-62570*
 
-The fix prioritizes CVE matches from the security repository and Prisma Cloud now reports all previously missing CVEs for packages in Debian images.
+tt:[Fixed in 34.00.137]
 
-|*CWP-58952*
+| *Base images when scanned separately  displayed vulnerabilities that were not present*
 
-tt:[Fixed in 33.01.137]
+The scan results for some base images that were scanned separately incorrectly displayed vulnerabilities–even though no vulnerabilities were present in those base images. Whereas, images using those base images reported the vulnerabilities correctly and did not display any vulnerabilities for the underlying base images.  
 
-| *Improved vulnerability detection for multiple Python versions*
+This issue is fixed now.
 
-In previous versions of Defender, vulnerabilities were only detected and reported for a single Python installation on a host, even if multiple Python versions were installed. This resulted in False Negatives (FN), where vulnerabilities in other Python versions were missed. 
+|*CWP-62575*
 
-The issue is fixed. Prisma Cloud will now scan and report vulnerabilities for each installed Python version on a host.
+tt:[Fixed in 34.00.137]
 
+| *False positives observed for vulnerabilities reported in the RedHat VEX format without specific distro-release information*
 
-|*CWP-59654*
+Vulnerabilities reported in the RedHat VEX format without specific distro-release information generated false positives. 
 
-tt:[Fixed in 33.01.137]
+This issue is fixed now. 
 
-| *Support for Amazon Linux CVEs*
+|*CWP-62668*
 
-Previously, Prisma Cloud reported several false positive vulnerabilities for Amazon Linux CVEs that were marked as "not affected" by Amazon.
+tt:[Fixed in 34.00.137]
 
-Prisma Cloud now fully supports CVEs classified as “not affected” by Amazon, improving the accuracy of vulnerability reporting for Amazon products and resolving the false positive issue. The supported Amazon Linux distributions include Amazon Linux, Amazon Linux 2, and Amazon Linux 2023.
+| *Compliance check 598 always fails for Kubernetes containers running Redis if the container was created without using –requirepass parameter*
 
-NOTE: Prisma Cloud does not support CVEs labeled as "pending fix" or "no fix planned," as Amazon does not provide the required package version details for precise CVE status reporting.
+Compliance check 598 fails and shows the error “App uses weak or default password” for Kubernetes containers running redis even though the container uses a strong password. This issue occurs if the container was created without using –requirepass parameter.  
 
+This issue is fixed now.
 
-|*CWP-61444*
+|*CWP-62883*
 
-tt:[Fixed in 33.00.169]
+tt:[Fixed in 34.00.137]
 
-| *Improvements in Amazon Linux Vulnerability Reporting*
+| *The 'fix status' column in the vulnerability report is blank for a few CVEs*
 
-Vulnerability information for many Amazon Linux CVEs lacked consistency across different Intelligence Stream updates, including changes in severity levels and fixed status versions.
-To address this, several key improvements were made, including enhanced consistency across scans, improved handling of duplicated CVEs, accurate ALAS to CVE conversion, and refined kernel package rules. These changes ensure more reliable and actionable vulnerability information for all Amazon distributions and kernel packages.
+The 'fix status' column in the vulnerability report is blank for a few CVEs due to missing information in the NVD vulnerability feed.  
 
-// {The issue was found in release XX.YY.ZZZ}
+This issue is fixed now. The required information is now gathered using a separate NVD function.
 
-|*CWP-58814*
+|*CWP-62884*
 
-tt:[Fixed in 33.00.169]
+tt:[Fixed in 34.00.137]
 
-| *Standardizing Java Versioning for Accurate Vulnerability Mapping*
+| *Stale (unpaired) CSA agents are not deleted if the API keys (\`apiKeyID\` and \`apiURL\` fields) are not configured correctly*
 
-Inconsistent version numbering for Java products led to several false positives in Prisma Cloud security scans.
-To ensure accurate mapping of vulnerabilities to Java versions, all Java product versions will be normalized to the standard 1.x format. For example, in the https://nvd.nist.gov/vuln/detail/CVE-2023-21930[CVE-2023-21930] entry on the National Vulnerability Database (NVD), OpenJDK 8 will map to Java 1.8.
+Stale (unpaired) CSA agents are not deleted if the API keys (\`apiKeyID\` and \`apiURL\` fields) are not configured correctly on a tenant, and unnecessarily contribute to the credit consumption. 
 
-// {The issue was found in release XX.YY.ZZZ}
+This issue is fixed now. Unpaired CSA agents are now deleted when they are unpaired. 
 
-| *CWP-58355*
+|*CWP-62961*
 
-tt:[Fixed in 33.00.169]
+tt:[Fixed in 34.00.137]
 
-| *Enhanced Detection for Minor Versions in Alpine Packages*
+| *Images that were associated with multiple collections/namespaces continue to be shown as part of a collection/namespace even after they are removed from that namespace*
 
-Alpine's security database shows vulnerabilities for each Alpine package, including fixed versions and associated CVEs. However, when the CVE does not include a fixed version, the rule misses vulnerabilities in minor versions, leading to incomplete vulnerability coverage.
-This issue has been fixed. The updated vulnerability rules ensure that minor versions are included, even when no specific fixed version is available.
+When an image that is associated with multiple collections/namespaces is removed from one of the namespaces/collections, it continues to be shown as part of that namespace/collection.   
 
-// {The issue was found in release XX.YY.ZZZ}
+This issue is now fixed by periodically cleaning up the stale namespaces. 
 
-|*CWP-61220*
+|*CWP-62994*
 
-tt:[Fixed in 33.00.169]
+tt:[Fixed in 34.00.137]
 
-| *CVEs Resolved in Release 33.00*
+| *Container protected by an App embedded defender with File System monitoring enabled crashes when an SSH connection is made to it*
 
-While alerts were generated for CVE-2024-6104 and CVE-2024-29018, Prisma Cloud was not directly vulnerable and remained safe to use. The alerts have been resolved in Prisma Cloud release 33.00.
+Container protected by an App embedded defender with File System monitoring enabled crashes when an SSH connection is made to it.
 
-// {The issue was found in release XX.YY.ZZZ}
+This issue is fixed now.
 
-|*CWP-58073*
+|*CWP-63110*
 
-tt:[Fixed in 33.00.169]
+tt:[Fixed in 34.00.137]
 
-| Customers could pass invalid data to the `v1/alert-profile` and `collections` APIs. To address this issue, the following validations have been added:
+| *Incorrect data is returned when Prisma Cloud roles that have read only access to Windows hosts try to access and retrieve data from those Windows hosts*
 
-* For `v1/alert-profiles` APIs:
+Incorrect data is returned when Prisma Cloud roles that have read only access to Windows hosts try to access and retrieve cloud metadata from those Windows hosts. 
 
-** The name parameter must be less than 50 characters.
-** The email address must be valid.
-** The port parameter must not be less than 1.
-** The recipient’s email address must be valid.
+This issue is fixed now.
 
-* For `Collections`:
-** The name parameter must be less than 50 characters.
-** The description parameter must be less than 200 characters.
+|*CWP-63033*
 
-// {The issue was found in release XX.YY.ZZZ}
+tt:[Fixed in 34.00.137]
 
-|*CWP-59190*
+| *Improved Vulnerability Reporting for Mirrored RHEL Repositories*
 
-tt:[Fixed in 33.00.169]
+Repository identifiers often change when repositories are mirrored from Red Hat's Content Delivery Network (CDN) to alternative cloud environments, like AWS. This may result in inaccurate vulnerability reporting. 
 
-|*Improved Image Scanning*
+The issue has now been resolved by extracting the relative URLs of repositories from the image and comparing them with the corresponding relative URLs provided in the repository-to-CPE mapping file for CVE matching.
 
-If the Defender disconnects while scanning an image that has the same tag, registry, repository, and credentials, it can lead to multiple scan requests of the same image. In addition, a race condition could sometimes prevent the image from being properly removed from the host container registry after scanning.
-This fix ensures that only one scan is performed per image, even if multiple scan requests are triggered by disconnections. This reduces the load on the Defender.
+|*CWP-62609*
 
-The fix also addresses the race condition. However, not all possible race conditions are addressed:
+tt:[Fixed in 34.00.137]
 
-* If the same image is scanned in different repositories or registries, race conditions are not addressed by this fix.
-* If the same image is scanned in the same repository and registry but with different tags, the fix does not handle potential race conditions.
+| *Including packages of a Go application that are part of the main module in the scan results*
 
-// {The issue was found in release XX.YY.ZZZ}
+Previously, Prisma Cloud scan results did not include Go packages that were part of the main module, resulting in the omission of these packages and their associated vulnerabilities in the console. 
 
-|*CWP-59443*
+This issue has now been resolved.
 
-tt:[Fixed in 33.00.169]
+|*CWP-63033*
 
-| Previously, users experienced intermittent timeouts in a shorter timeframe than the default inactivity period, which was set to 300 minutes under *Settings > Enterprise Settings > User Idle Timeout > CX*. This issue has now been resolved, and all Prisma Cloud tabs log out only after 300 minutes of inactivity.
+tt:[Fixed in 34.00.137]
 
-// {The issue was found in release XX.YY.ZZZ}
+| *Add RHEL repository resolving for rhui (cloud based) images*
 
-|*CWP-59841*
+Repository identifiers often change when repositories are mirrored from Red Hat's Content Delivery Network (CDN) to alternative cloud environments, like AWS. This may result in inaccurate vulnerability reporting. 
 
-tt:[Fixed in 33.00.169]
+The issue has now been resolved by extracting the relative URLs of repositories from the image and comparing them with the corresponding relative URLs provided in the repository-to-CPE mapping file for CVE matching.
 
-| *Agentless Scanning - Support for OCI root compartment scans*
+|*CWP-63032*
 
-OCI instances deployed in the root compartment were not scanned during Agentless scans. Instances in child compartments were scanned as expected, but root compartment instances were excluded without error. This issue is fixed-all compartments, including the root, are now scanned successfully.
+tt:[Fixed in 34.00.137]
 
-// {The issue was found in release XX.YY.ZZZ}
+| *Support Jenkins LTS CVEs detection*
 
-
-|*CWP-60298*
-
-tt:[Fixed in 33.00.169]
-
-|*Compliance IDs 440/441 in Lamba Scans*
-
-Compliance IDs 440/441 triggered false positives during a serverless Lambda scan for kms permissions. This issue is fixed.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-|*CWP-60356*
-
-tt:[Fixed in 33.00.169]
-
-| *Improved Clarity in Incident Log Messages*
-
-In certain cases, the command that triggered an incident was missing from the incident capture flow. This caused the messages in the Incident Explorer to occasionally lack clarity, leading to incomplete logs.
-The fix ensures that executed commands are now included in audit reports when available. Additionally, it prevents the generation of incomplete reports if the command is missing
-
-// {The issue was found in release XX.YY.ZZZ}
-
-| *CWP-60819*
-
-tt:[Fixed in 33.00.169]
-
-| *Reduced Registry Scan Duration*
-
-Prisma Cloud sometimes experienced extended registry scan times due to certain images not being correctly recognized.
-This led to the registry scan missing cached images, resulting in longer scan durations. The cache miss happened because the image ID hash from the Container Runtime API was missing the sha256 prefix.
-The issue has now been fixed by using the hash from the registry scan request sent by the Console, when available. This ensures cache hits and enhances scan performance.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-| *CWP-60900*
-
-tt:[Fixed in 33.00.169]
-
-| Exporting discovered APIs to OpenAPI CSV files from the *Runtime > Monitor > WAAS > API discovery > Export CSV* page failed if the API had unsupported methods such as PURGE. This issue is fixed.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-| *CWP-61291*
-
-tt:[Fixed in 33.00.169]
-
-|Previously, a "buffer full" error was reported with an HTTP 500 status code, when the same port was reused in a specific order across multiple apps in a single WAAS rule. This issue is fixed now.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-|*CWP-61362*
-
-tt:[Fixed in 33.00.169]
-
-|
-
-Fixed an issue where compliance alerts for malware (Compliance ID 455) did not appear in daily email reports despite failed resources being detected. This fix ensures accurate reporting for agentless scans.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-| *CWP-61375*
-
-tt:[Fixed in 33.00.169]
-
-| *Agentless Scanning - Resource Group Creation in Target Azure Account during Hub Scan Mode*
-
-Fixed an issue where resource groups were created in the target account during Azure agentless Hub scan mode. Now, resource groups are no longer created in the target account when a hub account is defined on it.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-|*CWP-61752*
-
-tt:[Fixed in 33.00.169]
-
-|The issue related to interruption in the communication between a defender and the console--that was introduced by the newly introduced fail-safe mechanism aimed to prevent any impact to customer traffic or downtime--is resolved. The fix requires you to upgrade the Console and the Defenders to version 33.00.
-
-// {The issue was found in release XX.YY.ZZZ}
-
-
+Prisma Cloud now extracts software edition information from CVEs and utilizes it for scanning. This enables Prisma Cloud scanners to differentiate software editions, such as Jenkins LTS releases from regular Jenkins releases, and accurately identify vulnerabilities.
 
 |===
 
 === Known Issues
 
-The following table lists the known issues for 33.00 release.
+The following table lists the known issues for the 34.00 release.
 
 [cols="23%a,77%a"]
 |===
 |*ISSUE ID*
 |*DESCRIPTION*
 
-// Note that when we add a known issue, you have to then update this page to include the "Fixed in xx.xx.xxx" for the known issue when it is fixed subsequently. Fixed issues in a given release are documented in the 31.xx adoc file and indicated as fixed on this page (if it was identified as a known issue earlier).
-
-// | *CWP-59436*
-
-// tt:[Found in 33.00.169]
-
-// | *Console failed to start in Clustered DB mode*
-
-// In Prisma Cloud Compute Edition instances that have the Clustered DB mode enabled for the Console, the Console fails to start after upgrading to release 32.06.
-
-|*CWP-62780*
-|When deploying a Fargate Defender alongside an Nginx server, the Nginx server was inaccessible through a browser, despite both the Fargate Defender container and the Nginx server container launching successfully. Additionally, no access logs were generated in the CloudWatch log file.
-
-*Workaround*: Customize the Nginx container's error logging behavior by performing the following steps.
-
-[source,ascii]
-----
-#1: Edit the nginx.conf as below.
-# Make sure that this file is copied from the official Nginx container, and not newly created.
-=
-error_log stderr;
-=
-#2: Use the above custom nginx.conf and the following Dockerfile to build a new Docker image.
-=
-# Use the official Nginx image as the base
-FROM nginx:latest
-# Remove existing symlink for error.log if it exists
-RUN rm -f /var/log/nginx/error.log
-# Copy custom nginx.conf into the container
-COPY nginx.conf /etc/nginx/nginx.conf
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
-=
-----
-
-
-|*CWP-59515*
-
-|*K8s Defender Crash Loop on RKE2*
-
-The K8s defender pods on the RKE2 go into a crash loop if the defender is deployed using the default YAML file options.
-
-*Workaround*: For Kubernetes defenders on RKE2, create the YAML file with the “SELinux Policy” option. This workaround is applicable to RKE2 only.
-
-// |*CWP-62358*
-
-// |*Incorrect Version Detection for Go Binaries with Missing Dependencies*
-
-//When a Go binary has no listed dependencies in its build information (verified using `go version -m <path to binary>`), the version of its external dependencies is used to identify the version of the Go binary. This could result in incorrect vulnerability data.
-
-
-//PCSUP-25103
-|*CWP-62297*
-
-|*Twistlock console unable to list image tags from remote repo*
-
-If defender and remote repository are in different subnet, the image tag pulling using `podman search --list -tags` is not supported with the same access token issued by registry.twistlock.com. 
-
-
-//PCSUP-23081
-|*CWP-59435*
-
-// tt:[Found in 32.07.123]
-
-|*Enabling FIPS with TLS 1.3 does not work for WAAS In-Line*
-
-Due to a compatibility issue in Go programming language’s package, the HTTP server is unable to operate with both FIPS mode and TLS 1.3 enabled simultaneously. This limitation is preventing WAAS In-Line from supporting the configuration.
-
-//CWP-53375
-|*CWP-53375*
-
-// tt:[Found in 32.00.159]
-
-| 
-
-In *Inventory > Compute Workloads*, for users logged in with a role other than the built-in system admin role, currently only data about cloud provider managed registry images and VM instances can be viewed.
-
-In particular, for such roles currently data about the following types of assets is not displayed:
-
-* Run stage images
-* Private registry images
-* Build stage images
-* On-premises hosts/hosts managed by cloud providers unsupported by Compute
-
-//CWP-58896
-|*CWP-58896*
-
+|*CWP-62339*
 // tt:[Found in 32.06.113]
 
-|*ACI Cloud Discovery- Incorrect Status Field Mapping and Defend Functionality Gaps*
+|*Discrepancies in Vulnerability Scan Results*
 
-With the support for ACI in cloud discovery, here are the two issues:
+In rare instances, discrepancies were observed between vulnerability scan results from Defender and Twistcli host scans. 
 
-* Status: The `status` field currently utilizes Properties > ProvisioningState, which does not reflect the container status. For more information, refer to https://learn.microsoft.com/en-us/azure/container-instances/container-state[Azure Container Instances states].
-* Defend: The Defend functionality does not support Azure Container Instances (ACI). The Defend is enabled across all accounts and services, and when selected, it redirects to Images > Registry Settings.
-
-|*CWP-58709*
-
-// tt:[Found in 32.06.113]
-
-|*Duplicate Admission Rules*
-
-Six admission rules released in Version 32, Update 2 were found to be duplicates of older existing rules. If you need the functionality provided by these rules, we recommend disabling the old rules and using the new corresponding rules, as the older rules will be removed in an upcoming release.
-
-The old rules and their corresponding new rules are as follows:
-
-* *Old rule*: Twistlock Labs - CIS - Pod created in host process ID namespace. *New rule*: Twistlock Labs - PSS - Baseline - Pod with containers that share host process ID (hostPID) namespace
-
-* *Old rule*: Twistlock Labs - CIS - Pod created on host IPC namespace. *New rule*: Twistlock Labs - PSS - Baseline - Pod with containers that share host IPC namespace
-
-* *Old rule*: Twistlock Labs - CIS - Pod created on host network. *New rule*: Twistlock Labs - PSS - Baseline - Pod that allows containers to share the host network namespace
-
-* *Old rule*: Twistlock Labs - Pod created with sensitive host file system mount. *New rule*: Twistlock Labs - PSS - Baseline - Pod created with sensitive host file system mount
-
-* *Old rule*: Twistlock Labs - CIS - Privileged pod created. *New rule*: Twistlock Labs - PSS - Baseline - Pod should not run privileged containers
-
-* *Old rule*: Twistlock Labs - CIS - Privilege escalation pod created. *New rule*: Twistlock Labs - PSS - Restricted - Pod that allows container privilege escalation
-
-NOTE: Even though both the new and old rules are enabled by default, you will not receive duplicate alerts as only the first encountered rule is enforced.
-
-|*CWP-58350*
-
-// tt:[Found in 32.06.113]
-
-|*CVE Exclusions Update*
-
-The following CVEs that are included in the Intelligence Stream feed are ignored:
-
-* https://github.com/advisories/GHSA-xm99-6pv5-q363[CVE-2022-29583 - GitHub Advisory Database] as it is a disputed vulnerability.
-* https://github.com/cri-o/cri-o/security/advisories/GHSA-2cgq-h8xw-2v5j[CVE-2024-3154 - Arbitrary Systemd Property Injection] as Defender does not directly use this package.
-
-|*CWP-52710*
-
-// tt:[Found in 32.06.113]
-
-|
-
-While upgrading consoles from the 30.03 release to a 32.xx release, the error log `failed to retrieve "size" specification option value` during the migration doesn't impact the migration process and can be ignored.
-
+For example, certain compliance checks identified by Twistcli were not reflected in Defender scan results, and vice versa. Additionally, for some operating systems, Twistcli reported a higher number of high-severity findings compared to Defender.
 
 |===
