@@ -1,5 +1,4 @@
 == Known and Fixed Issues on Prisma Cloud
-// @Anagha and @Rodrigo need to add their issues in docs/en/enterprise-edition/rn/known-issues/known-fixed-issues.adoc to this file as well. 
 The following table lists the known and fixed issues on Prisma Cloud.
 
 [NOTE]
@@ -25,6 +24,15 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 //Added post-24.1.2, related to PCSUP-20665, retain in KIs list till engg confirms 
 //On *Inventory > Assets*, if you filter based on the _Key-Value_ *Asset Tag* and your environment has more that 1 million assets, the results will be inconclusive.
 //Contact your Prisma Cloud Customer Success representative for more details.
+
+
+|*CWP-62339*
+
+|*Discrepancies in Vulnerability Scan Results*
+
+In rare instances, discrepancies were observed between vulnerability scan results from Defender and `twistcli` host scans. 
+
+For example, certain compliance checks identified by `twistcli` were not reflected in Defender scan results, and vice versa. Additionally, for some operating systems, `twistcli` reported a higher number of high-severity findings compared to Defender.
 
 |*—* 
 //PCSUP-26700
@@ -515,6 +523,207 @@ If defender and remote repository are in different subnet, the image tag pulling
 |===
 |*ISSUE ID*
 |*DESCRIPTION*
+
+
+|*CWP-59903*
+
+tt:[Fixed in 34.00.137]
+
+| *Some previously scanned images fail to scan*
+
+A new scanner tag is created when an image is pulled for scanning. In some cases, this tag was not removed after the scan. This caused subsequent scans to fail.
+
+This issue is fixed now. 
+
+|*CWP-60416*
+
+tt:[Fixed in 34.00.137]
+
+| *Incorrect parsing of Ruby advisories that use RC versions*
+
+Incorrect parsing of Ruby advisories that use RC versions (such as '3.0.0-rc.1') caused false positive CVE reporting.  
+
+This issue is fixed now.
+
+|*CWP-61862*
+
+tt:[Fixed in 34.00.137]
+
+| *An incorrect fix date is reported for CVEs that did not provide a fix date initially*
+
+An incorrect fix date is reported for CVEs that did not provide a fix date initially and were then reopened and fixed (again) with a fix date that is later than the date when the issue was first reported as fixed. Prisma Cloud reported the date when the issue was first reported as fixed and did not update the fix date after the issue was reopened and fixed with a different date.           
+
+This issue is fixed now.
+
+|*CWP-62128*
+
+tt:[Fixed in 34.00.137]
+
+| *Changes in the Ubuntu feed caused false positives in some situations*
+
+Changes in the Ubuntu feed format added an asterisk in the condition for some CVE entries. This was not parsed correctly and led to false positives.  
+
+This issue is fixed now.
+
+|*CWP-62193*
+
+tt:[Fixed in 34.00.137]
+
+| *Incorrect fixed version reported for some CVEs reported in NVD*
+
+An issue with the parsing of NVD data led to an incorrect fixed version being reported in some cases.  
+
+This issue is fixed now.
+
+|*CWP-62290*
+
+tt:[Fixed in 34.00.137]
+
+| *Fixed Debian issues that have a CVE with the "nodsa\_reason" property set to "ignored" are reported as a vulnerability*
+
+Debian CVEs that have an Urgency of "unimportant" or a "nodsa\_reason" setting of "ignored" in the Debian feed were not reported as vulnerabilities when detected by Prisma Cloud Compute.  
+
+This issue is fixed now. Now, such CVEs will be reported as vulnerabilities with the status 'will not fix' by Prisma Cloud Compute. 
+
+|*CWP-62394*
+
+tt:[Fixed in 34.00.137]
+
+| *In a few situations serverless credits were consumed even after disabling the serverless functionality* 
+
+In setups/tenants that had a particular (core-serverless-scan-concurrent-flow-enabled) setting enabled, serverless scan results were not deleted. This caused some serverless credits to be consumed even after the serverless feature was disabled in the tenant.   
+
+This issue is fixed now.
+
+|*CWP-62552*
+
+tt:[Fixed in 34.00.137]
+
+| *Defender is unable to identify the OpenShift installation on the OpenShift nodes*
+
+The OpenShift version is not available in the RELEASE\_VERSION environment variable in the running 'openshift-tuned' process due to a change in OpenShift. It has now been replaced by a new process called cluster-node-tuning-operator that receives 'openshift-tuned' via command line args. Defenders were unable to detect the OpenShift installation due to this change.  
+
+This issue is fixed now. 
+
+|*CWP-62562*
+
+tt:[Fixed in 34.00.137]
+
+| *Fixed RHEL issues are incorrectly flagged as unresolved due to an issue in mapping CPEs to RHEL repositories*
+
+After Redhat switched to the new VEX format for reporting CVEs and fixes, some fixed RHEL issues were incorrectly flagged as unresolved due to an issue in mapping CPEs to RHEL repositories.   
+
+This issue is fixed now.
+
+|*CWP-62570*
+
+tt:[Fixed in 34.00.137]
+
+| *Base images when scanned separately  displayed vulnerabilities that were not present*
+
+The scan results for some base images that were scanned separately incorrectly displayed vulnerabilities–even though no vulnerabilities were present in those base images. Whereas, images using those base images reported the vulnerabilities correctly and did not display any vulnerabilities for the underlying base images.  
+
+This issue is fixed now.
+
+|*CWP-62575*
+
+tt:[Fixed in 34.00.137]
+
+| *False positives observed for vulnerabilities reported in the RedHat VEX format without specific distro-release information*
+
+Vulnerabilities reported in the RedHat VEX format without specific distro-release information generated false positives. 
+
+This issue is fixed now. 
+
+|*CWP-62609*
+
+tt:[Fixed in 34.00.137]
+
+| *Including packages of a Go application that are part of the main module in the scan results*
+
+Previously, Prisma Cloud scan results did not include Go packages that were part of the main module, resulting in the omission of these packages and their associated vulnerabilities in the console. 
+
+This issue has now been resolved.
+
+|*CWP-62668*
+
+tt:[Fixed in 34.00.137]
+
+| *Compliance check 598 always fails for Kubernetes containers running Redis if the container was created without using –requirepass parameter*
+
+Compliance check 598 fails and shows the error “App uses weak or default password” for Kubernetes containers running redis even though the container uses a strong password. This issue occurs if the container was created without using –requirepass parameter.  
+
+This issue is fixed now.
+
+|*CWP-62883*
+
+tt:[Fixed in 34.00.137]
+
+| *The 'fix status' column in the vulnerability report is blank for a few CVEs*
+
+The 'fix status' column in the vulnerability report is blank for a few CVEs due to missing information in the NVD vulnerability feed.  
+
+This issue is fixed now. The required information is now gathered using a separate NVD function.
+
+|*CWP-62884*
+
+tt:[Fixed in 34.00.137]
+
+| *Stale (unpaired) CSA agents are not deleted if the API keys (\`apiKeyID\` and \`apiURL\` fields) are not configured correctly*
+
+Stale (unpaired) CSA agents are not deleted if the API keys (\`apiKeyID\` and \`apiURL\` fields) are not configured correctly on a tenant, and unnecessarily contribute to the credit consumption. 
+
+This issue is fixed now. Unpaired CSA agents are now deleted when they are unpaired. 
+
+|*CWP-62961*
+
+tt:[Fixed in 34.00.137]
+
+| *Images that were associated with multiple collections/namespaces continue to be shown as part of a collection/namespace even after they are removed from that namespace*
+
+When an image that is associated with multiple collections/namespaces is removed from one of the namespaces/collections, it continues to be shown as part of that namespace/collection.   
+
+This issue is now fixed by periodically cleaning up the stale namespaces. 
+
+|*CWP-62994*
+
+tt:[Fixed in 34.00.137]
+
+| *Container protected by an App embedded defender with File System monitoring enabled crashes when an SSH connection is made to it*
+
+Container protected by an App embedded defender with File System monitoring enabled crashes when an SSH connection is made to it.
+
+This issue is fixed now.
+
+|*CWP-63032*
+
+tt:[Fixed in 34.00.137]
+
+| *Support Jenkins LTS CVEs detection*
+
+Prisma Cloud now extracts software edition information from CVEs and utilizes it for scanning. This enables Prisma Cloud scanners to differentiate software editions, such as Jenkins LTS releases from regular Jenkins releases, and accurately identify vulnerabilities.
+
+
+|*CWP-63033*
+
+tt:[Fixed in 34.00.137]
+
+| *Improved Vulnerability Reporting for Mirrored RHEL Repositories*
+
+Repository identifiers often change when repositories are mirrored from Red Hat's Content Delivery Network (CDN) to alternative cloud environments, like AWS. This may result in inaccurate vulnerability reporting. 
+
+The issue has now been resolved by extracting the relative URLs of repositories from the image and comparing them with the corresponding relative URLs provided in the repository-to-CPE mapping file for CVE matching.
+
+
+|*CWP-63110*
+
+tt:[Fixed in 34.00.137]
+
+| *Incorrect data is returned when Prisma Cloud roles that have read only access to Windows hosts try to access and retrieve data from those Windows hosts*
+
+Incorrect data is returned when Prisma Cloud roles that have read only access to Windows hosts try to access and retrieve cloud metadata from those Windows hosts. 
+
+This issue is fixed now.
 
 |*PCSUP-26234*
 
