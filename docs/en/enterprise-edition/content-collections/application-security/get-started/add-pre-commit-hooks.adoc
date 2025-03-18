@@ -1,8 +1,7 @@
+[.task]
 == Pre-commit Hooks
 
-Install Prisma Cloud Application Security scanner (Prisma Cloud scanner) as a pre-commit hook into your workflows to automate the scanning of your code for Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) issues and Secrets vulnerabilities before a Pull Request is opened. Pre-commit hooks are local hooks that are triggered on the local machine when creating a commit or a specific action is performed, and these hooks enable you to enforce checks or actions before accepting any changes into the VCS.
-
-Installing the Prisma Cloud code scanner allows you to identify issues and take remediation steps before accepting the code into your repositories. This mitigates the risk of introducing potential issues downstream.
+Install Prisma Cloud Application Security scanner (Prisma Cloud scanner) as a pre-commit hook into your workflows to automate the scanning of your code for Infrastructure-as-Code (IaC) misconfigurations, Software Composition Analysis (SCA) issues and Secrets vulnerabilities before a commit is created locally. Pre-commit hooks are local hooks that are triggered on the local machine before a commit is created or on other supported Git actions, such as file staging. These hooks enable you to enforce checks or actions before accepting any changes into the VCS.
 
 [.task]
 
@@ -11,31 +10,51 @@ Installing the Prisma Cloud code scanner allows you to identify issues and take 
 
 [.procedure]
 
-. Before you begin:
+[#prerequisites]
+==== Prerequisites
+
+Before starting, ensure the following dependencies are installed:
+
+- https://www.python.org/downloads/[Python] v3.9 - v3.13
+- (If using Docker image method) https://docs.docker.com/get-docker/[Docker]
+- https://pre-commit.com/#install[pre-commit]
+- xref:../../connect-code-and-build-providers/ci-cd-runs/add-checkov.adoc[Checkov]
+
+Ensure the Prisma Cloud user has one of the following roles or equivalent permissions:
+
+-  *Developer*, *Systems Admin*, or *AppSec Admin* role
+- Alternatively, for *GRBAC*, provide the following permissions in a https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/create-custom-permission-groups[Permission Group].
 +
-* Install https://www.python.org/downloads/[Python] v3.9 - v3.13
-* (If using Docker image method) Install https://docs.docker.com/get-docker/[Docker]
-* Install the https://pre-commit.com/#install[pre-commit] tool
-* Install xref:../../connect-code-and-build-providers/ci-cd-runs/add-checkov.adoc[Checkov]
+* __Policies__: *Policies* - 'View' permissions
+* __Application Security__: *Projects* - 'View' permissions
+* __Settings__: *Providers* - ('View' and 'Create') OR ('View' and 'Update') permissions
 
+For information about roles and permissions on Prisma Cloud, refer to xref:../../administration/prisma-cloud-admin-permissions.adoc[Prisma Cloud Administrator Permissions].
 
-. Set your Prisma Cloud credentials as environment variables. You can hardcode them in the pre-commit hook, but this is not recommened.
+[#installation]
+==== Installation
+
+. Set your Prisma Cloud credentials as environment variables.
+NOTE: This is the recommended security practice. Do not hardcode credentials in your pre-commit hook due to security risks.
 
 *Mac/Linux*
 [source,shell]
 ----
 export BC_API_KEY=<Your Prisma Cloud Access Key>::<Your Prisma Cloud Secret Key>
-export PRISMA_API_URL=<Your Prisma Cloud API, such as https://api3.prismacloud.io>
+export PRISMA_API_URL=<Your Prisma Cloud API URL> # Example: https://api3.prismacloud.io
 ----
 
 *Windows*
 [source,shell]
 ----
 set BC_API_KEY=<Your Prisma Cloud Access Key>::<Your Prisma Cloud Secret Key>
-set PRISMA_API_URL=<Your Prisma Cloud API, such as https://api3.prismacloud.io>
+set PRISMA_API_URL=<Your Prisma Cloud API URL> # Example: https://api3.prismacloud.io
 ----
 
-. Add a file called `.pre-commit-config.yaml` to the base of your repository's directory. There are a few alternatives for configuring Prisma Cloud code scanning as a pre-commit hook. This configurations is the most basic that will scan the whole repository whenever there is a change to a Terraform file. Alternative options are at the bottom of the page: <<alternative-configs>>. In order to reduce duplicate uploading of results, it's recommended to use the `--skip-results-upload` flag.
+. Create a file named `.pre-commit-config.yaml` in the root directory of your repository.
+
+NOTE: To configure Prisma Cloud code scanning as a pre-commit hook, you have several options. This section details the most basic configuration, which scans the entire repository whenever a Terraform file is modified. For alternative configurations, see <<alternative-configs,Alternative configuration options>> below.
+Recommended: To avoid redundant results uploads, append the --skip-results-upload flag to your pre-commit hook configuration.
 
 [source,yaml]
 ----
@@ -47,25 +66,29 @@ repos:
         args: [--skip-results-upload, --repo-id, organization/repository, --use-enforcement-rules]
 ----
 
-. Add additional configuration settings to the args section, such as `--framework` and `--skip-check`. See the other configuration options https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[here].
+. Optional: add additional configuration settings to the args section of your .pre-commit-config.yaml file, such as --framework and --skip-check
+.
+For a complete list of configuration options, refer to the xref:https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html[Checkov CLI Command Reference].
 
-. After adding your file, install the hook with:
+. Install the hook: Run:
 
 [source,shell]
 ----
 pre-commit install --install-hooks
 ----
 
-. Test the pre-commit hook by making a change and attempting to make a commit.
+. Test pre-commit functionality: Modify a file that is tracked by Git, and execute the git commit command.
+.
+Confirm that the pre-commit hook is triggered and that it either allows the commit or blocks it based on the results of its checks.
 
 [#alternative-configs]
 === Alternative configuration options
 
-There are a few alternative set ups you can use for pre-commit hooks. Below are just some examples.
+Pre-commit hooks offer multiple configuration options. Some examples are provided below.
 
 ==== Secrets scanning only
 
-This is a common use case to identify and block secrets before they are added to a more exposed pull request.
+Prevent secrets from being exposed in pull requests by identifying and blocking them before they are committed.
 
 [source,yaml]
 ----
@@ -79,7 +102,7 @@ repos:
 
 ==== Scan modified files only
 
-This will only scan modified files. Note that this will not handle cross-file checks well, and you may want to consider skipping those for this configuration.
+This configuration scans only modified files. Cross-file checks should be disabled due to potential limitations.
 
 [source,yaml]
 ----
@@ -93,7 +116,7 @@ repos:
 
 ==== Complete override
 
-You can completely override the entrypoint to add most configuration options.
+You can fully override the entrypoint to customize configuration options.
 
 [source,yaml]
 ----
