@@ -15,7 +15,7 @@ import yaml from 'js-yaml';
 export default async function previewChanges({
   github, context, glob, changes,
 }) {
-  const host = 'https://main--prisma-cloud-docs-website--hlxsites.aem.page';
+  const host = 'https://main--prisma-cloud-docs-website--hlxsites.hlx.page';
   const fallbackPath = '/en';
   const branch = context.payload.pull_request.head.ref;
   const adocChanges = changes.filter((change) => change.endsWith('.adoc'));
