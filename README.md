@@ -5,8 +5,8 @@ Asciidoc-based content for Prisma Cloud Docs with CF worker to rewrite into Fran
 See also: [prisma-cloud-docs-website](https://github.com/hlxsites/prisma-cloud-docs-website)
 
 ## Environments
-- Preview: https://main--prisma-cloud-docs--hlxsites.aem.page/
-- Live: https://main--prisma-cloud-docs--hlxsites.aem.live/
+- Preview: https://main--prisma-cloud-docs--hlxsites.hlx.page/
+- Live: https://main--prisma-cloud-docs--hlxsites.hlx.live/
 - Worker: https://prisma-cloud-docs-production.adobeaem.workers.dev/
 
 ## Installation
