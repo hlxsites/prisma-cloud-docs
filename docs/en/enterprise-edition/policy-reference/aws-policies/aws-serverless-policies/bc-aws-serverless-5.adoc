@@ -1,4 +1,4 @@
-== AWS Lambda encryption settings environmental variable is not set properly
+== AWS Lambda environment variable encryption settings are not using a CMK
 
 
 === Policy Details
@@ -26,20 +26,12 @@
 
 === Description
 
-You can use environment variables to adjust your function's behavior without updating code.
-An environment variable is a pair of strings that is stored in a function's version-specific configuration.
-The Lambda runtime makes environment variables available to your code and sets additional environment variables that contain information about the function and invocation request.
-Environment variables are not evaluated prior to the function invocation.
-Any value you define is considered a literal string and not expanded.
-Perform the variable evaluation in your function code.
+Lambda always provides server-side encryption at rest with an AWS KMS key. By default, Lambda uses an AWS managed key. To enable rotation and revocation on your own schedule, you should use a https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk[Customer Managed Key].
 
 === Fix - Buildtime
 
-
 *Terraform* 
 
-
-aws_lambda_function
 * *Resource:* aws_lambda_function
 * *Arguments:* kms_key_arn
 
@@ -53,11 +45,6 @@ aws_lambda_function
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "index.test"
 
-  # The filebase64sha256() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  source_code_hash = filebase64sha256("lambda_function_payload.zip")
-
   runtime = "nodejs12.x"
   
 + kms_key_arn = "ckv_km"
@@ -66,10 +53,6 @@ aws_lambda_function
     variables = {
       foo = "bar"
     }
-
   }
-}
-
-",
 }
 ----
