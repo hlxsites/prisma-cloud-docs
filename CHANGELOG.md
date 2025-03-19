@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.69...v1.1.0) (2025-03-19)
+
+
+### Features
+
+* upgrade to v5 ([92f9a28](https://github.com/hlxsites/prisma-cloud-docs/commit/92f9a28c94c81232358239895a8f792fe2258b7c))
+
 ## [1.0.69](https://github.com/hlxsites/prisma-cloud-docs/compare/v1.0.68...v1.0.69) (2025-03-03)
 
 
