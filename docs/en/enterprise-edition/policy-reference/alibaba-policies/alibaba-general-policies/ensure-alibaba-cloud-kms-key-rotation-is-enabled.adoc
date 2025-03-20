@@ -26,27 +26,24 @@
 
 === Description
 
-A key is a named object representing a cryptographic key used for a specific purpose, including data protection.
-The key material, the actual bits used for encryption, can change over time as new key versions are created.
-A collection of files could be encrypted with the same key and people with decrypt permissions on that key would be able to decrypt those files.
-We recommend you set a key rotation period.
-A key can be created with a specified rotation period, which is the time when new key versions are generated automatically.
-A key can also be created with a specified next rotation time.
+This policy ensures that KMS (Key Management Service) Key Rotation is enabled for keys in Alibaba Cloud. Enabling automatic key rotation helps to maintain security by periodically changing the cryptographic keys, thereby reducing the risk of key compromise over time. KMS keys without automatic rotation enabled may be left vulnerable to prolonged exposure and potential unauthorized use.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
+* *Resource:* alicloud_kms_key
+* *Arguments:* automatic_rotation
 
+To mitigate this issue, ensure the `automatic_rotation` attribute of the `alicloud_kms_key` resource is set to `Enabled`.
 
+Example:
 
 [source,go]
 ----
-resource "alicloud_kms_key" "pass" {
-  description             = "Hello KMS"
-  pending_window_in_days  = "7"
-  status                  = "Enabled"
-  automatic_rotation      = "Enabled"
+resource "alicloud_kms_key" "example" {
+  ...
++  automatic_rotation = "Enabled"
 }
 ----

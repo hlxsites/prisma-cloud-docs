@@ -27,34 +27,29 @@
 
 === Description 
 
+This policy ensures that Transparent Data Encryption (TDE) is enabled on Alibaba Cloud RDS (Relational Database Service) instances. TDE helps protect data at rest by encrypting the storage of an entire database. It ensures that data is secured, meeting compliance requirements for protecting sensitive data.
 
-Alibaba Cloud Transparent Data Encryption (TDE) is a security feature that encrypts data at the storage level, which means that data is encrypted while it is written to the disk and decrypted when it is read. Activating TDE on an instance helps to protect the data stored on the instance from unauthorized access or exposure.
-TDE also helps to meet compliance requirements that mandate data to be encrypted at rest.
+Failing to enable Transparent Data Encryption can result in data breaches if unauthorized users gain access to the underlying storage of the database.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
-To enable TDE, add the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_db_instance
+* *Attribute:* tde_status
 
+To mitigate this issue, ensure that the `tde_status` attribute is set to `Enabled` for the `alicloud_db_instance` resource. Confirm that the `engine` is either `MySQL` or `SQLServer` and that the `engine_version` is supported.
 
+Example:
 
 [source,go]
 ----
-resource "alicloud_db_instance" "pass" {
-  engine              = "MySQL"
-  engine_version      = "5.6"
-  instance_type   = "rds.mysql.t1.small"
-  instance_storage = "10"
-  tde_status          = "Enabled"
-  parameters = [{
-    name  = "innodb_large_prefix"
-    value = "ON"
-    }, {
-    name  = "connect_timeout"
-    value = "50"
-  }]
+resource "alicloud_db_instance" "example" {
+  ...
+
+  engine          = "MySQL"
+  engine_version  = "8.0"
++  tde_status      = "Enabled"
 }
 ----
-

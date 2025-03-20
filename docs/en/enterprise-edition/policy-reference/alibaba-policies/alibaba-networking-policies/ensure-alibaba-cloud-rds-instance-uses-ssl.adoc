@@ -27,34 +27,26 @@
 
 === Description 
 
+This policy ensures that RDS instances in Alibaba Cloud use SSL to protect data in transit. Using SSL for database connections helps to encrypt data and prevent unauthorized interception or tampering of data.
 
-If an Alibaba Cloud RDS instance is not using SSL (Secure Sockets Layer) to encrypt data transmissions, there are several potential risks such as data interception, data tampering and compliance violations. By implementing SSL, you can help protect your data by encrypting the data during transmission between the RDS instance instance and the client. This ensures that only authorized users with the correct keys can access and decrypt the data.
+Failing to enable SSL for RDS instances can result in sensitive data being transmitted in plaintext, making it vulnerable to interception and attacks.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
-To configure an Alibaba Cloud RDS instance to use SSL, add the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_db_instance
+* *Attribute:* ssl_action
 
+To mitigate this issue, ensure that the `ssl_action` attribute in the `alicloud_db_instance` resource is set to "Open" or "Update".
 
-
+Example:
 
 [source,go]
 ----
-resource "alicloud_db_instance" "pass" {
-  engine              = "MySQL"
-  engine_version      = "5.6"
-  ssl_action          = "Open"
-  instance_storage    = "30"
-  instance_type       = "mysql.n2.small.25"
-  parameters = [{
-    name  = "innodb_large_prefix"
-    value = "ON"
-    }, {
-    name  = "connect_timeout"
-    value = "50"
-  }]
+resource "alicloud_db_instance" "example" {
+  ...
++  ssl_action = "Open"
 }
 ----
-
