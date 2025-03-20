@@ -69,6 +69,28 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 2+|*Policy Updates—RQL*
 
+|*AWS MFA is not enabled on Root account.*
+//RLP-155483
+
+|*Changes—* The Policy RQL will be updated to consider the Centralised root access introduced by the AWS reducing the false positives
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and mfa_active is false and arn does not contain gov:' 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and password_enabled is true and mfa_active is false and arn does not contain gov:' 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. Open alerts where the centralised root access is enabled will be resolved.
+
+
 |*Azure Function app configured with public network access*
 //RLP-155139
 
@@ -93,7 +115,7 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-
 |*Azure Function app configured with public network access*
 //RLP-151399
 
-|*Changes—* The Policy RQL is updated to check for notifications configured for Owner role as per the latest CSP updates.
+|*Changes—* The Policy RQL will be updated to check for notifications configured for Owner role as per the latest CSP updates.
 
 *Current RQL–* 
 ----
@@ -112,10 +134,98 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-secu
 *Impact–* Low. New Alerts are generated if the Owner is not configured to receive email notifications. Open alerts for the security contact where the email is configured will be resolved.
 
 
+|*Azure SQL server public network access setting is enabled*
+//RLP-155660
+
+|*Changes—* The Policy RQL will be updated to align with the latest changes and updates in Azure Cloud. This enhancement ensures improved compatibility and performance, providing users with the most up-to-date security and compliance checks specific to Azure Cloud environments.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case Ready and ['sqlServer'].['properties.publicNetworkAccess'] equal ignore case Enabled and ['sqlServer'].['properties.privateEndpointConnections'] is empty and firewallRules[*] is empty 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case Ready and ['sqlServer'].['properties.publicNetworkAccess'] equal ignore case Enabled and firewallRules[*] is not empty 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+//*Impact–* Low. New Alerts are generated if the Owner is not configured to receive email notifications. Open alerts for the security contact where the email is configured will be resolved.
+
+
+|*Azure Microsoft Defender for Cloud email notification for subscription owner is not set*
+//RLP-155399
+
+|*Changes—* The Policy RQL will be updated to check for notifications configured for Owner role as per the latest CSP updates.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[*].properties.email is empty or securityContacts[*].properties.alertsToAdmins equal ignore case Off) and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[*].properties.emails is empty or securityContacts[*].properties.notificationsByRole.roles[*] does not contain "Owner") and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New Alerts will be generated in case the Owner is not configured to receive email notifications. Open alerts for the security contact where the email is configured would be resolved.
+
+
+|*Azure Cosmos DB Virtual network is not configured*
+//RLP-155550
+
+|*Changes—* The Policy RQL will be updated to consider cosmos DB is configured with private access to reduce false positives.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty and properties.privateEndpointConnections does not exist
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alert where private access is configured will be resolved.
+
+
+|*Azure Network Watcher Network Security Group (NSG) flow logs are disabled*
+//RLP-155573
+
+|*Changes—* The Policy will be updated to exclude resources created by Prisma for agentless scans to reduce the noise.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = flowLogsSettings does not exist or flowLogsSettings.enabled is false  
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings does not exist or flowLogsSettings.enabled is false) and tags.created-by does not contain "prismacloud-agentless-scan" 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. Open alerts where the resource is created by "prismacloud-agentless-scan" will be resolved.
+
+
 |*GCP SQL database instance deletion protection is disabled*
 //RLP-155109
 
-|*Changes—* The Policy RQL is updated with the right attribute to raise alerts on the vulnerable resources only.
+|*Changes—* The Policy RQL will be updated with the right attribute to raise alerts on the vulnerable resources only.
 
 *Current RQL–* 
 ----
@@ -133,26 +243,80 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-i
 
 *Impact–* Low. Open Alerts where the deletion protection setting is enabled will be resolved.
 
-// |*Azure Storage account encryption key is not rotated regularly*
-//RLP-153981
 
-// |*Changes—* The policy RQL policy will be updated to reduce false positives when both management events and network activity events are configured.
+|*GCP Vertex AI Workbench Instance has vTPM disabled*
+//RLP-155647
 
-//*Current RQL–* 
-//----
-//config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
-//----
+|*Changes—* The Policy RQL will be updated to account for CSP side API changes.
 
-//*Updated RQL–*
-//----
-//config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
-//----
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND shieldedInstanceConfig.enableVtpm is false 
+----
 
-//*Policy Type–* Config
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND gceSetup.shieldedInstanceConfig.enableVtpm is false 
+----
 
-//*Policy Severity–* Low
+*Policy Type–* Config
 
-//*Impact–* Low. Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
+*Policy Severity–* Low
+
+*Impact–* Low. New alerts will be generated as per new RQL.
+
+
+|*GCP Vertex AI Workbench Instance has Integrity monitoring disabled*
+//RLP-155649
+
+|*Changes—* The Policy RQL will be updated to account for CSP side API changes.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND shieldedInstanceConfig.enableIntegrityMonitoring is false
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND gceSetup.shieldedInstanceConfig.enableIntegrityMonitoring is false
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. New alerts will be generated as per new RQL.
+
+
+|*GCP Vertex AI Workbench Instance has Secure Boot disabled*
+//RLP-155653
+
+|*Changes—* The Policy RQL will be updated to account for CSP side API changes.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND shieldedInstanceConfig.enableSecureBoot is false
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND gceSetup.shieldedInstanceConfig.enableSecureBoot is false
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low. New alerts will be generated as per new RQL.
+
+
+
+// 2+|*Policy Updates - Metadata*
+
+// |**
+//RLP-
+
+// |*Changes—* The recommendation steps are updated.
 
 |===
 
@@ -202,6 +366,18 @@ Additional permissions needed:
 
 The Security audit role does not include the permissions.
 
+|*Amazon Detective*
+//RLP-155563
+|*aws-detective-member*
+
+Additional permissions needed:
+
+* `detective:ListGraphs`
+* `detective:ListMembers`
+* `detective:GetMembers`
+
+The Security audit role includes the permissions for `detective:ListGraphs` and `detective:ListMembers`. `detective:GetMembers` is not present in the Security audit role.
+
 |*Amazon Keyspaces*
 //RLP-155321
 |*aws-keyspaces-table*
@@ -209,6 +385,19 @@ The Security audit role does not include the permissions.
 Additional permissions needed:
 
 * `cassandra:Select`
+
+The Security audit role does not include the permission.
+
+|*Amazon Lex*
+//RLP-155564
+|*aws-lexv2-slots*
+
+Additional permissions needed:
+
+* `lex:GetBots`
+* `lex:ListBotLocales`
+* `lex:ListIntents`
+* `lex:ListSlots`
 
 The Security audit role does not include the permission.
 
@@ -232,6 +421,16 @@ Additional permissions needed:
 
 The Security audit role includes the permission.
 
+|*AWS Organizations*
+//RLP-155328
+|*aws-organizations-delegated-services-for-account*
+
+Additional permissions needed:
+
+* `organizations:ListDelegatedServicesForAccount`
+
+The Security audit role includes the permission.
+
 |*Amazon QuickSight*
 //RLP-152590
 |*aws-quicksight-iam-policy-assignment*
@@ -243,6 +442,79 @@ Additional permissions needed:
 * `quicksight:ListIAMPolicyAssignments`
 
 The Security audit role does not include the permissions.
+
+|*Azure API Management Services*
+//RLP-155531
+|*azure-api-management-service-cache*
+
+Additional permissions needed:
+
+* `Microsoft.ApiManagement/service/read` 
+* `Microsoft.ApiManagement/service/caches/read`
+
+The Reader role includes the permissions.
+
+|*Azure API Management Services*
+//RLP-155532
+|*azure-api-management-service-private-endpoint-connection*
+
+Additional permissions needed:
+
+* `Microsoft.ApiManagement/service/read` 
+* `Microsoft.ApiManagement/service/privateEndpointConnections/read`
+
+The Reader role includes the permissions.
+
+|*Azure App Service*
+//RLP-155533
+|*azure-app-service-certificate-order*
+
+Additional permissions needed:
+
+* `Microsoft.CertificateRegistration/certificateOrders/Read` 
+
+The Reader role includes the permission.
+
+|*Azure Arc*
+//RLP-155534
+|*azure-app-service-certificate-order*
+
+Additional permissions needed:
+
+* `Microsoft.HybridCompute/licenses/read` 
+
+The Reader role includes the permission.
+
+|*Azure Arc*
+//RLP-155535
+|*azure-arc-private-link-scope*
+
+Additional permissions needed:
+
+* `Microsoft.HybridCompute/privateLinkScopes/read` 
+
+The Reader role includes the permission.
+
+|*Azure Arc*
+//RLP-155537
+|*azure-arc-machine*
+
+Additional permissions needed:
+
+* `Microsoft.HybridCompute/machines/read` 
+
+The Reader role includes the permission.
+
+|*Azure Arc*
+//RLP-155538
+|*azure-arc-machine-license-profile*
+
+Additional permissions needed:
+
+* `Microsoft.HybridCompute/machines/read`
+* `Microsoft.HybridCompute/machines/licenseProfiles/read` 
+
+The Reader role includes the permissions.
 
 |*Azure Event Grid*
 //RLP-155021
@@ -266,14 +538,14 @@ Additional permissions needed:
 
 The Reader role includes the permissions.
 
-|*Azure Event Grid*
-//RLP-155044
-|*azure-event-grid-topic-event-subscription*
+|*Azure Log Analytics*
+//RLP-155560
+|*azure-log-analytics-data-exports*
 
 Additional permissions needed:
 
-* `Microsoft.EventGrid/topics/read`
-* `Microsoft.EventGrid/topics/eventSubscriptions/read`
+* `Microsoft.OperationalInsights/workspaces/read`
+* `Microsoft.OperationalInsights/workspaces/dataexports/read`
 
 The Reader role includes the permissions.
 
@@ -284,16 +556,6 @@ The Reader role includes the permissions.
 Additional permissions needed:
 
 * `backupdr.backupPlans.list`
-
-The Viewer role includes the permission.
-
-|*Google Backup and DR*
-//RLP-155294
-|*gcloud-backup-dr-backup-plan-association*
-
-Additional permissions needed:
-
-* `backupdr.backupPlanAssociations.list`
 
 The Viewer role includes the permission.
 
@@ -339,6 +601,39 @@ Additional permissions needed:
 * `backupdr.bvbackups.list`
 
 The Viewer role includes the permissions.
+
+|*OCI IAM Password Policy*
+//RLP-155562
+|*oci-iam-password-policy*
+
+Additional permissions needed:
+
+* `COMPARTMENT_INSPECT`
+* `DOMAIN_INSPECT`
+* `PASSWORD_POLICY_INSPECT`
+
+The Reader role includes the permissions.
+
+|*OCI IAM*
+//RLP-155561
+|*oci-iam-tag-default*
+
+Additional permissions needed:
+
+* `TAG_DEFAULT_INSPECT`
+
+The Reader role includes the permission.
+
+|*OCI IAM*
+//RLP-155547
+|*oci-iam-user-db-credential*
+
+Additional permissions needed:
+
+* `USER_INSPECT`
+* `DB_CREDENTIAL_INSPECT`
+
+The Reader role includes the permissions.
 
 
 |===
