@@ -1,137 +1,198 @@
 [#collections]
 == Collections
 
-Collections are predefined filters for segments of your environment.
-They're centrally defined, and they're used in rules and views across the product.
+Collections are predefined filters for segments of your environment. They are centrally defined, and they are used in rules and views across the product.
 
 Collections are used to:
 
 * Scope rules to target specific resources in your environment.
-For example, you might create a vulnerability rule that applies to all container images in an app called sock-shop.
-The rule might reference a collection, which specifies `sock-shop**` in the image resource filter.
-* Partition views.
-Collections provide a convenient way to browse data from related resources.
-* Enforce which views specific users and groups can see.
-Collections can control access to data on a need-to-know basis.
-These are known as assigned collections.
++
+Example: A vulnerability rule that applies to all container images in an app called sock-shop. The rule might reference a collection, which specifies `sock-shop` in the image resource filter.
 
-Collections are created with xref:../configure/rule-ordering-pattern-matching.adoc[pattern matching] expressions that are evaluated against attributes such as image name, container name, hostname, labels, function name, namespace, registry tag, and more.
+* Partition views to provide a convenient way to browse data from related resources.
 
-For labels, Prisma Cloud supports AWS tags, as well as distro attributes.
+* Enforce which views that specific users and groups can see by controlling access to data on a need-to-know basis (assigned collections).
+
+=== Attributes Used for Pattern Matching
+
+Collections are created with xref:../configure/rule-ordering-pattern-matching.adoc[pattern matching] expressions that are evaluated against attributes such as 
+* Image name
+* Container name
+* Hostname
+* Labels
+* Function name
+* Namespace
+* Registry tag
+
+For labels, Prisma Cloud supports AWS tags and distro attributes.
+=== Supported Distro Attributes
+
 Distro attributes are designed for central security teams that manage the policies in Console, but have little influence over the operational practices of the groups that run apps in the environments being secured.
-If the central security team can't rely on naming conventions or labels to apply policies that are OS-specific (e.g. different compliance checks for different OSs), they can leverage the distro attributes.
+If the central security team can't rely on naming conventions or labels to apply policies that are OS-specific (for example, different compliance checks for different operating systems), they can leverage the distro attributes.
 Supported distro attributes are:
 
-* Distro name -- "osDistro:<value>" (e.g. "osDistro:Ubuntu")
-* Distro version -- "osVersion:<value>" (e.g. "osVersion:20.04")
+* Distro name. The format is `osDistro:<value>`. Example: `osDistro:Ubuntu`
+* Distro version. The format is `osVersion:<value>`. Example: `osVersion:20.04`.
 
-=== Partitioning views
+=== Partitioning Views
 
-While a single Console manages data from Defenders spread across all hosts, collections let you segment that data into different views based on attributes.
+A single Console manages data from Defenders spread across all hosts. Collections allow you to segment data into different views, based on attributes.
 
-Collections are useful when you have large container deployments with multiple teams working on multiple apps all in the same environment.
-For example, you might have a Kubernetes cluster that runs a shopping app, a travel app, and an expenses app.
-Different teams might be responsible for the development and operation of each app.
-An internal tools team might be responsible for the travel and expenses app, while a product team runs the shopping app.
+==== Example Use Case
 
-Selecting a collection reduces the scope displayed in Console to just the relevant resources.
-For example, the developer for the travel app only cares about vulnerabilities in the images that make up the travel app.
-All other vulnerabilities are just noise.
-Collections help focus the data.
+A Kubernetes cluster runs multiple apps:
 
+* *Shopping app* (managed by the product team)
+* *Travel app & Expenses app* (managed by an internal tools team)
+
+A developer for the travel app only needs to see vulnerabilities in the travel app images. Collections filter out unnecessary data, reducing noise and improving focus.
 
 === Scoping rules
-
-The scope of a rule is defined by referencing the relevant collections.
-Collections offer a centralized way to create and manage scope settings across the product.
-Collections make it easy to consistently reuse scope settings across policies.
-Policy tables give you a clear picture of what resources are being targeted in your rules.
+The scope of a rule is defined by referencing the relevant collections. Collections offer a centralized way to manage scope settings across Prisma Cloud.
+Collections ensure consistency across policies as they allow reuse of scope settings. Policy tables give you a clear picture of what resources are being targeted in your rules.
 
 image::runtime-security/collections-policy-table-scopes.png[]
 
-When creating new rules, you can either select from a list of previously defined collections or create a new one.
-By default, Prisma Cloud sets a rule's scope to the *All* collection, which captures all resources in the environment.
+When creating new rules, you can either select from a list of previously defined collections or create a new one. By default, Prisma Cloud sets a rule's scope to the *All* collection, which captures all resources in the environment.
 
 image::runtime-security/collections-rule-scope.png[]
 
+Example: You can create collections based on different attributes, such as application names or namespaces. Additionally, collections can be created based on regions.
+For example, you can define a collection that includes all resources in the us-west-1 region, allowing you to scope policies specifically for resources deployed in that region.
+
 === Importing and exporting rules
 
-Rules can be exported from one Console and imported into another Console.
-When importing rules, any associated collections are also imported and created.
+Rules can be exported from one Console and imported into another Console. When importing rules, any associated collections are also imported and created.
 
-* If the imported rule uses a collection that doesn't exist in Console, the collection is automatically created.
-* If the imported rule uses a collection with a name that already exists, but with a different scope, the collection is created with the following name and description:
-** Name: <policyType> - <ruleName> <collectionName>
-** Description: Automatically generated collection for an imported rule/entity
-* If the imported rule uses a collection that already exists, and a matching scope, the existing collection is used as-is.
+Prisma Cloud allows rules and collections to be imported/exported between Consoles.
+=== Import Behavior
+
+[options="header"]
+|===
+| Scenario | Action Taken
+| Collection does not exist in the new Console | Created automatically
+| Collection exists but has a different scope | New collection is created with:  
+  * *Name:* `<policyType> - <ruleName> <collectionName>`  
+  * *Description:* `Automatically generated collection for an imported rule/entity`
+| Collection exists with a matching scope | Existing collection is used as-is
+|===
 
 
 [.task]
 === Creating collections
 
-You can create as many collections as you like.
-Collections cannot be nested.
+You can create as many collections as you like. However, collections **cannot be nested**.
 
-Prisma Cloud ships with a built-in set called *All* that is not editable.
-The *All* collection contains all objects in the system.
-It is effectively the same as creating a collection manually and setting a wildcard (*) for each resource type (e.g., containers, images, hosts, labels, etc).
+==== Built-in Collections
+Prisma Cloud ships with a built-in collection called *All*, which:
+- Is **not editable**.
+- Contains **all objects in the Prisma Cloud**.
+- Functions as a wildcard (`*`) for all resource types, including containers, images, hosts, labels, and more.
 
-Collections can be created in *Manage > Collections and Tags > Collections*.
-Alternatively, collections can be created directly from a new rule dialog when you're setting the rule's scope.
-When creating collections from a new rule dialog, Prisma Cloud automatically disables any irrelevant scope fields.
-When selecting previously defined collections in a rule's scope field, any improperly scoped collections are hidden from the display.
-For example, you can't select a collection that specifies serverless functions in a container runtime rule.
+==== Where to Create Collections
+Collections can be created from:
+- *Manage > Collections and Tags > Collections*  
+- The *New Rule* dialog when setting a rule’s scope  
+  - In this case, Prisma Cloud **disables irrelevant scope fields**.  
+  - If you select a previously defined collection in a rule’s scope field, **improperly scoped collections are hidden** (e.g., a collection specifying serverless functions won’t be shown in a container runtime rule).  
 
-By default, new collections set a wildcard for each resource, effectively capturing all resources in the system.
-Customize the relevant fields to capture some segment of the universe of resources.
+==== Default Collection Scope
+By default, new collections set a wildcard (`*`) for each resource type, capturing **all resources**. To refine the scope, customize the relevant fields.
 
-The labels field supports https://docs.docker.com/config/labels-custom-metadata/[Docker labels], Azure registry tags (`key:value`), Kubernetes pod template labels, Kubernetes namespace labels, Kubernetes deployment labels, AWS tags, distribution name for hosts (`osDistro:<name>`), and operating system version for hosts (`osVersion:<version>`).
+==== Supported Labels
+The *Labels* field supports multiple sources, including:
 
-Prisma Cloud extracts registry tags from Azure registry.
-You can use these registry tags to implement role-based access control to regulate the visibility of registry vulnerability scan findings to a user role.
-Prisma Cloud designates all identified Azure registry tags as *Registry labels* under *Monitor > Vulnerabilities > Images > Registries, Image details > Labels*.
+[options="header"]
+|===
+| Label Type | Supported Sources  
+| *https://docs.docker.com/config/labels-custom-metadata/[Docker labels]* | Container metadata  
+| *Azure Registry Tags* | Key-value pairs (`key:value`)  
+| *Kubernetes Labels* | Pod template, namespace, and deployment labels  
+| *AWS Tags* | Tags associated with cloud resources  
+| *Distribution Name for Hosts* | `osDistro:<name>`  
+| *Operating System Version for Hosts* | `osVersion:<version>`  
+|===
 
-To use Kubernetes namespace and deployment labels, enable the following setting when deploying Defenders: *Manage > Defenders > Deployed Defenders > Manual deploy > Collect Deployment and Namespace labels*.
+==== Using Registry Tags for Access Control  
+- Prisma Cloud extracts **registry tags from Azure Registry**.  
+- These tags can be used to enforce **role-based access control (RBAC)** for vulnerability scan findings.  
+- All identified Azure registry tags appear under:  
+  *Monitor > Vulnerabilities > Images > Registries > Image Details > Labels*  
 
-To use AWS tags for hosts, enable *VM tags* for relevant accounts under *Manage > Cloud accounts > Add/edit account > Discovery features*.
+==== Enabling Additional Label Support  
+To use additional labels, enable the corresponding settings:
 
-To scope App-Embedded policy rules (e.g., vulnerability, compliance, and runtime rules), use the collection's *App ID* field.
-For Fargate tasks protected by App-Embedded Defenders, you can additionally scope rules by image.
+[options="header"]
+|===
+| Label Type | Configuration Path  
+| *Kubernetes Namespace and Deployment Labels* | Enable under *Manage > Defenders > Deployed Defenders > Manual Deploy > Collect Deployment and Namespace Labels*  
+| *AWS Tags for Hosts* | Enable VM tags in *Manage > Cloud Accounts > Add/Edit Account > Discovery Features*  
+|===  
 
-// https://github.com/twistlock/twistlock/issues/11646
-// https://redlock.atlassian.net/browse/PCSUP-13010
-[NOTE]
-====
-You cannot have collections that specify a combination of both:
+==== Scoping App-Embedded Policy Rules  
+To scope App-Embedded **vulnerability, compliance, and runtime rules**, use the collection’s **App ID field**.
 
-- Host and cluster
-- Container and image
+For *Fargate tasks* protected by App-Embedded Defenders, rules can additionally be scoped by **image**.
 
-You must leave a wildcard in one of the fields, or else the collection won't be applied correctly.
-For example, if you want to create collections that apply to both a container and an image, create two separate collections.
-The first collection should only include the container name, and the second should only include the image name.
-Filtering on both collections at the same time will not yield the desired result.
+==== Collection Scope Limitations  
+Certain resource combinations are **not allowed in a single collection**:
 
-//https://github.com/twistlock/twistlock/issues/19678
-Filtering by cloud account ID for Azure Container Instances isn't currently supported.
-====
+[options="header"]
+|===
+| Combination | Restriction  
+| *Host + Cluster* | Must separate into distinct collections.  
+| *Container + Image* | One field must use a wildcard (`*`), or the collection won't apply correctly.  
+|===  
 
-To create a new collection:
+*Example:*  
+To apply collections to both a container and an image, create **two separate collections**:
+- One collection should include **only the container name**.
+- The other collection should include **only the image name**.
+- **Filtering on both collections simultaneously won’t yield the desired result**.
 
-[.procedure]
-. Open Console.
+==== Unsupported Filtering  
+- Filtering by **cloud account ID** for *Azure Container Instances* is **not supported**.
 
-. Go to *Manage > Collections and Tags > Collections*.
+==== Steps to Create a Collection
 
-. Select *Add collection*.
+To create a collection, follow these steps:
 
-. In *Create new collection*, enter a *Name*, and *Description*, and then specify a filter to target specific resources.
+. Open Console
+.. Navigate to *Manage > Collections and Tags > Collections*.
+
+. Add a New Collection
+.. Click *Add Collection*.
+
+. Enter Collection Details
+.. *Name:* Provide a unique name for the collection.  
+.. *Description:* (Optional) Enter a description to define its purpose.  
+.. *Color:* Choose a color to visually distinguish this collection.  
+
+. Choose Resources to include. Select one or more of the following resources:
+* *Containers* – Running container instances in your environment.
+* *Hosts* – Physical or virtual machines where containers run.
+* *Images* – Container images stored in registries.
+* *Labels* – Key-value metadata attached to resources.
+* *App IDs (App-embedded)* – Application identifiers for embedded security enforcement.
+* *Functions* – Serverless functions such as AWS Lambda or Google Cloud Functions.
+* *Namespaces* – Isolated environments in Kubernetes.
+
 +
-For example, create a collection named *Raspberry images* that shows all _raspberry_ images in the _fruit_ namespace.
-Pick a color for easy visibility and differentiation.
+For more information on syntax that can be used in the filter fields (for example, containers, images, and hosts), see xref:../configure/rule-ordering-pattern-matching.adoc#[Rule ordering and pattern matching].
+
+. Define Filters. Use pattern-matching syntax to refine the scope.
 +
-The following collection selects all images that start with the string _raspberry_.
-You can also create collections that exclude resources.
+*Example:* To select all images that start with "raspberry", use the filter *raspberry*
+
+. Save the Collection
+.. Click *Save* to apply your settings. 
++
+You can view a summary of each Collection in the sidecar, which shows the resources' data and usage of the Collection
+
+image::runtime-security/collection-sidecar-view.png[]
+
+The new collection will now be available for use in rules and views. 
+
 For more information on syntax that can be used in the filter fields (e.g., containers, images, hosts, etc), see xref:../configure/rule-ordering-pattern-matching.adoc#[Rule ordering and pattern matching].
 +
 image::runtime-security/collections-specify-filter.png[]
@@ -140,7 +201,7 @@ image::runtime-security/collections-specify-filter.png[]
 +
 You can view a summary of each Collection in the sidecar, which shows the resources' data and usage of the Collection.
 +
-image::runtime-security/collection-sidecar-view.png[]
+
 
 === Selecting a collection
 
@@ -369,20 +430,20 @@ Monitor/Compliance
 
 ==== Using Collections
 
-After collections are created or updated, some views require a rescan before you can see the change:
+After collections are created or updated, the following views require a rescan before reflecting changes:
 
 * Deployed Images vulnerabilities and compliance views
 * Registry Images vulnerabilities and compliance views
 * Code repositories vulnerabilities view
-* Trusted images
+* Trusted images 
 * Cloud Discovery
 * Vulnerability Explorer
 * Compliance Explorer
 
 After collections are created or updated, some views are affected by the change only for future records.
-These views include historical records that keep their collections from creation time:
+The following views retain their collections right from the time the records are created:
 
-* Images and Functions CI results view
-* Events views
+* Images and Functions CI results view 
+* Events views 
 * Incidents view
 * Image analysis sandbox results view
