@@ -28,33 +28,12 @@
 === Description 
 
 
-Amazon MSK integrates with AWS Key Management Service (KMS) for server-side encryption.
-When you create an MSK cluster, you can specify the AWS KMS CMK for Amazon MSK to use to encrypt your data at rest.
-If you don't specify a CMK, Amazon MSK creates an AWS managed CMK for you and uses it on your behalf.
-We recommend using encryption in transit and at rest to secure your managed Kafka queue.
+This policy identifies AWS Managed Streaming for Apache Kafka clusters having in-transit encryption in a disabled state.
 
-////
-=== Fix - Runtime
+In-transit encryption secures data while it's being transferred between brokers. Without it, there's a risk of data interception during transit.
 
+It is recommended to enable in-transit encryption among brokers within the cluster. This ensures that all data exchanged within the cluster is encrypted, effectively protecting it from potential eavesdropping and unauthorized access.
 
-CLI Command
-
-
-Run the create-cluster command and use the encryption-info option to point to the file where you saved your configuration JSON.
-
-
-[source,shell]
-----
-{
- "aws kafka create-cluster
---cluster-name "ExampleClusterName"
---broker-node-group-info file://brokernodegroupinfo.json
---encryption-info file://encryptioninfo.json
---kafka-version "2.2.1"
---number-of-broker-nodes 3",
-}
-----
-////
 
 === Fix - Buildtime
 
@@ -62,11 +41,7 @@ Run the create-cluster command and use the encryption-info option to point to th
 *Terraform* 
 
 
-* *Resource:* aws_msk_cluster
-* *Arguments:* encryption_info - (Optional) Configuration block for specifying encryption.
-encryption_in_transit - (Optional) Configuration block to specify encryption in transit.
-
-See below.
+To fix this issue, ensure that the `encryption_info` property in the `aws_msk_cluster` resource includes `encryption_in_transit` settings with `client_broker` set to `TLS` and `in_cluster` set to `true`.
 
 
 [source,go]
@@ -84,4 +59,30 @@ resource "aws_msk_cluster" "example" {
   + }
   ...
 }
+----
+
+*CloudFormation*
+
+To fix this issue, ensure that the `EncryptionInfo` property in the `AWS::MSK::Cluster` resource includes `EncryptionInTransit` settings with `ClientBroker` set to `TLS` and `InCluster` set to `true`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyMSKCluster:
+    Type: AWS::MSK::Cluster
+    Properties:
+      ClusterName: example-cluster
+      KafkaVersion: 2.8.0
+      NumberOfBrokerNodes: 3
+      BrokerNodeGroupInfo:
+        ...
+      EncryptionInfo:
+        EncryptionAtRest:
+          DataVolumeKMSKeyId: arn:aws:kms:us-west-2:123456789012:key/example-key-arn
+        EncryptionInTransit:
+          ClientBroker: TLS
+          InCluster: true
+      ...
 ----

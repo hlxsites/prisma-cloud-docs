@@ -1,6 +1,5 @@
 == AWS DynamoDB encrypted using AWS owned CMK instead of AWS managed CMK
 
-
 === Policy Details 
 
 [width=45%]
@@ -23,37 +22,20 @@
 
 |=== 
 
-
-
 === Description 
 
-
-Encrypting DynamoDB tables using AWS KMS Customer Managed Keys (CMKs) enhances data security by allowing you to control the encryption keys used to encrypt your table data. 
-This policy ensures that DynamoDB tables are not only encrypted at rest but are also using a CMK for encryption, offering an added layer of security compared to the default AWS owned keys. 
-Using CMKs enables detailed key management, including key rotation, key policies, and audit capabilities through CloudTrail. 
-Ensuring DynamoDB tables are encrypted with KMS Customer Managed CMKs is crucial for sensitive data requiring stringent compliance and security standards.
-
+This rule detects whether DynamoDB tables are encrypted at rest and, if so, whether they are using a Customer Managed Key (CMK) for encryption, which provides an added layer of security, rather than the default AWS-owned keys. Encrypting DynamoDB tables with AWS KMS Customer Managed Keys (CMKs) enhances data security by giving you control over the encryption keys. This control enables detailed key management, including key rotation, key policies, and audit capabilities through CloudTrail. Therefore, ensuring DynamoDB tables are encrypted with KMS Customer Managed CMKs is crucial for sensitive data requiring stringent compliance and security standards.
 
 === Fix - Buildtime
 
 *Terraform*
 
-* *Resource:* aws_dynamodb_table
-* *Encryption Configuration:* Ensure the server_side_encryption configuration is enabled and specifies a KMS Customer Managed CMK.
+To mitigate this issue, ensure the server_side_encryption configuration is enabled and specifies a KMS Customer Managed CMK.
 
-
-[source,hcl]
+[source,go]
 ----
 resource "aws_dynamodb_table" "example" {
-  name           = "example-table"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "ID"
-
-  attribute {
-    name = "ID"
-    type = "S"
-  }
-
+  ...
   server_side_encryption {
 +   enabled     = true
 +   kms_key_arn = aws_kms_key.example.arn
@@ -65,14 +47,10 @@ resource "aws_kms_key" "example" {
 }
 ----
 
-This configuration ensures the DynamoDB table is encrypted using a specified KMS Customer Managed CMK, adhering to best practices for data encryption and security.
-
 
 *CloudFormation*
 
-
-* *Resource:* AWS::DynamoDB::Table
-* *Encryption Configuration:* Ensure the SSESpecification attribute specifies SSEEnabled as true and includes a KMSMasterKeyId pointing to a Customer Managed CMK.
+To mitigate this issue, ensure the SSESpecification attribute specifies SSEEnabled as true and includes a KMSMasterKeyId pointing to a Customer Managed CMK.
 
 
 [source,yaml]
@@ -81,17 +59,8 @@ Resources:
   SecureDynamoDBTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: 'example-table'
-      AttributeDefinitions:
-        - AttributeName: 'ID'
-          AttributeType: 'S'
-      KeySchema:
-        - AttributeName: 'ID'
-          KeyType: 'HASH'
-      BillingMode: 'PAY_PER_REQUEST'
+      ...
       SSESpecification:
         SSEEnabled: true
 +       KMSMasterKeyId: 'alias/YourKMSCMKAlias'  # Specify your KMS Customer Managed CMK ARN or Alias
 ----
-
-This configuration snippet demonstrates how to enable server-side encryption for a DynamoDB table using a specified KMS Customer Managed CMK in a CloudFormation template, following best practices for data security and compliance.

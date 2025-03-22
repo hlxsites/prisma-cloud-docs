@@ -10,7 +10,7 @@
 | 35f1c888-1566-49c5-bd40-c10b6a152ce8
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/cloudformation/checks/resource/aws/GlueSecurityConfigurationEnabled.py[CKV_AWS_195]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/cloudformation/checks/resource/aws/GlueSecurityConfigurationEnabled.py[CKV_AWS_195]
 
 |Severity
 |LOW
@@ -27,45 +27,96 @@
 
 === Description 
 
-
-A security configuration specifies the encryption settings for data stored on data stores and for data in transit.
-By associating your Glue components with a security configuration, you can ensure that your data is encrypted in accordance with your security requirements.
-Encrypting your data can help protect it from unauthorized access and ensure the confidentiality of your data.
-This is especially important for sensitive data, such as financial or personal information.
+This policy ensures that AWS Glue components (Crawlers, DevEndpoints, and Jobs) have a security configuration associated. Associating a security configuration with Glue components helps ensure the security of data in transit and at rest, which is critical for maintaining data integrity and protecting sensitive information. This policy checks whether the `CrawlerSecurityConfiguration` or `SecurityConfiguration` property is configured appropriately for Glue components.
 
 === Fix - Buildtime
 
 
-*Terraform* 
+*Terraform*
 
+To fix this issue, ensure that the `security_configuration` property in the `aws_glue_crawler`, `aws_glue_dev_endpoint`, and `aws_glue_job` resources is set to a valid security configuration.
 
+Example for a Glue Crawler:
 
-
-[source,text]
+[source,go]
 ----
-resource "aws_glue_crawler" "enabled" {
-  database_name = "aws_glue_catalog_database.example.name"
-  name          = "example"
-  role          = "aws_iam_role.example.arn"
-
-  security_configuration = "aws_glue_security_configuration.example.name"
+resource "aws_glue_crawler" "example" {
+  ...
+  security_configuration = "example-security-configuration"
+  ...
 }
+----
 
-resource "aws_glue_dev_endpoint" "enabled" {
-  name     = "example"
-  role_arn = "aws_iam_role.example.arn"
+Example for a Glue DevEndpoint:
 
-  security_configuration = "aws_glue_security_configuration.example.name"
+[source,go]
+----
+resource "aws_glue_dev_endpoint" "example" {
+  ...
+  security_configuration = "example-security-configuration"
+  ...
 }
+----
 
-resource "aws_glue_job" "enabled" {
-  name     = "example"
-  role_arn = "aws_iam_role.example.arn"
+Example for a Glue Job:
 
-  security_configuration = "aws_glue_security_configuration.example.name"
-
-  command {
-    script_location = "s3://aws_s3_bucket.example.bucket/example.py"
-  }
+[source,go]
+----
+resource "aws_glue_job" "example" {
+  ...
+  security_configuration = "example-security-configuration"
+  ...
 }
+----
+
+*CloudFormation*
+
+To fix this issue, ensure that the appropriate security configuration properties are set for your Glue components.
+
+Example for a Glue Crawler:
+
+[source,yaml]
+----
+Resources:
+  MyGlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: example-crawler
+      Role: arn:aws:iam::123456789012:role/glue-role
+      DatabaseName: example-database
+      Targets:
+        ...
+      CrawlerSecurityConfiguration: example-security-configuration
+      ...
+----
+
+Example for a Glue DevEndpoint:
+
+[source,yaml]
+----
+Resources:
+  MyGlueDevEndpoint:
+    Type: AWS::Glue::DevEndpoint
+    Properties:
+      EndpointName: example-dev-endpoint
+      RoleArn: arn:aws:iam::123456789012:role/glue-role
+      SecurityConfiguration: example-security-configuration
+      ...
+----
+
+Example for a Glue Job:
+
+
+[source,yaml]
+----
+Resources:
+  MyGlueJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: example-job
+      Role: arn:aws:iam::123456789012:role/glue-role
+      Command:
+        ...
+      SecurityConfiguration: example-security-configuration
+      ...
 ----

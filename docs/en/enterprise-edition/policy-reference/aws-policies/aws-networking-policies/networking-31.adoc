@@ -27,30 +27,7 @@
 
 === Description 
 
-
-Descriptions can be up to 255 characters long and can be set and viewed from the AWS Management Console, AWS Command Line Interface (CLI), and the AWS APIs.
-We recommend you add descriptive text to each of your Security Group Rules clarifying each rule's goals, this helps prevent developer errors.
-
-////
-=== Fix - Runtime
-
-
-* AWS Console* 
-
-
-
-. Log in to the AWS Management Console at https://console.aws.amazon.com/.
-
-. Open the http://console.aws.amazon.com/vpc/home [Amazon VPC console].
-
-. Select * Security Groups*.
-
-. Select * Create Security Group*.
-
-. Select a _Security Group_ and review all of the descriptions.
-
-. To modify the rules and descriptions, click * Edit*.
-////
+This policy ensures that each security group rule has a description to help identify the purpose of the rule. Descriptions improve the manageability and understanding of security group rules.
 
 === Fix - Buildtime
 
@@ -77,4 +54,53 @@ resource "aws_security_group" "examplea" {
     to_port     = 80
   }
 }
+----
+
+*CloudFormation*
+
+To mitigate this issue, ensure that the `Description` field is added to all security group rules in `AWS::EC2::SecurityGroup`, `AWS::EC2::SecurityGroupIngress`, and `AWS::EC2::SecurityGroupEgress` resources.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "My security group",
+        "SecurityGroupIngress": [
+          {
+            ...
++            "Description": "Allow HTTP traffic"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            ...
++            "Description": "Allow HTTPS traffic"
+          }
+        ]
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: My security group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          ...
++          Description: Allow HTTP traffic
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          ...
++          Description: Allow HTTPS traffic
 ----
