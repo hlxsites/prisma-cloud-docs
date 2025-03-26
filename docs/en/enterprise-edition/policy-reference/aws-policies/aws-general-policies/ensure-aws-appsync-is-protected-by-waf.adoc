@@ -35,7 +35,7 @@ It can also help to prevent DDoS attacks by allowing you to set rate-based rules
 *Terraform* 
 
 
-
+To mitigate this issue, ensure that `aws_appsync_graphql_api` are connected with `aws_wafv2_web_acl_association` resources.
 
 [source,go]
 ----
@@ -48,4 +48,26 @@ resource "aws_wafv2_web_acl_association" "pass" {
   resource_arn = aws_appsync_graphql_api.pass.arn
   web_acl_arn  = aws_wafv2_web_acl.example.arn
 }
+----
+
+To fix this issue, ensure that your AWS AppSync GraphQL API is associated with an AWS WAFv2 WebACL. You can use the `AWS::WAFv2::WebACLAssociation` resource to create this association.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+    GoodAppSyncGraphQLApi:
+        Type: "AWS::AppSync::GraphQLApi"
+        Properties:
+            ...
+    GoodWAFv2WebACL:
+        Type: "AWS::WAFv2::WebACL"
+        Properties:
+            ...
+    WebACLAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn: !GetAtt GoodAppSyncGraphQLApi.Arn
+        WebACLArn: !GetAtt GoodWAFv2WebACL.Arn
 ----

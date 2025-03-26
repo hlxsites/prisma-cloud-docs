@@ -50,7 +50,7 @@ When you connect a function to a VPC, it can only access resources and the inter
 NOTE: If both subnet_ids and security_group_ids are empty then vpc_config is considered to be empty or unset.
 
 
-[source,text]
+[source,go]
 ----
 resource "aws_lambda_function" "test_lambda" {
   ...
@@ -61,4 +61,56 @@ resource "aws_lambda_function" "test_lambda" {
     security_group_ids = [aws_security_group.sg_for_lambda.id]
   }
 }
+----
+
+
+*CloudFormation*
+
+To fix this issue, you should ensure that your AWS Lambda function configuration includes the `VpcConfig` property. Below is an example of how to set this property in a CloudFormation configuration:
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "ExampleLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": "arn:aws:iam::123456789012:role/lambda-role",
+        "Code": {
+          "S3Bucket": "my-bucket",
+          "S3Key": "my-function.zip"
+        },
+        "VpcConfig": {
+          "SubnetIds": [
+            "subnet-0bb1c79de3EXAMPLE"
+          ],
+          "SecurityGroupIds": [
+            "sg-085912345678492fb"
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  ExampleLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: "index.handler"
+      Role: "arn:aws:iam::123456789012:role/lambda-role"
+      Code:
+        S3Bucket: "my-bucket"
+        S3Key: "my-function.zip"
+      VpcConfig:
+        SubnetIds:
+          - "subnet-0bb1c79de3EXAMPLE"
+        SecurityGroupIds:
+          - "sg-085912345678492fb"
 ----

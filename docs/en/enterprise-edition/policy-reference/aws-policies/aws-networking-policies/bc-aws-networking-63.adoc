@@ -10,14 +10,13 @@
 | 45e37556-3d26-4cdb-8780-5b7fc5f60e01
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/cloudformation/checks/resource/aws/CloudFrontTLS12.py[CKV_AWS_174]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/cloudformation/checks/resource/aws/CloudFrontTLS12.py[CKV_AWS_174]
 
 |Severity
 |LOW
 
 |Subtype
-|Build
-//, Run
+|Build, Run
 
 |Frameworks
 |CloudFormation,Terraform,TerraformPlan,Serverless
@@ -28,30 +27,7 @@
 
 === Description 
 
-
-This policy identifies AWS CloudFront web distributions which are configured with TLS versions for HTTPS communication between viewers and CloudFront.
-As a best practice, use TLSv1.1_2016 or later as the minimum protocol version in your CloudFront distribution security policies
-
-////
-=== Fix - Runtime
-
-
-* AWS Console* 
-
-
-
-. Sign in to the AWS console
-
-. Navigate to CloudFront Distributions Dashboard
-
-. Click on the reported distribution
-
-. On 'General' tab, Click on 'Edit' button
-
-. On 'Edit Distribution' page, Set 'Security Policy' to TLSv1.1_2016 or later as per your requirement.
-
-. Click on 'Yes, Edit'
-////
+This policy identifies AWS CloudFront web distributions which are configured with TLS versions for HTTPS communication between viewers and CloudFront. As a best practice, use recommended TLSv1.2_2021 as the minimum protocol version in your CloudFront distribution security policies.
 
 === Fix - Buildtime
 
@@ -73,4 +49,44 @@ resource "aws_cloudfront_distribution" "pass" {
     minimum_protocol_version = "TLSv1.2_2018"
   }
 }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `MinimumProtocolVersion` property in the `ViewerCertificate` configuration of the `AWS::CloudFront::Distribution` resource is set to one of the approved TLS v1.2 versions (`TLSv1.2_2018`, `TLSv1.2_2019`, or `TLSv1.2_2021`).
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyCloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "ViewerCertificate": {
+            "MinimumProtocolVersion": "TLSv1.2_2021",
+            ...
+          },
+          ...
+        }
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        ViewerCertificate:
+          MinimumProtocolVersion: TLSv1.2_2021
+          ...
+        ...
 ----

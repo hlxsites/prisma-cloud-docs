@@ -27,74 +27,58 @@
 
 === Description 
 
-
-The events recorded by the AWS DocumentDB audit logs include: successful and failed authentication attempts, creating indexes or dropping a collection in a database within the DocumentDB cluster.
-AWS CloudWatch logs are a service that monitors, stores and accesses your log files from a variety of sources within your AWS account.
-When logging is enabled information such as Data Definition Language, authentication, authorization, and user management events are sent to AWS CloudWatch logs.
-This information can be used to analyze, monitor and archive your Amazon DocumentDB auditing events for security and compliance requirements.
-
-////
-=== Fix - Runtime
-
-
-* AWS Console* 
-
-
-
-. Log in to the AWS Management Console at [https://console.aws.amazon.com/].
-
-. Open the https://console.aws.amazon.com/docdb [Amazon DocumentDB].
-
-. In the navigation pane, choose * Clusters*.
-
-. Specify the cluster that you want to modify by choosing the button to the left of the cluster's name.
-
-. Choose * Actions*, then click * Modify*.
-
-. In the Modify Cluster: & lt;cluster-name>+++ pane.
-+++& lt;/cluster-name>
-
-. Go to*  Log Exports** and enable exporting audit or profiler logs.
-
-
-* CLI Command* 
-
-
-Use the modify-db-cluster operation to modify the specified cluster using the AWS CLI.
-
-
-[source,shell]
-----
-{
- "aws docdb modify-db-cluster \\
-   --db-cluster-identifier sample-cluster \\
-   --cloudwatch-logs-export-configuration '{"EnableLogTypes":["audit"]}'",
-}
-----
-////
+This policy ensures that Amazon DocumentDB (DocDB) clusters have logging enabled. Enabling logging helps you monitor and troubleshoot your DocDB clusters by providing visibility into database activity and operations. This policy checks whether the `EnableCloudwatchLogsExports` property includes the required log types (`profiler` and/or `audit`).
 
 === Fix - Buildtime
 
 
-*Terraform* 
+*Terraform*
+
+To fix this issue, ensure that the `enabled_cloudwatch_logs_exports` property in the `aws_docdb_cluster` resource includes one or both of the required log types (`profiler` and/or `audit`).
+
+Example:
+
+[source,hcl]
+----
+resource "aws_docdb_cluster" "example" {
+  ...
+  enabled_cloudwatch_logs_exports = ["profiler", "audit"]
+  ...
+}
+----
 
 
-* *Resource:* aws_docdb_cluster
-* *Arguments:* enabled_cloudwatch_logs_exports - (Optional) List of log types to export to cloudwatch.
-If omitted, no logs will be exported.
-The following log types are supported: audit, profiler.
+*CloudFormation*
 
+To fix this issue, ensure that the `EnableCloudwatchLogsExports` property in the `AWS::DocDB::DBCluster` resource includes one or both of the required log types (`profiler` and/or `audit`).
 
-[source,go]
+Example:
+
+[source,json]
 ----
 {
- "resource "aws_docdb_cluster" "docdb" {
-  cluster_identifier      = "my-docdb-cluster"
-  ...
-+ enabled_cloudwatch_logs_exports  = ["audit", "profiler"]
+  "Resources": {
+    "MyDocDBCluster": {
+      "Type": "AWS::DocDB::DBCluster",
+      "Properties": {
+        "DBClusterIdentifier": "example-cluster",
+        "EnableCloudwatchLogsExports": ["profiler", "audit"],
+        ...
+      }
+    }
+  }
 }
+----
 
-",
- 
-}
+[source,yaml]
+----
+Resources:
+  MyDocDBCluster:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      DBClusterIdentifier: example-cluster
+      EnableCloudwatchLogsExports:
+        - profiler
+        - audit
+      ...
 ----
