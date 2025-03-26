@@ -64,6 +64,35 @@ The following command assumes that _twistlock.sh_ and your updated _twistlock.cf
 +
   $ sudo ./twistlock.sh console
 
+=== Configure Custom Backup Folder for Kubernetes/OpenShift Deployments
+
+The previous section primarily applies to configuring a custom folder for database backups in a onebox setup. 
+For more information about onebox setup, see xref:../install/deploy-console/console-on-onebox.adoc[Deploy Console on OneBox].
+
+For Consoles deployed in a Kubernetes environment, including OpenShift, follow these steps to configure a custom backup folder:
+
+. Modify the Console’s Kubernetes deployment YAML file.
+. In the `env` section, set the following environment variable:
++
+[source,yaml]
+----
+env:
+  - name: DATA_RECOVERY_VOLUME
+    value: "<custom folder's path>"
+----
+
+. Adjust the `volumeMounts` configuration to reflect the custom backup folder:
++
+[source,yaml]
+----
+volumeMounts:
+  ...
+  - name: console-persistent-volume
+    mountPath: "<custom folder's path>"
+    subPath: "<custom folder's path>"
+----
+
+This ensures that Prisma Cloud Console correctly writes backups to the specified location within a Kubernetes/OpenShift deployment.
 
 [.task]
 === Add Manual Backups

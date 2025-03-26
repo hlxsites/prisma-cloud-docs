@@ -36,24 +36,28 @@ This policy ensures that an AWS Lambda function has been properly configured to 
 
 To address the issue, you need to enable the code-signing configuration for your AWS Lambda function. Code-signing adds an extra layer of security to your application by ensuring that the deployed code is not tampered with.
 
+Example:
+
 [source,go]
 ----
 resource "aws_lambda_function" "example" {
-  function_name    = "example"
-  filename         = "example.zip"
-  source_code_hash = filebase64sha256("example.zip")
-  handler    = "exports.test"
-  runtime    = "nodejs12.x"
+  function_name = "example"
+  s3_bucket     = aws_signer_signing_job.job.signed_object[0].s3[0].bucket
+  s3_key        = aws_signer_signing_job.this.signed_object[0].s3[0].key
+  handler       = "exports.test"
+  runtime       = "nodejs12.x"
 
 + code_signing_config_arn = aws_lambda_code_signing_config.example.arn
 }
 
 resource "aws_lambda_code_signing_config" "example" {
   allowed_publishers {
-    signing_profile_version_arns = [aws_signer_signing_profile_version.example.arn]
+    signing_profile_version_arns = [aws_signer_signing_profile.example.version_arn]
   }
 
-  policies = "Warn"
+  policies {
+    untrusted_artifact_on_deployment = "Enforce"
+  }
 }
 ----
 

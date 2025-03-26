@@ -1,0 +1,1052 @@
+== Features Introduced in March 2025
+
+Learn what's new on Prisma® Cloud in March 2025.
+
+// * <<new-features>>
+* <<enhancements>>
+* <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+//* <<iam-policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<rest-api-updates>>
+//* <<deprecation-notices>>
+
+
+//[#new-features]
+//=== New Features
+//[cols="30%a,70%a"]
+//|===
+//|*Feature*
+//|*Description*
+//|===
+
+
+[#enhancements]
+=== Enhancements
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+
+|*Cloud Discovery Enhancements*
+//CWP-63247
+
+tt:[Secure the Runtime]
+
+tt:[34.00.137]
+
+|
+. *AWS Fargate for Amazon ECS:* Cloud Discovery now includes data about ECS Fargate containers, including their defended/undefended status. 
+. *Azure Container Instances (ACI):* Cloud Discovery now includes data for all containers in container groups. Previously, data for only the first container was included.
+
+. *Google Cloud Run:* Cloud Discovery now includes data for all containers in GCP Cloud Run container groups. Previously, no data was collected and shown for containers in GCP Cloud Run.
+
+. *Identify Account ID attribution for app-embedded defenders used for defending CaaS assets:* The Account ID was previously available for ECS Fargate and Google Cloud Run. This release adds the support for displaying the Account ID for ACI as well. With this release:
+
+.. ECS Fargate and GCP Cloud Run: the Account ID was already shown for: i) Fargate defenders; and ii) App-embedded defenders installed on GCP Cloud Run.
+
+.. Azure Container Instances (ACI): In this release, Account ID is shown for app-embedded defenders installed on ACI containers after you perform the following steps for each container:
+
+... Upgrade the defender to the Quinn release.
+... Create a managed identity.
+... Assign the Reader role to the newly created managed identity. 
+... Assign the newly created managed identity to the container group. 
+
+
+|*Jira Authentication Update for Prisma Cloud Runtime Alerts*
+//CWP-63063
+
+tt:[Secure the Runtime]
+
+tt:[34.00.137]
+
+|Jira Cloud has deprecated Basic Authentication with passwords and now requires API tokens for authentication. When integrating Prisma Cloud Runtime with Jira as an alert provider, you must use an API token instead of a username-password combination.
+
+*Required Actions*
+
+To set up a new alert profile for Jira Cloud users, do the following:
+
+. Generate an API token from your Jira Cloud account.
++ 
+For more information, see https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/[Manage API tokens for your Atlassian account] topic in Jira Documentation site.
+. Save the token in Prisma Cloud’s Credentials Store and use this new credential when adding a new Jira Alert profile.
++ 
+For more information, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/alerts/jira#adding-api-tokens-in-credentials-store-for-jira-cloud-authentication[Adding Jira Cloud Credentials] topic in the Prisma Cloud Admin Guide.
+
+To update an existing alert profile for Jira Cloud users, do the following:
+
+. Generate an API token from your Jira Cloud account.
++ 
+For more information, see https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/[Manage API tokens for your Atlassian account] topic in the Jira Documentation site.
+
+. Update the credentials by replacing the password with the API token.
++ 
+For more information, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/alerts/jira#updating-jira-cloud-credentials-to-use-an-api-token[Updating Jira Cloud Credentials] topic in the Prisma Cloud Admin Guide.
+
+
+To set Up a new alert profile for Jira Data Center (DC) users, do the following:
+
+. Generate a personal access token from your Jira DC account.
++
+For more information, see https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html[Using Personal Access Tokens] topic in the Jira Documentation site.
+
+. Configure the credentials using Basic Authentication with your username and the personal access token as the password when adding a new Jira Alert profile.
+For more information, see https://docs.prismacloud.io/en/enterprise-edition/content-collections/runtime-security/alerts/jira#adding-api-tokens-in-credentials-store-for-jira-dc-authentication[Adding Jira DC Credentials] topic in the Prisma Cloud Admin Guide.
+
+
+|*Better utilization of vendor-specific feeds*
+//CWP-63066
+
+tt:[Secure the Runtime]
+
+tt:[34.00.137]
+
+|The National Vulnerability Database (NVD) provides a valuable baseline CVSS score for vulnerabilities. However, vendors often have a more granular understanding of how a specific vulnerability impacts their implementation of a component. This allows them to provide a more accurate CVSS score, especially when considering environmental factors and the specific ways their product utilizes the vulnerable component. In some cases, vendor-specific vulnerability feeds may have the latest CVSS scores before they are reflected in NVD.
+
+
+This release leverages additional data from vendor-specific vulnerability feeds, such as those from RedHat, Photon OS, and Ruby Gems, and implements several improvements in the extraction and reporting of CVSS scores. These changes provide more accurate and timely CVSS scores, reflecting the latest vendor-specific mitigations, configurations, and environmental impacts.
+
+*RedHat Security Feed:*
+//CWP-62974
+
+* Previously, if a CVE had a CVSS score of 0 in the RedHat security feed, we used the CVSS score provided by NVD for that CVE.
+
+* Now, we use the CVE data and the CVSS score provided by the RedHat feed even if the CVSS score is 0 in the RedHat feed. This ensures that we consider RedHat's specific assessment, which might indicate a mitigated or non-impactful vulnerability in their context.
+
+*Photon OS Security Feed:*
+//CWP-62976
+
+* Previously, we extracted CVSS scores for CVEs from the NVD for Photon OS vulnerabilities.
+
+* Now, we use the CVSS scores provided in the Photon OS security feed. This allows us to reflect Photon OS-specific mitigations and impacts more accurately.
+
+*Ruby Gems Security Feed:*
+//CWP-62977
+
+* Previously, we ignored the CVSS scores reported by RubySec (https://github.com/rubysec and https://github.com/rubysec/ruby-advisory-db) and used the values from NVD.
+
+* Now, we use the CVSS values provided in the Ruby Advisory DB. This ensures we capture the precise impact and mitigations for Ruby Gems vulnerabilities as assessed by RubySec.
+
+*Amazon Linux Security Feed:*
+//CWP-62754)
+
+* Previously, we extracted CVSS scores for Amazon Linux vulnerabilities/CVEs from the NVD.
+
+* Now, we use the CVSS scores provided in the Amazon Linux  security feed. This allows us to reflect Amazon Linux-specific mitigations and impacts more accurately.
+
+*Fallback to NVD CVSS Scores*
+
+If the vendor feed does not provide a CVSS value for any CVE, then the CVSS value from the NVD will be used. This ensures that we always have a CVSS score to guide our risk assessment and mitigation efforts.
+
+
+|*Customization for Scanning Amazon Machine Images (AMIs)*
+//CWP-49786
+
+tt:[Secure the Runtime]
+
+tt:[34.00.137]
+
+|Prisma Cloud now offers on-prem users greater flexibility in selecting AMIs.
+
+For on-prem users, the following environment variables enable customization: 
+
+* `AGENTLESS_USE_CUSTOM_AMI` – Enables or disables the use of custom AMIs.
+
+* `AGENTLESS_CUSTOM_AMI_PER_REGION` – Specifies custom AMIs per AWS region
+
+*Example Configuration:*
+
+`AGENTLESS_USE_CUSTOM_AMI=true`
+`AGENTLESS_CUSTOM_AMI_PER_REGION='{"us-east-1":"ami-005fc0f236362e99f"}'`
+
+In this example, the custom AMI (`ami-005fc0f236362e99f`) is used in the 'us-east-1' region.
+ 
+*Behavior Based on Configuration:*
+
+* If `AGENTLESS_USE_CUSTOM_AMI` is `false`, Prisma Cloud falls back to the previous scanner image, which is Ubuntu 20.04.
+
+* If `AGENTLESS_USE_CUSTOM_AMI` is set to `true` but `AGENTLESS_CUSTOM_AMI_PER_REGION` is not set, Prisma Cloud uses the LaunchDarkly (LD) custom AMI list.
+
+* If `AGENTLESS_USE_CUSTOM_AMI` is not set, Prisma Cloud defaults to the LD custom AMI list.
+
+* For Cloud (SaaS) users, no action is required—Prisma Cloud automatically selects the latest optimized AMI.
+
+|===
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|Removal of Stale Hosts and Images
+//CWP-62948
+
+tt:[Secure the Runtime]
+
+tt:[34.00.137]
+
+|We’re implementing a fix that will remove outdated assets that are no longer protected by a Defender. These assets should have been automatically deleted previously, but were not.
+With this update, you might notice that certain stale assets are no longer present in your inventory. As a result, you might also see a reduction in vulnerabilities and compliance findings due to their removal.
+
+
+|System Requirements: Changes to supported systems and platforms 
+//CWP-SEVERAL
+
+tt:[Secure the Runtime]
+
+tt:[34.00.137]
+
+|The following changes have been made to the system requirements:
+
+*Support added for WAAS*
+
+. WAAS with Defender (AWS): Node.js 22
+
+. WAAS with Defender (AWS): Python 3.13
+
+*Support removed for WAAS*
+
+. WAAS with Defender (AWS): Node.js 16
+
+. WAAS with Defender (AWS): Python 3.8
+
+*Support removed for Auto Defend*
+
+. Auto-Defend (AWS): Node.js 16
+
+. Auto-Defend (AWS): Python	3.8
+
+*Support added for Runtime Protection*
+
+. Runtime protection with Defender (AWS): Node.js 22
+. Runtime protection with Defender (AWS): Python 3.13
+
+*Support removed for Runtime Protection*
+
+. Runtime protection with Defender (AWS): Node.js 16
+. Runtime protection with Defender (AWS): Python 3.8
+
+*Support added for x86 Operating Systems*:*
+
+. Bottlerocket OS 1.20.5
+. Talos OS 1.9.4
+
+*Support removed for x86 Operating Systems*
+
+. Talos OS 1.3.0
+. Talos OS 1.3.3
+. Talos OS 1.5.1
+. Talos OS 1.5.3
+. Talos OS 1.5.5
+. Talos OS 1.6.0
+. Talos OS 1.6.1
+. Talos OS 1.6.4
+. Talos OS 1.6.6
+. Talos OS 1.6.6
+. Talos OS 1.7.2
+. Talos OS 1.7.5
+. Talos OS 1.7.6
+. Talos OS 1.8.0
+. Talos OS 1.8.2
+
+*Support added for x86 Orchestrators*
+
+. Azure Kubernetes Service (AKS) v1.29.13 Linux (Mariner)
+. Elastic Container Service (ECS) 1.87.1 Linux
+. Elastic Kubernetes Service (EKS) v1.32.1-eks-5d632ec Linux
+. Elastic Kubernetes Service (EKS) Bottlerocket	v1.32.0-eks-2e66e76 Linux
+. Google Kubernetes Engine (GKE) v1.32.1-gke.1489001 Linux
+. Google Kubernetes Engine (GKE) autopilot v1.31.6-gke.1020000 Linux
+. Lightweight Kubernetes (k3s) v1.31.5+k3s1 Linux
+. OpenShift	4.17
+. RKE v1.31.5 Linux
+. RKE2 v1.32.1+rke2r1 Linux
+. VMware Tanzu Kubernetes Grid Integrated Edition (TKGI) v1.30.7+vmware.1 Ubuntu 22.04.1 LTS
+
+*Support removed for x86 Orchestrators*
+
+. Azure Kubernetes Service (AKS) v1.27.9 Linux
+. Azure Kubernetes Service (AKS) v1.28.9 Linux
+. Azure Kubernetes Service (AKS) v1.29.2 Linux
+. Azure Kubernetes Service (AKS) v1.30.3 Linux
+. Azure Kubernetes Service (AKS) v1.28.5 Linux
+. Azure Kubernetes Service (AKS) v1.29.2 Linux
+. Azure Kubernetes Service (AKS) v1.29.7 Linux (Mariner)
+. Azure Kubernetes Service (AKS) v1.31.1 Windows
+. Azure Kubernetes Service (AKS) v1.30.4 Windows
+. Azure Kubernetes Service (AKS) v1.30.3 Windows
+. Azure Kubernetes Service (AKS) v1.29.0 Windows
+. Azure Kubernetes Service (AKS) v1.28.15 Linux
+. Azure Kubernetes Service (AKS) v1.29.7 Linux (Mariner)
+. Azure Kubernetes Service (AKS) v1.28.15 Linux
+. Azure Kubernetes Service (AKS) v1.29.7 Linux (Mariner)
+. Elastic Container Service (ECS) 1.86.2 Linux
+. Elastic Container Service (ECS) 1.86.3 Linux
+. Elastic Kubernetes Service (EKS) v1.28.1-eks-43840fb
+. Elastic Kubernetes Service (EKS) v1.28.1-eks-43840fb Linux
+. Elastic Kubernetes Service (EKS) v1.29.0-eks-5e0fdde Linux
+. Elastic Kubernetes Service (EKS) v1.30.0-eks-036c24b Linux
+. Elastic Kubernetes Service (EKS) v1.28.1-eks-43840fb Linux
+. Elastic Kubernetes Service (EKS) v1.29.0-eks-5e0fdde Linux
+. Elastic Kubernetes Service (EKS) v1.30.0-eks-036c24b Linux
+. Elastic Kubernetes Service (EKS) Bottlerocket v1.29.1-eks-61c0bbb Linux
+. Elastic Kubernetes Service (EKS) Bottlerocket v1.30.0-eks-fff26e3 Linux
+. Google Kubernetes Engine (GKE) v1.27.12-gke.1115000 Linux
+. Google Kubernetes Engine (GKE) v1.28.8-gke.1095000 Linux
+. Google Kubernetes Engine (GKE) v1.29.7-gke.1104000 Linux
+. Google Kubernetes Engine (GKE) autopilot v1.29.7-gke.1104000 Linux
+. Google Kubernetes Engine (GKE) 1.27.12-gke.1115000 Linux
+. Google Kubernetes Engine (GKE) 1.28.8-gke.1095000 Linux
+. Google Kubernetes Engine (GKE) v1.29.7-gke.1104000 Linux
+. Google Kubernetes Engine (GKE) v1.30.3-gke.1225000 Linux
+. Google Kubernetes Engine (GKE) autopilot v1.30.3-gke.1639000 Linux
+. Google Kubernetes Engine (GKE) 1.27.12-gke.1115000 Linux
+. Google Kubernetes Engine (GKE) 1.28.8-gke.1095000 Linux
+. Google Kubernetes Engine (GKE) v1.29.7-gke.1104000 Linux
+. Google Kubernetes Engine (GKE) v1.30.5-gke.1443001 Linux
+. Google Kubernetes Engine (GKE) autopilot v1.31.1-gke.1678000 Linux
+. Google Kubernetes Engine (GKE) 1.28.15-gke.1159000 Linux
+. Google Kubernetes Engine (GKE) autopilot v1.31.3-gke.1006000 Linux
+. Kubernetes (k8s) v1.28.10 Linux
+. Lightweight Kubernetes (k3s) v1.30.0+k3s1 Linux
+. Lightweight Kubernetes (k3s) v1.31.0+k3s1 Linux
+. OpenShift	4.14
+. RKE v1.30.3 Linux
+. RKE v1.30.4 Linux
+. RKE v1.30.4 Linux
+. RKE v1.31.2 Linux
+. RKE2 v1.29.3+rke2r1 Linux
+. RKE2 v1.29.3+rke2r1 Linux
+. RKE2 v1.31.2+rke2r1 Linux
+. RKE2 v1.31.2+rke2r1 Linux
+. TalOS 1.7.6 Talos
+. VMware Tanzu Kubernetes Grid Integrated Edition (TKGI) v1.26.5+vmware.1 Ubuntu 22.04.1 LTS
+. VMware Tanzu Kubernetes Grid Integrated Edition (TKGI) v1.28.7+vmware.1 Ubuntu 22.04.1 LTS
+
+*Support added for ARM orchestrators*
+
+. Elastic Kubernetes Service (EKS) v1.32.1-eks-5d632ec.arm
+. Google Kubernetes Engine (GKE) 1.32.1-gke.1489001.arm
+. Google Kubernetes Engine (GKE) autopilot on ARM v1.30.9-gke.1046000
+
+*Support removed for ARM orchestrators*
+
+. Elastic Container Service (ECS) 1.86.2
+. Elastic Container Service (ECS) 1.86.3
+. Elastic Kubernetes Service (EKS) v1.29.0-eks-5e0fdde.arm
+. Elastic Kubernetes Service (EKS) v1.30.0-eks-036c24b.arm
+. Google Kubernetes Engine (GKE) v1.29.7-gke.1104000.arm
+. Google Kubernetes Engine (GKE) autopilot on ARM v1.29.7-gke.1104000.arm
+. Google Kubernetes Engine (GKE) v1.30.5-gke.1443001
+. Google Kubernetes Engine (GKE) autopilot on ARM v1.30.5-gke.1014001
+. Google Kubernetes Engine (GKE) 1.31.1-gke.2105000
+. Google Kubernetes Engine (GKE) autopilot on ARM v1.30.6-gke.1125000
+. Elastic Kubernetes Service (EKS) v1.29.0-eks-5e0fdde
+. Elastic Kubernetes Service (EKS) v1.30.0-eks-036c24b
+
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+|*Service*
+|*API Details*
+
+|*Amazon Cognito*
+//RLP-154816
+|*aws-cognito-identity-pool-role*
+
+Additional permissions needed:
+
+* `cognito-identity:ListIdentityPools`
+* `cognito-identity:GetIdentityPoolRoles`
+
+The Security audit role includes the permissions.
+
+|*Amazon Connect*
+//RLP-152592
+|*aws-connect-instance-user*
+
+Additional permissions needed:
+
+* `connect:ListUsers`
+* `connect:DescribeUser`
+* `connect:ListInstances`
+
+The Security audit role includes the `connect:ListUsers` permissions.
+
+|*Amazon Connect*
+//RLP-152591
+|*aws-connect-instance-security-profile*
+
+Additional permissions needed:
+
+* `connect:ListSecurityProfiles`
+* `connect:DescribeSecurityProfile`
+* `connect:ListInstances`
+
+The Security audit role includes the `connect:ListInstances` permissions.
+
+|tt:[Update] *Amazon EC2*
+//RLP-154720
+|*aws-ec2-describe-images*
+
+Additional permission needed:
+
+* `ec2:DescribeImageAttribute`
+
+The Security audit role includes the permission.
+
+Also, the JSON resource for this API includes a new `imageAttributes` field.
+
+|tt:[Update] *Amazon EC2*
+//RLP-155041
+|*aws-ec2-describe-vpcs*
+
+Additional permission needed:
+
+* `ec2:DescribeImageAttribute`
+* `ec2:DescribeVpcAttribute`
+
+The Security audit role includes the permission.
+
+This update requires the new permission`ec2:DescribeVpcAttribute` be added in addition to the existing permission.
+
+
+|*Amazon EC2*
+//RLP-152589
+|*aws-ec2-instance-connect-endpoint*
+
+Additional permission needed:
+
+* `ec2:DescribeInstanceConnectEndpoints`
+
+The Security audit role includes the permission.
+
+|*Amazon EC2*
+//RLP-155008
+|*aws-ec2-image-block-public-access-state*
+
+Additional permission needed:
+
+* `ec2:GetImageBlockPublicAccessState`
+
+The Security audit role includes the permission.
+
+
+|*Amazon EC2*
+//RLP-155011
+|*aws-ec2-snapshot-block-public-access-state*
+
+Additional permission needed:
+
+* `ec2:GetSnapshotBlockPublicAccessState`
+
+The Security audit role does not include the permission. You must manually add the permission in the CFT template to enable it.
+
+
+|*Amazon EventBridge Pipes*
+//RLP-154730
+|*aws-event-bridge-pipe*
+
+Additional permissions needed:
+
+* `pipes:ListPipes`
+* `pipes:DescribePipe`
+
+The Security audit role does not include the permissions. You must manually add the permissions in the CFT template to enable them.
+
+|*Amazon RDS*
+//RLP-154775
+|*aws-rds-db-instance-automated-backup*
+
+Additional permission needed:
+
+* `rds:DescribeDBInstanceAutomatedBackups`
+
+The Security audit role includes the permission.
+
+|*Amazon RDS*
+//RLP-154773
+|*aws-rds-db-proxy*
+
+Additional permission needed:
+
+* `rds:DescribeDBProxies`
+
+The Security audit role includes the permission.
+
+|*Amazon RDS*
+//RLP-154771
+|*aws-rds-db-proxy-target*
+
+Additional permissions needed:
+
+* `rds:DescribeDBProxies`
+* `rds:DescribeDBProxyTargets`
+* `rds:DescribeDBProxyTargetGroups`
+
+The Security audit role includes the permissions.
+
+|tt:[Update] *Amazon RDS*
+//RLP-154718
+|*aws-rds-describe-db-instances*
+
+The JSON resource for the API will be updated to include a new field `latestRestorableTime`.
+
+|*Amazon S3*
+//RLP-154767
+|*aws-s3-storage-lens-configuration*
+
+Additional permission needed:
+
+* `s3:ListStorageLensConfigurations`
+
+The Security audit role does not include the permission. You must manually add the permission in the CFT template to enable it.
+
+|*Amazon SNS*
+//RLP-154818
+|*aws-sns-subscriptions-by-topic*
+
+Additional permissions needed:
+
+* `sns:ListTopics`
+* `sns:ListSubscriptionsByTopic`
+
+The Security audit role includes the permissions.
+
+
+|*Amazon SQS*
+//RLP-155006
+|*aws-sqs-message-move-task*
+
+Additional permissions needed:
+
+* `sqs:ListQueues`
+* `sqs:ListMessageMoveTasks`
+
+The Security audit role only includes the `sqs:ListQueues` permission. 
+You must manually include the `sqs:ListMessageMoveTasks` permission in the CFT template to enable it.
+
+
+|tt:[Update] *AWS Glue*
+//RLP-154723
+|*aws-glue-connection*
+
+Additional permission needed:
+
+* `glue:GetTags`
+
+The Security audit role includes the permission.
+
+Also, the JSON resource for this API includes `tags` field.
+
+|*AWS Glue*
+//RLP-155004
+|*aws-glue-blueprint*
+
+Additional permissions needed:
+
+* `glue:ListBlueprints`
+* `glue:GetBlueprint`
+
+The Security audit role does not include the permissions. You must manually add the permissions in the CFT template to enable them.
+
+|*AWS Glue*
+//RLP-154994
+|*aws-glue-blueprint-run*
+
+Additional permissions needed:
+
+* `glue:GetBlueprintRuns`
+* `glue:GetBlueprintRun`
+
+The Security audit role does not include the permissions. You must manually add the permissions in the CFT template to enable them.
+
+|*AWS Lambda*
+//RLP-154713
+|*aws-lambda-function-event-invoke-config*
+
+Additional permissions needed:
+
+* `lambda:ListFunctions`
+* `lambda:GetFunctionEventInvokeConfig`
+
+The Security audit role includes the permissions.
+
+|*AWS Lambda*
+//RLP-154706
+|*aws-lambda-versions-by-function*
+
+Additional permissions needed:
+
+* `lambda:ListFunctions`
+* `lambda:ListVersionsByFunction`
+
+The Security audit role includes the permissions.
+
+|*AWS Lambda*
+//RLP-154710
+|*aws-lambda-function-concurrency*
+
+Additional permissions needed:
+
+* `lambda:ListFunctions`
+* `lambda:GetFunctionConcurrency`
+
+The Security audit role only includes the `lambda:ListFunctions` permission. You must manually include the `lambda:GetFunctionConcurrency` permission in the CFT template to enable it.
+
+|*AWS Lambda*
+//RLP-154701
+|*aws-lambda-runtime-management-config*
+
+Additional permissions needed:
+
+* `lambda:ListFunctions`
+* `lambda:GetRuntimeManagementConfig`
+
+The Security audit role only includes the `lambda:ListFunctions` permission. You must manually include the `lambda:GetRuntimeManagementConfig` permission in the CFT template to enable it.
+
+|tt:[Update] *AWS Regions*
+//RLP-154718
+|*aws-region*
+
+The JSON resource for the API is updated to include a new field `accountId`.
+
+
+|tt:[Update] *AWS Regions*
+//RLP-155012
+|*aws-region*
+
+The resource output of the API aws-region includes the new field `accountId`.
+
+|*Azure API Management Services*
+//RLP-155045
+|*azure-api-management-service-authorization-server*
+
+Additional permissions needed:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/authorizationServers/read`
+
+The Reader role includes the permissions.
+
+|*Azure API Management Services*
+//RLP-155046
+|*azure-api-management-service-backend*
+
+Additional permissions needed:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/backends/read`
+
+The Reader role includes the permissions.
+
+|*Azure API Management Services*
+//RLP-155047
+|*azure-api-management-service-openid-connect-provider*
+
+Additional permissions needed:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/openidConnectProviders/read`
+
+The Reader role includes the permissions.
+
+|*Azure API Management Services*
+//RLP-155048
+|*aazure-api-management-service-user*
+
+Additional permissions needed:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/users/read`
+
+The Reader role includes the permissions.
+
+|*Azure Kubernetes Service*
+//RLP-155179
+|*azure-kubernetes-connected-cluster*
+
+Additional permissions needed:
+
+* `Microsoft.Kubernetes/connectedClusters/Read`
+
+The Reader role includes the permission.
+
+|*Azure CDN*
+//RLP-154729
+|*azure-frontdoor-standardpremium-origin-groups-origin*
+
+Additional permissions needed:
+
+* `Microsoft.Cdn/profiles/read`
+* `Microsoft.Cdn/profiles/origingroups/read`
+* `Microsoft.Cdn/profiles/origingroups/origins/read`
+
+The Reader role includes the permissions.
+
+|*Azure Network Manager*
+//RLP-154727
+|*azure-network-manager-static-members*
+
+Additional permissions needed:
+
+* `Microsoft.Network/networkManagers/read`
+* `Microsoft.Network/networkManagers/networkGroups/read`
+* `Microsoft.Network/networkManagers/networkGroups/staticMembers/read`
+
+The Reader role includes the permissions.
+
+
+|*Azure Network Manager*
+//RLP-154784
+|*azure-network-manager-security-admin-configuration*
+
+Additional permissions needed:
+
+* `Microsoft.Network/networkManagers/read` 
+* `Microsoft.Network/networkManagers/securityAdminConfigurations/read`
+
+The Reader role includes the permissions.
+
+|*Azure Network Manager*
+//RLP-154783
+|*azure-network-manager-network-group*
+
+Additional permissions needed:
+
+* `Microsoft.Network/networkManagers/read`
+* `Microsoft.Network/networkManagers/networkGroups/read`
+
+The Reader role includes the permissions.
+
+|*Azure Recovery Services*
+//RLP-155176
+|*azure-recovery-service-site-recovery-protected-item*
+
+Additional permissions needed:
+
+* `Microsoft.RecoveryServices/Vaults/read`
+* `Microsoft.RecoveryServices/vaults/replicationProtectedItems/read`
+
+The Reader role includes the permissions.
+
+
+|*Azure Storage*
+//RLP-154786
+|*azure-storage-account-blob-container*
+
+Additional permissions needed:
+
+* `Microsoft.Storage/storageAccounts/read`
+* `Microsoft.Storage/storageAccounts/blobServices/containers/read`
+
+The Reader role includes the permissions.
+
+|*Azure Storage*
+//RLP-154785
+|*azure-storage-account-file-service-property*
+
+Additional permissions needed:
+
+* `Microsoft.Storage/storageAccounts/read`
+* `Microsoft.Storage/storageAccounts/fileServices/read`
+
+The Reader role includes the permissions.
+
+|*Google Data Catalog*
+//RLP-154782
+|*gcloud-data-catalog-tag-template*
+
+Additional permissions needed:
+
+* `datacatalog.catalogs.searchAll`
+* `datacatalog.tagTemplates.get`
+* `datacatalog.tagTemplates.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+
+|===
+
+[#new-policies]
+=== New Policies
+
+[cols="40%a,60%a"]
+|===
+|*Policies*
+|*Description*
+
+|*AWS Lightsail bucket accessible to unmonitored cloud accounts*
+//RLP-155140
+
+|*Policy Description—* AWS Lightsail buckets with permissions granted to unmonitored cloud accounts pose a significant security risk. These buckets, offering internet-accessible storage, could be compromised if unauthorized accounts gain access.
+
+Lightsail buckets provide object storage, allowing data retrieval from anywhere. Granting 'read' access to unmonitored cloud accounts introduces a substantial risk. Attackers might exploit this misconfiguration to exfiltrate sensitive data or inject malicious content, potentially leading to data breaches or system compromise.
+
+To mitigate this risk, restrict access to Lightsail buckets to only explicitly trusted and monitored cloud accounts. Only trusted and monitored cloud accounts should possess the necessary permissions.
+
+Regularly review and audit bucket permissions, removing access for any unmonitored or untrusted accounts. Implement robust monitoring and alerting to detect any unauthorized access attempts.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+`config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-lightsail-storage-bucket' AND json.rule = 'readonlyAccessAccounts is not empty and _AWSCloudAccount.isRedLockMonitored($.readonlyAccessAccounts[*]) is false'`
+----
+
+|*AWS Lightsail bucket publicly readable*
+//RLP-155141
+
+|*Policy Description—* Publicly readable objects in AWS Lightsail buckets expose sensitive data to unauthorized access, increasing the risk of data breaches and reputational harm.
+
+AWS Lightsail provides object storage through buckets, enabling data storage and retrieval. A misconfiguration allowing public readability exposes all stored data. Untrusted parties can freely access this information, leading to data exfiltration, intellectual property theft, and financial losses.
+
+To mitigate this risk, enforce the principle of least privilege. Restricting bucket access to authorized users is crucial for maintaining data confidentiality and integrity.
+
+Configure bucket permissions to be private, only granting access to specific users or groups needing it. Regularly review and audit bucket access controls to detect and address any misconfigurations promptly.
+
+*Policy Severity—* High
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'aws-lightsail-storage-bucket' AND json.rule = accessRules.getObject equal ignore case public as X; config from cloud.resource where api.name = 'aws-s3control-public-access-block' AND json.rule = blockPublicAcls is false or blockPublicPolicy is false or ignorePublicAcls is false or restrictPublicBuckets is false as Y; filter '$.X.arn contains $.Y.accountId' ; show X;
+----
+
+|*AWS Lightsail bucket object versioning is disabled*
+//RLP-155138
+
+|*Policy Description—* AWS Lightsail buckets lacking object versioning are susceptible to data loss and unauthorized modification. Disabling this feature removes the ability to revert to previous versions of objects after accidental deletion or malicious alteration.
+
+Lightsail buckets provide object storage, allowing data access from anywhere. Object versioning creates version history for every object stored. Without versioning, accidental deletion or malicious overwrites result in permanent data loss, severely impacting data integrity and potentially leading to business disruption or data breaches. Attackers could exploit this misconfiguration to permanently delete or modify critical data.
+
+To mitigate this risk, enable object versioning on all AWS Lightsail buckets, this ensures data recoverability, protecting against accidental or malicious actions and mitigating the risk of significant data loss.
+
+Regularly review bucket configurations to ensure object versioning remains active. Implement robust access control mechanisms.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-lightsail-storage-bucket' AND json.rule = objectVersioning does not equal ignore case Enabled
+----
+
+
+|===
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+
+2+|*Policy Updates—RQL*
+
+|*AWS CloudTrail is not enabled with multi-trail and not capturing all management events*
+//RLP-154181
+
+|*Changes—* The policy RQL is updated to reduce false positives when both management events and network activity events are configured.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name= 'aws-cloudtrail-describe-trails' AND json.rule = 'isMultiRegionTrail is true and includeGlobalServiceEvents is true' as X; config from cloud.resource where api.name= 'aws-cloudtrail-get-trail-status' AND json.rule = 'status.isLogging equals true' as Y; config from cloud.resource where api.name= 'aws-cloudtrail-get-event-selectors' AND json.rule = '(eventSelectors[*].readWriteType contains All and eventSelectors[*].includeManagementEvents equal ignore case true) or (advancedEventSelectors[*].fieldSelectors[*].equals contains "Management" and advancedEventSelectors[*].fieldSelectors[*].field does not contain "readOnly" and advancedEventSelectors[*].fieldSelectors[*].field does not contain "eventSource")' as Z; filter '($.X.trailARN equals $.Z.trailARN) and ($.X.name equals $.Y.trail)'; show X; count(X) less than 1
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name= 'aws-cloudtrail-describe-trails' AND json.rule = 'isMultiRegionTrail is true and includeGlobalServiceEvents is true' as X; config from cloud.resource where api.name= 'aws-cloudtrail-get-trail-status' AND json.rule = 'status.isLogging equals true' as Y; config from cloud.resource where api.name= 'aws-cloudtrail-get-event-selectors' AND json.rule = '(eventSelectors[*].readWriteType contains All and eventSelectors[*].includeManagementEvents equal ignore case true) or (advancedEventSelectors[?any(name exists and name contains "Management events selector" and fieldSelectors[*].field does not contain "readOnly" and fieldSelectors[*].field does not contain "eventSource")]exists)' as Z; filter '($.X.trailARN equals $.Z.trailARN) and ($.X.name equals $.Y.trail)'; show X; count(X) less than 1 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Existing alerts where all management event is configured and the event selector is configured as part of network activity event will be resolved.
+
+|*Azure Container Registry with anonymous authentication enabled*
+//RLP-154856
+
+|*Changes—* The policy RQL will be updated to trigger an alert on Azure container registry when anonymous pull is enabled, resolving false alerts.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-container-registry' AND json.rule = (skuName contains Standard or skuName contains Premium) and properties.provisioningState equal ignore case Succeeded and properties.anonymousPullEnabled is false
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-container-registry' AND json.rule = (skuName contains Standard or skuName contains Premium) and properties.provisioningState equal ignore case Succeeded and properties.anonymousPullEnabled is true
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* High
+
+*Impact–* High. Existing alerts where the anonymous pull is disabled will be resolved and new alerts will be generated where the anonymous pull is enabled.
+
+|*GCP Load balancer HTTPS target proxy is not configured with QUIC protocol*
+//RLP-154209
+
+|*Changes—* The policy RQL policy will be updated in the case of regional internal load balancers.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-target-https-proxies' AND json.rule = 'quicOverride does not contain ENABLE'
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-compute-target-https-proxies' AND json.rule = 'quicOverride does not contain ENABLE' as X; config from cloud.resource where api.name = 'gcloud-compute-internal-lb-backend-service' as Y; filter 'not ($.Y.usedBy[*].reference contains $.X.urlMap)'; show X;
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Existing alerts for regional internal application load balancer will be resolved.
+
+|*Instance affected by Spring Cloud Function SpringShell vulnerability is exposed to network traffic from the internet [CVE-2022-22963]*
+//RLP-154951
+
+|*Changes—* The policy RQL policy will be updated to consider internet network traffic as the source.
+
+*Current RQL–* 
+----
+network from vpc.flow_record where bytes > 0 AND source.resource IN (resource where finding.type IN ( 'Host Vulnerability' ) AND finding.source IN ( 'Prisma Cloud' ) AND finding.name IN ('CVE-2022-22963')) AND destination.publicnetwork IN ('Internet IPs', 'Suspicious IPs')
+----
+
+*Updated RQL–*
+----
+network from vpc.flow_record where bytes > 0 AND dest.resource IN (resource where finding.type IN ( 'Host Vulnerability' ) AND finding.source IN ( 'Prisma Cloud' ) AND finding.name IN ('CVE-2022-22963')) AND source.publicnetwork IN ('Internet IPs', 'Suspicious IPs')
+----
+
+*Policy Type–* Network
+
+*Policy Severity–* Critical
+
+*Impact–* Low.
+
+|*Azure Storage account encryption key is not rotated regularly*
+//RLP-153985
+
+|*Changes—* The policy RQL policy will be updated to consider internet network traffic as the source.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
+----
+
+*Policy Type–* Config
+
+*Policy Severity–* Low
+
+*Impact–* Low.  Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
+
+|===
+
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+
+|*Cloud Security Assurance Program*
+//RLP-155215
+
+|Prisma Cloud now supports the latest version of Cloud Security Assurance Program (CSAP). This compliance standard supports five different levels - IaaS, SaaS Standard,  SaaS Simplified, Low and Low SaaS.  CSAP aims to boost confidence among public and private sector users, promoting secure cloud adoption and enhancing overall national cybersecurity.
+
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
+
+|*[Update] Korea – Information Security Management System*
+//RLP-155226
+
+|New Policy mappings are added to Korea – Information Security Management System (ISMS) compliance standard.
+
+*Impact*: As new mappings are introduced, compliance scoring might vary.
+
+|*[Update] NIST CSF v2.0*
+//RLP-155206
+
+|New Policy mappings are added to the National Institute of Standards and Technology (NIST) Cybersecurity Framework (CSF) v2.0 compliance standard.
+
+*Impact*: As new mappings are introduced, compliance scoring might vary.
+
+
+|===
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*REST API*
+|*Description*
+
+|*Perform Event Search API*
+//RLP-155188
+|The request body for *Perform Event Search* - https://pan.dev/prisma-cloud/api/cspm/search-events[POST /search/event] has been updated.
+
+Possible values for sort fields are updated from upper case to lower case.
+
+|*Support Description Field*
+|A new `Description` parameter has been introduced to the https://pan.dev/prisma-cloud/api/cwpp/get-users/[Get Users] API response. This will help to get more information on the users based on the description field.
+
+|*Support CaaS Specification References Field*
+|A new `hasCAASSpecReferences` query parameter has been introduced to https://pan.dev/compute/api/get-registry/[Get Registry Scan Results], https://pan.dev/compute/api/get-registry-download/[Download Registry Scan Results] and https://pan.dev/compute/api/get-registry-names/[Get Registry Image Names] APIs to enable registry image filtering deployed as part of CaaS specifications (AWS Fargate, GCP Cloud Run, ACI). This parameter only applies to Prisma onboarded accounts.
+
+|*Support Images Field*
+|A new `images` query parameter has been added to the https://pan.dev/compute/api/get-cloud-discovery-entities/[Get Discovered Cloud Entities] API to filter cloud-discovered entities by the container image names defined in a CaaS specification (AWS Fargate Task Definition, GCP Cloud Run, ACI). This parameter only applies to Prisma onboarded accounts.
+
+|*Support Service Field*
+|A new `service` parameter has been introduced to the https://pan.dev/compute/api/get-cloud-discovery-entities/[Get Discovered Cloud Entities] API response to specify the discovered GCP Cloud Run service name. This parameter only applies to Prisma onboarded accounts.
+
+|*Support CaaS Specification References Total Field*
+|A new `caasSpecReferencesTotal` parameter has been introduced to https://pan.dev/compute/api/get-hosts/[Get Host Scan Results], https://pan.dev/compute/api/get-images/[Get Image Scan Results], https://pan.dev/compute/api/get-policies-compliance-container-impacted/[Get Impacted Container Compliance Policy], https://pan.dev/compute/api/get-policies-compliance-vms-impacted/[Get Impacted VMs Compliance Policy], https://pan.dev/compute/api/get-policies-firewall-app-host-impacted/[Host App Firewall Policy Impacted], https://pan.dev/compute/api/get-policies-vulnerability-host-impacted/[Get Impacted Host Vulnerability Policy], https://pan.dev/compute/api/get-policies-vulnerability-images-impacted/[Get Impacted Image Vulnerability Policy], https://pan.dev/compute/api/get-registry/[Get Registry Scan Results] and https://pan.dev/compute/api/get-vms/[Get VM Image Scan Results] APIs to specify the referenced number of CaaS specifications (AWS Fargate Task Definition, GCP Cloud Run, ACI). This parameter only applies to Prisma onboarded accounts.
+
+|*Support for a Amazon Fargate Task Definition*
+|A new Enum value `aws-fargate-task-definition` has been added to `shared.ScanResultType` schema to specify a new scan result type of Amazon Fargate Task Definition. This parameter only applies to Prisma onboarded accounts.
+
+|===
+
+//[#deprecation-notices]
+//=== Deprecation Notices
+
+//[cols="50%a, 50%a"]
+//|===
+
+//|*Deprecated Endpoints*
+//|*Replacement Endpoints*
+
+
+
+
+//|===
+
+
+

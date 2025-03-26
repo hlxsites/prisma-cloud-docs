@@ -9,7 +9,7 @@
 | 4a84ac0e-9881-4afd-ac3c-7d5c6da1de8b
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/blob/master/checkov/cloudformation/checks/resource/aws/AppSyncLogging.py[CKV_AWS_193]
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/cloudformation/checks/resource/aws/AppSyncLogging.py[CKV_AWS_193]
 
 |Severity
 |LOW
@@ -26,14 +26,14 @@
 
 === Description
 
-It is recommended to have a proper logging process for AWS AppSync in order to track configuration changes conducted manually and programmatically and trace back unapproved changes.
+This policy ensures that AWS AppSync GraphQL APIs have logging enabled. Enabling logging for AppSync allows you to capture, store, and analyze the API activity, which is crucial for monitoring, troubleshooting, and ensuring the security of your API. This policy checks whether the `CloudWatchLogsRoleArn` property in the `LogConfig` configuration is set to a valid value.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
-
+To mitigate this issue, ensure that `cloudwatch_logs_role_arn` is set in the `aws_appsync_graphql_api` resource.
 
 
 [source,go]
@@ -47,4 +47,24 @@ resource "aws_appsync_graphql_api" "enabled" {
     field_log_level          = "ERROR"
   }
 }
+----
+
+*CloudFormation*
+
+To fix this issue, ensure that the `CloudWatchLogsRoleArn` property in the `LogConfig` configuration of the `AWS::AppSync::GraphQLApi` resource is set to a valid IAM role ARN that grants permission to write logs to CloudWatch.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyAppSyncGraphQLApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: example-api
+      AuthenticationType: API_KEY
+      LogConfig:
+        CloudWatchLogsRoleArn: arn:aws:iam::123456789012:role/appsync-logging-role
+        FieldLogLevel: ALL
+      ...
 ----

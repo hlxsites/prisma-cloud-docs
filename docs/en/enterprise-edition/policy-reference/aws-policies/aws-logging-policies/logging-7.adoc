@@ -16,8 +16,7 @@
 |INFO
 
 |Subtype
-|Build
-//, Run
+|Build, Run
 
 |Frameworks
 |CloudFormation,Terraform,TerraformPlan,Serverless
@@ -28,71 +27,29 @@
 
 === Description 
 
-
-AWS CloudTrail is a web service that records AWS API calls for an account, and makes those logs available to users and resources in accordance with IAM policies.
-AWS Key Management Service (KMS) is a managed service that helps create and control the encryption keys used to encrypt account data.
-It uses Hardware Security Modules (HSMs) to protect the security of encryption keys.
-CloudTrail logs can be configured to leverage server-side encryption (SSE) and KMS customer created master keys (CMK) to further protect CloudTrail logs.
-We recommend that CloudTrail logs are configured to use SSE-KMS, providing additional confidentiality controls on log data.
-A given user must have S3 read permission on the corresponding log bucket and must be granted decrypt permission by the CMK policy.
-
-////
-=== Fix - Runtime
-
-
-* AWS Console* 
-
-
-To configure CloudTrail to use SSE-KMS using the Management Console, follow these steps:
-
-. Log in to the AWS Management Console at [https://console.aws.amazon.com/].
-
-. Open the * https://console.aws.amazon.com/cloudtrail/ [Amazon CloudTrail console]*.
-
-. In the left navigation pane, click * Trails*.
-
-. Select a _Trail_.
-
-. Navigate to the * S3* section, click the edit button (pencil icon).
-
-. Click * Advanced*.
-
-. From the * KMS key Id* drop-down menu, select an existing CMK.
-+
-NOTE: Ensure the CMK is located in the same region as the S3 bucket.
-
-. For CloudTrail as a service to encrypt and decrypt log files using the CMK provided, apply a KMS Key policy on the selected CMK.
-
-. Click * Save*.
-
-. You will see a notification message stating that you need to have decrypt permissions on the specified KMS key to decrypt log files.
-+
-Click * Yes*.
-
-
-* CLI Command* 
-
-
-To update the CloudTrail, use the following command:
-[,bash]
-----
-aws cloudtrail update-trail
---name & lt;trail_name>
---kms-id & lt;cloudtrail_kms_key> aws kms put-key-policy
---key-id & lt;cloudtrail_kms_key>
---policy & lt;cloudtrail_kms_key_policy>
-----
-////
+Checks to ensure that CloudTrail logs are encrypted. AWS CloudTrail is a service that enables governance, compliance, operational & risk auditing of the AWS account. It is a compliance and security best practice to encrypt the CloudTrail data since it may contain sensitive information. 
 
 === Fix - Buildtime
 
 
+*Terraform*
+
+To fix this issue, ensure that the `kms_key_id` property in the `aws_cloudtrail` resource is set to a valid KMS key ID or ARN.
+
+Example:
+
+[source,go]
+----
+resource "aws_cloudtrail" "example" {
+  ...
++  kms_key_id = "arn:aws:kms:us-west-2:123456789012:key/example-key-arn"
+}
+----
+
+
 *CloudFormation* 
 
-
-* *Resource:* AWS::CloudTrail::Trail
-* *Arguments:* Properties.KMSKeyId
-
+To fix this issue, ensure that the `KMSKeyId` property in the `AWS::CloudTrail::Trail` resource is set to a valid KMS key ID or ARN.
 
 [source,yaml]
 ----
