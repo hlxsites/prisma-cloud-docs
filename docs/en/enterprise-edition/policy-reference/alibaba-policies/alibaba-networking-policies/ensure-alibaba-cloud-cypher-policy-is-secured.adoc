@@ -27,22 +27,26 @@
 
 === Description 
 
+This policy ensures that Alibaba Cloud SLB (Server Load Balancer) TLS cipher policies are secure. Specifically, it ensures that only secure versions of TLS (Transport Layer Security) are used by disallowing the use of TLSv1.0 and TLSv1.1. Using outdated TLS versions presents security vulnerabilities that can be exploited, compromising the security of data in transit.
 
-The Transport Layer Security (TLS) protocol secures transmission of data between servers and web browsers, over the Internet, using standard encryption technology.
-To follow security best practices and the latest PCI compliance standards, enable the latest version of TLS protocol (i.e.
-TLS 1.2) as part of Alibaba Cloud Cypher policy configuration.
+Failing to enforce secure TLS versions can result in insecure connections, leaving data susceptible to interception and decryption by attackers.
 
 === Fix - Buildtime
 
 *Terraform*
 
-To enable support for the TLS v 1.2 protocol in your Alibaba Cloud Cypher policy, add the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_slb_tls_cipher_policy
+* *Attribute:* tls_versions
+
+To mitigate this issue, ensure that the `tls_versions` attribute in the `alicloud_slb_tls_cipher_policy` resource does not include `TLSv1.0` or `TLSv1.1`.
+
+Example:
 
 [source,go]
 ----
-resource "alicloud_slb_tls_cipher_policy" "pass" {
-  tls_cipher_policy_name = "itsfine"
-  tls_versions           = ["TLSv1.2"]
-  ciphers                = ["AES256-SHA","AES256-SHA256", "AES128-GCM-SHA256"]
+resource "alicloud_slb_tls_cipher_policy" "example" {
+  ...
+-  tls_versions = ["TLSv1.1"]
++  tls_versions = ["TLSv1.2", "TLSv1.3"]
 }
 ----

@@ -1,4 +1,4 @@
-== AWS IAM policies that allow full "*-*" administrative privileges are created
+== AWS IAM policy allows all principals used by any AWS service from target account to assume role
 
 
 === Policy Details 
@@ -40,13 +40,39 @@ The main benefit of the Principal entity is to limit the use of wildcards in the
 
 *Terraform*
 
+ 
+* *Resource:* aws_iam_role
+* *Arguments:* assume_role_policy
+
+ 
 To fix this issue, ensure that the `assume_role_policy` in the `aws_iam_role` resource is configured with specific AWS accounts or principals and does not allow assume role permission to any AWS account.
+ 
 
 Example:
 
 [source,go]
 ----
 resource "aws_iam_role" "example" {
+ 
+  ...
+
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+-        "AWS": "arn:aws:iam::123456789012:root"
++        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole",
+      ...
+    }
+  ]
+}
+POLICY
+=======
   name = "example-role"
 
   assume_role_policy = jsonencode({
@@ -62,6 +88,7 @@ resource "aws_iam_role" "example" {
     ]
   })
   ...
+ 
 }
 ----
 
@@ -86,5 +113,5 @@ Resources:
             Principal:
                 AWS:
 -                 - arn:aws:iam::123456789101:root
--                                   - 123456789101
+-                 - 123456789101
 ----

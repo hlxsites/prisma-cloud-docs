@@ -27,54 +27,48 @@
 
 === Description 
 
+This policy ensures that Kubernetes clusters on Alibaba Cloud are configured with either the Terway or Flannel CNI (Container Network Interface) plugin to support standard Kubernetes network policies. These plugins enable advanced networking features, such as isolation and traffic management, which are critical for secure and efficient cluster operations.
 
-Terway and Flannel are network plugins that enable seamless connectivity and communication between pods within a Kubernetes cluster. Installing the Terway or Flannel plugins on an Alibaba Cloud Kubernetes cluster can ensure adherence to standard network policies for routing and communication between pods. 
+Failing to install and configure these plugins can lead to suboptimal networking and security, reducing the cluster's ability to enforce Kubernetes network policies.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
-To install Terway or Flannel plugins on an Alibaba Cloud Kubernetes cluster, add the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_cs_kubernetes
+* *Arguments:* pod_vswitch_ids, pod_cidr, addons
 
+To mitigate this issue, ensure that either the `Terway` plugin is installed with correctly configured `pod_vswitch_ids` or the `Flannel` plugin is installed with a defined `pod_cidr`.
 
+Example (Terway):
 
 [source,go]
 ----
-resource "alicloud_cs_kubernetes" "pass" {
-  worker_number         = 4
-  worker_vswitch_ids    = ["vsw-id1", "vsw-id1", "vsw-id3"]
-  master_vswitch_ids    = ["vsw-id1", "vsw-id1", "vsw-id3"]
-  master_instance_types = ["ecs.n4.small", "ecs.sn1ne.xlarge", "ecs.n4.xlarge"]
-  worker_instance_types = ["ecs.n4.small", "ecs.sn1ne.xlarge", "ecs.n4.xlarge"]
+resource "alicloud_cs_kubernetes" "example" {
+  name                = "example-cluster"
+  cluster_network_type = "terway-eniip"
+  pod_vswitch_ids     = ["vsw-123456"]
+  worker_vswitch_ids  = ["vsw-654321"]
+  master_vswitch_ids  = ["vsw-789012"]
 
   addons {
-    config = ""
-    name   = "terway-eniip"
+    name = "terway-eniip"
   }
-
-  pod_vswitch_ids = ["vsw-id4"]
-}
-
-# array of addons
-resource "alicloud_cs_kubernetes" "pass2" {
-  worker_number         = 4
-  worker_vswitch_ids    = ["vsw-id1", "vsw-id1", "vsw-id3"]
-  master_vswitch_ids    = ["vsw-id1", "vsw-id1", "vsw-id3"]
-  master_instance_types = ["ecs.n4.small", "ecs.sn1ne.xlarge", "ecs.n4.xlarge"]
-  worker_instance_types = ["ecs.n4.small", "ecs.sn1ne.xlarge", "ecs.n4.xlarge"]
-
-  addons {
-    config = ""
-    name   = "flannel"
-  }
-
-  addons {
-    name   = "csi-plugin"
-    config = ""
-  }
-
-  pod_cidr = "10.0.1.0/16"
 }
 ----
 
+Example (Flannel):
+
+[source,go]
+----
+resource "alicloud_cs_kubernetes" "example" {
+  name                = "example-cluster"
+  cluster_network_type = "flannel"
+  pod_cidr            = "192.168.0.0/16"
+
+  addons {
+    name = "flannel"
+  }
+}
+----

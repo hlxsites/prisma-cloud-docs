@@ -27,37 +27,28 @@
 
 === Description
 
+This policy ensures that Alibaba Cloud RDS (Relational Database Service) instances have the SQL collector enabled and its retention period set to 180 days or more. Enabling the SQL collector and setting an adequate retention period helps in tracking and analyzing the SQL queries made to the database, which can be useful for performance tuning, troubleshooting, and security analysis.
 
-SQL Collector is a feature of Alibaba Cloud RDS that allows you to collect and analyze SQL performance data for your instance. The SQL Collector Retention Period determines the length of time that SQL performance data is retained in the RDS instance. To maintain a longer history of SQL performance data, which is useful for troubleshooting and performance optimization, set the SQL Collector Retention Period to a value greater than 180 (180 days). 
+Failing to enable the SQL collector or setting a short retention period may result in insufficient data for analysis, making it difficult to identify performance issues or security threats.
 
 === Fix - Buildtime
 
 
 *Terraform* 
 
-To modify the SQL Collector Retention Period, add the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_db_instance
+* *Arguments:* sql_collector_status, sql_collector_config_value
 
+To mitigate this issue, ensure that the `sql_collector_status` attribute is set to `Enabled`, and the `sql_collector_config_value` attribute is set to `180` or more in the `alicloud_db_instance` resource.
 
+Example:
 
 [source,go]
 ----
-resource "alicloud_db_instance" "pass" {
-  engine                     = "MySQL"
-  engine_version             = "5.6"
-  instance_type              = "rds.mysql.t1.small"
-  instance_storage           = "10"
-  sql_collector_status       = "Enabled"
-  sql_collector_config_value = 180
-  parameters = [{
-    name  = "innodb_large_prefix"
-    value = "ON"
-    }, {
-    name  = "connect_timeout"
-    value = "50"
-    }, {
-    name  = "log_connections"
-    value = "ON"
-  }]
+resource "alicloud_db_instance" "example" {
+  ...
+
++  sql_collector_status       = "Enabled"
++  sql_collector_config_value = 180
 }
 ----
-
