@@ -10,7 +10,7 @@ Supported SARIF versions include 2.0 and 2.1, accepting .zip, .json, and .sarif 
 
 You can upload SARIF files using either  the Prisma Cloud platform or via an API.
 
-[.procedure]
+
 . Before you begin:
 +
 * Grant the user ingesting the SARIF data Administrator privileges
@@ -19,5 +19,130 @@ You can upload SARIF files using either  the Prisma Cloud platform or via an API
 * Only upload findings relevant to the repository 
 * Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud console
 
-. In Application Security, select *Repositories* > 
+=== Ingest SARIF via the console
+[.procedure]
+. In Application Security, select *Repositories* > click on a repository > Add SARIF Findings.
+
+. Select a SARIF file from the dialog box that is displayed.
++
+The file is uploaded and the ingestion process begins (up to ten minutes depending on the size of the ingested data). Popups indicate if ingestion is successful. 
+
+. View the ingested findings and issues generated from the findings by Prisma Cloud under the *3rd Party Code Weaknesses* tab on both the *Repositories* and *Projects* pages.
+
+=== Ingest SARIF via the API
+
+You can ingest SARIF files via the API, enabling automation, such as in a CI/CD pipeline. Ingestion via API requires a two-stage process: first, obtain a presigned URL, and then upload the file to the provided URL.
+
+[.procedure]
+
+. Obtain a presigned URL.
++
+[source, curl]
+----
+curl -X POST "{Prisma Cloud API URL}/code/api/v2/uploads/uploadSarifFile" \
+    -H "Authorization: {Prisma Cloud generated token}" \
+    -F "file=@{path/to/file.sarif};type=application/octet-stream" \
+    -F "repositoryId={Repositry ID}" \
+    -F "fileName={file name}"
+----
++
+*cURL Command Properties*
++
+* *Prisma Cloud API URL*: Use your tenant API URL (for example, "https://api3.prismacloud.io"). For more information, refer to xref:../../../../get-started/console-prerequisites.adoc[Enable Access to the Prisma Cloud Console]
++
+* *Prisma Cloud generated token*: Use the login endpoint to generate a JWT. Refer to https://pan.dev/prisma-cloud/api/cspm/app-login/[Prisma Cloud APIs - Login] for more information
++
+* *Repository ID*: Found in the header on the *Repositories* page or the response from the List Repositories List endpoint: https://pan.dev/prisma-cloud/api/code/get-repositories/[List Repositories List]
+
+. Upload the file to the URL.
++
+EXAMPLE
++
+[source, curl]
+----
+curl -X POST "https://api3.prismacloud.io/code/api/v2/uploads/uploadSarifFile" \
+    -H "Authorization: {token}" \
+    -F "file=@/Users/user/SARIF/output.sarif;type=application/octet-stream" \
+    -F "repositoryId=ee1f4663-8ae6-4b87-a119-1ff75example" \
+    -F "fileName=output.sarif"
+----
+
+=== Example pipeline
+
+The following is an example of a pipeline that scans every push to the main or master branch and sends the results to Prisma Cloud. Set the following secrets as repository secrets in your secret management system for your CI pipelines (for example, for GitHub: Settings > secrets and variables >actions > add secrets):
+
+* *PRISMA_URL*: Base URL for Prisma Cloud login and file upload
+* *PRISMA_USERNAME*: Your Prisma Cloud API ID
+* *PRISMA_PASSWORD*: Your Prisma Cloud API key
+* *PRISMA_REPO_ID*: Your repository ID in Prisma Cloud
+
+
+[source, yaml]
+----
+
+name: Prisma Cloud Scan and Upload
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Install SAST Tool
+        run: |
+          pip install semgrep
+          sudo apt-get update && sudo apt-get install jq -y
+
+      - name: Run Scan
+        run: |
+          semgrep --config auto --sarif -o output.sarif
+
+      - name: Upload to Prisma Cloud
+        env:
+          PRISMA_URL: ${{ secrets.PRISMA_URL }}
+          PRISMA_USERNAME: ${{ secrets.PRISMA_USERNAME }}
+          PRISMA_PASSWORD: ${{ secrets.PRISMA_PASSWORD }}
+          PRISMA_REPO_ID: ${{ secrets.PRISMA_REPO_ID }}
+        run: |
+          # Authenticate with Prisma Cloud
+          AUTH_RESPONSE=$(curl -L "$PRISMA_URL/login" \
+                             -H 'Content-Type: application/json; charset=UTF-8' \
+                             -H 'Accept: application/json; charset=UTF-8' \
+                             -d '{
+                                   "password": "'"${PRISMA_PASSWORD}"'",
+                                   "username": "'"${PRISMA_USERNAME}"'"
+                                 }')
+
+          echo "AUTH_RESPONSE: $AUTH_RESPONSE"
+
+          TOKEN=$(echo $AUTH_RESPONSE | jq -r '.token')
+          MESSAGE=$(echo $AUTH_RESPONSE | jq -r '.message')
+
+          echo "Token: $TOKEN"
+          echo "Message: $MESSAGE"
+
+          if [ -z "$TOKEN" ]; then
+            echo "Error: Failed to retrieve token"
+            exit 1
+          fi
+
+          # Upload SARIF file to Prisma Cloud
+          UPLOAD_RESPONSE=$(curl -v -X POST "$PRISMA_URL/code/api/v2/uploads/uploadSarifFile" \
+                          -H "Authorization: $TOKEN" \
+                          -F "file=@./output.sarif;type=application/octet-stream" \
+                          -F "repositoryId=$PRISMA_REPO_ID" \
+                          -F "fileName=output.sarif")
+
+          echo "Upload response: $UPLOAD_RESPONSE"
+
+
+
+----
 
