@@ -4,26 +4,36 @@
 //You can import and consolidate findings from Static Application Security Testing (SAST) vendors that support SARIF output. This enables you to view all your Application Security (AppSec) vulnerabilities on a single platform, whether they are from third-party sources or native tools.
 
 
-Upload SAST data from third-party tools (for vendors that support SARIF output) to the Prisma Cloud platform using SARIF (Static Analysis Results Interchange Format) to analyze and remediate SAST issues directly within the platform. This feature is particularly useful for vendors that are not directly supported by Prisma Cloud. When SARIF files are uploaded, they are parsed to create CWE weaknesses.  
+Upload SAST data from third-party tools (for vendors that support SARIF output) to the Prisma Cloud platform using SARIF (Static Analysis Results Interchange Format) to analyze and remediate SAST issues directly within the platform. This feature is particularly useful for vendors that are not directly supported by Prisma Cloud. When SARIF data findings are uploaded, they are parsed to generate CWE weaknesses. 
 
-Supported SARIF versions include 2.0 and 2.1, accepting .zip, .json, and .sarif ile formats.
+NOTE: If you are using xref:veracode-ingestion.adoc[Veracode], consider using the native ingestion feature instead. The native integration includes automatically pulling the data periodically and provides additional fidelity.
 
-You can upload SARIF files using either  the Prisma Cloud platform or via an API.
+
+Prisma Cloud supports SARIF versions 2.0 and 2.1 and accepts `.zip`, `.json`, and `.sarif` files.
+
+You can upload SARIF files through the Prisma Cloud platform or via the API.
 
 
 . Before you begin:
 +
-* Grant the user ingesting the SARIF data Administrator privileges
+* Permissions:
++
+** Grant *System Administrator* or *AppSec* privileges to users who need to view and upload SARIF results. Limit access to read-only for selected repositories by assigning the *Developer* role permissions to users who only need to view and analyze data in specific repositories without the ability to make changes
++
+** *GRBAC (Generic Role-Based Access Control):*: Viewing will require permissions for Projects > View and access to the selected repositories. Ingesting SARIF files will require permissions for Providers > Create or Update. Deleting old SARIF files will require permissions for Providers > Delete 
 * Onboard the repository into the system before SARIF findings for that repository can be uploaded
-* Ensure that uploaded findings follow the standard SARIF specification
 * Only upload findings relevant to the repository 
-* Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud console
+* Ensure that uploaded findings follow the standard SARIF specifications
+* Add the Prisma Cloud IP addresses and hostname for Application Security to an xref:../../../../get-started/console-prerequisites.adoc[allow list] to enable access to the Prisma Cloud console
 
 === Ingest SARIF via the console
 [.procedure]
-. In Application Security, select *Repositories* > click on a repository > Add SARIF Findings.
 
-. Select a SARIF file from the dialog box that is displayed.
+. Export the required SARIF file from your third-party vendor to your host machine.
+
+. In Application Security, select *Repositories* > click on a repository > *Add SARIF Findings*.
+
+. Browse for and select the SARIF file from the displayed dialog box.
 +
 The file is uploaded and the ingestion process begins (up to ten minutes depending on the size of the ingested data). Popups indicate if ingestion is successful. 
 
@@ -37,22 +47,22 @@ You can ingest SARIF files via the API, enabling automation, such as in a CI/CD 
 
 . Obtain a presigned URL.
 +
-[source, curl]
+[source,curl]
 ----
 curl -X POST "{Prisma Cloud API URL}/code/api/v2/uploads/uploadSarifFile" \
-    -H "Authorization: {Prisma Cloud generated token}" \
-    -F "file=@{path/to/file.sarif};type=application/octet-stream" \
-    -F "repositoryId={Repositry ID}" \
-    -F "fileName={file name}"
+     -H "Authorization: {Prisma Cloud generated token}" \
+     -F "file=@{path/to/file.sarif};type=application/octet-stream" \
+     -F "repositoryId={Repository ID}" \
+     -F "fileName={file name}"
 ----
 +
-*cURL Command Properties*
+*Command properties breakdown*:
 +
 * *Prisma Cloud API URL*: Use your tenant API URL (for example, "https://api3.prismacloud.io"). For more information, refer to xref:../../../../get-started/console-prerequisites.adoc[Enable Access to the Prisma Cloud Console]
 +
 * *Prisma Cloud generated token*: Use the login endpoint to generate a JWT. Refer to https://pan.dev/prisma-cloud/api/cspm/app-login/[Prisma Cloud APIs - Login] for more information
 +
-* *Repository ID*: Found in the header on the *Repositories* page or the response from the List Repositories List endpoint: https://pan.dev/prisma-cloud/api/code/get-repositories/[List Repositories List]
+* *Repository ID*: Found in the header on the *Repositories* page or the response from the List Repositories List endpoint. Refer to https://pan.dev/prisma-cloud/api/code/get-repositories/[List Repositories List] for more information
 
 . Upload the file to the URL.
 +
@@ -61,15 +71,15 @@ EXAMPLE
 [source, curl]
 ----
 curl -X POST "https://api3.prismacloud.io/code/api/v2/uploads/uploadSarifFile" \
-    -H "Authorization: {token}" \
-    -F "file=@/Users/user/SARIF/output.sarif;type=application/octet-stream" \
-    -F "repositoryId=ee1f4663-8ae6-4b87-a119-1ff75example" \
-    -F "fileName=output.sarif"
+     -H "Authorization: {token}" \
+     -F "file=@/Users/user/SARIF/output.sarif;type=application/octet-stream" \
+     -F "repositoryId=ee1f4663-8ae6-4b87-a119-1ff75example" \
+     -F "fileName=output.sarif"
 ----
 
 === Example pipeline
 
-The following is an example of a pipeline that scans every push to the main or master branch and sends the results to Prisma Cloud. Set the following secrets as repository secrets in your secret management system for your CI pipelines (for example, for GitHub: Settings > secrets and variables >actions > add secrets):
+The following is an example of a pipeline that scans every push to the main or master branch and sends the results to Prisma Cloud. Before you begin, set the following secrets as repository secrets in your secret management system for your CI pipelines (for example, for GitHub: Settings > Secrets and variables > Actions > Add secrets):
 
 * *PRISMA_URL*: Base URL for Prisma Cloud login and file upload
 * *PRISMA_USERNAME*: Your Prisma Cloud API ID
