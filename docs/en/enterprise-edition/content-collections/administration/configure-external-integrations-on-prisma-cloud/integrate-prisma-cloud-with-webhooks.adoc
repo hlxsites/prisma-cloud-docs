@@ -1,14 +1,11 @@
-:topic_type: task
-[.task]
 [#id5e933950-2d7f-4581-b3ea-2c7203d261c2]
 == Integrate Prisma Cloud with Webhooks
 Learn how to integrate Prisma Cloud with webhooks to see alerts in your service or application.
 
 Integrate Prisma® Cloud with webhooks to send Prisma Cloud alerts to webhooks and pass information to any third-party integrations that are not natively supported on Prisma Cloud. Your incident response teams can monitor the webhook channels to investigate and remediate security incidents. With a webhook integration, you can configure Prisma Cloud to send information to the webhook as an HTTPS POST request as soon as an alert is generated. You can also modify the key format and value associated in the alert payload. If you have internal services or applications that subscribe to the webhook, these subscribing clients receive the alert data in a JSON format.
 
-
-
-[.procedure]
+[#webhook-int-pre-req]
+=== Prerequisites
 . Obtain your *Webhook URL*.
 +
 If you have additional details that you want to include in the payload to enable additional security or to verify the authenticity of the request, you can include these as key-value pairs in a custom header.
@@ -16,47 +13,63 @@ If you have additional details that you want to include in the payload to enable
 . Set up webhooks as an integration channel on Prisma Cloud.
 +
 If you have a firewall or cloud Network Security Group between the internet and webhooks, you need to ensure network reachability and xref:../../get-started/access-prisma-cloud.adoc[Enable Access to the Prisma Cloud Console]. 
+
+[#webhook-int-task]
+[.task]
+=== Set up Webhook integration on Prisma Cloud
+Follow these steps to setup Webhook integration on Prisma Cloud.
+
+[.procedure]
+. Log in to Prisma Cloud.
+
+. Select *Settings > Integrations & Notifications > Integrations*.
+
+. Select *Add Integration > Webhook* from the list.
+
+. Enter the *Integration Name* and optionally, add a *Description*.
+
+. Enter your *Webhook URL*.
+
+. (tt:[Optional]) Enable *Custom Payload*.
 +
-.. Log in to Prisma Cloud.
-
-.. Select *Settings > Integrations & Notifications > Integrations*.
-
-.. Select *Add Integration > Webhook* from the list.
-
-.. Enter *Integration Name* and your *Webhook URL*.
+** If you enable the option, you can modify the key-value pairs that are sent in the alert payload for *Audit Event*, *Anomaly*, and *Config* type policies when violations occur. For other types of policies, Prisma Cloud will send alert payloads in a default format.
 +
-You can also provide a *Description* of the integration for your records.
+** If you do not enable the option, Prisma Cloud will continue to send the alert payloads in the default format.
 
-.. Learn about your customization options.
-+
-*** Add custom *HTTP Headers* as key-value pairs.
+. Add custom *HTTP Headers* as key-value pairs.
 +
 You can include an authentication token in the custom header. The integration includes Content-Type as a default header and you cannot edit it.
 
-*** Use the JSON editor to modify the JSON data in the alert payload.
+. Select *Next*.
++
+image::administration/webhook-integration-config.png[]
+
+. Review the *Custom Payload* format if you have enabled it.
++
+** The alert payload information including the key and the value is displayed onscreen. You can modify the payload to meet your integration needs.
++
+** Use the JSON editor to modify the JSON data in the alert payload.
 +
 You can review the existing payload and modify the key and value pairs to suit the implementation needs for the subscribing webhook client. The JSON editor includes the reference vocabulary for a brief description of each key.
 +
-.... Enable *Custom Payload*.
-
-.... Click *Next* to review the custom payload format.
-+
-The alert payload information including the key and the value is displayed onscreen. You can revise the payload to meet your integration needs.
-+
 image::administration/webhook-custom-payload.png[]
 
-.. Select *Next* to review the integration summary.
+. Select *Next*.
 
-.. *Test* and *Save Integration*.
+. Review the *Summary* and then *Test Integration*.
+
+. *Save Integration* if the test is successful.
 +
-After you set up the integration successfully, you can use the Get Status link in *Settings > Integrations* to periodically check the integration status.
-+
-image::administration/get-status.png[]
+image::administration/webhook-integration-success.png[]
+
+. After successfully setting up the integration, you will find it listed on the *Integrations* page. Use the *Actions* panel to *View*, *Edit*, or *Delete* the integration. You can also periodically check the integration status by clicking on the *Get Status* link.
 +
 image::administration/webhook-int-2.png[]
++
+image::administration/get-status.png[]
 
 
-. Modify an existing alert rule or create a new alert rule to xref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[send alert notifications] to Webhook. 
+. Modify an existing alert rule or create a new alert rule to xref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc##id408f7a0a-fcb6-4847-81a1-eca436daa986[send alert notifications] to Webhook. 
 
 . View the alert POST requests on Webhook.
 +
