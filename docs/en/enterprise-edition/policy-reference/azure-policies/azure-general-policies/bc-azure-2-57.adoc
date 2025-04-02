@@ -1,0 +1,52 @@
+== PostgreSQL Flexible Server not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzurePostgreSQLFlexibleServerConfigPrivEndpt.yaml[CKV2_AZURE_57]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy checks whether PostgreSQL Flexible Server instances are configured with a private endpoint. A private endpoint allows secure access to the database server over a private network instead of the public internet.
+
+Not configuring the PostgreSQL Flexible Server with a private endpoint can expose the database to unauthorized access and vulnerabilities. This creates a significant security risk as sensitive data may be accessible to potential attackers who could exploit the public endpoint. Utilizing a private endpoint helps to isolate the database from the public internet, thereby enhancing security and reducing the attack surface.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+Ensure that your PostgreSQL Flexible Server is configured with a private endpoint. This can be done by adding a `azurerm_private_endpoint` block that is connected to the `azurerm_postgresql_flexible_server` resource.
+
+[source,go]
+----
+resource "azurerm_postgresql_flexible_server" "example" {
+  name                = "example"
+  ...
+}
+
++ resource "azurerm_private_endpoint" "example" {
++   ...
++   private_service_connection {
++     ...
++     private_connection_resource_id = azurerm_postgresql_flexible_server.example.id
++   }
++ }
+----
+
