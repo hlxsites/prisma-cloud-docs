@@ -27,21 +27,28 @@
 
 === Description 
 
-Alibaba Cloud ALB ACL refers to Access Control List feature of the Alibaba Cloud Server Load Balancer (SLB) product called Application Load Balancer (ALB). Through ALB ACL, you can prevent public access to your backend servers by configuring various settings such as IP addresses, domain names, HTTP methods, or HTTP header fields. 
+This policy ensures that Alibaba Cloud Application Load Balancer (ALB) ACL (Access Control List) entries do not allow unrestricted access (i.e., `0.0.0.0/0`). Allowing unrestricted access can expose your load balancer to the entire internet, increasing the risk of unauthorized access and potential attacks.
+
+Configuring ACL entries to restrict access helps protect the ALB from exposure to malicious traffic and ensures that only trusted IP ranges can access the resources behind the load balancer.
 
 === Fix - Buildtime
 
 *Terraform*
 
-To restrict public access to your servers through ALB ACL, add the following code to your Terraform file during buildtime.
+* *Resource:* alicloud_alb_acl_entry_attachment
+* *Attribute:* entry
 
+To mitigate this issue, ensure that the `entry` attribute in the `alicloud_alb_acl_entry_attachment` resource does not include `0.0.0.0/0`.
+
+Example:
 
 [source,go]
 ----
-resource "alicloud_alb_acl_entry_attachment" "phew" {
-  acl_id      = alicloud_alb_acl.fail.id
-  entry       = "10.0.0.0/16"
-  description = var.name
+resource "alicloud_alb_acl_entry_attachment" "example" {
+  ...
+  entry {
+-    entry = "0.0.0.0/0"
++    entry = "192.168.1.0/24"
+  }
 }
 ----
-

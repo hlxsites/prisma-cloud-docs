@@ -1,4 +1,4 @@
-== AWS IAM policies that allow full "*-*" administrative privileges are created
+== AWS IAM policy allows all principals used by any AWS service from target account to assume role
 
 
 === Policy Details 
@@ -10,7 +10,7 @@
 | 84214659-a01d-48d0-aee8-9b00ce51bfdd
 
 |Checkov ID 
-| https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/checks/resource/aws/IAMRoleAllowAssumeFromAccount.py[CKV_AWS_61]
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/aws/IAMRoleAllowAssumeFromAccount.py[CKV_AWS_61]
 
 |Severity
 |HIGH
@@ -38,12 +38,65 @@ The main benefit of the Principal entity is to limit the use of wildcards in the
 
 === Fix - Buildtime
 
+*Terraform*
+
+ 
+* *Resource:* aws_iam_role
+* *Arguments:* assume_role_policy
+
+ 
+To fix this issue, ensure that the `assume_role_policy` in the `aws_iam_role` resource is configured with specific AWS accounts or principals and does not allow assume role permission to any AWS account.
+ 
+
+Example:
+
+[source,go]
+----
+resource "aws_iam_role" "example" {
+ 
+  ...
+
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+-        "AWS": "arn:aws:iam::123456789012:root"
++        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole",
+      ...
+    }
+  ]
+}
+POLICY
+=======
+  name = "example-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::123456789012:role/allowed-role"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+  ...
+ 
+}
+----
+
 
 *CloudFormation* 
 
 
-* *Resource:* AWS::IAM::Role
-* *Arguments:* Properties.AssumeRolePolicyDocument.Statement
+To fix this issue, ensure that the `AssumeRolePolicyDocument` in the `AWS::IAM::Role` resource is configured with specific AWS accounts or principals and does not allow assume role permission to any AWS account.
 
 
 [source,yaml]
@@ -60,5 +113,5 @@ Resources:
             Principal:
                 AWS:
 -                 - arn:aws:iam::123456789101:root
--                                   - 123456789101
+-                 - 123456789101
 ----

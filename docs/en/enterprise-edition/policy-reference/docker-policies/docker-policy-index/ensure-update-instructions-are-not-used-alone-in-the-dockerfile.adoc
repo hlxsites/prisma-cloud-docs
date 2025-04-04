@@ -27,32 +27,18 @@
 
 === Description 
 
-
-You should not use OS package manager update instructions such as `apt-get update` or `yum update` either alone or in a single line in the Dockerfile.
-Adding update instructions in a single line on the Dockerfile will cause the update layer to be cached.
-When you then build any image later using the same instruction, this will cause the previously cached update layer to be used, potentially preventing any fresh updates from being applied to later builds.
+This rule detects whether OS package manager update instructions, such as apt-get update or yum update, are used alone within Dockerfiles. Using update instructions alone, or in a single line, causes the update layer to be cached. This can lead to stale updates being used in subsequent builds, preventing necessary updates from being applied and potentially introducing vulnerabilities. Therefore, we recommend that update instructions should always be combined with package installation commands in the same RUN instruction.
 
 === Fix - Buildtime
 
-
 *Docker* 
 
+To mitigate this issue, combine the update commands with install commands in a single RUN instruction. This ensures that the package list is updated and packages are installed in the same layer.
 
-
+Example:
 
 [source,dockerfile]
 ----
-{
- "FROM base
-
-RUN apt-get update \\
- && apt-get install -y --no-install-recommends foo \\
- && echo gooo
-
-RUN apk update \\
- && apk add --no-cache suuu looo
-
-RUN apk --update add moo",
-}
+- RUN apt-get update
++ RUN apt-get update && apt-get install -y <package-name>
 ----
-

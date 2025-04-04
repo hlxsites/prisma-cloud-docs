@@ -26,25 +26,22 @@
 
 === Description
 
-Using unique FROM aliases in your Docker multistage builds can help improve the security and reliability of your builds.
-The FROM alias is used to specify the base image for a build stage, and using a unique alias for each stage can help prevent confusion and ensure that the correct image is being used.
+This rule detects whether each FROM instruction in a Dockerfile uses a unique alias when building multistage images. Aliases help to identify stages, making Dockerfiles more readable and maintainable. Enforcing unique aliases ensures clarity, prevents conflicts and avoids any unintentional overwriting of stages.
 
 === Fix - Buildtime
 
 
 *Docker* 
 
+To mitigate this issue, ensure that each `FROM` instruction in your multistage Dockerfile uses a unique alias.
 
-
+Example:
 
 [source,dockerfile]
 ----
-{
- "FROM debian:jesse1 as build
-RUN stuff
-
-FROM debian:jesse1 as another-alias
-RUN more_stuff",
-}
+FROM node:14 as builder
+...
+- FROM node:14 as builder # Duplicate alias
++ FROM node:14 as builder_2 # Unique alias
+...
 ----
-

@@ -16,8 +16,7 @@
 |LOW
 
 |Subtype
-|Build
-//, Run
+|Build, Run
 
 |Frameworks
 |CloudFormation,Terraform,TerraformPlan,Serverless
@@ -28,32 +27,28 @@
 
 === Description 
 
-
-Encryption of data at rest is a security feature that helps prevent unauthorized access to your data.
-This feature uses AWS Key Management Service (AWS KMS) to store and manage encryption keys, and the Advanced Encryption Standard algorithm with 256-bit keys (AES-256) to perform the encryption.
-If enabled, the feature encrypts the domain's indices, logs, swap files, all data in the application directory, and automated snapshots.
-We recommend you implement encryption at rest in order to protect a data store containing sensitive information from unauthorized access, and fulfill compliance requirements.
-
-////
-=== Fix - Runtime
-
-
-* Procedure* 
-
-
-By default, domains do not encrypt data at rest, and you cannot configure existing domains to use EncryptionAtRest.
-To enable EncryptionAtRest, you must create a new domain and migrate Elasticsearch to that domain.
-You will also need, at minimum, read-only permissions to AWS KMS.
-To create a new domain sign in to your AWS Console and select the Elasticsearch service (under Analytics), follow these steps:
-
-. Select * Create a new domain*.
-
-. Change the default * Encryption* setting to * enabled*.
-
-. Continue configuring your cluster.
-////
+This policy identifies Elasticsearch domains for which encryption is disabled. Encryption of data at rest is required to prevent unauthorized users from accessing the sensitive information available on your Elasticsearch domains components. This may include all data of file systems, primary and replica indices, log files, memory swap files and automated snapshots. The Elasticsearch uses AWS KMS service to store and manage the encryption keys. It is highly recommended to implement encryption at rest when you are working with production data that have sensitive information, to protect from unauthorized access.
 
 === Fix - Buildtime
+
+
+*Terraform*
+
+* *Resource:* aws_elasticsearch_domain
+* *Arguments:* encrypt_at_rest
+
+To fix this issue, you should ensure that your Elasticsearch domain configuration has the `encrypt_at_rest` property enabled. Below is an example of how to set this property in a Terraform configuration:
+
+[source,go]
+----
+resource "aws_elasticsearch_domain" "example" {
+  domain_name = "example"
+  
+  encrypt_at_rest {
+    enabled = true
+  }
+}
+----
 
 
 *CloudFormation* 
@@ -62,16 +57,36 @@ To create a new domain sign in to your AWS Console and select the Elasticsearch 
 * *Resource:* AWS::Elasticsearch::Domain 
 * *Argument:* Properties.EncryptionAtRestOptions.Enabled
 
+To mitigate this issue, ensure that the `EncryptAtRestOptions` property in the `AWS::Elasticsearch::Domain` resource is properly configured to enable encryption at rest.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "ExampleElasticsearchDomain": {
+      "Type": "AWS::Elasticsearch::Domain",
+      "Properties": {
+        "DomainName": "example",
+        "EncryptAtRestOptions": {
+          "Enabled": true
+        }
+        ...
+      }
+    }
+  }
+}
+----
 
 [source,yaml]
 ----
-{
- "Resources:
-  ElasticsearchDomain:
+Resources:
+  ExampleElasticsearchDomain:
     Type: AWS::Elasticsearch::Domain
     Properties:
+      DomainName: example
+      EncryptAtRestOptions:
+        Enabled: true
       ...
-      EncryptionAtRestOptions:
-+       Enabled: True",
-}
 ----
