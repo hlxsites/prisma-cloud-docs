@@ -1,0 +1,120 @@
+== Limited GA Features on Prisma Cloud
+
+Review the Prisma Cloud features that have Limited General Availability (LGA) on some stacks for select customers.
+
+The LGA features are not available on all stacks and are subject to change by the GA release. If you want a specific feature enabled, contact Prisma Cloud Customer Support.
+
+[cols="50%a,50%a"]
+|===
+|FEATURE
+|DESCRIPTION
+
+|tt:[Update] *Asset Inventory and Compliance*
+//RLP-152449
+
+|To improve performance and maintain consistency, the *Asset Inventory* and *Compliance* pages include the following pagination and filtering enhancements:
+
+* To support global search and sort, a *Show All* option is displayed when the next page is available. You can sort and search through only the data that is currently displayed in the table (visible in the UI). If you want to sort all available data, first click *Show All* and then select sort.
+
+* Asset Inventory displays exact account count in the footer only if total number of accounts is less then 2,000.
+
+* The _Date as of_ value displays data updated as of that particular time or it can display data that is more recent than the timestamp.
+
+* To be consistent with the overall platform behavior, the *Cloud Service*, *Asset Class*, and *Asset Type* filters are now combined using _AND_ logic. For example, the response for `cloud.service = EC2 service and asset.type = S3_bucket query` will result in 0 assets being displayed, because there is no commonality between them since they are combined using _AND_.
+
+* In *Asset Explorer*, filters are applied on both assets as well as audit events that can result in some of the filters that are not related to audit events to not be included.
+
+* In *Compliance*, the asset-level filters are applied on asset count and show all compliances with counts as per the filters. It will still display compliance with 0 count if none of the assets get filtered. You can apply the compliance-level filters to filter by compliance.
+
+* See https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/asset-inventory-compliance-api-documentation.pdf[Asset Inventory and Compliance API documentation] for the new version of APIs, which are only applicable to LGA customers.
+
+Along with the above enhancements, Prisma Cloud also includes *Tag-based Role-based Access Control* (RBAC) with Resource Lists that is built on Prisma Cloud’s existing RBAC capabilities, which allow your System Administrators to define limited access to cloud assets by introducing support for https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/tag-based-rbac-resource-lists-lga.pdf[Tag-based Resource Lists for Roles].
+
+//Tag-based RBAC with Resource Lists
+//RLP-143394 - moved blurb under Asset Inventory updates mentioned above in accordance with PCS-5089 
+
+
+|*Auto-Dismiss Alerts*
+//PCSUP-24226
+
+|Enable *Auto-Actions* in Prisma Cloud to efficiently tackle tasks such as auto-dismissal of alerts with specific tags, defined in a resource list. When creating alert rules you have the option to automatically take action when a policy is violated by auto-dismissing alerts on assigned targets. Once enabled, these options are displayed as additional steps in the alert rule creation process. For example, if you enable *Auto-Actions*, the options to *Configure Auto-Actions* is displayed. You can optionally configure *Auto-Action* to include Reason and Authorization details. 
+//Auto-Actions can be enabled on your tenant by contacting Prisma Cloud Customer Support.
+
+|*Cloud Account Group Details Included in CSV Download File*
+//RLP-141935, RLP-134460
+
+|The existing CSV download for Alerts now supports the ability to display Cloud Account Group details in the CSV. These details will be added at the end of the CSV as a new field.
+
+
+// |[*Update*] *Audit Logs*
+//RLP-133400, RLP-133030
+//
+// |You can now forward audit logs from Prisma Cloud to your *Splunk* integration. All new audit logs that are generated after you enable the integration will be sent to Splunk. You can view the audit logs on *Settings > Audit Logs* on Prisma Cloud.
+
+//In addition, Prisma Cloud now forwards *Successful Login* type audit log messages to your configured external integrations. For example, Prisma Cloud will forward the following audit log message:
+
+//----
+//'xxx@paloaltonetworks.com'(with role 'System Admin':'System Admin') logged in via password
+//----
+
+
+|*Continuous Permission Management*
+//RLP-129731
+
+|Prisma Cloud provides a https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/continuous-permission-management-lga.pdf[Continuous Permission Management] enhancement script to streamline your experience with your onboarded cloud accounts. You can now easily manage the required API ingestion permissions for your AWS, Azure, GCP, or OCI cloud accounts on a continuous basis, ensuring smooth operation and eliminating potential misconfiguration issues against new API ingestions.
+
+
+|*_AWSCloudAccount.orgHierarchyNames() RQL Function for AWS Assets*
+//RLP-127530, RLP-110106
+
+|A new `_AWSCloudAccount.orgHierarchyNames()` RQL function is available to enumerate the organization memberships for a given asset. You can use this function to refer to the list of complete Organization Units (OUs) in your account ownership hierarchy in order to compare whether any of the OUs or parent OUs match with the targeted list values. Here are a few examples:
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4”)`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-vpcs’ and json.rule = ‘_AWSCloudAccount.orgHierarchyNames() intersects (ou-u00k-th4guvk9, r-u00k)’`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-vpcs’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4") as X; config from cloud.resource where api.name = ‘aws-ec2-describe-subnets’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() intersects (“OU4”) as Y; filter ‘$.X.vpcId equals $.Y.vpcId’; show Y;`
+
+* `config from cloud.resource where api.name = ‘aws-ec2-describe-security-groups’ AND json.rule = _AWSCloudAccount.orgHierarchyNames() does not intersect (“OU1") and _AWSCloudAccount.orgHierarchyNames() exists`
+
+
+|*Support for Onboarding IBM Cloud*
+
+//RLP-101176
+//https://docs.paloaltonetworks.com/content/dam/techdocs/en_US/pdf/prisma/prisma-cloud/prerelease/ibm-onboarding-lga.pdf
+
+|Prisma Cloud allows you to https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/ibm-onboarding-lga.pdf[onboard and protect] your resources deployed on the IBM cloud infrastructure from a single console. Gain complete visibility and control over potential risks within your IBM cloud infrastructure across all the Multi-Zone Regions (MZR).
+
+You can now manage vulnerabilities, ensure compliance, and provide runtime defense for your resources in the IBM cloud.
+
+
+|*Asset Tag Filter in Asset Inventory*
+
+//RLP-70205 - Possible GA in Q4
+
+//https://docs.paloaltonetworks.com/content/dam/techdocs/en_US/pdf/prisma/prisma-cloud/prerelease/asset-inventory-resource-tag-filter-lga.pdf
+
+|A new https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/asset-inventory-resource-tag-filter-lga.pdf[Asset Tag] filter is now available in the Prisma Cloud Asset Inventory, which allows you to focus on assets based on the resource tags present. Once you filter based on the Asset Tag, the Asset Inventory will display only the assets that contain the Asset Tags you specified.
+
+
+|*Resolved Alert Notification to External Integrations*
+
+//RLP-71649, RLP-83106
+
+|The alert notification system is enhanced to send resolved notifications to external integrations such as ServiceNow or Jira (integrations that support the state change) when you delete a cloud account or update an alert rule on the Prisma Cloud administrative console. For example, when the cloud account or the alert rule associated with an open alert is deleted, the alert status is updated as resolved on Prisma Cloud and the corresponding resolved notification will be sent to the supported integration channels where the open alert notification was sent.
+
+|tt:[Update] *Resource Type Column Included in Download all filtered assets .csv*
+
+//RLP-132702, RLP-131241, PCSUP-23876
+//Moving this from 3.2 New Features commented out to LGA as fix for PCUP-23876 as this feature is still in LGA.
+
+|In *Asset Explorer*, if you select *Download all filtered assets*, the resulting .csv file now includes a *Resource Type* column that lists the asset type. Previously, the  column was displayed only on selecting *Download the current table*.
+
+|tt:[Update] *Enable Notifications for Alerts State Change*
+
+//PCSUP-23876, RLPARCH-10419
+//Blurb approved by Nishant Agarwal via Slack
+
+|Stay updated on the status of alerts you are tracking by configuring external notifications for when the status of an alert changes. For example, if an alert status transitions from one state to another, such as from *Open* to *Dismissed* or *Resolved*, you can enable alert notifications when *Alert notifications for all states* is enabled. If you do not see the option to enable notifications for the different states when you https://docs.prismacloud.io/en/enterprise-edition/content-collections/alerts/create-an-alert-rule-cloud-infrastructure#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Cloud Infrastructure], contact Prisma Cloud Customer Support to enable it on your Prisma Cloud tenant.
+
+|===
