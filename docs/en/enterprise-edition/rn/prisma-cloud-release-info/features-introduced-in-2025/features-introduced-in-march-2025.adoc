@@ -945,26 +945,6 @@ network from vpc.flow_record where bytes > 0 AND dest.resource IN (resource wher
 
 *Impact–* Low.
 
-|*Azure Storage account encryption key is not rotated regularly*
-//RLP-153985
-
-|*Changes—* The policy RQL policy will be updated to consider internet network traffic as the source.
-
-*Current RQL–* 
-----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X; 
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 1' 
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Low
-
-*Impact–* Low.  Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
 
 |===
 
