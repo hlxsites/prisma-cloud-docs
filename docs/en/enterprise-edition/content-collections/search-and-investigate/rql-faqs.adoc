@@ -9,7 +9,7 @@ The following are answers to frequently asked questions.
 When structuring an RQL query also known as a clause, it is important to note that only the `api.name` and `json.rule` attribute can be used at the Y and Z clauses. All other attributes such as `cloud type, cloud service, resource status, cloud account, cloud account group, cloud region, azure resource group, tag, finding severity/source/type` can only be used at the X clause. For example:
 
 ----
-config from cloud.resource where api.name = 'aws-lambda-list-functions' as X; config from cloud.resource where api.name = 'aws-iam-list-roles' as Y; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and document.Statement[?any(Effect equals Allow and (Action equals "*" or Action contains :* or Action[*] contains :*) and (Resource equals "*" or Resource[*] anyStartWith "*") and Condition does not exist)] exists as Z; filter '$.X.role equals $.Y.role.arn and $.Y.attachedPolicies[*].policyName equals $.Z.policyName'; show Z;config from cloud.resource where api.name = 'aws-lambda-list-functions' as X; config from cloud.resource where api.name = 'aws-iam-list-roles' as Y; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and document.Statement[?any(Effect equals Allow and (Action equals "*" or Action contains :* or Action[*] contains :*) and (Resource equals "*" or Resource[*] anyStartWith "*") and Condition does not exist)] exists as Z; filter '$.X.role equals $.Y.role.arn and $.Y.attachedPolicies[*].policyName equals $.Z.policyName'; show Z;]
+config from cloud.resource where api.name = 'aws-lambda-list-functions' as X; config from cloud.resource where api.name = 'aws-iam-list-roles' as Y; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and document.Statement[?any(Effect equals Allow and (Action equals "*" or Action contains :* or Action[*] contains :*) and (Resource equals "*" or Resource[*] anyStartWith "*") and Condition does not exist)] exists as Z; filter '$.X.role equals $.Y.role.arn and $.Y.attachedPolicies[*].policyName equals $.Z.policyName'; show Z;config from cloud.resource where api.name = 'aws-lambda-list-functions' as X; config from cloud.resource where api.name = 'aws-iam-list-roles' as Y; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and document.Statement[?any(Effect equals Allow and (Action equals "*" or Action contains :* or Action[*] contains :*) and (Resource equals "*" or Resource[*] anyStartWith "*") and Condition does not exist)] exists as Z; filter '$.X.role equals $.Y.role.arn and $.Y.attachedPolicies[*].policyName equals $.Z.policyName'; show Z;
 ----
 
 * *How can I add columns to the Config query results that are returned?*
@@ -91,7 +91,7 @@ network from vpc.flow_record where dest.port IN (8545,30303) and dest.publicnetw
 An `operation` is an action performed by users on resources in a cloud account. When you type the name of the operation that you are interested in, auto-suggest displays the options that match the search criteria. For example, to view all operations such as deletion of VPCs, VPC endpoints, and VPC peering connections:
 +
 ----
-event from cloud.audit_logs where operation in ( 'DeleteVpc' , 'DeleteVpcEndpoints' 'DeleteVpcPeeringConnection' )
+event from cloud.audit_logs where operation in ( 'DeleteVpc' , 'DeleteVpcEndpoints' , 'DeleteVpcPeeringConnection' )
 ----
 
 **  `protocol` 
