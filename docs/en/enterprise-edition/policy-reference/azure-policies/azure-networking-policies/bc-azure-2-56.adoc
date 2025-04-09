@@ -1,0 +1,53 @@
+
+== Azure MySQL Flexible Server not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMySQLFlexibleServerConfigPrivEndpt.yaml[CKV2_AZURE_56]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether Azure MySQL Flexible Server is configured to use a private endpoint. Private endpoints allow secure connections to Azure services over a private IP address within a virtual network, preventing exposure to the public internet.
+
+Failing to configure private endpoints for Azure MySQL Flexible Server can lead to several security issues, including unauthorized access and data breaches. When databases are accessible over the public internet, they are more vulnerable to attacks, increasing the risk of exploitation by malicious actors. By using private endpoints, organizations can enhance their security posture, ensuring that data communication is restricted to trusted private networks and significantly reducing the attack surface.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+To comply with the policy, ensure that your Azure MySQL Flexible Server is configured with a private endpoint. This involves creating a `private_endpoint_connection` block within your `azurerm_mysql_flexible_server` resource to secure the server's connection and ensure it does not expose any public IP addresses.
+
+[source,go]
+----
+resource "azurerm_mysql_flexible_server" "example" {
+  name                = "example"
+  ...
+}
+
++ resource "azurerm_private_endpoint" "example" {
++   ...
++   private_service_connection {
++     ...
++     private_connection_resource_id = azurerm_mysql_flexible_server.example.id
++   }
++ }
+----
+
