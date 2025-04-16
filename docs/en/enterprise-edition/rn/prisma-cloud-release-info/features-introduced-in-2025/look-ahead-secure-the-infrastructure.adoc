@@ -12,6 +12,7 @@ The details and functionalities listed below are a preview and the actual releas
 ====
 
 * <<new-policies>>
+* <<policy-updates>>
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -27,13 +28,73 @@ Contact your Prisma Cloud representative, who will let you know the information 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<1>. For example, PCS-25.4.1.
+Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<1>. For example, PCS-25.5.1.
 
 . Review the updates.
 +
 Use the changelog.md file for a cumulative list of all policies that are added to a specific release. The policies are grouped by new policies and updated policies.
 +
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*AWS Cognito service role with wide privileges does not validate authentication*
+//RLP-155781
+
+|*Changes—* The policy RQL is updated to include the condition matching '*' in policy action.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and Action contains :* and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X; 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and (Action contains :* or Action equals *) and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action equals * ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X; 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* High
+
+*Impact–* Low. New alerts will be generated based on the RQL.
+
+2+|*Policy Updates—Metadata*
+
+|*AWS S3 bucket not configured with secure data transport policy*
+//RLP-155761
+
+|*Changes—* The Policy RQL is updated to  to include the publicly accessible check.
+
+*Current Description–* 
+
+AWS S3 buckets lacking secure data transport are susceptible to data breaches during transit.AWS S3 buckets should enforce data encryption using Secure Sockets Layer (SSL) to protect data transmitted between clients and the S3 service. Failure to enforce HTTPS enforces allows attackers to intercept sensitive data in transit, leading to data exposure and potential breaches. Untrusted IPs could access sensitive data without encryption.The impact of this misconfiguration includes unauthorized access to sensitive data, data breaches, and potential regulatory fines. Enforcing HTTPS ensures all communication with S3 buckets is encrypted, protecting data confidentiality and integrity.To mitigate this, configure bucket policies to explicitly deny all access except via HTTPS ('aws:SecureTransport: true'). Implement robust network security controls to limit access to S3 buckets only from trusted IP addresses. Regularly review and update bucket policies to reflect evolving security needs.
+
+*Updated Description–*
+
+AWS S3 buckets that are publicly accessible and lacking secure data transport are highly susceptible to data breaches during transit.
+AWS S3 buckets should enforce data encryption using Secure Sockets Layer (SSL) to protect data transmitted between clients and the S3 service. Failure to enforce HTTPS allows attackers to intercept sensitive data in transit, leading to data exposure and potential breaches. Additionally, because the bucket is publicly accessible, untrusted IPs can access sensitive data without encryption.
+
+The impact of this misconfiguration includes unauthorized access to sensitive data, data breaches, and potential regulatory fines. Enforcing HTTPS ensures all communication with publicly accessible S3 buckets is encrypted, protecting data confidentiality and integrity.
+To mitigate this, configure bucket policies to explicitly deny all access except via HTTPS ('aws:SecureTransport: true') and remove public access permissions. Regularly review and update bucket policies to reflect evolving security needs and ensure that public access is minimized or removed.
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* No impact on alerts.
+
+
+|===
 
 
 [#api-ingestions]
@@ -177,6 +238,40 @@ Additional permissions required:
 * `Microsoft.Kusto/Clusters/ManagedPrivateEndpoints/read`
 
 The Reader role includes the permissions.
+
+|*Azure Storage*
+//RLP-155925
+|*azure-storage-account-blob-service-property*
+
+Additional permissions required:
+
+* `Microsoft.Storage/storageAccounts/read`
+* `Microsoft.Storage/storageAccounts/blobServices/read`
+
+The Reader role includes the permissions.
+
+|tt:[Update] *Azure Synapse Analytics*
+//RLP-155930
+
+|*azure-synapse-workspace*
+
+Additional permission required:
+
+* `Microsoft.Synapse/workspaces/dedicatedSQLminimalTlsSettings/read`
+
+Also, the API is updated to include the `dedicatedSQLminimalTlsSettings` field in the JSON resource configuration.
+
+|tt:[Update] *Azure Synapse Analytics*
+//RLP-155930
+
+|*azure-synapse-workspace-sql-pools*
+
+Additional permission required:
+
+* `Microsoft.Synapse/workspaces/sqlPools/transparentDataEncryption/read`
+
+Also, the API is updated to include the `transparentDataEncryption` field in the JSON resource configuration. 
+
 
 |===
 
