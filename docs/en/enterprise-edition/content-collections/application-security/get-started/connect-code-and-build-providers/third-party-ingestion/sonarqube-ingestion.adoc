@@ -1,0 +1,85 @@
+[.task]
+== Ingest SonarQube data
+
+You can ingest SAST findings directly from SonarQube into Prisma Cloud. This allows you to use Prisma Cloud Application Security's analysis and visualization tools to identify critical vulnerabilities, prioritize remediation efforts, and improve your application code security.
+
+
+[.procedure]
+
+=== How to connect SonarQube with Prisma Cloud
+
+. Before you begin.
+.. Activate at least one CAS module that includes version control system (VCS) and repository integrations.
+.. https://docs.sonarsource.com/sonarqube-server/latest/user-guide/managing-tokens/#generating-a-token[Generate and copy a SonarQube API token] Ensure to assign Web API scope to the API token.
+.. Add the xref:../../../../get-started/console-prerequisites.adoc[Prisma Cloud IP addresses] and hostname for Application Security to SonarQube's allow list to enable access to the Prisma Cloud console.
+.. Grant the user integrating SonarQube with the following permissions:
++
+* In Prisma Cloud: 'System Admin', 'AppSec Admin' or GRBAC permissions 
+* In SonarQube: A minimum of 'Browse' permissions is required 
+
+. Under *Application Security*, select *Settings* > *Connect Provider* > *Code & Build Providers*.
+. Select *SonarQube* under the '3rd Party Ingestion' section in the catalog.
+. On the *Configure Integration* step of the integration wizard.
+.. Fill in the provided fields:
++
+* *API Token*: Paste the generated SonarQube API token
+* *URL and Port*: Provide the URL of your SonarQube instance. Port is optional
+* *Organization*: The SonarQube organization to be associated with the data ingestion. This is only required for SonarQube Cloud
+.. Click *Authorize*.
++
+NOTE: By authorizing, you grant Prisma Cloud permission to (i) access data and execute tasks like suppression using SonarQube's public API on your behalf, and (ii) process this data further to provide our services to you. You affirm that you have the authority to give this permission.
+
+. On the *Select Applications* step of the integration wizard.
+.. Select which SonarQube projects will be scanned:
++
+* All current projects
+* All current and future projects (This is the recommended option to ensure complete coverage and successful operation of all features)
+* Only selected projects > select the projects from the menu that is displayed
+.. Click *Next*.
++
+NOTE: 'Projects' in SonarQube and 'Repositories' in Prisma Cloud are identical artifacts. 
+
+
+
+. On the *Map to Repositories* step of the integration wizard:
+.. Select an option:
++ 
+* Accept the displayed mapping as detected by Prisma Cloud. This does not require any action on your part
+* Manually configure mapping if Prisma Cloud could not match a project to a repository: Select Set in the Cortex Cloud Application Security Repository column, and select a repository from the list that is displayed
+* Automatically map future SonarQube projects
+* Manually modify mapping: Click Replace next to the existing mapped Cortex Cloud Application Security repository. This will open an option to select a different repository from the displayed list, allowing you to update the mapping
++
+NOTE: Mapping establishes relationships between SonarQube Applications and Prisma Cloud code repositories, simplifying access management and enabling risk analysis at the repository level, including displaying findings on the tenant.  
+.. Click *Next*.
+
+. Select *Done* on the *Status* step of the wizard to complete the integration, initiating an automatic ingestion of data from the integrated SonarQube applications. 
+
+=== Verify Integration
+
+. On Application Security select *Settings* > *3rd Party Ingestion*.
+. Verify that the status of the relevant SonarQube project is listed as *Connected*.
++
+NOTE: Periodic scans for Prisma Cloud scanners will not fail if SonarQube ingestion fails.
+
+=== Manage Connections
+
+Manage integrations on the console from the *Providers* page under *Settings*.
+
+. On Application Security select *Settings* > *3rd Party Ingestion*.
+. Select an action under the *Actions* column of a project:
++
+* *Reselect Applications*: Redirects to the *Select Projects* step of the integration wizard, allowing you to manage selected applications
+* *Change Mapping*: Redirects to the *Map to Repositories* step of the wizard, allowing you to manage mapping
+* *Delete Application*: Deletes the application. Mapped repositories will be deleted accordingly.  This option is available only if 'All current and future applications' is not selected
+
+* *Delete Entire Integration*: Deletes the integration
+
+=== Manage CWE Weaknesses
+
+To view and manage CWE weaknesses from ingested SonarQube findings, refer to xref:../../../risk-management/monitor-and-manage-code-build/third-party-ingest-manage.adoc[Manage Third-Party Ingested Data].
+
+=== Limitations
+
+* The current SonarQube SAST ingestion supports SonarQube periodic and CLI scans 
+* History and deduplication are not supported
+
