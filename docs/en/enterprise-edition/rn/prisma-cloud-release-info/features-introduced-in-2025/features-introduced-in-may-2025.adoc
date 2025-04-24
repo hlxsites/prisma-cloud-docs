@@ -32,7 +32,11 @@ Learn what's new on Prisma® Cloud in May 2025.
 
 |*Ingestion of Azure VNet Flowlogs*
 
-|Prisma Cloud now supports the ingestion of VNet flowlogs along with the existing ingestion of NSG logs, for Microsoft Azure account onboarding. VNet flowlogs will also be added as a data source to existing Azure policies. There will be no impact to existing tenants and no additional action is needed. 
+|Prisma Cloud now supports the ingestion of VNet flowlogs along with the existing ingestion of NSG logs, for Microsoft Azure account onboarding. VNet flowlogs will also be added as a data source to existing Azure policies. There will be no impact to existing tenants and no additional action is needed.
+
+|*Ingestion of AWS ca-west-1*
+
+|Prisma Cloud AWS resource discovery is now extended to resources on AWS ca-west-1 (Canada/Calgary). With this added ingestion support, assets in this region are discoerable on the *Asset Inventory* page. No further action is needed.   
 
 |===
 
@@ -79,7 +83,7 @@ Additional permissions required:
 
 The Reader role includes the permissions.
 
-|*Azure Healthcare Apis*
+|*Azure Healthcare APIs*
 //RLP-155671
 
 |*azure-healthcare-apis-workspace-fhir-service*
@@ -90,7 +94,7 @@ Additional permission required:
 
 The Reader role includes the permission.
 
-|*Azure Healthcare Apis*
+|*Azure Healthcare APIs*
 //RLP-155670
 
 |*azure-healthcare-apis-workspace-dicom-service*
@@ -198,6 +202,37 @@ Additional permissions required:
 * `Microsoft.RecoveryServices/Vaults/privateLinkResources/read`
 
 The Reader role includes the permissions.
+
+|*Azure Storage*
+//RLP-155925
+|*azure-storage-account-blob-service-property*
+
+Additional permissions required:
+
+* `Microsoft.Storage/storageAccounts/read`
+* `Microsoft.Storage/storageAccounts/blobServices/read`
+
+The Reader role includes the permissions.
+
+|tt:[Update] *Azure Synapse Analytics*
+//RLP-155930
+|*azure-synapse-workspace*
+
+Additional permissions required:
+
+* `Microsoft.Synapse/workspaces/dedicatedSQLminimalTlsSettings/read `
+
+The additional permission above is now required.
+
+|tt:[Update] *Azure Synapse Analytics*
+//RLP-155926
+|*azure-synapse-workspace-sql-pools*
+
+Additional permissions required:
+
+* `Microsoft.Synapse/workspaces/sqlPools/transparentDataEncryption/read`
+
+The additional permission above is now required.
 
 |*Google Resource Manager*
 //RLP-131423
@@ -487,262 +522,88 @@ To mitigate this risk, use a custom VPC network specifically for your Dataproc c
 
 2+|*Policy Updates—RQL*
 
-|*AWS MFA is not enabled on Root account*
-//RLP-155483
+|*Cognito service role with wide privileges does not validate authentication*
+//RLP-155781
 
-|*Changes—* The Policy RQL is updated to consider the centralized root access introduced by AWS thereby reducing false positives.
-
-*Current Description–* 
-
-This policy identifies root account which has MFA enabled. Root accounts have privileged access to all AWS services. Without MFA, if the root credentials are compromised, unauthorized users will get full access to your account.
-
-NOTE: This policy does not apply to AWS GovCloud Accounts. As you cannot enable an MFA device for AWS GovCloud (US) account root user. For more details refer: https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-console.html.
-
-*Updated Description–*
-
-This policy identifies root account which does not have MFA enabled. Root accounts have privileged access to all AWS services and can perform critical actions within the environment. In the event that the root credentials are compromised, malicious users could gain full control over the AWS account. This could lead to unauthorized access, data breaches, and potential damage to resources or services.
-
-To address this risk, the solution is to enforce the activation of MFA for all root accounts. By enabling MFA, any attempt to access the root account would require both the root credentials and the second factor of authentication. This significantly reduces the likelihood of unauthorized access and enhances the overall security of the AWS environment.
-
-NOTE: This policy does not apply to AWS GovCloud Accounts. As you cannot enable an MFA device for AWS GovCloud (US) account root user. For more details refer: https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-console.html.
+|*Changes—* Policy RQL has been updated with including the condition matching '*' in policy action
 
 *Current RQL–* 
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and mfa_active is false and arn does not contain gov:' 
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and Action contains :* and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X;  
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-get-credential-report' AND json.rule = 'user equals "<root_account>" and password_enabled is true and mfa_active is false and arn does not contain gov:' 
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and (Action contains :* or Action equals *) and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action equals * ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X;  
 ----
 
 *Policy Type–* Config 
 
-*Policy Severity–* Medium
+*Policy Severity–* High
 
-*Impact–* Low. Open alerts where centralized root access is enabled will be resolved.
+*Impact–* Low. New alerts will be generated as per new RQL.
 
 
-|*Azure SQL server public network access setting is enabled*
-//RLP-155660
+|*AWS Cognito service role with wide privileges does not validate authentication*
+//RLP-155781
 
-|*Changes—* The Policy RQL is updated to align with the latest changes and updates in Azure Cloud. This update ensures improved compatibility and performance, providing users with the most up-to-date security and compliance checks specific to Azure Cloud environments.
+|*Changes—* Policy RQL has been updated with including the condition matching '*' in policy action
 
 *Current RQL–* 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case Ready and ['sqlServer'].['properties.publicNetworkAccess'] equal ignore case Enabled and ['sqlServer'].['properties.privateEndpointConnections'] is empty and firewallRules[*] is empty 
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and Action contains :* and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X; 
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case Ready and ['sqlServer'].['properties.publicNetworkAccess'] equal ignore case Enabled and firewallRules[*] is not empty 
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and (Action contains :* or Action equals *) and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action equals * ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X; 
 ----
 
 *Policy Type–* Config 
 
-*Policy Severity–* Medium
+*Policy Severity–* High
 
-*Impact–* Low. No impact on the valid alerts. Open alerts are resolved as Policy updated.
-//New Alerts are generated if the Owner is not configured to receive email notifications. Open alerts for the security contact where the email is configured will be resolved.
+*Impact–* Low. New alerts will be generated as per new RQL.
 
+2+|*Policy Updates—Metadata*
 
-|*Azure Network Watcher Network Security Group (NSG) flow logs are disabled*
-//RLP-155573
+|*AWS S3 bucket not configured with secure data transport policy*
+//RLP-155761
 
-|*Changes—* The Policy RQL is updated to exclude resources created by Prisma for agentless scans to reduce the noise.
+|*Changes—* Policy description updated to include the publicly accessible check.
 
-*Current RQL–* 
+*Policy Type*: Config
+
+*Policy Severity*: Medium
+
+*Impact*: No impact on alerts
+
+*Updated Description*: 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = flowLogsSettings does not exist or flowLogsSettings.enabled is false 
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings does not exist or flowLogsSettings.enabled is false) and tags.created-by does not contain "prismacloud-agentless-scan"
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Medium
-
-*Impact–* Low. Open alerts where the resource is created by _prismacloud-agentless-scan_ will be resolved.
-
-
-|*Azure Cosmos DB Virtual network is not configured*
-//RLP-155550
-
-|*Changes—* The Policy RQL is updated to consider cosmos DB is configured with private access to reduce false positives.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty 
+AWS S3 buckets that are publicly accessible and lacking secure data transport are highly susceptible to data breaches during transit.
+AWS S3 buckets should enforce data encryption using Secure Sockets Layer (SSL) to protect data transmitted between clients and the S3 service. Failure to enforce HTTPS allows attackers to intercept sensitive data in transit, leading to data exposure and potential breaches. Additionally, because the bucket is publicly accessible, untrusted IPs can access sensitive data without encryption.
+The impact of this misconfiguration includes unauthorized access to sensitive data, data breaches, and potential regulatory fines. Enforcing HTTPS ensures all communication with publicly accessible S3 buckets is encrypted, protecting data confidentiality and integrity.
+To mitigate this, configure bucket policies to explicitly deny all access except via HTTPS ('aws:SecureTransport: true') and remove public access permissions. Regularly review and update bucket policies to reflect evolving security needs and ensure that public access is minimized or removed.
 ----
 
-*Updated RQL–*
+|*AWS S3 bucket not configured with secure data transport policy*
+//RLP-155761
+
+|*Changes—* Policy description updated to include the publicly accessible check.
+
+*Policy Type*: Config
+
+*Policy Severity*: Medium
+
+*Impact*: Low
+
+*Updated Description*: 
 ----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded AND properties.publicNetworkAccess equal ignore case Enabled AND properties.virtualNetworkRules[*] is empty and properties.privateEndpointConnections does not exist
+AWS S3 buckets that are publicly accessible and lacking secure data transport are highly susceptible to data breaches during transit.
+AWS S3 buckets should enforce data encryption using Secure Sockets Layer (SSL) to protect data transmitted between clients and the S3 service. Failure to enforce HTTPS allows attackers to intercept sensitive data in transit, leading to data exposure and potential breaches. Additionally, because the bucket is publicly accessible, untrusted IPs can access sensitive data without encryption.
+The impact of this misconfiguration includes unauthorized access to sensitive data, data breaches, and potential regulatory fines. Enforcing HTTPS ensures all communication with publicly accessible S3 buckets is encrypted, protecting data confidentiality and integrity.
+To mitigate this, configure bucket policies to explicitly deny all access except via HTTPS ('aws:SecureTransport: true') and remove public access permissions. Regularly review and update bucket policies to reflect evolving security needs and ensure that public access is minimized or removed.
 ----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Low
-
-*Impact–* Low. Open alerts where private access is configured will be resolved.
-
-
-|*Azure Microsoft Defender for Cloud email notification for subscription owner is not set*
-//RLP-155399
-
-|*Changes—* The Policy RQL is updated to check for notifications configured for Owner role as per the latest Azure updates.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[*].properties.email is empty or securityContacts[*].properties.alertsToAdmins equal ignore case Off) and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[*].properties.emails is empty or securityContacts[*].properties.notificationsByRole.roles[*] does not contain "Owner") and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Informational
-
-*Impact–* Low. New alerts will be generated in case the Owner is not configured to receive email notifications. Open alerts for the security contact where the email is configured will be resolved.
-
-
-|*Azure Function app configured with public network access*
-//RLP-155139
-
-|*Changes—* The Policy RQL is updated to consider private endpoints as well to reduce false positives.
-//This policy will check for private endpoints with `publicnetworkaccess` and report accordingly.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist)) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind contains functionapp and kind does not contain workflowapp and kind does not equal app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist and (properties.privateLinkIdentifiers does not exist or properties.privateLinkIdentifiers is empty))) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Medium
-
-*Impact–* Low. Open alerts where private link identifiers exist will be resolved.
-
-
-|*Azure Storage account encryption key is not rotated regularly*
-//RLP-153985
-
-|*Changes—* The Policy RQL is updated to alert based on the specific key associated with the storage account reducing false positives.
-//The policy RQL policy is updated to consider internet network traffic as the source.
-
-*Current RQL–* 
-----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.encryption.keySource equal ignore case "Microsoft.Keyvault" as X; config from cloud.resource where api.name = 'azure-key-vault-list' and json.rule = keys[?any(attributes.exp equals -1 and attributes.enabled contains true)] exists as Y; filter '$.Y.properties.vaultUri contains $.X.properties.encryption.keyvaultproperties.keyvaulturi'; show X;
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = 'properties.encryption.keySource equal ignore case "Microsoft.Keyvault" and _DateTime.ageInDays(properties.encryption.keyvaultproperties.currentVersionedKeyExpirationTimestamp) > 365'
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Low
-
-*Impact–* Low. Open alerts where multiple keys exist and a correct key is associated with the Storage Account for encryption will be resolved.
-
-
-|*GCP Vertex AI Workbench Instance has Secure Boot disabled*
-//RLP-155653
-
-|*Changes—* The Policy RQL is updated due to changes in the GCP API.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND shieldedInstanceConfig.enableSecureBoot is false
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND gceSetup.shieldedInstanceConfig.enableSecureBoot is false
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Low
-
-*Impact–* Low. New alerts are generated based on the updated RQL.
-
-
-|*GCP Vertex AI Workbench Instance has Integrity monitoring disabled*
-//RLP-155649
-
-|*Changes—* The Policy RQL is updated due to changes in the GCP API.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND shieldedInstanceConfig.enableIntegrityMonitoring is false
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND gceSetup.shieldedInstanceConfig.enableIntegrityMonitoring is false
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Low
-
-*Impact–* Low. New alerts are generated based on the updated RQL.
-
-
-|*GCP Vertex AI Workbench Instance has vTPM disabled*
-//RLP-155647
-
-|*Changes—* The Policy RQL is updated due to changes in the GCP API.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND shieldedInstanceConfig.enableVtpm is false 
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" AND gceSetup.shieldedInstanceConfig.enableVtpm is false 
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Low
-
-*Impact–* Low. New alerts are generated based on the updated RQL.
-
-|*GCP SQL database instance deletion protection is disabled*
-//RLP-155109
-
-|*Changes—* The Policy RQL is updated with the right attribute to raise alerts on the vulnerable resources only.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equals "RUNNABLE" and deletionProtectionEnabled is true 
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equals "RUNNABLE" and settings.deletionProtectionEnabled is false
-----
-
-*Policy Type–* Config
-
-*Policy Severity–* Informational
-
-*Impact–* Low. Open alerts where the deletion protection setting is enabled will be resolved.
 
 |===
 
@@ -755,28 +616,28 @@ config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-i
 |*Compliance Benchmark*
 |*Description*
 
-|*[Update] AWS Foundational Security Best Practices standard*
-//RLP-155703
+|*[Update] Australian Cyber Security Centre (ACSC) Essential Eight*
+//RLP-156067
 
-|New Policy mappings are added to the AWS Foundational Security Best Practices compliance standard.
+|New Policy mappings are added to Australian Cyber Security Centre (ACSC) Essential Eight compliance standard across all the levels..
 
-*Impact*: As new mappings are introduced, compliance scoring may vary.
-
-
-|*[Update] CIS v3.0.0 (Azure) Level 1, CIS v2.1.0 (Azure) Level 1 & CIS v2.0.0 (Azure) Level 1*
-//RLP-155694
-
-|New Policy mappings are added to the CIS v3.0.0 (Azure) Level 1, CIS v2.1.0 (Azure) Level 1 & CIS v2.0.0 (Azure) Level 1 compliance standards.
-
-*Impact*: As new mappings are introduced, compliance scoring may vary.
+*Impact*: As new mappings are introduced, compliance scoring might vary.
 
 
-|*[Update] CIS v4.0.0 (AWS) Level 2 & CIS v3.0.0 (AWS) Level 2*
-//RLP-155691
+|*FedRAMP (High)*
+//RLP-156047
 
-|New Policy mappings are added to the CIS v4.0.0 (AWS) Level 2 & CIS v3.0.0 (AWS) Level 2 compliance standards.
+|FedRAMP High compliance is the highest level of security within the Federal Risk and Authorization Management Program (FedRAMP), designed to protect highly sensitive and classified government data stored in cloud environments.
 
-*Impact*: As new mappings are introduced, compliance scoring may vary.
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
+
+
+|*[Update] CIS v3.0.0 (OCI) - Level 1 & CIS v3.0.0 (OCI) - Level 2*
+//RLP-156044
+
+|Prisma Cloud now supports the latest version of CIS Oracle Cloud Infrastructure Foundations Benchmark . This compliance standard supports two levels - Level 1 and Level 2. CIS Oracle Cloud Infrastructure Foundations Benchmark, provides prescriptive guidance for establishing a secure baseline configuration for the Oracle Cloud Infrastructure environment.
+
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
 
 |===
 
