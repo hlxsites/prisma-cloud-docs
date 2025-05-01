@@ -52,3 +52,29 @@ resource "azurerm_batch_account" "example" {
 }
 ----
 
+*ARM*
+
+Ensure your Azure Batch account does not have public network access enabled by setting `publicNetworkAccess` to disabled and do not set `defaultAction` to allow.
+
+[source,json]
+----
+{
+  ...
+  "resources": [
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "example",
+      "properties": {
+-        "publicNetworkAccess": "Enabled",
+        "networkProfile": {
+          "accountAccess": {
+-            "defaultAction": "Allow"
+          }
+        }
+      }
+    }
+  ]
+}
+----
+
