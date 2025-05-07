@@ -1,0 +1,48 @@
+== GCP public-facing (external) regional load balancer using HTTP protocol
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 646f94d4-6499-4c24-99ec-949a1ea6f311
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/gcp/GCPComputeRegionalForwardingRuleCheck.yaml[CKV2_GCP_37]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy identifies GCP public-facing (external) regional load balancers that are using HTTP protocol.
+
+Using the HTTP protocol with a GCP external load balancer transmits data in plaintext, making it vulnerable to eavesdropping, interception, and modification by malicious actors. This lack of encryption exposes sensitive information, increases the risk of man-in-the-middle attacks, and compromises the overall security and privacy of the data exchanged between clients and servers.
+
+It is recommended to use HTTPS protocol with external-facing load balancers.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+To fix the issue, ensure that the forwarding rule associated with your load balancer does not utilize HTTP proxies. Instead, you should set the `load_balancing_scheme` to `EXTERNAL` with a backend that does not rely on HTTP proxy configurations. Make sure that your forwarding rules effectively utilize the appropriate backend service while complying with this requirement.
+
+[source,go]
+----
+resource "google_compute_forwarding_rule" "example" {
+   ...
+   load_balancing_scheme = "EXTERNAL"
+-     target                = "https://www.googleapis.com/compute/v1/projects/my-project/global/targetHttpProxies/my-target-proxy"
++     target                = "https://www.googleapis.com/compute/v1/projects/my-project/global/targetSslProxies/my-target-proxy"
+   ...
+}
+----
