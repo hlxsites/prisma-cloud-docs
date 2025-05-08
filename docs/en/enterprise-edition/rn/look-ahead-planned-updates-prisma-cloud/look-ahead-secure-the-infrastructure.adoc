@@ -12,7 +12,7 @@ The details and functionalities listed below are a preview and the actual releas
 ====
 
 * <<new-policies>>
-// * <<policy-updates>>
+* <<policy-updates>>
 // * <<api-ingestions>>
 * <<deprecation-notices>>
 
@@ -40,20 +40,155 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-// [#policy-updates]
-// === Policy Updates
+[#policy-updates]
+=== Policy Updates
 
-// [cols="50%a,50%a"]
-// |===
-// |*Policy Updates*
-// |*Description*
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
 
-// 2+|*Policy Updates—RQL*
+2+|*Policy Updates—RQL*
+
+|*AWS ElastiCache Redis cluster with Redis AUTH feature disabled*
+//RLP-155711
+
+|*Changes—* The policy is updated to exclude resources with RBAC Auth configured.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elasticache-describe-replication-groups' AND json.rule = 'authTokenEnabled is false or transitEncryptionEnabled is false or authTokenEnabled does not exist or transitEncryptionEnabled does not exist' 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elasticache-describe-replication-groups' AND json.rule = 'engine equal ignore case Redis and (authTokenEnabled is false or transitEncryptionEnabled is false or authTokenEnabled does not exist or transitEncryptionEnabled does not exist) and userGroupIds is empty' 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open Alerts where RBAC Auth is configured on AWS elasticache redis will be resolved.
+
+|*Azure Storage Account Container with activity log has BYOK encryption disabled*
+//RLP-156247
+
+|*Changes—* The policy is updated to enhance the RQL query.
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter '($.X.properties.encryption.keySource does not equal "Microsoft.Keyvault" and $.X.properties.encryption.keyvaultproperties.keyname is not empty and $.X.properties.encryption.keyvaultproperties.keyversion is not empty and $.X.properties.encryption.keyvaultproperties.keyvaulturi is not empty and $.Y.properties.storageAccountId contains $.X.name)'; show X;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' as X; config from cloud.resource where api.name = 'azure-monitor-log-profiles-list' as Y; filter '($.X.properties.encryption.keySource does not equal "Microsoft.Keyvault" and $.Y.properties.storageAccountId contains $.X.name)'; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* No impact on alerts as the functionality of the RQL remains same. The RQL has been updated to remove the irrelevant keys.
+
+|*Azure Storage Account default network access is set to 'Allow'*
+//RLP-155637
+
+|*Changes—* The policy RQL needs to consider the existence of "publicNetworkAccess" since the attribute can be added via CLI. 
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.publicNetworkAccess equal ignore case "Enabled" AND networkRuleSet.defaultAction equal ignore case "Allow" 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = (properties.publicNetworkAccess equal ignore case "Enabled" AND networkRuleSet.defaultAction equal ignore case "Allow") or (properties.publicNetworkAccess does not exist AND networkRuleSet.defaultAction equal ignore case "Allow") 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Medium. New alerts will be triggered if the `publicNetworkAccess` attribute does not exist and `networkRuleSet` is set to allow.
+
+|*GCP PostgreSQL instance database flag log_min_messages is not set*
+//RLP-155977
+
+|*Changes—* The policy has been revised to align specifically with the Compliance requirement: ensure that the log_min_messages flag for Cloud SQL PostgreSQL instances is configured to a minimum level of WARNING, in accordance with the CIS Google Cloud Platform Benchmark.
+
+*Current Policy Name—*
+
+GCP PostgreSQL instance database flag log_min_messages is not set
+
+*Suggested Policy Name—*
+
+GCP PostgreSQL instance database flag log_min_messages is not set to Warning or higher
+
+*Current Description—*
+
+This policy identifies PostgreSQL database instances in which database flag log_min_messages is not set to warning. The log_min_messages flag controls which message levels are written to the server log, valid values are DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each level includes all the levels that follow it. log_min_messages flag value changes should only be made in accordance with the organization's logging policy. Auditing helps in troubleshooting operational problems and also permits forensic analysis.
+
+*Proposed Description—*
+
+This policy detects PostgreSQL database instances where the log_min_messages configuration flag is not set to the WARNING level or higher.
+
+The log_min_messages parameter governs the minimum level of message severity that is logged by the PostgreSQL server. Acceptable values, in increasing order of severity, include: DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each severity level includes the subsequent levels mentioned. Setting this flag to a lower severity level, such as the DEBUG levels or INFO, increases log verbosity, while higher levels reduce log detail.
+
+As a security best practice, setting log_min_messages to WARNING or higher helps mitigate risks associated with insufficient or excessive logging. 
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = "databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_messages')] does not exist" 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equal ignore case "RUNNABLE" and databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_messages')].value is not member of ( "warning", "error", "log", "fatal", "panic")
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New Alerts will be triggered in case the log_min_messages flag is not set to either of these : "warning", "error", "log", "fatal",  "panic".
 
 
+|*GCP PostgreSQL instance database flag log_min_error_statement is not set*
+//RLP-156050
 
+|*Changes—* The policy has been revised to align specifically with the Compliance requirement: Ensure 'Log_min_error_statement' Database Flag for Cloud SQL PostgreSQL Instance Is Set to 'Error' or Stricter, in accordance with the CIS Google Cloud Platform Benchmark.
 
-// |===
+*Current Description—*
+
+This policy identifies PostgreSQL database instances in which database flag log_min_error_statement is not set. The log_min_error_statement flag defines the minimum message severity level that are considered as an error statement. Messages for error statements are logged with the SQL statement. Valid values include DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each severity level includes the subsequent levels. log_min_error_statement flag value changes should only be made in accordance with the organization's logging policy. Proper auditing can help in troubleshooting operational problems and also permits forensic analysis.
+
+*Proposed Description—*
+
+This policy detects PostgreSQL instances where the log_min_error_statement flag is not configured at the error level.
+
+This flag sets the minimum severity level for logging SQL statements that produce errors, with possible values ranging from DEBUG5 (least severe) to PANIC (most severe). Each level includes all higher-severity messages. Without this flag set, critical error-generating SQL statements may not be logged, leading to insufficient visibility into potential security incidents, failed attacks, or misconfigurations hindering threat detection and post-incident analysis.
+
+Adjustments to this setting should align with the organization's logging standards. Proper configuration ensures detailed logging for effective troubleshooting and forensic investigations.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = "databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_messages')] does not exist" 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equal ignore case "RUNNABLE" and databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_messages')].value is not member of ( "warning", "error", "log", "fatal", "panic")
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Low. New Alerts will be triggered in case the log_min_messages flag is not set to either of these : "warning", "error", "log", "fatal",  "panic".
+
+|===
 
 
 // [#api-ingestions]
