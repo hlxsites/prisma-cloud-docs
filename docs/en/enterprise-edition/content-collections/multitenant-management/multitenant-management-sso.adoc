@@ -1,0 +1,99 @@
+== Configure SSO for User Onboarding
+
+Prisma Cloud offers System Administrators the ability to provision users using Security Assertion Markup Language (SAML) based Single Sign-On (SSO) configuration. Configure SSO to create new Prisma Cloud Multitenant Management users on an as needed basis, when users with the appropriate entitlements log in using SSO. 
+
+[IMPORTANT]
+====
+* Once SSO configuration is set up, users must use the SP initiated Auth URL (*Home > Settings > SSO > SP Auth URL*) to login for the first time. 
+* User onboarding is currently only available using SAML based SSO configuration. 
+====
+
+
+=== SSO Configuration for Microsoft Entra 
+
+Follow the steps below to configure Microsoft Entra IdP for SSO Access to the Multitenancy console. Microsoft Entra is third-party software, specific procedures, and screenshots may change without notice. We encourage you to also review the https://learn.microsoft.com/en-us/entra/[Microsoft Entra documentation]. 
+
+This topic outlines steps to:
+
+* <<configure-saml>> 
+* <<saml-attributes>> 
+* <<configure-mttm>> 
+
+[#configure-saml]
+==== Create a Microsoft Entra Enterprise Application and Configure SAML properties 
+[.procedure]
+. Complete the following steps on the Microsoft Azure Entra portal to create an Enterprise Application and configure SAML properties. 
+
+.. Create and configure a new *Enterprise Application* in Microsoft Entra.
++
+image::mssp/sso-1.png[]
++
+[NOTE]
+====
+Do not click on the Prisma Cloud SSO icon shown as that is for the Prisma Cloud SSO and not for Prisma Cloud Multitenancy SSO.
+====
++
+.. From the Application view select *Manage > Single sign on > SAML*  to configure the SAML properties for the Application. 
+.. Add your Users and Groups to the Enterprise Application created in the previous step. Verify that the User you are trying to configure SAML for is listed under *Manage > User Groups*. 
+.. Configure the Basic SAML specific fields on the Microsoft Entra Enterprise Application as shown below. Select the *Edit* icon on the Basic SAML Configuration page. Configure the Identifier and the Reply URL fields with the value (https://localhost). These fields will be updated later with the fields that are returned from the Prisma Cloud Multitenant console SSO page configuration page.
++
+image::mssp/sso-2.png[]
++ 
+.. Select *Save* to complete basic SAML Configuration. 
+.. Copy the *App Federation Metadata URL* field from the SAML Certificate section as shown below. This is the Metadata URL that will be required to configure the SSO settings on the Prisma Cloud Multitenant Management console.
++
+image::mssp/sso-3.png[]
+
+[#saml-attributes]
+==== Set up SAML Attributes 
+
+Follow the steps below to set up SAML attributes on the Microsoft Azure Entra portal:
+
+. Configure the SAML attributes that will be used as part of the SAML handshake process on the SAML application configuration page. 
+.. Navigate to *Attributes & Claims > Additional Claims* and elect the *Edit* icon to modify the values. When editing these values ensure that there are no quotes in the value for the source attribute field.
++
+.. Edit the *user.email* value to *email* and click *Save*.
++
+image::mssp/sso-4.png[]
++
+.. Edit the *user.givenname* claim value to *firstname* and click *Save*.
+.. Edit the *user.surname* claim value to *lastname* and click *Save*.
+.. Copy the full URL for the namespace from one of the claims as shown below. This namespace URL will be used to configure various attributes on the Prisma Cloud Multitenant Management console SSO configuration page. 
++
+image::mssp/sso-5.png[]
+
+[#configure-mttm]
+==== Configure SSO settings on the Multitenant Management Console
+
+Complete the following steps on the Multitenant Management console: 
+
+. Login to the Multitenant Management console and navigate to the *Settings > Access Control > SSO*. You may need to refresh the page if the SSO section is not visibile.
+
+. Enter the *App Federation Metadata URL* field copied in the step above into the Meta Data URL field shown below.
++ 
+image::mssp/sso-6.png[]
++
+. Configure the *Additional Parameters* as shown below. Use the convention *<Namespace><AttributeName>* to enter the values.
++
+image::mssp/sso-7.png[]
++
+. Select *Save* to persist the configuration on the Multitenant Management console.
+
+. Once you save the configuration, the SSO page will be updated to provide values for the settings shown in the figure below. Copy the settings provided by the Multitenant Management console SSO configuration page. This will be used to populate various fields in the Microsoft Entra application. 
++
+image:mssp/sso-8.png[]
++
+. Use the following values from the Multitenant Management console SSO configuration to populate the corresponding fields on the Microsoft Entra Basic SAML Configuration page:
+* Audience URL --> Identifier
+* SAML Auth URL --> Reply URL (Assertion Consumer Service URL)
+* SP Auth URL --> Sign On URL
+
+. Copy all the URLs provided by the Multitenant Management console SSO configuration page in the step above, so that you can now input those as shown below into the Microsoft Entra Application. 
++
+image:mssp/sso-9.png[]
++
+. Finally, test the SSO login into the Multitenant Management console. Follow one of the options below to verify SSO setup: 
+
+* Copy the SP Auth URL from the Multitenant Management console SSO configuration page and paste it into a new browser session. When complete you should automatically be logged into the Multitenant Management console. 
+
+* Select *Manage > Single sign on > Test this Application* from the Application view on the Microsoft Entra portal.
