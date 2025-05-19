@@ -2,16 +2,41 @@
 
 Learn what's new on Prisma® Cloud in May 2025.
 
+* <<announcements>>
 //* <<new-features>>
 * <<enhancements>>
-//* <<changes-in-existing-behavior>>
+* <<changes-in-existing-behavior>>
 * <<api-ingestions>>
 //* <<new-policies>>
 * <<policy-updates>>
 //* <<iam-policy-updates>>
 * <<new-compliance-benchmarks-and-updates>>
-//* <<rest-api-updates>>
-//* <<deprecation-notices>>
+* <<rest-api-updates>>
+* <<deprecation-notices>>
+
+
+[#announcements]
+=== Announcements
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+|===
+
+|*RedHat Enterprise Linux 10 incompatibility with  WAAS Defender Agent*
+//CWP-63673
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|RedHat deprecated iptables in RHEL 9 and the upcoming RHEL 10 will not support iptables.
+
+The WAAS defender agent deployed directly on RHEL10 (as Host Defender), which relies on iptables, is incompatible with RHEL 10 due to this change. A fix is in progress and is expected to be included in the August release.
+
+NOTE: Containerized varieties of the WAAS Defender will continue to work.
+
+|===
 
 
 //[#new-features]
@@ -30,6 +55,107 @@ Learn what's new on Prisma® Cloud in May 2025.
 |*Feature*
 |*Description*
 
+
+|*Enhanced fsmon monitoring process*
+//CWP-63480
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|To enhance the handling of file system events in the runtime, a new version, fsmon_v2, has been developed. This version improves stability by managing timeouts more promptly and robustly, which reduces bottlenecks and enhances overall stability.
+
+Starting from this release (version 34.01), fsmon_v2 is the default file system monitoring process and runs by default when the defender launches.
+
+
+|*Support for Oracle Linux as Base Image*
+//CWP-63235
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|Prisma Cloud now provides runtime protection for containers that use Oracle Linux as the base layer.
+
+
+|*CentOS 7, RHEL 7, and PhotonOS 3 not supported*
+//CWP-63515, CWP-63516, CWP-63517
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|With this release, support is removed for the following platform releases that are EOL by their respective vendors:
+
+* CentOS 7
+
+* RHEL 7
+
+* PhotonOS 3
+
+
+|*Support for mounted paths*
+//CWP-63332
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+
+|A new environment variable (`HOST_FIM_MOUNTS`) enables you to specify additional host mounted paths for runtime monitoring. By incorporating these specified paths into all applicable policies, this feature provides enhanced flexibility in monitoring critical mounted paths within your environment.
+
+The value of this new variable is a colon separated list of the additional mountpoints to track, for example: `/mnt/mountpoint1:/mnt/mountpoint2`.
+
+To update the environment variable:
+
+. Add or modify the new environment variable in the deployment file to include the desired mounted paths for monitoring.
+
+. Deploy the Defender with the new environment variables to activate monitoring of the new paths.
+
+
+|*New environment variable for configuring the number of image external labels*
+//CWP-63653
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|A new environment variable -- `IMAGE_EXTERNAL_LABELS_CAP`, enables configuration of the maximum number of external labels (indirect labels collected by Prisma Cloud) that are allowed for an image. The default value is 100, and the maximum configurable value is 1024. This variable is applicable to both Console and Defenders.
+
+*Important Considerations:*
+
+* External labels, such as Kubernetes Namespace and Deployment labels, as well as cloud tags, are collected and stored per container.
+
+* This limit is specific to external labels collect per image and doesn't impact existing container limitations.
+
+* External labels are not inherent image properties and are not be displayed if a container is not scanned (for example, short-lived containers).
+
+
+|*Vulnerabilities and Compliance data available as PDF files*
+//CWP-63654
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+
+|You can now download the data shown on the following pages as PDF files:
+
+* Monitor > Vulnerabilities > Images & Hosts
+
+* Monitor > Compliance > Containers, Images & Hosts
+
+
+|*Runtime protection for SUSE Linux Enterprise Server 15 SP6*
+//CWP-63655 
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|Prisma Cloud now supports runtime protection of SUSE Linux Enterprise Server 15 SP6 images.
+
+
 |*Ingestion of Azure VNet Flow Logs*
 
 |Prisma Cloud now supports the ingestion of VNet flow logs in addition to the existing ingestion of NSG flow logs, for Microsoft Azure account onboarding. VNet flow logs will also be added as a data source to existing Azure policies. There will be no impact to existing tenants and no additional action is needed.
@@ -40,20 +166,61 @@ Learn what's new on Prisma® Cloud in May 2025.
 
 |===
 
-//[#changes-in-existing-behavior]
-//=== Changes in Existing Behavior
-//[cols="30%a,70%a"]
-//|===
-//|*Feature*
-//|*Description*
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
 
-//|===
+|===
 
+|*System Requirements: Changes to supported systems and platforms* 
+//CWP-SEVERAL
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|The following changes have been made to the system requirements:
+
+*Support added for the following x86 Operating Systems*
+
+* SLES  15 SP6
+
+* Talos OS  1.10.1
+
+* Talos OS  1.9.5
+
+*Support removed for the following x86 Operating Systems*
+
+* CentOS  7
+
+* RedHat Enterprise Linux 7
+
+* VMWare Photon OS	3.0
+
+*Support added for the following ARM-based Orchestrators*
+
+* Google Kubernetes Engine (GKE) autopilot on ARM  v1.31.6-gke.1064001
+
+* Oracle Kubernetes Engine (OKE)  V.1.32.1
+
+*Support removed for the following ARM-based Orchestrators*
+
+* Elastic Container Service (ECS)  1.86.2
+
+* Elastic Container Service (ECS)  1.86.3
+
+*Support added for the following Auto-Defend platforms*
+
+* AWS  Node.js  22
+
+* AWS  Python  3.13
 
 
 [#api-ingestions]
 === API Ingestions
-
 [cols="50%a,50%a"]
 |===
 |*Service*
@@ -294,7 +461,6 @@ The Reader role includes the permissions.
 // |===
 
 
-
 [#policy-updates]
 === Policy Updates
 
@@ -425,18 +591,65 @@ You can now access this built-in standard and related policies on the *Complianc
 |===
 
 
-//[#rest-api-updates]
-//=== REST API Updates
-//[cols="37%a,63%a"]
-//|===
-//|*REST API*
-//|*Description*
-//|===
+[#rest-api-updates]
+=== REST API Updates
+[cols="37%a,63%a"]
+|===
+|*REST API*
+|*Description*
+|===
 
-//[#deprecation-notices]
-//=== Deprecation Notices
-//[cols="50%a, 50%a"]
-//|===
+|*Download Image Scan Results API*
+// CWP-63246
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|​A new column, `Cloud Security Agent Hosts`, is added in the Download Image Scan Results API CSV file response. This new field lists the number of integrated XDR Agents in the Prisma Cloud and Cortex XDR integration.
+
+
+|*Support for new agentless APIs*
+// CWP-63650
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|The following new API endpoints enable you to set the maximum number of scanners for an agentless account and get the agentless scan statistics.
+
+* https://pan.dev/compute/api/post-agentless-max-scanners/[Agentless Max Scanners]
+
+* https://pan.dev/compute/api/get-agentless-scan-statistics/[Agentless Scan Statistics]
+
+
+|*Support for a new enum value*
+// CWP-63650
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|A new Enum value `gcp-cloud-run-service` has been added to the shared.ScanResultType schema.
+
+
+
+
+[#deprecation-notices]
+=== Deprecation Notices
+[cols="50%a, 50%a"]
+|===
+
+|*Deprecation of the CNNS feature*
+// CWP-63175
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|The ​Cloud Native Network Segmentation (CNNS) feature is deprecated for the enforcement of protection against network threats for both containers and hosts. However, in scenarios where alternative network monitoring modes are unavailable, it can be used only for monitoring, such as radar visibility. The current recommended is to disable all CNNS-based network monitoring as well.
+
 //|*Deprecated Endpoints*
 //|*Replacement Endpoints*
-//|===
+
+|===
