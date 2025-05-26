@@ -1,0 +1,47 @@
+== Hard-coded secrets found in Parameter Store values
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/cloudformation/checks/resource/aws/ParameterStoreCredentials.py[CKV_AWS_384]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|CloudFormation
+
+|===
+
+=== Description
+
+This rule checks for hard-coded secrets within AWS Parameter Store values. Hard-coded secrets can pose significant security risks because they may expose sensitive information, such as API keys, passwords, or access tokens, directly in configuration files or code. If an attacker gains access to these secrets, they can exploit them to gain unauthorized access to systems, compromise data integrity, or initiate other malicious activities.
+
+Ensuring that no hard-coded secrets exist helps maintain a secure environment by encouraging the use of more secure practices, such as environment variables, secret management tools, or vault services, which provide better protection and management for sensitive information.
+
+=== Fix - Buildtime
+
+*CloudFormation*
+
+Do not add plaintext secrets to your Parameter Store values in CloudFormation. Instead, consider using secrets management systems such as AWS Secrets Manager, or leverage environment variables for sensitive information. 
+
+[source,yaml]
+----
+Resources:
+-  FailAPIKey:
+-    Type: 'AWS::SSM::Parameter'
+-    Properties:
+-      Name: '/myapp/api_key'
+-      Type: 'String'
+-      Value: 'hardcoded_secret_value'
+----
+

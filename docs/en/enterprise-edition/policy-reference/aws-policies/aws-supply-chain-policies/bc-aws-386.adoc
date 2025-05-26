@@ -1,0 +1,49 @@
+== Potential WhoAMI name confusion attack exposure
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/data/aws/WhoAMI.py[CKV_AWS_386]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This rule checks for the potential misuse of cloud image names that could lead to confusion or malicious exploitation, specifically in the context of Amazon Web Services (AWS). The risk arises when an attacker might attempt to name their malicious images similarly to widely-used or trusted images, such as "ami-ubuntu," leading users to inadvertently select the harmful image instead of the legitimate one.
+
+Allowing for such name collisions can facilitate social engineering attacks, as users might assume they are launching trusted images based on naming conventions rather than verifying the source or integrity of the image. This can compromise security and lead to unauthorized access or the deployment of malicious software, ultimately putting sensitive data and infrastructure at risk. It is crucial to ensure that image naming conventions are clear, unique, and well-documented to mitigate this risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+To reduce the potential for WhoAMI cloud image name confusion attacks, ensure that the `name` attribute of your `aws_ami` resource is unique and descriptive or include an `owner`.
+
+[source,go]
+----
+data "aws_ami" "fail1" {
++  owners = ["099720109477"]  # Owner added
+
+  filter {
+    name   = "name"
+-    values = ["ubuntu/images/hvm-ssd/ubuntu-*-amd64-server"]  # "*" in name
++    values = ["ubuntu/images/hvm-ssd/ubuntu-20.04-amd64-server-20230517"]  # Specific version
+  }
+}
+----
+
