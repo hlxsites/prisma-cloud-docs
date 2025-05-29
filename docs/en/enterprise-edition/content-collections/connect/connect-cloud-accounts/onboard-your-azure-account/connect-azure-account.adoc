@@ -119,31 +119,39 @@ image::connect/add-access-policy-azure.png[]
 
 . Authorize Prisma Cloud to ingest storage accounts. On the Azure portal, access your account and select *Configuration*. Enable the *Allow storage account keys* option and complete access key setup. Learn more about https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal[managing storage account keys]. 
 
-. On the Azure portal, enable Prisma Cloud to obtain network traffic data from Network Security Group (NSG) https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-nsg-flow-logging-portal[flow logs]. 
+. On the Azure portal, setup Virtual Network flow logs https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview?tabs=Americas[VNet flow logs] to ensure Prisma Cloud’s Service Principal has access to the storage account.
 +
-NSG flow logs, a feature of Network Watcher, allow you to view ingress and egress IP traffic information through a NSG. This step is required only if you are using the Azure Tenant or Subscription workflow, or if you would optionally like to ingest flow logs.
-
-.. On the Azure portal, create one or more network security groups if you have none.
-
-.. Create Storage Accounts to collect NSG flow logs. Prisma Cloud can ingest flow logs only when:
+VNet flow logs, a feature of Network Watcher, allow you to view ingress and egress IP traffic information through a virtual network. This step is required only if you are using the Azure Tenant or Subscription workflow, or if you would optionally like to ingest flow logs. 
 +
-... The subscriptions belong to the same Azure AD or Root Management Group (for example, Azure Org).
+tt:[NOTE:] You can also opt to ingest Network Security Group (NSG) flow logs instead of VNet flow logs. However, Microsoft will retire Network Security Group (NSG) flow logs on September 30, 2027. As a result, you will no longer be able to create new NSG flow logs after June 30, 2025. We recommend https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview?tabs=Americas[disabling NSG flow logs] before migrating to VNet flow logs to avoid duplicate alerts, notifications, and added costs. Keep in mind that the option to ingest VNet flow logs is not available for Azure China tenants.
++
+.. On the Azure portal, create one or more virtual networks if you have none.
+
+.. Create Storage Accounts to collect flow logs. Prisma Cloud can ingest flow logs only when:
++
+... The subscriptions belongs to the same Azure AD or Root Management Group (for example, Azure Org).
 
 ... The Service Principal that you use to onboard the subscription on Prisma Cloud has access to read the contents of the storage account.
 .. Add the xref:../../../get-started/access-prisma-cloud.adoc[NAT GatewayIP addresses] for your Prisma Cloud instance to the Storage Account created in the step above. For example, if your instance is on `app.prismacloud.io` use the IP addresses associated with that.
 
-.. Create Azure https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create[Network Watcher instances] for the virtual networks in every region where you collect NSG flow logs. Network Watcher enables you to monitor, diagnose, and view metrics to enable and disable logs for resources in an Azure virtual network.
+.. Create Azure https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create[Network Watcher instances] for the virtual networks in every region where you collect flow logs. Network Watcher enables you to monitor, diagnose, and view metrics to enable and disable logs for resources in an Azure virtual network.
 
-.. From the Network Watcher console, navigate to flow logs and complete the following steps to complete enabling NSG flowlogs:
+.. From the Network Watcher console, navigate to *Flow logs > Create +* to create a flow log. 
 +
-... Select the Azure subscription of the Network Security Group you want to log. 
-... Select the storage account you created in the previous step and create the flow log.
-.. Optionally, you can view and download NSG flow logs. To view NSG flowlogs complete the following steps on the Azure portal:
+... On the *Basics* tab of the Create a flow log workflow, complete the steps below:
+.... Select the Azure subscription of the virtual network that you want to log.
+.... Select *Virtual network > Select +*. 
+.... Select a target resource such as (Virtual network, Subnet, and/or Network interface). Select the resources that you want to obtain flow logs for, and *Confirm* your selection.
+.... Enter a name for the flow log or leave the default name. Azure portal uses {ResourceName}-{ResourceGroupName}-flowlog as a default name for the flow log.
+.... Select the storage account that you want to save the flow logs to. If you want to create a new storage account, select *Create a new storage account*.
+.... Enter a retention time for the logs. This option is only available with standard general-purpose v2 storage accounts.
+
+.. Optionally, you can view and download VNet flow logs. To view VNet flowlogs complete the following steps on the Azure portal:
 +
 ... Go to storage account previously created and opt to store the logs.
 ... Select *Data Storage > Containers*.
-... Select the `insights-logs-networksecuritygroupflowevent` container.
-... In the container, navigate the folder hierarchy until you get to the `PT1H.json` flow logs file.
+... Select the `insights-logs-flowlogflowevent` container.
+... In the container, navigate the folder hierarchy until you get to the `PT1H.json` flow logs file. Download the file to view flow log events.
 
 [NOTE]
 ====
