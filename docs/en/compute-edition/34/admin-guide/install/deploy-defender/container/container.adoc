@@ -101,11 +101,19 @@ endif::compute_edition[]
 NOTE: After setting the option to *ON*, Prisma Cloud appends a unique identifier, such as ResourceId, to the host's DNS name.
 For example, an AWS EC2 host would have the following name: Ip-171-29-1-244.ec2internal-i-04a1dcee6bd148e2d.
 
-.. (Optional) To configure the HOST_FIM_MOUNTS environment variable and install the container defender:
+.. You may copy the installation script command from the right-side panel, which is generated based on the options you have selected. On the target host where Defender is to be installed, paste the command into a shell window and execute it.
 
-   ... Download the defender.sh file using the following command:
+[NOTE] 
+====
+(Optional) `HOST_FIM_MOUNTS` environment variable helps to check the file integrity across the specified mount points. To configure the `HOST_FIM_MOUNTS` environment variable and install the container defender for a tenant, perform the following steps:
 
-      curl -sSL -k --header "authorization: "#####<Bearer TOKEN>####" -X POST <TENANT URL>:8083/api/v1/scripts/defender.sh > defender.sh
+   ... Select all the options as per step 7 in console UI, and copy the install scripts command from the right side panel with details of all options you have selected:
+
+      curl -sSL -k --header "authorization: "#####<Bearer TOKEN>####" -X POST https://app0.cloud.twistlock.com/app0panwdev-1234/api/v1/scripts/defender.sh -d '{"port":123}' | sudo bash -s -- -c "app0.cloud.twistlock.com"  --install-podman.
+
+   ... Remove the tenant and podman details from the command to download the defender.sh file using the following command:
+
+      curl -sSL -k --header "authorization: "#####<Bearer TOKEN>####" -X POST https://app0.cloud.twistlock.com/app0panwdev-1234/api/v1/scripts/defender.sh -d '{"port":123} > defender.sh
 
    ... Edit the downloaded defender.sh to include the `env` variable in the following command:
 
@@ -113,7 +121,13 @@ For example, an AWS EC2 host would have the following name: Ip-171-29-1-244.ec2i
 
    ... Run `sudo defender.sh -c <TENANT URL>` to install the defender on the tenant.
 
-.. If you choose not to configure environment variables manually, you can copy the install scripts command from the right side panel, which is generated according to the options you selected. On the host where you want to install Defender, paste the command into a shell window, and run it.
+   ... If you have selected Podman in the consolue UI, include the `--install-podman` argument as `sudo defender.sh -c <TENANT URL> --install-podman` to the        install the defender. If your infrastructure uses a custom Podman runtime socket path, you can specify it using the `--podman-socket` argument.
+       For example, to use Podman with a custom runtime socket path, the final install command would look like this:
+      
+      `sudo defender.sh -c <TENANT URL> --install-podman --podman-socket "<custom_runtime_socket_path>"`
+
+====
+
 
 
 [.task]
