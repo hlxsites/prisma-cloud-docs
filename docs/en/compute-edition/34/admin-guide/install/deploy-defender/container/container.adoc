@@ -101,13 +101,13 @@ endif::compute_edition[]
 NOTE: After setting the option to *ON*, Prisma Cloud appends a unique identifier, such as ResourceId, to the host's DNS name.
 For example, an AWS EC2 host would have the following name: Ip-171-29-1-244.ec2internal-i-04a1dcee6bd148e2d.
 
-.. You may copy the installation script command from the right-side panel, which is generated based on the options you have selected. On the target host where Defender is to be installed, paste the command into a shell window and execute it.
+.. Copy the installation script command from the right-side panel, which is generated based on the options you have selected. On the target host where Defender is to be installed, paste the command into a shell window and execute it.
 
 [NOTE] 
 ====
-The HOST_FIM_MOUNTS parameter permits Defender to specify additional host mounts to be monitored. This facilitates the tracking of an expanded set of mount points on the host, in addition to those monitored by default. To configure the `HOST_FIM_MOUNTS` environment variable and install the container defender on a tenant, perform the following steps:
+The `HOST_FIM_MOUNTS` parameter permits Defender to specify additional host mounts to be monitored. This facilitates the tracking of an expanded set of mount points on the host, in addition to those monitored by default. To configure the `HOST_FIM_MOUNTS` environment variable and install the container defender on a tenant, perform the following steps:
 
-   ... Select all the options as per step 7 in console UI, and copy the install scripts command from the right side panel with details of all options you have selected:
+   ... Select all the options as per requirement till step 7 above, and copy the install scripts command from the right side panel with details of all options you have selected:
 
       curl -sSL -k --header "authorization: "#####<Bearer TOKEN>####" -X POST https://app0.cloud.twistlock.com/app0panwdev-1234/api/v1/scripts/defender.sh -d '{"port":123}' | sudo bash -s -- -c "app0.cloud.twistlock.com"  --install-podman.
 
@@ -119,12 +119,18 @@ The HOST_FIM_MOUNTS parameter permits Defender to specify additional host mounts
 
       cat twistlock.sh | bash -s -- ${additional_defender_parameters} -s -a "${console_cn}" --env "HOST_FIM_MONUTS=/mnt/mountpoint1:/mnt/mountpoint2" -b "#####<base64 format>####"  "${defender_type}"
 
-   ... Run `sudo defender.sh -c <TENANT URL>` to install the defender on the tenant.
+   ... (Optional) If you have selected Podman in the consolue UI, include`--install-podman` argument as below to the install the defender. 
 
-   ... If you have selected Podman in the consolue UI, include the `--install-podman` argument as `sudo defender.sh -c <TENANT URL> --install-podman` to the        install the defender. If your infrastructure uses a custom Podman runtime socket path, you can specify it using the `--podman-socket` argument.
+       sudo defender.sh -c <TENANT URL> --install-podman
+
+   ... (Optional) If your infrastructure uses a custom Podman runtime socket path, you can specify it using the `--podman-socket` argument.
        For example, to use Podman with a custom runtime socket path, the final install command would look like this:
       
-      sudo defender.sh -c <TENANT URL> --install-podman --podman-socket "<custom_runtime_socket_path>"
+       sudo defender.sh -c <TENANT URL> --install-podman --podman-socket "<custom_runtime_socket_path>"
+
+   ... If Podman details are not inlcuded, execute the following command to install the defender on the tenant.
+
+      sudo defender.sh -c <TENANT URL>
 
 ====
 
