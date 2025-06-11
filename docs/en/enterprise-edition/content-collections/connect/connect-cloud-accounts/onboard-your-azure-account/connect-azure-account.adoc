@@ -119,6 +119,11 @@ image::connect/add-access-policy-azure.png[]
 
 . Authorize Prisma Cloud to ingest storage accounts. On the Azure portal, access your account and select *Configuration*. Enable the *Allow storage account keys* option and complete access key setup. Learn more about https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal[managing storage account keys]. 
 
+. On the Azure portal, you also have the option to authenticate using Microsoft Entra ID. Complete the steps below on the Azure portal to configure Azure Flowlogs using Entra ID.
++
+.. Access your account and select *Configuration*. Disable the *Allow storage account keys* option. This initiates the Prisma Cloud Entra ID configuration flow. 
+.. Navigate to *Home > Access Control IAM > Role Assignments* and ensure that the Storage Blob Data Reader role is added to your application. If you encounter an error when adding the role, download the Terraform file once again to re-onboard your account as mentioned in the steps above.
+
 . On the Azure portal, setup Virtual Network flow logs https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview?tabs=Americas[VNet flow logs] to ensure Prisma Cloud’s Service Principal has access to the storage account.
 +
 VNet flow logs, a feature of Network Watcher, allow you to view ingress and egress IP traffic information through a virtual network. This step is required only if you are using the Azure Tenant or Subscription workflow, or if you would optionally like to ingest flow logs. 
@@ -131,7 +136,8 @@ tt:[NOTE:] You can also opt to ingest Network Security Group (NSG) flow logs ins
 +
 ... The subscriptions belongs to the same Azure AD or Root Management Group (for example, Azure Org).
 
-... The Service Principal that you use to onboard the subscription on Prisma Cloud has access to read the contents of the storage account.
+... The Service Principal that you use to onboard the subscription on Prisma Cloud must be assigned the Storage Blob Data Reader role and must also have access to read the contents of the storage account. 
+
 .. Add the xref:../../../get-started/access-prisma-cloud.adoc[NAT GatewayIP addresses] for your Prisma Cloud instance to the Storage Account created in the step above. For example, if your instance is on `app.prismacloud.io` use the IP addresses associated with that.
 
 .. Create Azure https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create[Network Watcher instances] for the virtual networks in every region where you collect flow logs. Network Watcher enables you to monitor, diagnose, and view metrics to enable and disable logs for resources in an Azure virtual network.
@@ -181,7 +187,7 @@ To successfully connect your account to Prisma Cloud you will need to provide th
 
 * xref:microsoft-azure-apis-ingested-by-prisma-cloud.adoc[Permissions for Security Capabilities]
 
-Reference Azure documentation to learn more about https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader[Reader], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader-and-data-access[Reader and Data Access], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#network-contributor[Network Contributor] and https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-account-contributor[Storage Account Contributor] roles.
+Reference Azure documentation to learn more about https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader[Reader], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader-and-data-access[Reader and Data Access], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#network-contributor[Network Contributor], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-blob-data-reader[Storage Blob Data Reader], and https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-account-contributor[Storage Account Contributor] roles.
 
 === Next: Onboard your Azure Account 
 
