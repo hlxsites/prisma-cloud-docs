@@ -579,6 +579,109 @@ If defender and remote repository are in different subnet, the image tag pulling
 |*ISSUE ID*
 |*DESCRIPTION*
 
+
+
+|*RLP-156095*
+//CWP-63688
+
+tt:[Secure the Infrastructure]
+
+|*No default outbound access for Azure Agentless Scanning*
+
+Microsoft Azure is retiring the facility to provide default outbound access. See the https://azure.microsoft.com/en-us/updates?id=default-outbound-access-for-vms-in-azure-will-be-retired-transition-to-a-new-method-of-internet-access[Microsoft announcement] for more details. 
+
+This change will adversely impact Prisma Cloud’s ability to perform Agentless Scanning. To mitigate this issue, Prisma Cloud agentless scanners will employ Network Address Translation (NAT) gateway to access the console. 
+
+To enable Prisma Cloud agentless scanners to use the NAT gateway, the following additional permissions have been added to the onboarding Terraform template:
+
+* Microsoft.Network/publicIPAddresses/read
+
+* Microsoft.Network/publicIPAddresses/write
+
+* Microsoft.Network/publicIPAddresses/delete
+
+* Microsoft.Network/natGateways/read
+
+* Microsoft.Network/natGateways/write
+
+* Microsoft.Network/natGateways/delete
+
+This fix ensures that Prisma Cloud Compute uses NAT gateway for agentless scanning.
+
+
+
+|*RLP-156227*
+//CWP-63687
+
+tt:[Secure the Infrastructure]
+
+
+|*Enhanced AWS resource-level permissions for copying Amazon EBS snapshots*
+
+Amazon AWS has announced enhanced resource-level permissions for copying Amazon EBS snapshots. Please see the Amazon announcement for more details. This change impacts Prisma Cloud agentless scanning of AWS compute instances.  
+
+To avoid issues that can arise from this change, the following statement has been replaced in the onboarding CFT:
+
+[source,json]
+----
+"Condition": {
+			"StringEquals": {
+				"aws:RequestTag/created-by": "prismacloud-agentless-scan"
+				}
+			},
+			"Action": [
+				"ec2:CopySnapshot"
+			],
+			"Resource": [
+				"arn:aws:ec2:*::snapshot/*"
+			],
+			"Effect": "Allow",
+			"Sid": "PrismaCloudPrismaCloudAgentlessCopySnapshot8"
+		}
+----
+
+With this statement:
+
+[source,json]
+----
+{
+			"Condition": {
+				"StringEquals": {
+					"aws:RequestTag/created-by": "prismacloud-agentless-scan"
+				}
+			},
+			"Action": [
+				"ec2:CopySnapshot"
+			],
+			"Resource": [
+				"arn:aws:ec2:*::snapshot/${*}"
+			],
+			"Effect": "Allow",
+			"Sid": "PrismaCloudPrismaCloudAgentlessCopySnapshot8"
+		},
+		{
+			"Condition": {
+				"StringEquals": {
+					"aws:ResourceTag/created-by": "prismacloud-agentless-scan"
+				}
+			},
+			"Action": [
+				"ec2:CopySnapshot"
+			],
+			"Resource": [
+				"arn:aws:ec2:*::snapshot/snap-*"
+			],
+			"Effect": "Allow",
+			"Sid": "PrismaCloudPrismaCloudAgentlessCopySnapshot9"
+		}
+----
+
+This change ensures that Prisma Cloud uses the enhanced resource-level permissions announced by Amazon AWS.
+
+NOTE: The statement changes won't be shown in the status message as the status check is performed only on the action parameter in the statement; not the other parameters. 
+
+
+
 |*CWP-63359*
 //PCSUP-27651
 
