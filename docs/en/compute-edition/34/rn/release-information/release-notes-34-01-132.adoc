@@ -1,0 +1,129 @@
+:toc: macro
+== 34.01.132 Release Notes
+
+The following table has the release details:
+
+[cols="1,4"]
+|===
+|Build
+|34.01.132
+
+|Code name
+|Quinn Update 1
+
+|Release date
+|June 22, 2025
+
+|Type
+|Maintenance release
+
+|SHA-256
+|7103025e0e5636e0517ebdc225ae59790a2e47b2fda24c7a993200d981c17dff
+
+|===
+
+This 34.01.132 build is a maintenance release for Quinn Update 1 (34.01). The upgrade paths applicable to build 34.01.126 apply to this build as well. 
+
+Review the https://docs.prismacloud.io/en/compute-edition/34/rn/release-information/release-notes-34-01[34.01 (build number 126) release notes] for the upgrade paths and other details on the Quinn Update 1 release.
+
+Review the https://docs.prismacloud.io/en/compute-edition/34/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtimes, tools, and orchestrators.
+
+//You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly with this URL:
+
+//https://cdn.twistlock.com/releases/UqmZMvDZ/prisma_cloud_compute_edition_34_01_132.tar.gz[https://cdn.twistlock.com/releases/UqmZMvDZ/prisma_cloud_compute_edition_34_01_132.tar.gz]
+
+
+[#addressed-issues]
+=== Addressed Issues
+
+[cols="1,3"]
+|===
+
+|*No default outbound access for Azure Agentless Scanning*
+//RLP-156095
+//CWP-63688
+
+a|Microsoft Azure is retiring the facility to provide default outbound access. See the https://azure.microsoft.com/en-us/updates?id=default-outbound-access-for-vms-in-azure-will-be-retired-transition-to-a-new-method-of-internet-access[Microsoft announcement] for more details. 
+
+This change will adversely impact Prisma Cloud’s ability to perform Agentless Scanning. To mitigate this issue, Prisma Cloud agentless scanners will employ Network Address Translation (NAT) gateway to access the console. 
+
+To enable Prisma Cloud agentless scanners to use the NAT gateway, the following additional permissions have been added to the onboarding Terraform template:
+
+
+* Microsoft.Network/publicIPAddresses/read
+* Microsoft.Network/publicIPAddresses/write
+* Microsoft.Network/publicIPAddresses/delete
+* Microsoft.Network/natGateways/read
+* Microsoft.Network/natGateways/write
+* Microsoft.Network/natGateways/delete
+
+
+This fix ensures that Prisma Cloud Compute uses NAT gateway for agentless scanning.
+
+
+|*Enhanced AWS resource-level permissions for copying Amazon EBS snapshots*
+//CWP-63687
+
+a|Amazon AWS has announced enhanced resource-level permissions for copying Amazon EBS snapshots. Please see the https://aws.amazon.com/blogs/storage/enhancing-resource-level-permissions-for-copying-amazon-ebs-snapshots/[Amazon announcement] for more details. This change impacts Prisma Cloud agentless scanning of AWS compute instances.  
+
+To avoid issues that can arise from this change, the following statement has been replaced in the onboarding CFT:
+
+[source,json]
+----
+"Condition": {
+			"StringEquals": {
+				"aws:RequestTag/created-by": "prismacloud-agentless-scan"
+				}
+			},
+			"Action": [
+				"ec2:CopySnapshot"
+			],
+			"Resource": [
+				"arn:aws:ec2:*::snapshot/*"
+			],
+			"Effect": "Allow",
+			"Sid": "PrismaCloudPrismaCloudAgentlessCopySnapshot8"
+		}
+----
+
+With this statement:
+
+[source,json]
+----
+{
+			"Condition": {
+				"StringEquals": {
+					"aws:RequestTag/created-by": "prismacloud-agentless-scan"
+				}
+			},
+			"Action": [
+				"ec2:CopySnapshot"
+			],
+			"Resource": [
+				"arn:aws:ec2:*::snapshot/${*}"
+			],
+			"Effect": "Allow",
+			"Sid": "PrismaCloudPrismaCloudAgentlessCopySnapshot8"
+		},
+		{
+			"Condition": {
+				"StringEquals": {
+					"aws:ResourceTag/created-by": "prismacloud-agentless-scan"
+				}
+			},
+			"Action": [
+				"ec2:CopySnapshot"
+			],
+			"Resource": [
+				"arn:aws:ec2:*::snapshot/snap-*"
+			],
+			"Effect": "Allow",
+			"Sid": "PrismaCloudPrismaCloudAgentlessCopySnapshot9"
+		}
+----
+
+This change ensures that Prisma Cloud uses the enhanced resource-level permissions announced by Amazon AWS.
+
+NOTE: The statement changes won't be shown in the status message as the status check is performed only on the action parameter in the statement; not the other parameters. 
+
+|===
