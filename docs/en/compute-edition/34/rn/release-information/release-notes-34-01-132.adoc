@@ -36,33 +36,40 @@ Review the https://docs.prismacloud.io/en/compute-edition/34/admin-guide/install
 [#addressed-issues]
 === Addressed Issues
 
-* *No default outbound access for Azure Agentless Scanning (CWP-63688)*
+[cols="1,3"]
+|===
+
+|*No default outbound access for Azure Agentless Scanning*
 //RLP-156095
 
-Microsoft Azure is retiring the facility to provide default outbound access. See the https://azure.microsoft.com/en-us/updates?id=default-outbound-access-for-vms-in-azure-will-be-retired-transition-to-a-new-method-of-internet-access[Microsoft announcement] for more details. 
+tt:[CWP-63688]
+
+|Microsoft Azure is retiring the facility to provide default outbound access. See the https://azure.microsoft.com/en-us/updates?id=default-outbound-access-for-vms-in-azure-will-be-retired-transition-to-a-new-method-of-internet-access[Microsoft announcement] for more details. 
 
 This change will adversely impact Prisma Cloud’s ability to perform Agentless Scanning. To mitigate this issue, Prisma Cloud agentless scanners will employ Network Address Translation (NAT) gateway to access the console. 
 
 To enable Prisma Cloud agentless scanners to use the NAT gateway, the following additional permissions have been added to the onboarding Terraform template:
 
-* Microsoft.Network/publicIPAddresses/read
+* `Microsoft.Network/publicIPAddresses/read`
 
-* Microsoft.Network/publicIPAddresses/write
+* `Microsoft.Network/publicIPAddresses/write`
 
-* Microsoft.Network/publicIPAddresses/delete
+* `Microsoft.Network/publicIPAddresses/delete`
 
-* Microsoft.Network/natGateways/read
+* `Microsoft.Network/natGateways/read`
 
-* Microsoft.Network/natGateways/write
+* `Microsoft.Network/natGateways/write`
 
-* Microsoft.Network/natGateways/delete
+* `Microsoft.Network/natGateways/delete`
 
 This fix ensures that Prisma Cloud Compute uses NAT gateway for agentless scanning.
 
 
-* *Enhanced AWS resource-level permissions for copying Amazon EBS snapshots (CWP-63687)*
+|*Enhanced AWS resource-level permissions for copying Amazon EBS snapshots*
 
-Amazon AWS has announced enhanced resource-level permissions for copying Amazon EBS snapshots. Please see the https://aws.amazon.com/blogs/storage/enhancing-resource-level-permissions-for-copying-amazon-ebs-snapshots/[Amazon announcement] for more details. This change impacts Prisma Cloud agentless scanning of AWS compute instances.  
+tt:[CWP-63687]
+
+|Amazon AWS has announced enhanced resource-level permissions for copying Amazon EBS snapshots. Please see the https://aws.amazon.com/blogs/storage/enhancing-resource-level-permissions-for-copying-amazon-ebs-snapshots/[Amazon announcement] for more details. This change impacts Prisma Cloud agentless scanning of AWS compute instances.  
 
 To avoid issues that can arise from this change, the following statement has been replaced in the onboarding CFT:
 
@@ -123,3 +130,5 @@ With this statement:
 This change ensures that Prisma Cloud uses the enhanced resource-level permissions announced by Amazon AWS.
 
 NOTE: The statement changes won't be shown in the status message as the status check is performed only on the action parameter in the statement; not the other parameters. 
+
+|===
