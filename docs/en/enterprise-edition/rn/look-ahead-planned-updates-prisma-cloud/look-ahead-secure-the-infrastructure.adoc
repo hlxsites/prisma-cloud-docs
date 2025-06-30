@@ -2,7 +2,7 @@
 
 Here are the changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 25.7.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 25.8.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -16,7 +16,7 @@ The details and functionalities listed below are a preview and the actual releas
 * <<api-ingestions>>
 * <<deprecation-notices>>
 
-//There are currently no API ingestions or Policy Updates in the pipeline for 25.7.1.
+//There are currently no API ingestions or Policy Updates in the pipeline for 25.8.1.
 
 
 [#new-policies] 
@@ -30,7 +30,7 @@ Contact your Prisma Cloud representative, who will let you know the information 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<1>. For example, PCS-25.7.1.
+Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<1>. For example, PCS-25.8.1.
 
 . Review the updates.
 +
@@ -42,6 +42,8 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 [#policy-updates]
 === Policy Updates
 
+//RLP-156408
+
 [cols="40%a,60%a"]
 |===
 |*Policy Updates*
@@ -50,201 +52,64 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 //2+|*Policy Updates—Metadata*
 
-|*AWS Kinesis streams encryption using default KMS keys instead of Customer's Managed Master Keys*
-//RLP-156182
+|*Azure Cosmos DB IP range filter not configured*
+//RLP-156503
 
-|*Changes–* The policy RQL will be updated to include the resource using AWS managed key via alias.
+|*Changes–* The policy RQL will be updated to account for the publicNetworkAccess setting.
 
-*Updated RQL–*
+*Current RQL–*
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-kinesis-list-streams' as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' as Y; filter '(($.Y.keyMetadata.keyManager equals AWS and $.Y.key.keyArn equals $.X.keyId) or $.X.keyId contains "alias/aws/") and $.X.encryptionType equals KMS'; show X;
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Informational
-
-*Impact–* Low. New alerts will be created for the resource which is using aws key managed key via alias.
-
-
-
-|*AWS S3 bucket encrypted using Customer Managed Key (CMK) with overly permissive policy*
-//RLP-156319
-
-|*Changes–* The policy will be updated to check for Actions and Effect in the KMS policy to reduce false positives.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name= 'aws-s3api-get-bucket-acl' AND json.rule = (sseAlgorithm contains "aws:kms" or sseAlgorithm contains "aws:kms:dsse") and kmsMasterKeyID exists as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and keyMetadata.keyManager equals CUSTOMER and policies.default.Statement[?any((Principal.AWS equals * or Principal equals *)and Condition does not exist)] exists as Y; filter '$.X.kmsMasterKeyID contains $.Y.key.keyArn' ; show X;
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.ipRangeFilter is empty 
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where cloud.type = 'aws' AND api.name= 'aws-s3api-get-bucket-acl' AND json.rule = (sseAlgorithm contains "aws:kms" or sseAlgorithm contains "aws:kms:dsse") and kmsMasterKeyID exists as X; config from cloud.resource where api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState equals Enabled and keyMetadata.keyManager equals CUSTOMER and policies.default.Statement[?any(Effect equals Allow and (Principal.AWS equals * or Principal equals *) and Condition does not exist and (Action equals "*" or Action equal ignore case "kms:*"))] exists as Y; filter '$.X.kmsMasterKeyID contains $.Y.key.keyArn' ; show X;
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.ipRangeFilter is empty and properties.publicNetworkAccess does not equal ignore case "Disabled" 
 ----
 
-*Policy Type–* Config 
+//*Policy Type–* Config 
 
-*Policy Severity–* Medium
+//*Policy Severity–* Informational
 
-*Impact–* Low. Open alerts where Effect is not "Allow" and Action is specific will be resolved.
+//*Impact–* Low. New alerts will be created for the resource which is using aws key managed key via alias.
 
 
-|*AWS Auto Scaling group launch configuration not configured with Instance Metadata Service v2 (IMDSv2)*
-//RLP-156261
+|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
+//RLP-156488
 
-|*Changes–* The policy will be updated to exclude instance configurations created by the Elastic Beanstalk service where the IMDSv1 is deactivated.
+|*Changes–* The policy will be updated to look for load balancers not using the latest security policy as part of the policy RQL.
 
-*Current RQL–* 
+*Current Description–* 
+
+This policy identifies Application Load Balancers (ALBs) are not using the latest predefined security policy. A security policy is a combination of protocols and ciphers. The protocol establishes a secure connection between a client and a server and ensures that all data passed between the client and your load balancer is private. A cipher is an encryption algorithm that uses encryption keys to create a coded message. So it is recommended to use the latest predefined security policy which uses only secured protocol and ciphers.
+
+We recommend using either non-FIPS security policy ELBSecurityPolicy-TLS13-1-2-2021-06 or FIPS security policy ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04 to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
+
+For more details: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies 
+
+*Updated Description–*
+
+This policy identifies Application Load Balancers (ALBs) are not using the latest predefined security policy. A security policy is a combination of protocols and ciphers. The protocol establishes a secure connection between a client and a server and ensures that all data passed between the client and your load balancer is private. A cipher is an encryption algorithm that uses encryption keys to create a coded message. So it is recommended to use the latest predefined security policy which uses only secured protocol and ciphers.
+
+We recommend using the latest recomended non-FIPS security policy or FIPS security policy to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
+
+For more details: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html 
+
+*Current RQL–*
 ----
-config from cloud.resource where api.name = 'aws-ec2-autoscaling-launch-configuration' AND json.rule = (metadataOptions.httpEndpoint does not exist) or (metadataOptions.httpEndpoint equals "enabled" and metadataOptions.httpTokens equals "optional") as X; config from cloud.resource where api.name = 'aws-describe-auto-scaling-groups' as Y; filter ' $.X.launchConfigurationName equal ignore case $.Y.launchConfigurationName'; show X;
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'aws-ec2-autoscaling-launch-configuration' AND json.rule = (launchConfigurationName does not start with "awseb" and launchConfigurationName does not contain "AWSEBAutoScalingLaunchConfiguration") and ((metadataOptions.httpEndpoint does not exist) or (metadataOptions.httpEndpoint equals "enabled" and metadataOptions.httpTokens equals "optional")) as X; config from cloud.resource where api.name = 'aws-describe-auto-scaling-groups' as Y; filter ' $.X.launchConfigurationName equal ignore case $.Y.launchConfigurationName'; show X;
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Medium
-
-*Impact–* Low. Open alerts where the launch configurations were automatically created by Elastic Beanstalk where the IMDSv1 was deactivated, will be resolved.
-
-|*AWS RDS instance without Automatic Backup setting*
-//RLP-155976
-
-|*Changes–* The policy RQL will be updated to exclude SQL Server (Enterprise edition) read replica as automatic backup can't be enabled for such instances.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-rds-describe-db-instances' AND json.rule = 'backupRetentionPeriod equals 0 or backupRetentionPeriod does not exist'
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
 ----
 
 *Updated RQL–*
 ----
-config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-rds-describe-db-instances' AND json.rule = '(backupRetentionPeriod equals 0 or backupRetentionPeriod does not exist) and not(engine equal ignore case sqlserver-ee and statusInfos[*].statusType contains "read replication")'
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
 ----
 
 *Policy Type–* Config 
 
 *Policy Severity–* Low
 
-*Impact–* Low. Open alerts for SQL Server (Enterprise edition) read replica will be resolved.
-
-
-|*AWS EKS cluster does not have secrets encryption enabled*
-//RLP-156100
-
-|*Changes–* The policy will be updated to identify EKS clusters with versions lesser than 1.28 as per the latest CSP updates.
-
-*Current Description–* 
-
-This policy identifies AWS EKS clusters that do not have secrets encryption enabled.
-
-AWS EKS cluster secrets are, by default, stored unencrypted in the API server's underlying data store (etcd). Anyone with direct access to etcd or with API access can retrieve or modify the secrets. Using secrets encryption for your Amazon EKS cluster allows you to protect sensitive information such as passwords and API keys using Kubernetes-native APIs.
-
-It is recommended to enable secrets encryption to ensure its security and reduce the risk of unauthorized access or data breaches.
-
-*Updated Description–*
-
-This policy identifies AWS EKS clusters that do not have secrets encryption enabled. 
-
-AWS EKS cluster secrets are, by default, stored unencrypted in the API server's underlying data store (etcd). Anyone with direct access to etcd or with API access can retrieve or modify the secrets. Using secrets encryption for your Amazon EKS cluster allows you to protect sensitive information such as passwords and API keys using Kubernetes-native APIs. 
-
-It is recommended to enable secrets encryption to ensure its security and reduce the risk of unauthorized access or data breaches. 
-
-NOTE: The policy identifies secret encryptions for EKS clusters with versions lesser than 1.28. 
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-eks-describe-cluster' AND json.rule = encryptionConfig does not exist or (encryptionConfig exists and encryptionConfig[*].provider.keyArn does not exist and encryptionConfig[*].resources[*] does not contain secrets)
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-eks-describe-cluster' AND json.rule = version is member of ( "1.25", "1.26", "1.27") and (encryptionConfig does not exist or (encryptionConfig exists and encryptionConfig[*].provider.keyArn does not exist and encryptionConfig[*].resources[*] does not contain secrets))
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Medium
-
-*Impact–* Low. Open alerts for EKS clusters with versions higher than 1.27 will be resolved. 
-
-
-
-|*Azure SQL server public network access setting is enabled*
-//RLP-156277
-
-|*Changes–* The policy description and remediation steps will be updated to reflect the latest changes in Azure to ensure accurate remediation of flagged resources.
-
-*Current Description–*
-
-This policy identifies Azure SQL servers which have public network access setting enabled. Publicly accessible SQL servers are vulnerable to external threats with risk of unauthorized access or may remotely exploit any vulnerabilities. It is recommended to configure the SQL servers with IP-based strict server-level firewall rules or virtual-network rules or private endpoints so that servers are accessible only to restricted entities.
-
-*Updated Description–*
-
-This policy identifies Azure SQL servers which have public network access setting enabled. Publicly accessible SQL servers are vulnerable to external threats with risk of unauthorized access or may remotely exploit any vulnerabilities. It is recommended to disable public network access to the Azure SQL servers and use private endpoints or virtual network service endpoints to secure connectivity.
-
-|*Azure SQL server using insecure TLS version*
-//RLP-156262
-
-|*Changes–* The policy RQL will be updated to eliminate the check for "NONE" since it now defaults to using version 1.2 or 1.3 in accordance with the latest CSP updates.
-
-*Current RQL–* 
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case "Ready" and (['sqlServer'].['properties.minimalTlsVersion'] equal ignore case "None" or ['sqlServer'].['properties.minimalTlsVersion'] equals "1.0" or ['sqlServer'].['properties.minimalTlsVersion'] equals "1.1")
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case "Ready" and (['sqlServer'].['properties.minimalTlsVersion'] equals "1.0" or ['sqlServer'].['properties.minimalTlsVersion'] equals "1.1")
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Low
-
-*Impact–* Low. Open alerts where minimalTlsVersion is set to "NONE" will be resolved.
-
-
-|*Azure Front Door Web application firewall (WAF) policy rule for Remote Command Execution is disabled*
-//RLP-156263
-
-|*Changes–* The policy name and description will be updated as per the CSP updates.
-
-*Current Name–*
-
-Azure Front Door Web application firewall (WAF) policy rule for Remote Command Execution is disabled
-
-*Updated Name–*
-
-Azure Front Door (Classic) Web application firewall (WAF) policy rule for Remote Command Execution is disabled
-
-*Current Description–* 
-
-This policy identifies Azure Front Door Web application firewall (WAF) policies that have the Remote Command Execution rule disabled. It is recommended to define the criteria in the WAF policy with the rule ‘Remote Command Execution (944240)’ under managed rules to help in detecting and mitigating Log4j vulnerability. 
-For details see: 
-https://www.microsoft.com/security/blog/2021/12/11/guidance-for-preventing-detecting-and-hunting-for-cve-2021-44228-log4j-2-exploitation/ 
-
-*Updated Description–*
-
-This policy identifies Azure Front Door (Classic) Web application firewall (WAF) policies that have the Remote Command Execution rule disabled. It is recommended to define the criteria in the WAF policy with the rule ‘Remote Command Execution (944240)’ under managed rules to help in detecting and mitigating Log4j vulnerability. 
-For details see: 
-https://www.microsoft.com/security/blog/2021/12/11/guidance-for-preventing-detecting-and-hunting-for-cve-2021-44228-log4j-2-exploitation/ 
-
-*Impact–* None. This change will not affect the functionality of the policy. 
-
-*Impact on Alerts–* None.
-
-
-|*Azure Microsoft Defender for Cloud automatic provisioning of log Analytics agent for Azure VMs is set to Off*
-//RLP-156201
-
-|*Changes–* The policy will be deleted since Azure has deprecated the https://learn.microsoft.com/en-us/azure/defender-for-cloud/prepare-deprecation-log-analytics-mma-agent[Log Analytics] agent.
-
-*Impact–* All alerts will be resolved as Policy Deleted.
+*Impact–* Medium. Open alerts using the latest security policy will be resolved. New alerts will be created if not configured with the latest security policy.
 
 |===
 
@@ -257,78 +122,17 @@ https://www.microsoft.com/security/blog/2021/12/11/guidance-for-preventing-detec
 |*Service*
 |*API Details*
 
-|tt:[Update] *Amazon API Gateway*
-//RLP-156118
+|*Alibaba Apsara File Storage NAS*
+//RLP-156130
 
-|*aws-apigatewayv2-stage*
-
-The API will be updated to ingest an additional `apidId` attribute.
-
-No additional permissions are required.
-
-
-|tt:[Update] *Azure Container Apps*
-//RLP-156126
-
-|*azure-app-container-apps*
+|*alibaba-cloud-network-attach-storage*
 
 Additional permissions required:
 
-* `microsoft.app/containerapps/read` (existing permission)
-* `microsoft.app/containerapps/authconfigs/read` (new permission)
+* `nas:List`
+* `nas:Describe`
 
-The Reader role includes the permissions.
-
-NOTE: `authConfigs` details of container apps will be appended to the existing API.
-
-
-|*Azure Container Apps*
-//RLP-156125
-
-|*azure-app-container-apps-managed-environment*
-
-Additional permission required:
-
-* `Microsoft.app/managedenvironments/read`
-
-The Reader role includes the permission.
-
-
-|*Azure Fluid Relay*
-//RLP-156123
-
-|*azure-fluid-relay-server*
-
-Additional permission required:
-
-* `Microsoft.FluidRelay/fluidRelayServers/read`
-
-The Reader role includes the permission.
-
-
-|*Azure Web PubSub Service*
-//RLP-156120
-
-|*azure-signalrservice-web-pub-sub-diagnostic-settings*
-
-Additional permissions required:
-
-* `Microsoft.SignalRService/WebPubSub/read`
-* `Microsoft.Insights/DiagnosticSettings/Read`
-
-The Reader role includes the permissions.
-
-
-|*OCI IAM*
-//RLP-155561
-
-|*oci-iam-tag-default*
-
-Additional permission required:
-
-* `TAG_DEFAULT_INSPECT`
-
-The Reader role includes the permission.
+//The Reader role includes the permission.
 
 |===
 
