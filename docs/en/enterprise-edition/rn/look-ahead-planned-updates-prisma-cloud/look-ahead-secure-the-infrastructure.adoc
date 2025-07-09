@@ -74,6 +74,28 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosm
 //*Impact–* Low. New alerts will be created for the resource which is using aws key managed key via alias.
 
 
+|*Azure Storage Account 'Trusted Microsoft Services' access not enabled*
+//RLP-156559
+
+|*Changes–* The policy RQL will be updated to optimize the RQL to reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'networkRuleSet.bypass does not contain AzureServices'  
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'properties.publicNetworkAccess does not equal ignore case "Disabled" and networkRuleSet.defaultAction equal ignore case "Deny" and networkRuleSet.bypass does not contain AzureServices' 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open Alerts where the 'Trusted Microsoft Services' exceptions cannot be configured will be resolved.
+
+
 |*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
 //RLP-156488
 
@@ -110,6 +132,23 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-de
 *Policy Severity–* Low
 
 *Impact–* Medium. Open alerts using the latest security policy will be resolved. New alerts will be created if not configured with the latest security policy.
+
+
+|*GCP BigQuery Table not encrypted with CMEK*
+//RLP-156516
+
+|*Changes–* The policy RQL will be updated to handle GCP API updates where views are part of gcloud-bigquery-table Prisma Cloud API.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rule = encryptionConfiguration.kmsKeyName does not exist
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rule = type equals "TABLE" AND encryptionConfiguration.kmsKeyName does not exist
+----
+
 
 |===
 
