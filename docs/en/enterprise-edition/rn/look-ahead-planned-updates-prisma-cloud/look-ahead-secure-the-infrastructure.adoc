@@ -2,7 +2,7 @@
 
 Here are the changes planned in the next Prisma Cloud release to ensure the security of your infrastructure.
 
-Read this section to learn about what is planned in the 25.8.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
+Read this section to learn about what is planned in the 25.9.1 CSPM Platform, Agentless Container Host, Agentless Host Security, CIEM, Data Security, and CDEM releases. 
 
 The Look Ahead announcements are for an upcoming release and is not a cumulative list of all announcements.
 
@@ -48,7 +48,7 @@ Contact your Prisma Cloud representative, who will let you know the information 
 +
 The *Master* branch represents the Prisma Cloud release that is generally available. You can switch to a previous release or the next release branch, to review the policies that were published previously or are planned for the upcoming release.
 +
-Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<1>. For example, PCS-25.8.1.
+Because Prisma Cloud typically has a monthly release, the release naming convention in GitHub is PCS-<year>.<month>.<1>. For example, PCS-25.9.1.
 
 . Review the updates.
 +
@@ -69,146 +69,7 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 
 //2+|*Policy Updates—Metadata*
 
-|*Azure Application Gateway Web application firewall (WAF) policy rule for Remote Command Execution is disabled*
-//RLP-156633
 
-|*Changes–* The policy RQL will be updated to exclude Azure Application Gateway WAF policy not attached with applicationGateways.
-
-*Current RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.policySettings.state equals Enabled and properties.managedRules.managedRuleSets is not empty and properties.managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[?any(ruleId equals 944240 and state equals Disabled)] exists and properties.applicationGateways[*] is not empty
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.policySettings.state equals Enabled and properties.managedRules.managedRuleSets is not empty and properties.managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[?any(ruleId equals 944240 and state equals Disabled)] exists and (properties.applicationGateways[*] exists and properties.applicationGateways[*] is not empty)
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Low
-
-*Impact–* Low. Open alerts where the Azure Application Gateway WAF policy rule for remote command execution with applicationGateways not presented will be resolved.
-
-
-|*Azure Cosmos DB IP range filter not configured*
-//RLP-156503
-
-|*Changes–* The policy RQL will be updated to account for the publicNetworkAccess setting.
-
-*Current RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.ipRangeFilter is empty 
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.ipRangeFilter is empty and properties.publicNetworkAccess does not equal ignore case "Disabled" 
-----
-
-//*Policy Type–* Config 
-
-//*Policy Severity–* Informational
-
-//*Impact–* Low. New alerts will be created for the resource which is using aws key managed key via alias.
-
-
-|*Azure Storage Account 'Trusted Microsoft Services' access not enabled*
-//RLP-156559
-
-|*Changes–* The policy RQL will be updated to optimize the RQL to reduce false positives.
-
-*Current RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'networkRuleSet.bypass does not contain AzureServices'  
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'properties.publicNetworkAccess does not equal ignore case "Disabled" and networkRuleSet.defaultAction equal ignore case "Deny" and networkRuleSet.bypass does not contain AzureServices' 
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Low
-
-*Impact–* Low. Open Alerts where the 'Trusted Microsoft Services' exceptions cannot be configured will be resolved.
-
-
-|*Azure storage account has a blob container with public access*
-//RLP-156408
-
-|*Changes–* The policy RQL will be updated to minimize false positives by refining how it evaluates network parameters that determine public access.
-
-*Current RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.defaultAction equal ignore case Allow) and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and (properties.publicNetworkAccess equal ignore case Enabled or properties.publicNetworkAccess does not exist) and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist) and (networkRuleSet.ipRules is empty or networkRuleSet.ipRules[?any(value equals "0.0.0.0/0" and action equal ignore case "Allow")]exists) 
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* High
-
-*Impact–* Medium. Alerts will be triggered for storage accounts where the blob container is publicly accessible and no firewall rules are added to restrict public access. Open alerts will be resolved in case the public access is disabled and iprules have been added to restrict public access.
-
-
-|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
-//RLP-156488
-
-|*Changes–* The policy will be updated to look for load balancers not using the latest security policy as part of the policy RQL.
-
-*Current Description–* 
-
-This policy identifies Application Load Balancers (ALBs) are not using the latest predefined security policy. A security policy is a combination of protocols and ciphers. The protocol establishes a secure connection between a client and a server and ensures that all data passed between the client and your load balancer is private. A cipher is an encryption algorithm that uses encryption keys to create a coded message. So it is recommended to use the latest predefined security policy which uses only secured protocol and ciphers.
-
-We recommend using either non-FIPS security policy ELBSecurityPolicy-TLS13-1-2-2021-06 or FIPS security policy ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04 to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
-
-For more details: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies 
-
-*Updated Description–*
-
-This policy identifies Application Load Balancers (ALBs) are not using the latest predefined security policy. A security policy is a combination of protocols and ciphers. The protocol establishes a secure connection between a client and a server and ensures that all data passed between the client and your load balancer is private. A cipher is an encryption algorithm that uses encryption keys to create a coded message. So it is recommended to use the latest predefined security policy which uses only secured protocol and ciphers.
-
-We recommend using the latest recomended non-FIPS security policy or FIPS security policy to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
-
-For more details: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html 
-
-*Current RQL–*
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Low
-
-*Impact–* Medium. Open alerts using the latest security policy will be resolved. New alerts will be created if not configured with the latest security policy.
-
-
-|*GCP BigQuery Table not encrypted with CMEK*
-//RLP-156516
-
-|*Changes–* The policy RQL will be updated to handle GCP API updates where views are part of gcloud-bigquery-table Prisma Cloud API.
-
-*Current RQL–*
-----
-config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rule = encryptionConfiguration.kmsKeyName does not exist
-----
-
-*Updated RQL–*
-----
-config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rule = type equals "TABLE" AND encryptionConfiguration.kmsKeyName does not exist
-----
 
 
 |===
@@ -222,30 +83,7 @@ config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rul
 |*Service*
 |*API Details*
 
-|*Alibaba Apsara File Storage NAS*
-//RLP-156130
 
-|*alibaba-cloud-network-attach-storage*
-
-Additional permissions required:
-
-* `nas:List`
-* `nas:Describe`
-
-//The Reader role includes the permission.
-
-
-|*Amazon Connect Outbound Campaign*
-//RLP-153462
-
-|*aws-connect-outbound-campaign*
-
-Additional permissions required:
-
-* `connect-campaigns:ListCampaigns`
-* `connect-campaigns:DescribeCampaign`
-
-The Security Audit Policy role does not include the above permissions. 
 
 |===
 
