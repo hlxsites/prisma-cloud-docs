@@ -66,10 +66,127 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+2+|*Policy Updates—RQL*
 
-//2+|*Policy Updates—Metadata*
+|*Azure App Service web apps with public network access*
+//RLP-156747
+
+|*Changes–* The RQL is updated to consider private endpoints as well to reduce false positives.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with app and properties.state equal ignore case running and properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled and config.ipSecurityRestrictions[?any(action equals Allow and ipAddress equals Any)] exists'
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist and (properties.privateLinkIdentifiers does not exist or properties.privateLinkIdentifiers is empty))) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. Open alerts where private link identifiers exist will be resolved. App service where the IP rule allowing 0.0.0.0/0 will be alerted. 
 
 
+|*Azure Key Vault audit logging is disabled*
+//RLP-156668
+
+|*Changes–* RQL updated to resolve a syntax issue.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND  api.name = 'azure-key-vault-list' AND json.rule =  "not ( diagnosticSettings.value[*].properties.logs[*].enabled any equal true and diagnosticSettings.value[*].properties.logs[*].enabled size greater than 0 )" 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = not(diagnosticSettings.value[?any(properties.logs[?any(enabled equals "true")] exists )] exists and diagnosticSettings.value[*].properties.logs[*].enabled size > 0) 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* No Impact
+
+|*Azure Network Watcher Network Security Group (NSG) flow logs are disabled*
+//RLP-156741
+
+|*Changes–*  Prisma policy updated to reduce false positives.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings does not exist or flowLogsSettings.enabled is false) and tags.created-by does not contain "prismacloud-agentless-scan" 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings.storageId is not empty and flowLogsSettings.enabled is false) and tags.created-by does not contain "prismacloud-agentless-scan"
+----
+
+*Current Remediation Steps–* 
+To configure Network Watcher Network Security Group (NSG) flow log, follow below URL:
+https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-nsg-flow-logging-portal#enable-nsg-flow-log
+
+*Proposed Remediation Steps–* 
+
+Follow the below steps to enable flow logs for Network security group via Azure Portal:
+1. Log in to the Azure portal.
+2. Search *Network foundation*.
+3. Under *Virtual Network*, Select *Network security groups*
+4. Search and Click the Network security group for which you need to modify the flow log settings.
+5. Under *Monitoring*, Select *NSG flow logs*'.
+6. Select the flow log with Status *Disabled*, Click on *Enable* at the top.
+7. Confirm the flow log name and click *Enable* at the bottom. 
+
+Use the command below to enable flow logs for Network security group via Azure CLI:
+
+`az network watcher flow-log update --name <Flow Log name> --nsg <NSG name> --resource-group <Resource Group name> --storage-account <Storage account> --enabled true --location <location>`
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. Open Alerts where the Flow logs did not exist for NSG will be resolved.
+
+
+|*Azure Network Watcher Network Security Group (NSG) flow logs retention is less than 90 days*
+//RLP-156742
+
+|*Changes–*  Prisma policy updated to reduce false positives.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule =  ' $.flowLogsSettings does not exist or  $.flowLogsSettings.enabled is false or  ($.flowLogsSettings.retentionPolicy.days does not equal 0 and $.flowLogsSettings.retentionPolicy.days less than 90) '
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings.retentionPolicy.days does not equal 0 and flowLogsSettings.retentionPolicy.days less than 90) and tags.created-by does not contain "prismacloud-agentless-scan"
+----
+
+*Proposed Remediation Steps–* 
+
+Follow the below steps to update retention days for flow logs via Azure Portal:
+1. Log in to the Azure portal.
+2. Search *Network foundation*.
+3. Under *Virtual Network*, Select *Network security groups*
+4. Search and Click the Network security group for which you need to modify the flow log settings.
+5. Under *Monitoring*, Select *NSG flow logs*'.
+6. Click the flow log, and under *Storage Account*, Set the *Retention days* to 90 days or greater.
+7. *Save* your changes.  
+
+Use the below command to enable flow logs for Network security group via Azure CLI: 
+
+`az network watcher flow-log update --name <Flow Log name> --nsg <NSG name> --resource-group <Resource Group name> --storage-account <Storage account> --enabled true --retention <Retention Days> --location <location>`
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open Alerts where the Flow logs did not exist for NSG will be resolved.
 
 
 |===
