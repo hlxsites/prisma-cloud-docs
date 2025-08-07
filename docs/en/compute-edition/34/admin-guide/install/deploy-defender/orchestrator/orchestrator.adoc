@@ -196,7 +196,7 @@ include::install-kubernetes-cri.adoc[leveloffset=+1]
 
 === Troubleshooting
 
-==== Kubernetes CrashLoopBackOff Error
+==== 1. Kubernetes CrashLoopBackOff Error
 
 **Error**
   
@@ -226,7 +226,7 @@ When deploying inline firewall instances on a Defender node with more than 10 pr
 
 
 [.task]
-==== Increase the Defender Pod Limit
+==== 2. Increase the Defender Pod Limit
 
 Increase the Pod limit to 4 GB when activating WAAS OOB on K8s cluster.
 
@@ -249,7 +249,7 @@ Increase the Pod limit to 4 GB when activating WAAS OOB on K8s cluster.
 ... Run `kubectl edit ds twistlock-defender-ds -n twistlock` and change the value under *resources > limits > memory* to *4096Mi*.
 ... *Save* the file to restart the Defenders with the increased memory limit.
 
-==== Pod Security Policy
+==== 3. Pod Security Policy
 
 If Pod Security Policy is enabled in your cluster, you might get the following error when trying to create a Defender DaemonSet.
 
@@ -333,3 +333,56 @@ subjects:
   namespace: twistlock
 ----
 
+==== 4. Warning while applying the defender YAML
+
+When using newer Kubernetes versions (1.30 and above), you may see the following warning while applying the defender YAML:
+
+  Warning: spec.template.metadata.annotations[container.apparmor.security.beta.kubernetes.io/twistlock-defender]: deprecated since v1.30; use the "appArmorProfile" field instead
+
+[NOTE]
+====
+This warning doesn't affect the defender deployment and the defender will be fully operational. The warning pertains to the deprecation of the `appArmorProfile` attribute used in the generated YAML configuration, which will be addressed in future releases.
+====
+
+If you wish to resolve this warning, open the YAML file, search for the securityContext section:
+
+.securitycontextbeforeappArmorProfile
+[source,yaml]
+----
+securityContext:
+  readOnlyRootFilesystem: true
+  privileged: false
+  capabilities:
+    add:
+    - NET_ADMIN  # Required for process monitoring
+    - NET_RAW    # Required for iptables (CNNF, runtime DNS, WAAS). See: https://bugzilla.redhat.com/show_bug.cgi?id=1895032
+    - SYS_ADMIN  # Required for filesystem monitoring
+    - SYS_PTRACE # Required for local audit monitoring
+    - SYS_CHROOT # Required for changing mount namespace using setns
+    - MKNOD      # A capability to create special files using mknod(2), used by docker-less registry scanning
+    - SETFCAP    # A capability to set file capabilities, used by docker-less registry scanning
+    - IPC_LOCK   # Required for perf events monitoring, allowing to ignore memory lock limits
+----
+
+And add the new `appArmorProfile` field in order to get the following result:
+
+.securitycontextafterappArmorProfile
+[source,yaml]
+----
+securityContext:
+  readOnlyRootFilesystem: true
+  privileged: false
+  appArmorProfile:
+    type: Unconfined
+  capabilities:
+    add:
+    - NET_ADMIN  # Required for process monitoring
+    - NET_RAW    # Required for iptables (CNNF, runtime DNS, WAAS). See: https://bugzilla.redhat.com/show_bug.cgi?id=1895032
+    - SYS_ADMIN  # Required for filesystem monitoring
+    - SYS_PTRACE # Required for local audit monitoring
+    - SYS_CHROOT # Required for changing mount namespace using setns
+    - MKNOD      # A capability to create special files using mknod(2), used by docker-less registry scanning
+    - SETFCAP    # A capability to set file capabilities, used by docker-less registry scanning
+    - IPC_LOCK   # Required for perf events monitoring, allowing to ignore memory lock limits
+----
+You can now apply the YAML without any warning message.
