@@ -1,16 +1,16 @@
 == Features Introduced in August 2025
 
-Learn what's new on Prisma® Cloud in August 2025.
+Learn what's new in the Prisma® Cloud August 2025 release.
 
-//* <<announcements>>
+
 //* <<new-features>>
 * <<enhancements>>
-// * <<changes-in-existing-behavior>>
-// * <<api-ingestions>>
-// //* <<new-policies>>
-// * <<policy-updates>>
-// //* <<iam-policy-updates>>
-// * <<new-compliance-benchmarks-and-updates>>
+* <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+//* <<new-policies>>
+* <<policy-updates>>
+//* <<iam-policy-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
 * <<rest-api-updates>>
 //* <<deprecation-notices>>
 
@@ -73,13 +73,272 @@ tt:[34.02.133]
 
 |===
 
-
-[#rest-api-updates]
-=== Rest API Changes and New APIs
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
 [cols="30%a,70%a"]
 |===
 |*Feature*
 |*Description*
+
+|*Update to New User Creation Process in CSP*
+//No Jira. Update reviewed by Ruchit & Darpan and change approved by Elad K on Slack on 07/21/2025
+
+|The process of https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/add-prisma-cloud-users[creating] a new user in Prisma Cloud will be updated for integrated CSP portal flows. This enhancement will be implemented in early August to help prevent unauthorized access or disruptive changes to sensitive CSP environments. All newly created users will appear in a pending state in the CSP portal and will require https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClNaCAK[explicit approval] by a CSP Super User before they can get access. 
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+
+|*Service*
+|*API Details*
+
+|*Alibaba Apsara File Storage NAS*
+//RLP-156130
+
+|*alibaba-cloud-network-attach-storage*
+
+Additional permissions required:
+
+* `nas:List`
+* `nas:Describe`
+
+//The Reader role includes the permission.
+
+
+|*Amazon Connect Outbound Campaign*
+//RLP-153462
+
+|*aws-connect-outbound-campaign*
+
+Additional permissions required:
+
+* `connect-campaigns:ListCampaigns`
+* `connect-campaigns:DescribeCampaign`
+
+The Security Audit Policy role does not include the above permissions. 
+
+|===
+
+
+// [#new-policies]
+// === New Policies
+// [cols="40%a,60%a"]
+// |===
+// |*Policies*
+// |*Description*
+// |===
+
+
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+// 2+|*Policy Updates—Metadata*
+
+|*Azure Application Gateway Web application firewall (WAF) policy rule for Remote Command Execution is disabled*
+//RLP-156633
+
+|*Changes–* The policy RQL will be updated to exclude Azure Application Gateway WAF policy not attached with applicationGateways.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.policySettings.state equals Enabled and properties.managedRules.managedRuleSets is not empty and properties.managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[?any(ruleId equals 944240 and state equals Disabled)] exists and properties.applicationGateways[*] is not empty
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-application-gateway-waf-policy' AND json.rule = properties.policySettings.state equals Enabled and properties.managedRules.managedRuleSets is not empty and properties.managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[?any(ruleId equals 944240 and state equals Disabled)] exists and (properties.applicationGateways[*] exists and properties.applicationGateways[*] is not empty)
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts where the Azure Application Gateway WAF policy rule for remote command execution with applicationGateways not presented will be resolved.
+
+
+|*Azure Cosmos DB IP range filter not configured*
+//RLP-156503
+
+|*Changes–* The policy RQL will be updated to account for the publicNetworkAccess setting.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.ipRangeFilter is empty 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.ipRangeFilter is empty and properties.publicNetworkAccess does not equal ignore case "Disabled" 
+----
+
+
+|*Azure Storage Account 'Trusted Microsoft Services' access not enabled*
+//RLP-156559
+
+|*Changes–* The policy RQL will be updated to optimize the RQL to reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'networkRuleSet.bypass does not contain AzureServices'  
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = 'properties.publicNetworkAccess does not equal ignore case "Disabled" and networkRuleSet.defaultAction equal ignore case "Deny" and networkRuleSet.bypass does not contain AzureServices' 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open Alerts where the 'Trusted Microsoft Services' exceptions cannot be configured will be resolved.
+
+
+|*Azure storage account has a blob container with public access*
+//RLP-156408
+
+|*Changes–* The policy RQL will be updated to minimize false positives by refining how it evaluates network parameters that determine public access.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.virtualNetworkRules is empty and (properties.privateEndpointConnections is empty or properties.privateEndpointConnections does not exist)
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = totalPublicContainers > 0 and (properties.publicNetworkAccess equal ignore case Enabled and networkRuleSet.defaultAction equal ignore case Allow) and (properties.allowBlobPublicAccess is true or properties.allowBlobPublicAccess does not exist) and (properties.publicNetworkAccess equal ignore case Enabled or properties.publicNetworkAccess does not exist) and networkRuleSet.virtualNetworkRules is empty  and (networkRuleSet.ipRules is empty or networkRuleSet.ipRules[?any(value equals "0.0.0.0/0" and action equal ignore case "Allow")]exists)  
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* High
+
+*Impact–* Medium. Alerts will be triggered for storage accounts where the blob container is publicly accessible and no firewall rules are added to restrict public access. Open alerts will be resolved in case the public access is disabled and iprules have been added to restrict public access.
+
+
+|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
+//RLP-156488
+
+|*Changes–* The policy will be updated to look for load balancers not using the latest security policy as part of the policy RQL.
+
+*Current Description–* 
+
+This policy identifies Application Load Balancers (ALBs) not using the latest predefined security policy. A security policy is a combination of protocols and ciphers. The protocol establishes a secure connection between a client and a server and ensures that all data passed between the client and your load balancer is private. A cipher is an encryption algorithm that uses encryption keys to create a coded message. So it is recommended to use the latest predefined security policy which uses only secured protocol and ciphers.
+
+We recommend using either non-FIPS security policy ELBSecurityPolicy-TLS13-1-2-2021-06 or FIPS security policy ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04 to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
+
+For more details: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies 
+
+*Updated Description–*
+
+This policy identifies Application Load Balancers (ALBs) are not using the latest predefined security policy. A security policy is a combination of protocols and ciphers. The protocol establishes a secure connection between a client and a server and ensures that all data passed between the client and your load balancer is private. A cipher is an encryption algorithm that uses encryption keys to create a coded message. So it is recommended to use the latest predefined security policy which uses only secured protocol and ciphers.
+
+We recommend using the latest recomended non-FIPS security policy or FIPS security policy to meet compliance and security standards that require disabling certain TLS protocol versions or to support legacy clients that require deprecated ciphers.
+
+For more details: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html 
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Medium. Open alerts using the latest security policy will be resolved. New alerts will be created if not configured with the latest security policy.
+
+
+|*GCP BigQuery Table not encrypted with CMEK*
+//RLP-156516
+
+|*Changes–* The policy RQL will be updated to handle GCP API updates where views are part of gcloud-bigquery-table Prisma Cloud API.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rule = encryptionConfiguration.kmsKeyName does not exist
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-bigquery-table' AND json.rule = type equals "TABLE" AND encryptionConfiguration.kmsKeyName does not exist
+----
+
+|*OCI Kubernetes Engine Cluster Pod Security Policy Not Enforced*
+//RLP-156569
+
+|*Changes–* This policy has been updated due to the deprecation of Pod Security Policy (PSP) in newer versions of the OCI Kubernetes Engine (OKE) service. Oracle has shifted its recommended approach for enforcing pod security, rendering the previous policy definition less effective or potentially generating inaccurate findings. The update aligns our policy with the current best practices and capabilities of OKE[https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengaboutk8sversions.htm].
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-containers-artifacts-kubernetes-cluster' AND json.rule = lifecycleState equal ignore case ACTIVE and options.admissionControllerOptions.isPodSecurityPolicyEnabled is false 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'oci' AND api.name = 'oci-containers-artifacts-kubernetes-cluster' AND json.rule = lifecycleState equal ignore case ACTIVE and options.admissionControllerOptions.isPodSecurityPolicyEnabled is false and (kubernetesVersion contains "v1.24" or kubernetesVersion contains "v1.23" or kubernetesVersion contains "v1.22" or kubernetesVersion contains "v1.21" or kubernetesVersion contains "v1.20" or kubernetesVersion contains "v1.19" or kubernetesVersion contains "v1.18" or kubernetesVersion contains "v1.17" or kubernetesVersion contains "v1.16" or kubernetesVersion contains "v1.15" or kubernetesVersion contains "v1.14" or kubernetesVersion contains "v1.13" or kubernetesVersion contains "v1.12" or kubernetesVersion contains "v1.11" or kubernetesVersion contains "v1.10" or kubernetesVersion contains "v1.9" or kubernetesVersion contains "v1.8")
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Existing false positive alerts generated by the previous version of this policy will now be resolved with the status "Policy Updated." This ensures that our security alerts accurately reflect the current state of your OCI Kubernetes environments and helps reduce noise from outdated checks.
+
+2+|*Policy Deletion*
+
+|*OCI Data Catalog configured with overly permissive network access* policy is removed
+//RLP-156568
+
+|This policy is deleted because Oracle updated the OCI Data Catalog service. These updates made the policy redundant.  
+
+*Impact*—All alerts will be resolved as Policy Deleted.
+
+|===
+
+
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
+
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
+//|===
+
+
+[#rest-api-updates]
+=== REST API Changes and New APIs
+
+[cols="37%a,63%a"]
+|===
+|*REST API*
+|*Description*
+
+|tt:[Update] Azure Database for MySQL and PostgreSQL
+
+|Prisma Cloud will no longer ingest metadata for `azure-mysql-server` and `azure-postgresql-server` APIs. Due to this change, you will no longer be able to view the list of assets on the Investigate page and perform an RQL search query for this API.
+
+*Impact*—All the resources that were ingested as a part of the `azure-mysql-server` and `azure-postgresql-server` APIs will be removed, and all existing alerts associated with the APIs will be resolved as *Resource_Deleted*.
 
 
 //CWP-61451
@@ -97,3 +356,11 @@ tt:[34.02.133]
 The character limit for the name field has been extended to 300, and the description field can now accommodate up to 5,000 characters.
 
 |===
+
+//[#deprecation-notices]
+//=== Deprecation Notices
+//[cols="50%a, 50%a"]
+//|===
+//|*Change*
+//|*Description*
+//|===
