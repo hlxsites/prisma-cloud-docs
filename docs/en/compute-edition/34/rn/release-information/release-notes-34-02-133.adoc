@@ -1,0 +1,176 @@
+:toc: macro
+== 34.02.133 Release Notes
+
+The following table has the release details:
+
+[cols="1,4"]
+|===
+|Build
+|34.02.133
+
+|Code name
+|Quinn Update 2
+
+|Release date
+|August 10, 2025
+
+|Type
+|Minor release
+
+|SHA-256
+|6928012b72636a15d6e45636f5274d6bc6af9c28e0edcf02828811996ba31ef8
+
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/34/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtimes, tools, and orchestrators.
+
+//You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+//https://cdn.twistlock.com/releases/LmkSGJVN/prisma_cloud_compute_edition_34_00_141.tar.gz[https://cdn.twistlock.com/releases/LmkSGJVN/prisma_cloud_compute_edition_34_00_141.tar.gz]
+
+toc::[]
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defenders
+
+With the `v34.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Defender releases (n, n-1, and n-2)] are `v34`, `v33`, and `v32` respectively. In addition, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 releases. So the current release will allow Defenders and REST API calls from release `v31` also. Failure to upgrade Defenders below release `v31`, such as `v30.03`, will result in disconnection of the Defenders from the Console.
+
+However, to maintain full support, you must upgrade your Defenders to a `v32.00` or a higher release.
+
+To summarize, the level of support for the different versions of Defenders is as follows:
+
+* Defender versions 34.xx, 33.xx, and 32.xx have full support
+* Defender versions 31.xx are functional (will be able to connect to version 34.00 Console) but support is not available for such Defenders
+* Defender versions previous to 31.00, such as 30.03, are neither supported nor functional (cannot connect to version 34.xx Console)
+
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+With the `v34.00` release, the https://docs.prismacloud.io/en/compute-edition/32/admin-guide/upgrade/support-lifecycle[supported Console releases (n, n-1, and n-2)] are `v34`, `v33`, and `v32` respectively. 
+
+NOTE: Defenders from the n-3 release will remain functional as described above. 
+
+You can upgrade the Prisma Cloud console directly from any n-1 or n-2 version to n. For example, with `v34` as n and `v33` as n-1, you can upgrade directly from `33.01.137` to `34.00.141`. You can also upgrade directly from an n-2 version (`32.00.161`, `32.01.128`, `32.02.127`, `32.03.123`, `32.04.113`, `32.05.124`, `32.06.113`, `32.07.123`) to `34.00.141`.
+
+
+
+// [#cve-coverage-update]
+// === CVE Coverage Update
+
+[#enhancements]
+=== Enhancements
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Collect Kubernetes Pod labels*
+
+//CWP-63976 
+
+|If you enable the Collect Deployment and Namespace Labels toggle while deploying a defender, an environment variable, COLLECT_POD_LABELS is set to true in the YAML file or helm chart. Orchestrator defenders that are deployed with this setting use the Kubernetes API while scanning to collect labels of the deployment and namespace resources that contain the pods hosting the containers.
+
+This feature is enhanced to support a new environment variable, COLLECT_POD_RESOURCE_LABELS. After enabling the Collect Deployment and Namespace Labels toggle, if you add this variable and set it to true, the Orchestrator defenders also collect labels of the pod containing the container.
+
+Together these two environment variables support the use case of accessing the labels assigned using the command: kubectl label pod.
+
+You can view these labels in the container details tab, or retrieve them from the externalLabels and labels fields in the response of the API: 
+
+https://pan.dev/prisma-cloud/api/cwpp/get-containers/.
+
+|*Enhanced security coverage for CAAS containers*
+
+
+//CWP-63522
+
+|App-embedded defenders now support multi-container CaaS deployments on:
+
+* ACI container groups
+
+* Google Cloud Run platform 
+
+* Amazon EKS on AWS Fargate
+
+Support is now available for these services, augmenting the existing support for Amazon ECS Fargate. 
+
+The enhanced support also includes:
+
+* Account ID attribution for ACI container groups, Google Cloud Run, and AWS EKS on Fargate
+
+* Detection of Defended/Undefended status for ACI container groups, Google Cloud Run, and EKS on Fargate
+
+
+|*Enhanced support for OCI tag-based filtering*
+
+//CWP-63568
+
+|The tag-based filtering mechanism for Oracle Cloud Infrastructure (OCI) now supports filters at the compartment level. You can now include or exclude hosts at the compartment level using this feature.
+
+|===
+
+
+// [changes-in-existing-behavior]
+// === Changes in Existing Behavior
+// [cols="30%a,70%a"]
+// |===
+// |*Feature*
+// |*Description*
+
+
+
+// |===
+
+
+// [#new-features-core]
+// === New Features in Core
+
+// [#new-features-host-security]
+// === New Features in Host Security
+
+// [#new-features-serverless]
+// === New Features in Serverless
+
+// [#new-features-waas]
+// === New Features in WAAS
+
+[#api-changes]
+=== API Changes and New APIs
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+
+|*API field length updates*
+
+//CWP-61451
+
+|Issues related to the limits on the length of the name and description request body fields in the following APIs have been fixed now:
+
+* https://pan.dev/prisma-cloud/api/cwpp/post-collections/ 
+
+* https://pan.dev/prisma-cloud/api/cwpp/put-collections-id/  
+
+The character limit for the name field has been extended to 300, and the description field can now accommodate up to 5,000 characters.
+
+
+|===
+
+
+
+// [#deprecation-notices]
+// === Deprecation Notices
+// [cols="40%a,60%a"]
+
+// |===
+// |*Feature*
+// |*Description*
+
+
+
+
+// |===
