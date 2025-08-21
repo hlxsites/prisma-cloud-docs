@@ -228,6 +228,48 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-
 
 *Impact–* No Impact
 
+|*Azure Microsoft Defender for Cloud disk encryption monitoring is set to disabled*
+//RLP-156565
+
+|*Changes–* RQL logic and remediation is updated for this Policy.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and properties.parameters.diskEncryptionMonitoringEffect.value equals Disabled) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))' 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and (properties.parameters.gcLinuxDiskEncryptionMonitoringEffect.value equals Disabled or properties.parameters.gcWindowsDiskEncryptionMonitoringEffect.value equals Disabled)) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* All alerts will be resolved as Policy Updated.
+
+|*Azure Key Vault audit logging is disabled{}*
+//RLP-156565
+
+|*Changes–* RQL logic and remediation is updated for this Policy.
+
+*Current RQL–* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and properties.parameters.systemUpdatesMonitoringEffect.value equals Disabled) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'  
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and properties.parameters.systemUpdatesV2MonitoringEffect.value equals Disabled) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* All alerts will be resolved as Policy Updated.
+
 |*Azure Network Watcher Network Security Group (NSG) flow logs retention is less than 90 days*
 //RLP-156742
 
