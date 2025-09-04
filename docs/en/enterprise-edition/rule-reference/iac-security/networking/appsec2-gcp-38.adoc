@@ -1,0 +1,38 @@
+
+== GCP public-facing (external) global load balancer using HTTP protocol
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_GCP_38
+|Category |Networking
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |2e0deaf8-9a21-4203-a82c-7874e0ce13db
+|===
+
+
+=== Impact
+This rule identifies GCP public-facing (external) global load balancers that are using HTTP protocol.
+
+Using the HTTP protocol with a GCP external load balancer transmits data in plaintext, making it vulnerable to eavesdropping, interception, and modification by malicious actors. This lack of encryption exposes sensitive information, increases the risk of man-in-the-middle attacks, and compromises the overall security and privacy of the data exchanged between clients and servers.
+
+It is recommended to use HTTPS protocol with external-facing load balancers.
+
+=== How to Fix
+
+*Terraform*
+
+If the `load_balancing_scheme` of the `google_compute_global_forwarding_rule` resource is set to `EXTERNAL` then assure the `target` does not include `targetHttpProxies`.
+
+[source,go]
+----
+resource "google_compute_global_forwarding_rule" "example" {
+  ...
+  load_balancing_scheme = "EXTERNAL"
+-  target                = "https://www.googleapis.com/compute/v1/projects/my-project/global/targetHttpProxies/my-target-proxy"
+}
+----
+

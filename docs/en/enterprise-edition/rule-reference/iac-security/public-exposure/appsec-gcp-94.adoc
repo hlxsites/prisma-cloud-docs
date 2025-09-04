@@ -1,0 +1,48 @@
+== GCP Dataflow jobs are not private
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_94
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Cloud Dataflow in GCP is a service used for streaming and batch data processing.
+A Dataflow job consists of at least one management node and one compute node (both are GCE VMs).
+By default, these nodes are configured with public IPs that allow them to communicate with the public internet, but this also means they increase your potential attack surface by being publicly accessible.
+We recommend you remove the public IPs for your Dataflow jobs.
+View the https://cloud.google.com/dataflow/docs/guides/routes-firewall#internet_access_for[official Google documentation] for the currently supported internet access configuration options.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_dataflow_job
+* *Field:* ip_configuration
+
+
+[source,go]
+----
+resource "google_dataflow_job" "big_data_job" {
+  name              = "dataflow-job"
+  template_gcs_path = "gs://my-bucket/templates/template_file"
+  temp_gcs_location = "gs://my-bucket/tmp_dir"
+  parameters = {
+    foo = "bar"
+    baz = "qux"
+  }
+
+-  ip_configuration = "WORKER_IP_PUBLIC"
++  ip_configuration = "WORKER_IP_PRIVATE"
+}
+----

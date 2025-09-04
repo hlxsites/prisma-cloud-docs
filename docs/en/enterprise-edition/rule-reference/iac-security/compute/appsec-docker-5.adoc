@@ -1,0 +1,32 @@
+== Update instructions are used alone in a Dockerfile
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_DOCKER_5
+|Category |Compute - Startup Script Leaks
+|Provider |
+|Severity |LOW
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This rule detects whether OS package manager update instructions, such as apt-get update or yum update, are used alone within Dockerfiles. Using update instructions alone, or in a single line, causes the update layer to be cached. This can lead to stale updates being used in subsequent builds, preventing necessary updates from being applied and potentially introducing vulnerabilities. Therefore, we recommend that update instructions should always be combined with package installation commands in the same RUN instruction.
+
+=== How to Fix
+
+*Docker* 
+
+To mitigate this issue, combine the update commands with install commands in a single RUN instruction. This ensures that the package list is updated and packages are installed in the same layer.
+
+Example:
+
+[source,dockerfile]
+----
+- RUN apt-get update
++ RUN apt-get update && apt-get install -y <package-name>
+----

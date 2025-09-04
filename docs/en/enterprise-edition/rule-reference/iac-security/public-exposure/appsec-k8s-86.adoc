@@ -1,0 +1,52 @@
+== The --insecure-bind-address argument is set
+// '--insecure-bind-address' argument is set
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_86
+|Category |Public Exposure - APIs
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Do not bind the insecure API service.
+If you bind the apiserver to an insecure address, basically anyone who could connect to it over the insecure port, would have unauthenticated and unencrypted access to your master node.
+The apiserver doesn't do any authentication checking for insecure binds and traffic to the Insecure API port is not encrpyted, allowing attackers to potentially read sensitive data in transit.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --bind-address=192.168.1.1
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

@@ -1,0 +1,82 @@
+== AWS Glue security configuration encryption is not enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_99
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Ensure that AWS Glue has encryption enabled.
+AWS glue has three possible components that could be encrypted: Cloudwatch, job bookmarks and S3 buckets.
+This check ensures that each is set correctly.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_glue_security_configuration
+* *Arguments:* encryption_configuration, job_bookmarks_encryption, s3_encryption
+
+
+[source,go]
+----
+resource "aws_glue_security_configuration" "test" {
+  name = "example"
+    ...
++ encryption_configuration {
++   cloudwatch_encryption {
++     cloudwatch_encryption_mode = "SSE-KMS"
++     kms_key_arn        = aws_kms_key.example.arn
++   }
+
++   job_bookmarks_encryption {
++     job_bookmarks_encryption_mode = "CSE-KMS"
++     kms_key_arn        = aws_kms_key.example.arn
++   }
+
++   s3_encryption {
++     kms_key_arn        = aws_kms_key.example.arn
++     s3_encryption_mode = "SSE-KMS"
++   }
++ }
+}
+----
+
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Glue::SecurityConfiguration
+* *Arguments:* Properties.EncryptionConfiguration
+
+
+[source,yaml]
+----
+Resources:
+  Resource0:
+    Type: AWS::Glue::SecurityConfiguration
+    Properties:
+      ...
+      EncryptionConfiguration:
+        CloudWatchEncryption: 
++         CloudWatchEncryptionMode: SSE-KMS #any value but 'DISABLED'
+          ...
+        JobBookmarksEncryption: 
++         JobBookmarksEncryptionMode: CSE-KMS #any value but 'DISABLED'
+          ...
+        S3Encryptions: 
++         S3EncryptionMode: SSE-KMS #any value but 'DISABLED'
+          ...s
+----

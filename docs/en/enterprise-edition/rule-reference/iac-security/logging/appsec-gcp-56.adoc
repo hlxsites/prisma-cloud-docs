@@ -1,0 +1,50 @@
+== GCP PostgreSQL instance database flag log_temp_files is not set to 0
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_56
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |8ef39c42-81d4-4816-a402-fc5b1bbbc22b
+|===
+
+
+=== Impact
+PostgreSQL can create a temporary file for actions such as sorting, hashing and temporary query results when these operations exceed *work_mem*.
+The *log_temp_files* flag controls logging names and the file size when it is deleted.
+Configuring *log_temp_files* to zero (*0*) causes all temporary file information to be logged, while positive values log only files whose size are greater than or equal to the specified number of kilobytes.
+A value of *-1* disables temporary file information logging.
+We recommend you set the *log_temp_files* database flag for Cloud SQL PostgreSQL instances is set to zero (*0*).
+If temporary files are not logged, it may be difficult to identify potential performance issues caused by either poor application coding, or deliberate resource starvation attempts.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:* database_version = "POSTGRES_* " settings::database_flags: key:"log_temp_files", value:  by default set to "-1"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "POSTGRES_11"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "log_temp_files"
++            value = "0"
+          }
+  }
+}
+----
+

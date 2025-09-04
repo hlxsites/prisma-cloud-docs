@@ -1,0 +1,54 @@
+== Azure Built-in logging for Azure function app is disabled
+// Azure Built-in logging for Azure function app disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_159
+|Category |Logging - Disabled or Missing
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+It is recommended to have a proper logging process for Azure function app in order to track configuration changes conducted manually and programmatically and trace back unapproved changes.
+
+
+//*Runtime - Buildtime* 
+
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:*  azurerm_function_app_slot
+* *Arguments:* enable_builtin_logging
+
+
+[source,go]
+----
+resource "azurerm_function_app_slot" "pass2" {
+  name                       = "test-azure-functions-slot"
+  location                   = azurerm_resource_group.example.location
+  resource_group_name        = azurerm_resource_group.example.name
+  app_service_plan_id        = azurerm_app_service_plan.example.id
+  function_app_name          = azurerm_function_app.example.name
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  enable_builtin_logging     = true
+  site_config {
+    http2_enabled = false
+  }
+  auth_settings {
+    enabled = false
+  }
+}
+----

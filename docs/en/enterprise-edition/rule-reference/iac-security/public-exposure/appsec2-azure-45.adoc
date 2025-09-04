@@ -1,0 +1,53 @@
+
+== Azure SQL Database server not configured with private endpoint
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_45
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |1d115e75-5d4a-435d-bbf7-cc84c2d17068
+|===
+
+
+=== Impact
+This policy checks whether Azure SQL database servers are configured with private endpoints. Private endpoint connections are essential for ensuring secure communication, establishing exclusive, private connectivity to Azure Database for SQL. Configuring a private endpoint ensures access only from recognized networks, preventing entry from potentially malicious or unknown IP addresses, including those within Azure. It is recommended to establish a private endpoint to enhance the security of communication for your Azure SQL database.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_mssql_server, azurerm_private_endpoint
+* *Arguments:* private_connection_resource_id
+
+To fix this issue and establish secure communication with your network, configure your Microsoft SQL server with a private endpoint. This ensures that your server is not publicly accessible and can only be accessed from within your virtual network.
+
+The following is a script to create a Microsoft SQL server with a private endpoint. 
+
+[source,go]
+----
+resource "azurerm_private_endpoint" "example" {
+  name                = "example-endpoint"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  subnet_id           = azurerm_subnet.example.id
+
+  private_service_connection {
+    name                           = "example-connection"
+    is_manual_connection           = false
+    private_connection_resource_id = azurerm_sql_server.example.id
+    subresource_name               = "sqlServer"
+  }
+}
+
+resource "azurerm_sql_server" "example" {
+  ...
+}
+----
+
+This code enhances your Microsoft SQL server security by enabling a private endpoint connection. The private endpoint allows secure connections between your virtual network and the service, traversing exclusively over the Microsoft network. This prevents exposure to the public internet, and helps to reduce the threat of data leakage and external threats.
+

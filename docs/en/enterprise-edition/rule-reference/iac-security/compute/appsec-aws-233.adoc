@@ -1,0 +1,44 @@
+== AWS ACM certificate does not enable Create before Destroy
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_233
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+It is recommended to enable create_before_destroy argument inside the resource lifecycle configuration block to avoid a possible outage when the certificate needs to be recreated during an update.
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+CloudFormation creates a new certificate first and then will delete the old one automatically.
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_acm_certificate" "example" {
+  domain_name       = "example.com"
+  validation_method = "DNS"
+
++ lifecycle {
++   create_before_destroy = true
++ }
+}
+----

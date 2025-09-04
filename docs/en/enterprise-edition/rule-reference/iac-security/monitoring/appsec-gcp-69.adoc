@@ -1,0 +1,54 @@
+== The GKE metadata server is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_69
+|Category |Monitoring - Resource Health
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Running the GKE Metadata Server prevents workloads from accessing sensitive instance metadata and facilitates Workload Identity.
+Every node stores its metadata on a metadata server.
+Some of this metadata, such as kubelet credentials and the VM instance identity token, is sensitive and should not be exposed to a Kubernetes workload.
+Enabling the GKE Metadata server prevents pods (that are not running on the host network) from accessing this metadata and facilitates Workload Identity.
+When unspecified, the default setting allows running pods to have full access to the node's underlying metadata server.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_container_cluster / google_container_node_pool
+* *Arguments:* node_config.workload_metadata_config.node_metadata
+
+
+[source,go]
+----
+{
+ "resource "google_container_cluster" "example" {
+  name               = var.name
+  location           = var.location
+  initial_node_count = 1
+  project            = data.google_project.project.name
+
++ node_config {
++   workload_metadata_config {
++     node_metadata = "GKE_METADATA_SERVER"
++   }
++ }
+  
+}
+
+",
+}
+----
+

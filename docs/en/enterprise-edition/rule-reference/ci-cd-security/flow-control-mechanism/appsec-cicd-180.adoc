@@ -1,0 +1,33 @@
+== Requestors allowed to self-approve pull requests on default branch in Azure Repos
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_CICD_180
+|Category |Flow Control
+|Provider |
+|Severity |MEDIUM
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+A requestor who opened a pull request can approve their own changes on an actively used repository `*`. 
+
+
+Repository policy requires approval from reviewers to merge pull requests which can result in a requestor being able to approve their own request, if the required number of reviewers is set to _1_. If the number of reviewers is set to more than 1, the requestor is considered as one of the reviewers, reducing the number of additional reviewers required to approve the pull request.
+
+Attackers compromising such a user account can potentially directly push code, which is likely to flow through the pipeline and be used in production systems.
+
+* An actively used repository has at least two contributors, over 50 commits, and was updated in the last 90 days.
+
+=== Recommended Solution - Buildtime
+
+It is recommended to prevent requestors from approving their own changes, and to require a minimum number of reviewers to approve pull requests in order to ensure that code is reviewed before merged:
+
+
+. In Azure DevOps, browse to *Repositories* under 'Project Settings'.
+. Select a repository and enter its policies.
+. Uncheck *Allow requestors to approve their own changes*.
+. Under *Automatically included reviewers* uncheck *Allow requestors to approve their own changes* for each reviewer.

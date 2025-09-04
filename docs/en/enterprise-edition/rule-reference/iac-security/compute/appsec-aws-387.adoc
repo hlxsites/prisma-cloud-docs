@@ -1,0 +1,48 @@
+== AWS SQS queue access policy is overly permissive
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_387
+|Category |Compute
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |909d9fdc-8a80-4757-afbe-d1829939c40c
+|===
+
+
+=== Impact
+This policy identifies Simple Queue Service (SQS) queues that have an overly permissive access policy. It is highly recommended to have the least privileged access policy to protect the SQS queue from data leakage and unauthorized access.
+
+For more details:
+https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-basic-examples-of-sqs-policies.html
+
+=== How to Fix
+
+*Terraform*
+
+Ensure that the SQS queue policy does not allow public access by avoiding the use of wildcards (e.g., "*") in the policy without conditions.
+
+[source,go]
+----
+resource "aws_sqs_queue" "example" {
+  ...
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "SQS:SendMessage"
+        Resource = aws_sqs_queue.example.arn
+-        Principal = "*"
++        Principal = {
++          AWS = "arn:aws:iam::123456789012:role/MyRole"
++        }
+      }
+    ]
+  })
+  ...
+}
+----

@@ -1,0 +1,39 @@
+== Alibaba Cloud Disk is not encrypted with Customer Master Key
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_8
+|Category |Storage - Encryption
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Encrypting your disk with a Customer Master Key (CMK) helps protect your data from unauthorized access or tampering. Using a CMK ensures that only authorized users with the correct permissions and access to the key can decrypt and access the data. This encryption method provides enhanced control over your data security, including key rotation, access auditing, and compliance with organizational policies and industry standards.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_disk
+* *Arguments:* encrypted, kms_key_id
+
+To mitigate this issue, ensure the `encrypted` attribute is set to `true` and specify a `kms_key_id` to use a Customer Master Key for disk encryption.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_disk" "example" {
+  ...
++  encrypted   = true
++  kms_key_id  = "1234abcd-12ab-34cd-56ef-1234567890ab" # Replace with your CMK ID
+}
+----

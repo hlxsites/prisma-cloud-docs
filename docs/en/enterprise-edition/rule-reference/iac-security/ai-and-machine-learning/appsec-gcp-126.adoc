@@ -1,0 +1,38 @@
+== GCP Vertex AI Workbench user-managed notebook has vTPM disabled
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_126
+|Category |AI & Machine Learning - Risky Models
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |e8800ee6-ef2f-4515-a837-6333f86d50b4
+|===
+
+
+=== Impact
+This policy identifies GCP Vertex AI Workbench user-managed notebooks that have Virtual Trusted Platform Module (vTPM) feature disabled. 
+
+Virtual Trusted Platform Module (vTPM) validates guest VM pre-boot and boot integrity and offers key generation and protection. The vTPM's root keys and the keys it generates can't leave the vTPM, thus gaining enhanced protection from compromised operating systems or highly privileged project admins.
+
+It is recommended to enable virtual TPM device on supported virtual machines to facilitate measured Boot and other OS security features that require a TPM.
+
+=== How to Fix
+
+*Terraform*
+
+Ensure that your Vertex AI Notebook instances are launched with Shielded VM enabled by specifying the `shielded_instance_config` block in your Terraform configuration. This block should include the `enable_vtpm` attribute set to `true`.
+
+[source,go]
+----
+resource "google_notebooks_instance" "example" {
+  ...
+  shielded_instance_config {
+-    enable_vtpm               = false
+  }
+}
+----
+

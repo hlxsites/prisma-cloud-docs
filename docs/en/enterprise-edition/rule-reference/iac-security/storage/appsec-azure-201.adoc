@@ -1,0 +1,45 @@
+== Azure Service Bus Doesn't Use Customer-Managed Key Encryption
+// Ensure that Azure Service Bus uses a customer-managed key to encrypt data.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_201
+|Category |Storage - Encryption
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Azure Service Bus is a cloud messaging service used to connect applications, services, and devices running on Azure with on-premises software. It facilitates asynchronous, decoupled communication among decoupled components in the cloud, on-premises, or in a hybrid solution.
+
+This policy ensures that the Azure Service Bus data is encrypted using a customer-managed key (CMK) stored in Azure Key Vault. Utilizing a CMK offers enhanced control and transparency over the key lifecycle, and ensures that you, as the customer, maintain control of the encryption keys.
+
+=== How to Fix
+
+*Terraform*
+
+*Resource:* 
+- azurerm_servicebus_namespace
+
+*Arguments:* 
+- customer_managed_key
+
+[source,terraform]
+----
+resource "azurerm_servicebus_namespace" "example" {
+  name                = "example-namespace"
+  # ... other configurations ...
+
++ customer_managed_key {
++   key_vault_key_id = "azure key vault key id here"
+  }
+
+  # ... other configurations ...
+}
+----
+

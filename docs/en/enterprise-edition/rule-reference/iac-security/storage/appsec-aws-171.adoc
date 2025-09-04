@@ -1,0 +1,54 @@
+== AWS EMR cluster is not configured with SSE KMS for data at rest encryption (Amazon S3 with EMRFS)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_171
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |2e09b9cf-5269-4eb3-bf4b-c4f7c8a76bc2
+|===
+
+
+=== Impact
+Enabling Amazon S3 Server-Side Encryption with AWS Key Management Service (SSE-KMS) for your Amazon Elastic MapReduce (EMR) cluster's security configuration can help to protect the data stored in your cluster.
+SSE-KMS uses a customer master key (CMK) in the AWS KMS to encrypt and decrypt data stored in Amazon S3.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_emr_security_configuration
+* *Arguments:*  EnableAtRestEncryption
+
+
+[source,go]
+----
+resource "aws_emr_security_configuration" "test" {
+  ...
+  configuration = <<EOF
+{
+  "EncryptionConfiguration": {
+    "EnableAtRestEncryption": true,
+    "AtRestEncryptionConfiguration": {
+      "S3EncryptionConfiguration": {
++       "EncryptionMode": "SSE-KMS",
++       "AwsKmsKey": "${module.encryption_module.kms_key_alias}"
+      },
+      "LocalDiskEncryptionConfiguration": {
+        "EncryptionKeyProviderType": "AwsKms",
+        "AwsKmsKey": "${module.encryption_module.kms_key_alias}"
+      }
+    },
+    "EnableInTransitEncryption": true
+  }
+}
+EOF
+}
+----

@@ -1,0 +1,68 @@
+== AWS IAM policies that allow full administrative privileges are created
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_1
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Serverless, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+IAM policies are the means by which privileges are granted to users, groups, and roles.
+Standard security practice is to grant _least privilege_ this is granting only the permissions required to perform a task.
+Providing full administrative may expose resources to potentially unwanted actions.
+We recommend:
+
+* You determine what users need to do, then craft policies allowing them to perform only those tasks.
+* You do not allow all users full administrative privileges.
+* You start with a minimum set of permissions and grant additional permissions as necessary.
+* IAM policies that have a statement with Effect: Allow with Action: * over Resource: * are removed.
+
+
+=== Fix-Buildtime
+
+*Terraform*
+
+*Resource: aws_iam_policy_document* 
+
+[source,go]
+----
+data "aws_iam_policy_document" "fail" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    actions = [
+-      "*"
++      "s3:Describe*"
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}
+----
+
+*Serverless*
+
+
+[source,yaml]
+----
+functions:
+  myFunc:
+    ...
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+-          - "*"
++          - "s3:Describe*"
+        Resource:
+          - "*"
+----

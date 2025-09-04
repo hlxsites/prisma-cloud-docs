@@ -1,0 +1,49 @@
+== SQS queue policy is public and access is not restricted to specific services or principals
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_168
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+It is generally a best practice to restrict access to Amazon Simple Queue Service (SQS) queues to only the specific services or principals that require access.
+This can help to reduce the risk of unauthorized access to the data stored in your queues and protect against potential data breaches.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_sqs_queue_policy
+* *Arguments:*  Statement
+
+
+[source,text]
+----
+resource "aws_sqs_queue_policy" "test" {
+  ... 
+  policy = <<POLICY
+{
+    "Version":"2012-10-17",
+    "Statement":[
+       {
+          "Principal": "*",
++         "Effect": "Deny",
+          "Action": "sqs:SendMessage",
+          "Resource": "${aws_sqs_queue_policy.q.arn}"
+       }
+    ]
+}
+POLICY
+}
+----

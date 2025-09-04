@@ -1,0 +1,69 @@
+== AWS CloudTrail log validation is not enabled in all regions
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_36
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |38e3d3cf-b694-46ec-8bd2-8f02194b5040
+|===
+
+
+=== Impact
+CloudTrail log file validation creates a digitally signed digest file containing a hash of each log that CloudTrail writes to S3.
+These digest files can be used to determine whether a log file was changed, deleted, or unchanged after CloudTrail delivered the log.
+It is recommended that file validation be enabled on all CloudTrails.
+We recommend enabling log file validation to provide additional integrity checking of CloudTrail logs.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_cloudtrail
+* *Arguments:* enable_log_file_validation - (Optional) Specifies whether log file integrity validation is enabled.
+Defaults to false.
+
+
+[source,go]
+----
+----
+{
+ "resource "aws_cloudtrail" "trail_1" {
+  ...
+  name                          = "terraform.env-trail-01"
++ enable_log_file_validation    = true
+}
+
+",
+ 
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::CloudTrail::Trail
+* *Arguments:* Properties.EnableLogFileValidation
+
+
+[source,yaml]
+----
+----
+{
+ " Resources: 
+   myTrail: 
+      Type: AWS::CloudTrail::Trail
+      Properties: 
+        ...
++       EnableLogFileValidation: True",
+       
+}
+----

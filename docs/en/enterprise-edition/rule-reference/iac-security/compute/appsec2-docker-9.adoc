@@ -1,0 +1,29 @@
+== Dockerfile YUM package manager is configured to skip GPG signature checks
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_DOCKER_9
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Using the `--nogpgcheck` option with the YUM package manager (`yum`) in Dockerfiles introduces security risks. This flag instructs YUM to bypass GPG signature verification when installing packages.
+
+By skipping the GPG signature check, the container could be exposed to tampered or malicious packages. This bypass can result in the inclusion of compromised software or vulnerable versions in the container image, potentially undermining the container's security and the integrity of applications contained within.
+
+=== How to Fix
+
+*Docker*
+
+[source,dockerfile]
+----
+- RUN yum install -y --nogpgcheck somepackage
++ RUN yum install -y somepackage
+----

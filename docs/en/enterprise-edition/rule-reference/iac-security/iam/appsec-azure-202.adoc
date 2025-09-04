@@ -1,0 +1,40 @@
+== Azure Service Bus Without Managed Identity Provider
+// Ensure that Managed identity provider is enabled for Azure Service Bus.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_202
+|Category |IAM - Authentication Policies
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== How to Fix
+
+*Terraform*
+
+*Resource:* 
+- azurerm_servicebus_namespace
+
+*Arguments:* 
+- identity
+
+[source,terraform]
+----
+resource "azurerm_servicebus_namespace" "example" {
+  name                = "example-namespace"
+  # ... other configurations ...
+
++ identity {
++   type = "SystemAssigned"
++ }
+
+  # ... other configurations ...
+}
+----
+

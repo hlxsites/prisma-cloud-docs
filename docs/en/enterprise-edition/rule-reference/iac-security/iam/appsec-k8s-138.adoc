@@ -1,0 +1,53 @@
+== The --anonymous-auth argument is not set to False for Kubelet
+// '--anonymous-auth' argument not set to 'False' for Kubelet
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_138
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Disable anonymous requests to the Kubelet server.
+When enabled, requests that are not rejected by other configured authentication methods are treated as anonymous requests.
+These requests are then served by the Kubelet server.
+You should rely on authentication to authorize access and disallow anonymous requests.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kubelet
+    tier: control-plane
+  name: kubelet
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++    - kubelet
++    - --anonymous-auth=false
+    image: gcr.io/google_containers/kubelet-amd64:v1.6.0
+    ...",
+}
+----
+

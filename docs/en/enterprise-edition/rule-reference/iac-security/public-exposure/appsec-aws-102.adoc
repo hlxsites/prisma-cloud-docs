@@ -1,0 +1,46 @@
+== Neptune cluster instance is publicly available
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_102
+|Category |Public Exposure - Database Endpoints
+|Provider |AWS
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Amazon Neptune is a graph database service that for high-performance graph database engine.
+Neptune supports the popular graph query languages Apache TinkerPop Gremlin and W3C's SPARQL.
+Neptune also gives you the ability to create snapshots of your databases, which you can use later to restore a database.
+You can share a snapshot with a different Amazon Web Services account, and the owner of the recipient account can use your snapshot to restore a DB that contains your data.
+You can even choose to make your snapshots public -- that is, anybody can restore a DB containing your data.
+This is a check to make sure that your database resource is not Publicly available.
+This is the resources' default behaviour.
+https://docs.aws.amazon.com/neptune/latest/userguide/security-vpc.html.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_neptune_cluster_instance
+* *Arguments:*  publicly_accessible this default to false, so the check is to ensure it's missing or false.
+
+
+[source,go]
+----
+resource "aws_neptune_cluster_instance" "example" {
+  count              = 2
+  cluster_identifier = aws_neptune_cluster.default.id
+  engine             = "neptune"
+  instance_class     = "db.r4.large"
+  apply_immediately  = true
+}
+----

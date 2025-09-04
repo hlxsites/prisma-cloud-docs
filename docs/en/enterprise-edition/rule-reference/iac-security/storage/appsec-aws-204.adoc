@@ -1,0 +1,51 @@
+== AWS AMIs are not encrypted by Key Management Service (KMS) using Customer Managed Keys (CMKs)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_204
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy identifies AMIs which are encrypted with default KMS keys and not with Keys managed by Customer.
+It is a best practice to use customer managed KMS Keys to encrypt your EFS data.
+It gives you full control over the encrypted data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+75 lines (62 sloc)  1.41 KB
+
+resource "aws_ami" "pass" {
+  name                = "terraform-example"
+  virtualization_type = "hvm"
+  root_device_name    = "/dev/xvda1"
+
+  ebs_block_device {
+    device_name = "/dev/xvda1"
+    volume_size = 8
+    snapshot_id = "someid"
+  }
+
+  ebs_block_device {
+    device_name = "/dev/xvda2"
+    volume_size = 8
+    encrypted   = true
+  }
+}
+----

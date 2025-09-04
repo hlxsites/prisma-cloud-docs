@@ -1,0 +1,47 @@
+== GCP Kubernetes Engine Clusters without any label information
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_21
+|Category |Monitoring - Tags and Metadata
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |689395b5-12d8-47c1-84a9-85881663f3fc
+|===
+
+
+=== Impact
+Labels are key, value pairs that are attached to objects intended to be used to specify identifying attributes of objects that are meaningful and relevant to users, but do not directly imply semantics to the core system.
+Labels can be used to organize and select subsets of objects.
+Labels can be attached to objects at creation time and subsequently added and modified at any time.
+Each object can have a set of key/value labels defined.
+Each Key must be unique for a given object.
+Labels enable users to map their own organizational structures onto system objects in a loosely coupled fashion, without requiring clients to store these mappings.
+We recommend you configure GKE clusters with labels.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* google_container_cluster
+* *Arguments:* resource_labels
+
+Ensure your `google_container_cluster` has at least one `resource_labels` value.
+
+[source,go]
+----
+resource "google_container_cluster" "example" {
+  ...
++  resource_labels = {
++    environment = "production"
++    team        = "backend"
++  }
+  ...
+}
+----
+

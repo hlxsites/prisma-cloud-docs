@@ -1,0 +1,45 @@
+== S3 Bucket does not have public access blocks
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_6
+|Category |Public Exposure - Storage Buckets
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+When you create an S3 bucket, it is good practice to set the additional resource  *aws_s3_bucket_public_access_block* to ensure the bucket is never accidentally public.
+We recommend you ensure S3 bucket has public access blocks.
+If the public access block is not attached it defaults to False.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket, aws_s3_bucket_public_access_block
+* *Arguments:* block_public_acls and block_public_policy
+
+
+[source,go]
+----
+resource "aws_s3_bucket" "bucket_good_1" {
+  bucket = "bucket_good"
+}
+
+
++ resource "aws_s3_bucket_public_access_block" "access_good_1" {
++   bucket = aws_s3_bucket.bucket_good_1.id
++ 
++   block_public_acls   = true
++   block_public_policy = true
++ }
+----

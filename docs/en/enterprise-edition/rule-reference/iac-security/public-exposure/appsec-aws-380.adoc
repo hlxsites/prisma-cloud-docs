@@ -1,0 +1,39 @@
+
+== AWS Transfer Server not using latest Security Policy
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_380
+|Category |Public Exposure - APIs
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether an AWS Transfer Server is not configured to use the latest security policy, defined as one that is no older than 24 months. Security policies in AWS Transfer specify the encryption algorithms and protocols used during file transfers. Using outdated policies can be risky, as they may rely on deprecated or weaker encryption methods vulnerable to security threats. By ensuring that the latest security policy is applied, organizations can maintain strong encryption standards, enhance data protection, and adhere to best practices for secure communication, safeguarding sensitive data from unauthorized access and potential breaches.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_transfer_server
+* *Arguments:* security_policy_name
+
+Set your AWS Transfer Server to use the latest security policy to secure data transfers. Associate each `aws_transfer_server` resource with the most recent `security_policy_name` to maintain high security standards.
+
+In this example, the security policy for an AWS Transfer Server is updated to the latest version using Terraform.
+
+[source,go]
+----
+resource "aws_transfer_server" "example" {
+   ...
++  security_policy_name = "TransferSecurityPolicy-2024-01"
+   ...
+}
+----
+

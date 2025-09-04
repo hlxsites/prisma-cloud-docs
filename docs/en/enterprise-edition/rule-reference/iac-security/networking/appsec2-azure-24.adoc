@@ -1,0 +1,47 @@
+== Azure Automation account configured with overly permissive network access
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_24
+|Category |Networking - Ingress Controls
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |d7518237-8ab1-4770-b6e6-6c8d4ca46839
+|===
+
+
+=== Impact
+This policy checks if Azure Automation accounts have overly permissive network access. Azure Automation is a service in Azure that allows you to automate frequent, time-consuming, and error-prone cloud management tasks. This policy checks whether the Azure Automation service has been given more network access permissions than necessary.
+
+Having overly permissive network access is bad because it exposes the automation service and hence the resources being managed to potential threats. If an attacker gains access, they may be able to use the automation account and its permissions to manipulate resources or data, perform actions detrimental to the system, or gain access to sensitive information. 
+
+Ensuring that the Azure Automation account follows the principle of least privilege, where it only has the minimum permissions necessary to perform its tasks, reduces the potential attack surface and enhances security.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_automation_account
+* *Arguments:* public_network_access_enabled
+
+You must set the public_network_access_enabled attribute to false in your azurerm_automation_account resource. This configuration restricts the Azure Automation account from being accessed over the public internet. Here's an example Terraform configuration for an Azure Automation account with restricted network access:
+
+[source, go]
+----
+resource "azurerm_automation_account" "example" {
+  name                = "example-automation-account"
+  location            = "East US"
+  resource_group_name = "example-resources"
+
+  sku_name = "Basic"
+
+  public_network_access_enabled = false
+}
+
+----
+
+In this Terraform example, an azurerm_automation_account resource is defined with public_network_access_enabled set explicitly to false. This setting ensures the automation account can only be accessed through private endpoints within the Azure network.
+

@@ -1,0 +1,43 @@
+== Kubernetes RBAC users are not managed with Google Groups for GKE
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_65
+|Category |IAM - Authentication Policies
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Cluster Administrators should leverage G Suite Groups and Cloud IAM to assign Kubernetes user roles to a collection of users, instead of to individual emails using only Cloud IAM.
+On- and off-boarding users is often difficult to automate and prone to error.
+Using a single source of truth for user permissions via G Suite Groups reduces the number of locations that an individual must be off-boarded from, and prevents users gaining unique permissions sets that increase the cost of audit.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_container_cluster
+* *Arguments:* authenticator_groups_config.security_group
+
+
+[source,go]
+----
+resource "google_container_cluster" "example" {
+  name               = var.name
+  location           = var.location
+  project            = data.google_project.project.name
+  
++ authenticator_groups_config{
++   security_group="gke-security-groups@yourdomain.com"
++ }
+----
+

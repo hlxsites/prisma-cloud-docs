@@ -1,0 +1,54 @@
+== The --event-qps argument is not set to a level that ensures appropriate event capture
+// '--event-qps' argument not set to a level that ensures appropriate event capture
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_147
+|Category |Monitoring - Alerting and Notifications
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Security relevant information should be captured.
+The --event-qps flag on the Kubelet can be used to limit the rate at which events are gathered.
+Setting this too low could result in relevant events not being logged, however the unlimited setting of 0 could result in a denial of service on the kubelet.
+It is important to capture all events and not restrict event creation.
+Events are an important source of security information and analytics that ensure that your environment is consistently monitored using the event data.
+
+=== How to Fix
+
+
+*Kubernetes*
+
+* *Kind:*  Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kubelet
+    tier: control-plane
+  name: kubelet
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kubelet
++   - --event-qps=2
+    image: gcr.io/google_containers/kubelet-amd64:v1.6.0
+    ...",
+}
+----
+

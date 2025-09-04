@@ -1,0 +1,46 @@
+== OpenStack Security groups allow ingress from 0.0.0.0:0 to port 3389 (tcp / udp)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_OPENSTACK_3
+|Category |Public Exposure - Sensitive Ports
+|Provider |
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+In OpenStack, firewall rules are used to allow or deny traffic to or from a specific network or subnet.
+When you create a firewall rule, you can specify the destination IP address or range that the rule applies to.
+This allows you to control which traffic is allowed or denied based on the destination IP of the traffic.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* openstack_compute_secgroup_v2
+* *Arguments:* rule.to_port + rule.from_port
+
+
+[source,go]
+----
+resource "openstack_compute_secgroup_v2" "secgroup_1" {
+  name        = "my_secgroup"
+  description = "my security group"
+
+  rule {
+    from_port     = 3389
+    to_port       = 3389
+    ip_protocol   = "tcp"
+-   cidr        = "0.0.0.0/0"
+  }
+}
+----
+

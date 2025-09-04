@@ -1,0 +1,41 @@
+== AWS config is not enabled in all regions
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_121
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+AWS Config is a web service that performs the configuration management of supported AWS resources within your account and delivers log files to you.
+The recorded information includes: the configuration item (AWS resource), relationships between configuration items (AWS resources), and any configuration changes between resources.
+The AWS configuration item history captured by AWS Config enables security analysis, resource change tracking, and compliance auditing.
+We recommend you enable AWS Config in all regions.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_config_configuration_aggregator
+* *Arguments:* all_regions
+
+
+[source,go]
+----
+resource "aws_config_configuration_aggregator" "organization" {
+  name = "example"
+  account_aggregation_source {
+    account_ids  = ["123456789012"]
++   all_regions  = true
+  }
+----

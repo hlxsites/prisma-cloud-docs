@@ -1,0 +1,56 @@
+== Azure RDP Internet access is not restricted
+// Azure RDP internet access not restricted
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_9
+|Category |Networking - Ingress Controls
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_9
+|Category |Networking - Ingress Controls
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+A potential security problem using RDP over the Internet is that attackers can use various brute force techniques to gain access to Azure Virtual Machines.
+Once the attackers gain access, they can use a virtual machine as a launch point for compromising other machines on the Azure Virtual Network.
+The attackers could also access and attack networked devices outside of Azure.
+We recommend you disable RDP access over the internet to Network Security Groups.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_network_security_rule
+* *Arguments:* access + protocol + destination_port_range + source_address_prefix
+
+
+[source,go]
+----
+resource "azurerm_network_security_rule" "example" {
+     ...
+-    access                      = "Allow"
+-    protocol                    = "TCP"
+-    destination_port_range      = ["3389" / <port range including 3389>]]
+-    source_address_prefix       = "*" / "0.0.0.0" / "<nw>/0" / "/0" / "internet" / "any"
+     ...
+}
+----

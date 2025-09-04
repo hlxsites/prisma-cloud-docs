@@ -1,0 +1,43 @@
+
+== Log monitoring disabled for Azure Synapse SQL Pool
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_54
+|Category |AI & Machine Learning - Observability
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether log monitoring is enabled for Synapse SQL Pools in Microsoft Azure. Log monitoring is an important security measure as it helps in tracking database activities, detecting suspicious behavior, and responding to potential security incidents. Without log monitoring, organizations may be unable to detect unauthorized access or misuse of data, making it harder to protect sensitive information and meet compliance requirements.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_sql_pool, azurerm_synapse_sql_pool_extended_auditing_policy
+* *Arguments:* log_monitoring_enabled
+
+Ensure all `azurerm_synapse_sql_pool` resources are associated with an `azurerm_synapse_sql_pool_extended_auditing_policy` resource.
+
+In this example, log monitoring for Azure Synapse SQL Pools is enforced using Terraform templates.
+
+[source,go]
+----
+resource "azurerm_synapse_sql_pool" "example" {
+  ...
+}
+
+resource "azurerm_synapse_sql_pool_extended_auditing_policy" "example" {
+  sql_pool_id                             = azurerm_synapse_sql_pool.example.id
+-  log_monitoring_enabled = false
++  log_monitoring_enabled = true
+}
+----
+

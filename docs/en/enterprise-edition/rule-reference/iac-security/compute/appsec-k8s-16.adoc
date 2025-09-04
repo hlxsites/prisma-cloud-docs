@@ -1,0 +1,49 @@
+== Container is privileged
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_16
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Privileged containers are containers that have all of the root capabilities of a host machine, allowing access to resources that are not accessible in ordinary containers.
+Common uses of privileged containers include: running a Docker daemon inside a Docker container, running a container with direct hardware access, and automating CI/CD tasks in the open-source automation server Jenkins.
+Running a container with a privileged flag allows users to have critical access to the host's resources.
+If a privileged container is compromised, it does not necessarily entail remote code execution, but it implies that an attacker will be able to run full host root with all of the available capabilities, including  CAP_SYS_ADMIN.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Container
+* *Arguments:* privileged (Optional)
+
+If true, processes in the privileged containers are essentially equivalent to root on the host.
+Default to false.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <Pod name>
+spec:
+  containers:
+  - name: <container name>
+    image: <image>
+    securityContext:
+-      privileged: true
+----
+

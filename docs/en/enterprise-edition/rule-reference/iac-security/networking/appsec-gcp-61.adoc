@@ -1,0 +1,42 @@
+== GCP Kubernetes cluster intra-node visibility disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_61
+|Category |Networking - Flow Logs
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |21c101a0-ef0f-46b6-901e-7284abc6258a
+|===
+
+
+=== Impact
+Enable VPC Flow Logs and Intranode Visibility to see pod-level traffic, even for traffic within a worker node.
+With this feature, you can use VPC Flow Logs or other VPC features for intranode traffic.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_container_cluster
+* *Arguments:* enable_intranode_visibility
+
+
+[source,go]
+----
+{
+ "resource "google_container_cluster" "example" {
+  name               = var.name
+  location           = var.location
+  project            = data.google_project.project.name
++ enable_intranode_visibility = true
+",
+}
+----
+

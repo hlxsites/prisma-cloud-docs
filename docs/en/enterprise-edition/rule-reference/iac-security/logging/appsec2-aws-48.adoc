@@ -1,0 +1,47 @@
+== AWS Config must record all possible resources
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_48
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |4c64a4d6-1b96-4004-8a11-f215aa8ee3ce
+|===
+
+
+=== Impact
+This policy identifies resources for which AWS Config recording is enabled but recording for all possible resources are disabled.
+AWS Config provides an inventory of your AWS resources and a history of configuration changes to these resources.
+You can use AWS Config to define rules that evaluate these configurations for compliance.
+Hence, it is important to enable this feature.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_config_configuration_recorder" "pass_recorder" {
+  name     = "example"
+  role_arn = aws_iam_role.r.arn
+
+  recording_group {
+    include_global_resource_types = true
+  }
+
+}
+
+resource "aws_config_configuration_recorder_status" "pass" {
+  name       = aws_config_configuration_recorder.pass_recorder.name
+  is_enabled = true
+}
+----

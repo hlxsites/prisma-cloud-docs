@@ -1,0 +1,47 @@
+== GCP Cloud Armor policy not configured with cve-canary rule
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_73
+|Category |Monitoring - Alerting and Notifications
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |67f7e9ec-ff60-4a77-98f0-a102a1352fda
+|===
+
+
+=== Impact
+Using a vulnerable version of Apache Log4j library might enable attackers to exploit a Lookup mechanism that supports making requests using special syntax in a format string which can potentially lead to a risky code execution, data leakage and more.
+Set your Cloud Armor to prevent executing such mechanism using the rule definition below.
+Learn more around https://nvd.nist.gov/vuln/detail/CVE-2021-44228[CVE-2021-44228]
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_security_policy
+
+
+[source,go]
+----
+resource "google_compute_security_policy" "example" {
+  name = "example"
+
+  rule {
+    action   = "deny(403)"
+    priority = 1
+    match {
+      expr {
+        expression = "evaluatePreconfiguredExpr('cve-canary')"
+      }
+    }
+  }
+}
+----
+

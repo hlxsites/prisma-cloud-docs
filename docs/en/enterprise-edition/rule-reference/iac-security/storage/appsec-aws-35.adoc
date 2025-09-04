@@ -1,0 +1,50 @@
+== AWS CloudTrail logs are not encrypted using Customer Master Keys (CMKs)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_35
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |c2b84f89-7ec8-473e-a6af-404feeeb96c5
+|===
+
+
+=== Impact
+Checks to ensure that CloudTrail logs are encrypted. AWS CloudTrail is a service that enables governance, compliance, operational & risk auditing of the AWS account. It is a compliance and security best practice to encrypt the CloudTrail data since it may contain sensitive information. 
+
+=== How to Fix
+
+
+*Terraform*
+
+To fix this issue, ensure that the `kms_key_id` property in the `aws_cloudtrail` resource is set to a valid KMS key ID or ARN.
+
+Example:
+
+[source,go]
+----
+resource "aws_cloudtrail" "example" {
+  ...
++  kms_key_id = "arn:aws:kms:us-west-2:123456789012:key/example-key-arn"
+}
+----
+
+
+*CloudFormation* 
+
+To fix this issue, ensure that the `KMSKeyId` property in the `AWS::CloudTrail::Trail` resource is set to a valid KMS key ID or ARN.
+
+[source,yaml]
+----
+Resources:
+    myTrail: 
+    Type: AWS::CloudTrail::Trail
+        Properties: 
+            ...
++           KMSKeyId: alias/MyAliasName
+----

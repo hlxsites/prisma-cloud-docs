@@ -1,0 +1,69 @@
+
+== AWS DocumentDB clusters have backup retention period less than 7 days
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_360
+|Category |Storage - Backups
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |4ecc532c-f3ad-45a8-9eaa-e96ac5d4652c
+|===
+
+
+=== Impact
+This policy is checking to ensure that Amazon DocumentDB (DocDB) instances have a sufficient backup retention period. The backup retention period refers to the duration for which automated backups of DB instances are stored. Having an inadequate backup retention period can be detrimental in situations where data recovery is necessary. For instance, in cases of accidental deletion, data corruption, or even data tampering, backups play a significant role. If the backup retention period is too short, there might not be a valid backup available when it's most needed, leading to potential data loss. Therefore, this policy checks for and ensures that there is a substantial backup retention period for DocDB instances.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_docdb_cluster
+* *Arguments:* backup_retention_period
+
+To fix this issue, you should configure your DocDB to have a backup retention period that is adequate for your business continuity and disaster recovery requirements. You should provide a `backup_retention_period` in the `aws_docdb_cluster` resource that is above 7 as shown below:
+
+[source,go]
+----
+resource "aws_docdb_cluster" "default" {
+  cluster_identifier      = "my-docdb-cluster"
+  master_username         = "foo"
+  master_password         = "bar"
+  backup_retention_period = 35
+}
+----
+
+
+*CloudFormation*
+
+To mitigate this issue, ensure that the `BackupRetentionPeriod` property in the `AWS::DocDB::DBCluster` resource is set to at least 7 days.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyDocDBCluster": {
+      "Type": "AWS::DocDB::DBCluster",
+      "Properties": {
+        "BackupRetentionPeriod": 35,
+        ...
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyDocDBCluster:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      BackupRetentionPeriod: 35
+      ...
+----

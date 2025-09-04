@@ -1,0 +1,41 @@
+== AWS ELB Policy uses some unsecure protocols
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_213
+|Category |Networking - Encryption and Protocols
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+By ensuring that your AWS ELB policy only uses secure protocols, you can help prevent attackers from intercepting and reading sensitive information that is transmitted between your ELB and its clients.
+This can help protect your network and data from various types of attacks, including man-in-the-middle attacks, eavesdropping, and other types of data interception.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_load_balancer_policy" "pass" {
+  load_balancer_name = aws_elb.wu-tang.name
+  policy_name        = "wu-tang-ssl"
+  policy_type_name   = "SSLNegotiationPolicyType"
+
+  policy_attribute {
+    name  = "Protocol-TLSv1.2"
+    value = "true"
+  }
+}
+----

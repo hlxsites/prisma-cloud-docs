@@ -1,0 +1,55 @@
+== Azure Machine learning workspace configured with overly permissive network access
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_49
+|Category |AI & Machine Learning
+|Provider |Azure
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |73f6928e-f03e-42a7-8bbf-348a0c029f63
+|===
+
+
+=== Impact
+This policy detects whether the Azure Machine Learning workspace is configured with overly permissive network access. Such unrestricted access creates security vulnerabilities. Excessive network access permissions allow individuals or systems to access and potentially manipulate the workspace, allowing malicious actors to exploit these weaknesses to gain unauthorized access potentially leading to data breaches or manipulation of the machine learning process itself. This unauthorized access could compromise models, leading to flawed outputs or biased results. Additionally, sensitive data stored or processed within the workspace might be exfiltrated if network access isn't properly restricted.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_machine_learning_workspace
+* *Arguments:* public_network_access_enabled
+
+Ensure that the Azure Machine Learning workspace does not have unrestricted public network access. To achieve this, set the `public_network_access_enabled` property to false. This will deny public network access to the workspace from outside the virtual network, enhancing the overall security posture.
+
+[source,go]
+----
+resource "azurerm_machine_learning_workspace" "workspace" {
+  ...
++  public_network_access_enabled = false
+}
+----
+
+*ARM*
+
+[source,json]
+----
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces",
+      "apiVersion": "2022-12-01",
+      ...
+      "properties": {
++        "publicNetworkAccess": "Disabled"
+      }
+    }
+  ]
+}
+----

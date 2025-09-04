@@ -1,0 +1,48 @@
+== GitHub repository defined in Terraform is not Private
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GIT_1
+|Category |Source Control & CI/CD
+|Provider |
+|Severity |LOW
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+When you create a  Cloud repository, you specify whether it's private or public, but you can also change this setting at any time.
+If your repository is public, anyone can access and fork it.
+If your repository is private, you can specify who exactly can access your repository and whether they can fork it.
+
+=== How to Fix
+
+
+*GitHub *Warning: This may break references to the repository*
+
+* On GitHub.com, navigate to the repository.
+* In the menu bar under the repository name click on Settings
+* In the "Danger Zone" section, click on "Change repository visibility"
+* Choose private
+
+*Terraform*
+
+
+[source,go]
+----
+resource "github_repository" "example" {
+  name        = "example"
+  description = "My awesome codebase"
+
++ visibility = "private"
+
+  template {
+    owner                = "github"
+    repository           = "terraform-template-module"
+    include_all_branches = true
+  }
+}
+----

@@ -1,0 +1,50 @@
+== AWS CodePipeline artifactStore is not encrypted by Key Management Service (KMS) using a Customer Managed Key (CMK)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_219
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy identifies CodePipeline artifactStores which are encrypted with default KMS keys and not with Keys managed by Customer.
+It is a best practice to use customer managed KMS Keys to encrypt your CodePipeline artifactStore  data.
+It gives you full control over the encrypted data.
+
+=== How to Fix
+
+
+*Resource: aws_codepipeline* 
+
+
+
+
+*Arguments: encryption_key* 
+
+
+
+
+[source,text]
+----
+resource "aws_codepipeline" "pass" {
+  name     = "tf-test-pipeline"
+  role_arn = aws_iam_role.codepipeline_role.arn
+
+  artifact_store {
+    location = aws_s3_bucket.codepipeline_bucket.bucket
+    type     = "S3"
+
+    encryption_key {
+      id   = data.aws_kms_alias.s3kmskey.arn
+      type = "KMS"
+    }
+  }
+----

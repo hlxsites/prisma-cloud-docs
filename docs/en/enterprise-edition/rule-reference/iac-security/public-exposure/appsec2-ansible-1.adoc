@@ -1,0 +1,47 @@
+== HTTPS url not used with Ansible uri
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_ANSIBLE_1
+|Category |Public Exposure - APIs
+|Provider |
+|Severity |MEDIUM
+|Framework |Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether HTTPS URLs are used in the Ansible uri module to ensure secure communication. Using HTTPS instead of HTTP encrypts the data transmitted, providing confidentiality and integrity. It verifies that the tasks interact with URLs over a secure channel.
+
+
+=== How to Fix
+
+*Ansible*
+
+* *Module:* uri
+* *Attribute:* url
+
+To mitigate this risk, ensure that all Ansible tasks using the uri module specify URLs that begin with "https://". This guarantees that the data transmitted in these tasks is encrypted and secure.
+
+
+Source Code Example:
+
+
+[source,yaml]
+----
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: https
+      uri:
+-        url: http://www.example.com
++        url: https://www.example.com
+       ...
+----
+
+In this example, specifying URLs that start with "https://", ensures that the data transmitted in your Ansible tasks is encrypted and secure, enhancing the security of your automation processes.
+

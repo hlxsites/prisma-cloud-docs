@@ -1,0 +1,66 @@
+== AWS CloudFront distribution with access logging disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_86
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |81e103d7-6ba6-42d6-ace7-dfdcff88693a
+|===
+
+
+=== Impact
+Cloudfront access logs contain detailed information (requested object name, date and time of the access, client IP, access point, error code, etc) about each request made for your web content.
+This information can be extremely useful during security audits, or as input data for various analytics/reporting tools.
+Pairing with Lambda and WAF logs could help expedite a response process and possibly enable blocking requests coming from IP addresses that generate multiple errors.
+These spikes in errors could possibly indicate they were made by attackers trying to find vulnerabilities within your web application.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* logging_config (Optional) - The logging configuration that controls how logs are written to your distribution (maximum one).
+
+
+[source,go]
+----
+resource "aws_cloudfront_distribution" "s3_distribution" {
+  ...
+  default_root_object = "index.html"
++ logging_config {
++   bucket          = "mylogs.s3.amazonaws.com"
+    ...
+  }
+}
+----
+
+
+*CloudFormation* 
+
+
+
+* *Resource:* AWS::CloudFront::Distribution
+* *Arguments:* Properties.DistributionConfig.Logging/Bucket
+
+
+[source,yaml]
+----
+Resources:
+  MyCloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+        ...
+      DistributionConfig:
+        ...
++       Logging:
++         Bucket: myawslogbucket.s3.amazonaws.com
+----

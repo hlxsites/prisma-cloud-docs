@@ -1,0 +1,81 @@
+== Amazon EFS does not have an AWS Backup backup plan
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_18
+|Category |Storage - Backups
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Ensure that Amazon Elastic File Systems (EFS) are included in your backup plans for the AWS Backup.
+AWS Backup is a fully managed backup service that helps you protect your data in the cloud by automatically backing up your data to a secure, durable storage location.
+By creating a backup plan, you can ensure that your data is regularly backed up and can be recovered in the event of data loss or corruption.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_backup_plan, aws_backup_selection, aws_efs_file_system
+* *Arguments:*  _plan_id_ and _resources_ of aws_backup_selection
+
+
+[source,text]
+----
+{
+ "resource "aws_backup_plan" "example" {
+  name = "tf_example_backup_plan"
+
+  rule {
+    rule_name         = "tf_example_backup_rule"
+    target_vault_name = aws_backup_vault.test.name
+    schedule          = "cron(0 12 * * ? *)"
+  }
+
+
+  advanced_backup_setting {
+    backup_options = {
+      WindowsVSS = "enabled"
+    }
+
+    resource_type = "EC2"
+  }
+
+}
+
+resource "aws_backup_selection" "ok_backup" {
+  iam_role_arn = aws_iam_role.example.arn
+  name         = "tf_example_backup_selection"
+  plan_id      = aws_backup_plan.example.id
+
+  resources = [
+    aws_db_instance.example.arn,
+    aws_ebs_volume.example.arn,
+    aws_efs_file_system.ok_efs.arn,
+  ]
+}
+
+
+resource "aws_efs_file_system" "ok_efs" {
+  creation_token = "my-product"
+
+  tags = {
+    Name = "MyProduct"
+  }
+
+}
+
+
+
+",
+}
+----

@@ -1,0 +1,55 @@
+
+== OCI tenancy administrator users are associated with API keys
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_OCI_1
+|Category |IAM - Credential Exposure
+|Provider |Oracle
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy is checking to ensure that administrator users are not associated with API keys. This is important because, if an administrator's API key is compromised, it can give the attacker extensive privileges that can potentially lead to critical consequences. Access via API keys should be given to services and applications, not to users, in order to maintain proper access control and minimize risk.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* oci_identity_group, oci_identity_user
+
+To fix this issue, do not associate API keys with administrator users. Instead, use instance principals or dynamic groups. Also, keep a regular rotation of API keys and deprecate old ones to maintain better security.
+
+[source,go]
+----
+resource "oci_identity_user" "user1" {
+    #Required
+    compartment_id = "var.tenancy_ocid"
+    description = "var.user_description"
+    name = "user1"
+
+    #Optional
+    defined_tags = {"Operations.CostCenter"= "42"}
+    email = "var.user_email"
+    freeform_tags = {"Department"= "Finance"}
+}
+
+- resource "oci_identity_api_key" "user1_api_key" {
+-     #Required
+-     key_value = "var.api_key_key_value"
+-     user_id = oci_identity_user.user1.id
+- }
+
+resource "oci_identity_user_group_membership" "user1_in_admin_group" {
+    #Required
+    group_id = oci_identity_group.admin_group.id
+    user_id = oci_identity_user.user1.id
+}
+----
+
+

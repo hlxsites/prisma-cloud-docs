@@ -1,0 +1,38 @@
+== Route 53 domains do not have transfer lock protection
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_377
+|Category |Networking - Permissions
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether Route 53 domains have transfer lock protection disabled. The transfer lock feature is important because it prevents unauthorized domain transfers to another registrar. When a domain is locked, it cannot be transferred without explicit permission from the domain owner, protecting against accidental or malicious domain hijacking. Without this protection, a domain could be transferred without the owner’s knowledge or approval, leading to potential service disruptions, loss of business, and security risks, especially for domains critical to business operations or brand presence.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_route53domains_registered_domain
+* *Arguments:* transfer_lock
+
+Set the `transfer_lock` attribute to `true` for each `aws_route53domains_registered_domain` resource to ensure that your Route 53 domains have transfer lock protection enabled. This security feature prevents unauthorized domain transfers.
+
+In this example, transfer lock protection for an AWS Route 53 domain is enabled using a Terraform configuration.
+
+[source,go]
+----
+resource "aws_route53domains_registered_domain" "example" {
+   ...
++   transfer_lock = true
+   ...
+}
+----
+

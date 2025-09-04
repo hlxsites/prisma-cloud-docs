@@ -1,0 +1,56 @@
+== Azure SQL Servers Firewall rule allow ingress access from 0.0.0.0/0
+// Azure SQL Servers Firewall rule allow ingress access from IP address 0.0.0.0/0
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_11
+|Category |Public Exposure - Sensitive Ports
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_11
+|Category |Public Exposure - Sensitive Ports
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+SQL Server includes a firewall to block access to unauthorized connections.
+More granular IP addresses can be defined by referencing the range of addresses available from specific datacenters.
+The SQL server default Firewall exists with StartIp of 0.0.0.0 and EndIP of 0.0.0.0, allowing access to all Azure services.
+A custom rule can be set with StartIp of 0.0.0.0 and EndIP of 255.255.255.255, allowing access from *any* IP over the Internet.
+To reduce the potential attack surface for a SQL server, firewall rules should be defined with more granular IP addresses.
+This is achieved by referencing the range of addresses available from specific datacenters.
+We recommend SQL Databases do not allow ingress from 0.0.0.0/0, that is, any IP.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:*  azurerm_mariadb_firewall_rule azurerm_sql_firewall_rule azurerm_postgresql_firewall_rule azurerm_mysql_firewall_rule
+* *Arguments:* start_ip_address
+
+
+[source,go]
+----
+resource "azurerm_mysql_firewall_rule" "example" {
+    ...
+-   start_ip_address    = "0.0.0.0"
+-   end_ip_address      = "255.255.255.255"
+}
+----

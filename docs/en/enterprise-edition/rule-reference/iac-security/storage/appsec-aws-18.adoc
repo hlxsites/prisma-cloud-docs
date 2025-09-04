@@ -1,0 +1,74 @@
+== AWS Access logging not enabled on S3 buckets
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_18
+|Category |Storage - Alerting
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |4daa435b-fa46-457a-9359-6a4b4a43a442
+|===
+
+
+=== Impact
+Checks for S3 buckets without access logging turned on. Access logging allows customers to view complete audit trail on sensitive workloads such as S3 buckets. It is recommended that Access logging is turned on for all S3 buckets to meet audit & compliance requirement
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket, aws_s3_bucket_logging
+
+
+[source,go]
+----
++ resource "aws_s3_bucket_logging" "example" {
++   bucket = aws_s3_bucket.example.id
++ 
++   target_bucket = aws_s3_bucket.log_bucket.id
++   target_prefix = "log/"
++ }
+----
+
+
+*CloudFormation*
+
+To fix this issue, you should ensure that your S3 bucket configuration includes the `LoggingConfiguration` property. Below is an example of how to set this property in a CloudFormation configuration:
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-bucket",
+        "LoggingConfiguration": {
+          "DestinationBucketName": "my-log-bucket",
+          "LogFilePrefix": "log/"
+        }
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "my-bucket"
+      LoggingConfiguration:
+        DestinationBucketName: "my-log-bucket"
+        LogFilePrefix: "log/"
+----

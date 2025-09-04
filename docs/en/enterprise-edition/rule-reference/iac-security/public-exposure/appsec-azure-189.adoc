@@ -1,0 +1,44 @@
+== Azure Key Vault Public Network Access Control
+// Ensure that Azure Key Vault disables public network access.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_189
+|Category |Public Exposure - Encryption and Protocols
+|Provider |Azure
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== How to Fix
+
+*Terraform*
+
+*Resource:* 
+- azurerm_key_vault 
+
+*Arguments:* 
+- public_network_access_enabled
+- network_acls
+
+[source,terraform]
+----
+resource "azurerm_key_vault" "example" {
+  name                = "example-kv"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+
+  # ... other configurations ...
+
++ public_network_access_enabled = false
+
+  network_acls {
+    #... configurations...
++   ip_rules = ["<valid_ip_range>"]
+  }
+}
+----

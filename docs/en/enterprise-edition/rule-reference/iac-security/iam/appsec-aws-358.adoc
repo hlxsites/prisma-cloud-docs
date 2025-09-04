@@ -1,0 +1,68 @@
+== AWS GitHub Actions OIDC authorization policies allow for unsafe claims or claim order
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_358
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether AWS IAM policies using GitHub Actions OIDC authorization are configured with potentially unsafe claims or claim orders. Misconfigured claims can lead to security vulnerabilities by allowing unauthorized access or unsafe token usage, potentially resulting in privilege escalation or abuse.
+
+Specifically, the policy checks for:
+
+* Missing or invalid conditions on the `sub` variable.
+* Wildcard values or generic claims that could be abused.
+* Unsafe claim formats or orders in the `sub` variable.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource: aws_iam_policy_document*
+* *Argument: principals, condition* 
+
+To mitigate this issue, ensure the `condition` in the `aws_iam_policy_document` resource:
+
+- Avoids wildcards (`*`) or unsafe claim structures
+- Ensures claims follow safe and restricted formats. Abusable claims include: "workflow", "environment", "ref", "context", "head_ref", "base_ref"
+- Uses a specific repository reference.
+
+Example:
+
+[source,go]
+----
+data "aws_iam_policy_document" "example" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+-      values   = ["*"]
++      values = ["repo:myOrg/myRepo:*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+----
+

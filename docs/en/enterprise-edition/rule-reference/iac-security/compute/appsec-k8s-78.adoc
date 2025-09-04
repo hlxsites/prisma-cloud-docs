@@ -1,0 +1,58 @@
+== The admission control plugin EventRateLimit is not set
+// Admission control plugin EventRateLimit is not set
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_78
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Limit the rate at which the API server accepts requests.
+Using EventRateLimit admission control enforces a limit on the number of events that the API Server will accept in a given time slice.
+
+A misbehaving workload could overwhelm and DoS the API Server, making it unavailable.
+This particularly applies to a multi-tenant cluster, where there might be a small percentage of misbehaving tenants which could have a significant impact on the performance of the cluster overall.
+
+Hence, it is recommended to limit the rate of events that the API server will accept.
+
+NOTE: This is an Alpha feature in the Kubernetes 1.15 release.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+apiVersion: apiserver.config.k8s.io/v1
+kind: AdmissionConfiguration
+metadata:
+  name: "admission-configuration-passed"
+plugins:
+  - name: ValidatingAdmissionWebhook
+    configuration:
+      apiVersion: apiserver.config.k8s.io/v1
+      kind: WebhookAdmissionConfiguration
+      kubeConfigFile: "<path-to-kubeconfig-file>"
++ - name: EventRateLimit
++   path: eventconfig.yaml
+  - name: MutatingAdmissionWebhook
+    configuration:
+      apiVersion: apiserver.config.k8s.io/v1
+      kind: WebhookAdmissionConfiguration
+      kubeConfigFile: "<path-to-kubeconfig-file>"
+----
+

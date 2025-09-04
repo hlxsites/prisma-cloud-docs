@@ -1,0 +1,38 @@
+== Azure Linux scale set does not use an SSH key
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_49
+|Category |Compute - Default Credentials or Auth
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+The default option for a Linux scale set uses basic authentication as an access credential for the secure shell network protocol.
+Using SSH keys instead of common credentials (i.e. username and password) represents the best way to secure your Linux scale sets against malicious activities such as brute-force attacks, by providing a level of authorization that can only be fulfilled by privileged users who have ownership to the private key associated with the public key created on these sets.
+An attacker may be able to get access to the linux scale set's public key, but without the associated private key, he/she will be unable to gain shell access to the server.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_linux_virtual_machine_scale_set 
+* *Attribute:* disable_password_authentication
+
+
+[source,go]
+----
+resource "azurerm_linux_virtual_machine_scale_set" "example" {
+            ...
+          ~ disable_password_authentication = true
+        }
+----

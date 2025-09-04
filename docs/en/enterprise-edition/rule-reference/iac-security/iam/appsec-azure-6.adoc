@@ -1,0 +1,146 @@
+== Azure AKS cluster configured with overly permissive API server access
+// Azure Kubernetes Service (AKS) API server does not define authorized IP address range
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_6
+|Category |IAM - Overly Permissive
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |8d05a24e-e700-41b2-8d9d-56af90e1dcdf
+|===
+
+
+=== Impact
+The AKS API server receives requests to perform actions in the cluster , for example, to create resources, and scale the number of nodes.
+The API server provides a secure way to manage a cluster.
+To enhance cluster security and minimize attacks, the API server should only be accessible from a limited set of IP address ranges.
+These IP ranges allow defined IP address ranges to communicate with the API server.
+A request made to the API server from an IP address that is not part of these authorized IP ranges is blocked.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* api_server_authorized_ip_ranges (Optional)  The IP ranges to whitelist for incoming traffic to the masters.
+
+
+[source,go]
+----
+resource "azurerm_resource_group" "example" {
+  name     = "example-resources"
+  location = "West Europe"
+}
+
+resource "azurerm_kubernetes_cluster" "example" {
+  ...
++   api_server_authorized_ip_ranges = '192.168.0.0/16'
+  ...
+}
+
+output "client_certificate" {
+  value = azurerm_kubernetes_cluster.example.kube_config.0.client_certificate
+}
+
+output "kube_config" {
+  value = azurerm_kubernetes_cluster.example.kube_config_raw
+}
+----
+
+
+*ARM Templates* 
+
+
+* *Resource:* Microsoft.ContainerService/managedClusters
+* *Arguments:* apiServerAuthorizedIPRanges
+
+
+[source,go]
+----
+{
+  "name": "string",
+  "type": "Microsoft.ContainerService/managedClusters",
+  "apiVersion": "2019-06-01",
+  "location": "string",
+  "tags": {},
+  "properties": {
+    "kubernetesVersion": "string",
+    "dnsPrefix": "string",
+    "agentPoolProfiles": [
+      {
+        "count": "integer",
+        "vmSize": "string",
+        "osDiskSizeGB": "integer",
+        "vnetSubnetID": "string",
+        "maxPods": "integer",
+        "osType": "string",
+        "maxCount": "integer",
+        "minCount": "integer",
+        "enableAutoScaling": "boolean",
+        "type": "string",
+        "orchestratorVersion": "string",
+        "availabilityZones": [
+          "string"
+        ],
+        "enableNodePublicIP": "boolean",
+        "scaleSetPriority": "string",
+        "scaleSetEvictionPolicy": "string",
+        "nodeTaints": [
+          "string"
+        ],
+        "name": "string"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "string",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "string"
+          }
+        ]
+      }
+    },
+    "windowsProfile": {
+      "adminUsername": "string",
+      "adminPassword": "string"
+    },
+    "servicePrincipalProfile": {
+      "clientId": "string",
+      "secret": "string"
+    },
+    "addonProfiles": {},
+    "nodeResourceGroup": "string",
+    "enableRBAC": "boolean",
+    "enablePodSecurityPolicy": "boolean",
+    "networkProfile": {
+      "networkPlugin": "string",
+      "networkPolicy": "string",
+      "podCidr": "string",
+      "serviceCidr": "string",
+      "dnsServiceIP": "string",
+      "dockerBridgeCidr": "string",
+      "loadBalancerSku": "string"
+    },
+    "aadProfile": {
+      "clientAppID": "string",
+      "serverAppID": "string",
+      "serverAppSecret": "string",
+      "tenantID": "string"
+    },
+ +  "apiServerAuthorizedIPRanges": [
+      "string"
+    ]
+  },
+  "identity": {
+    "type": "string"
+  },
+  "resources": []
+}
+----

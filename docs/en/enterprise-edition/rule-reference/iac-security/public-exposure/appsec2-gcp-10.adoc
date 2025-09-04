@@ -1,0 +1,49 @@
+== GCP Cloud Function HTTP trigger is not secured
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_GCP_10
+|Category |Public Exposure - APIs
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |ff6a26a5-f036-4d3a-a650-d5de1d568bab
+|===
+
+
+=== Impact
+This policy identifies GCP Cloud Functions for which the HTTP trigger is not secured.
+When you configure HTTP functions to be triggered only with HTTPS, user requests will be redirected to use the HTTPS protocol, which is more secure.
+It is recommended to set the 'Require HTTPS' for configuring HTTP triggers while deploying your function.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_cloudfunctions_function" "pass" {
+  name        = "function-test"
+  description = "My function"
+  runtime     = "nodejs16"
+
+  available_memory_mb          = 128
+  source_archive_bucket        = google_storage_bucket.bucket.name
+  source_archive_object        = google_storage_bucket_object.archive.name
+  trigger_http                 = true
+  https_trigger_security_level = "SECURE_ALWAYS"
+  timeout                      = 60
+  entry_point                  = "helloGET"
+  labels = {
+    my-label = "my-label-value"
+  }
+}
+----
+

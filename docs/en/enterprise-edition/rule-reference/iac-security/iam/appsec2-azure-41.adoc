@@ -1,0 +1,49 @@
+== Azure Storage account not configured with SAS expiration policy
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_41
+|Category |IAM - Overly Permissive
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |e528afca-40d1-4355-81c8-db07048a814c
+|===
+
+
+=== Impact
+This policy identifies Azure Storage accounts not configured with SAS expiration policy.
+
+A Shared Access Signature (SAS) expiration policy specifies a recommended interval over which the SAS is valid. SAS expiration policies apply to a service SAS or an account SAS. When a user generates service SAS or an account SAS with a validity interval that is larger than the recommended interval, they'll see a warning. If Azure Storage logging with Azure Monitor is enabled, then an entry is written to the Azure Storage logs. It is recommended that you limit the interval for a SAS in case it is compromised.
+
+For more details:
+https://learn.microsoft.com/en-us/azure/storage/common/sas-expiration-policy
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account
+* *Arguments:* shared_access_key_enabled, sas_policy.expiration_period
+
+To mitigate this issue, implement one of the following options:
+ 
+* Set the `shared_access_key_enabled` attribute in the `azurerm_storage_account` resource to 'false'
+* Configure a `sas_policy` with a defined `expiration_period` if the `shared_access_key_enabled` attribute is set to 'true'
+
+
+Example:
+
+[source,go]
+----
+resource "azurerm_storage_account" "example" {
+  ...
+  shared_access_key_enabled = true
+
++  sas_policy {
++    expiration_period = "01.12:00:00"
++  }
+}
+----

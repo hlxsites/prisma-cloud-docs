@@ -1,0 +1,46 @@
+
+== AWS Elastic Load Balancer with listener TLS/SSL is not configured
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_376
+|Category |Public Exposure - APIs
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |836a7c8c-34c2-4861-be1e-df2f8cd27aab
+|===
+
+
+=== Impact
+This policy detects whether AWS Elastic Load Balancer (ELB) listeners are configured to use TLS/SSL (Transport Layer Security/Secure Sockets Layer) protocols. These protocols safeguard communication by encrypting data exchanged over the network, ensuring that data transmitted between clients and the load balancer remains secure and protected from unauthorized access.
+
+Without TLS/SSL, transmitted data is vulnerable to interception, tampering, or unauthorized access by malicious actors, potentially leading to data breaches and the loss of sensitive information. Enforcing TLS/SSL on ELB listeners is essential to protect the integrity and confidentiality of data in transit, ensuring secure communication channels for applications.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_elb
+* *Arguments:* instance_protocol
+
+Specify the instance_protocol as HTTPS or SSL in your aws_elb resource configuration to ensure the AWS Elastic Load Balancer listener uses TLS/SSL.
+
+In this example, the Terraform configuration is modified to set HTTPS or SSL as the protocol for the load balancer listener. This ensures that traffic between clients and the load balancer is encrypted.
+
+[source,go]
+----
+resource "aws_elb" "example" {
+  ...
+  listener {
+    instance_port     = 8000
+-    instance_protocol = "http"
++    instance_protocol = "https"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+}
+----
+

@@ -1,0 +1,47 @@
+== Azure IoT Hub enables public network access
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_108
+|Category |Public Exposure - APIs
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+By ensuring that your IoT Hub is not public, you can help protect your data from unauthorized access or tampering.
+Public IoT Hubs are accessible over the internet, which can make them vulnerable to external threats such as hackers or malware.
+By making it private, you can help ensure that only authorized users can access the data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_iothub
+* *Arguments:* public_network_access_enabled
+
+
+[source,go]
+----
+resource "azurerm_iothub" "example" {
+                ...
++             public_network_access_enabled = false
+              route {
+                name           = "export"
+                source         = "DeviceMessages"
+                condition      = "true"
+                endpoint_names = ["export"]
+                enabled        = true
+              }
+                        ...
+            }
+----
+

@@ -1,0 +1,38 @@
+== AWS SageMaker notebook instance with root access enabled
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_307
+|Category |AI & Machine Learning - Permissions
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |a701f33c-1c37-45d3-a5a2-4ef4126c618a
+|===
+
+
+=== Impact
+It's essential to restrict this level of access because providing root or admin rights can lead to misuse, intentional or accidental damage, or severe security breaches. These privileges allow users to perform actions on the platform that could modify or extract sensitive data, change configuration settings, or install unauthorized apps, among other things. Root access should only be given to trusted administrators who need such privileges to manage and secure systems.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_notebook_instance
+* *Arguments:* root_access
+
+To fix the issue, you need to make sure the `root_access` attribute should set to Disabled.
+
+[source,hcl]
+----
+resource "aws_sagemaker_notebook_instance" "secure_instance" {
+  name          = "secure_instance"
+  role_arn      = aws_iam_role.role.arn
+  instance_type = "ml.t3.xlarge"
+
++ root_access = Disabled
+}
+----
+

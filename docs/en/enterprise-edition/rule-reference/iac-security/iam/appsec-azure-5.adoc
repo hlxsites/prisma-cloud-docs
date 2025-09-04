@@ -1,0 +1,42 @@
+== Azure AKS enable role-based access control (RBAC) not enforced
+// Azure Kubernetes Service (AKS) role-based access control (RBAC) not enforced
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_5
+|Category |IAM - Authentication Policies
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |2e24de17-7a27-4da7-93a1-e62cf9bdf832
+|===
+
+
+=== Impact
+AKS can be configured to use Azure Active Directory (AD) and Kubernetes Role-based Access Control (RBAC).
+RBAC is designed to work on resources within your AKS clusters.
+With RBAC, you can create a role definition that outlines the permissions to be applied.
+A user or group is then assigned this role definition for a particular scope, which could be an individual resource, a resource group, or across the subscription.
+We recommend you sign in to an AKS cluster using an Azure AD authentication token and configure Kubernetes RBAC.
+This will limit access to cluster resources based a user's identity or group membership.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+*Resource*: azurerm_kubernetes_cluster *Argument*: role_based_access_control_enabled
+
+
+[source,go]
+----
+resource "azurerm_kubernetes_cluster" "pike" {
+...
++ role_based_access_control_enabled = true
+...
+}
+----

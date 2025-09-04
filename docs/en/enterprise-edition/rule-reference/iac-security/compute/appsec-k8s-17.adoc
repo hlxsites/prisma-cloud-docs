@@ -1,0 +1,42 @@
+== Containers share host process ID namespace
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_17
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Namespaces provide isolation for running processes and limit access to system resources, without the running process agnostic to its limitations.
+To limit an attacker's options to escalate privileges from within a container, we recommend you configure containers to refrain from sharing the host process ID namespace.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Pod / Deployment / DaemonSet / StatefulSet / ReplicaSet / ReplicationController / Job / CronJob
+* *Arguments:* hostPID (Optional)  If true, the Pod uses the host's PID namespace.
+
+Default to false.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+spec:
+- hostPID: true
+----
+

@@ -1,0 +1,50 @@
+== AWS cluster logging is not enabled or client to container communication not encrypted using a Customer Managed Key (CMK)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_224
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy identifies cluster logging which are encrypted with default KMS keys and not with Keys managed by Customer.
+It is a best practice to use customer managed KMS Keys to encrypt your cluster logging data.
+It gives you full control over the encrypted data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,text]
+----
+resource "aws_ecs_cluster" "pass2" {
+  name = "white-hart"
+  configuration {
+    execute_command_configuration {
+      kms_key_id = aws_kms_key.example.arn
+
+      log_configuration {
+        #        cloud_watch_encryption_enabled = true
+        # cloud_watch_log_group_name     = aws_cloudwatch_log_group.example.name
+
+        # or
+        # s3_bucket_name=   and
+        s3_bucket_encryption_enabled = true
+      }
+    }
+  }
+  tags = { test = "fail" }
+}
+----

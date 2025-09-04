@@ -1,0 +1,80 @@
+== Boot disks for instances do not use CSEKs
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_38
+|Category |Storage - Encryption
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_38
+|Category |Storage - Encryption
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Customer-Supplied Encryption Keys (CSEK) are a feature in Google Cloud Storage and Google Compute Engine.
+Google Compute Engine encrypts all data at rest by default.
+Compute Engine handles and manages this encryption automatically, with no additional action required.
+When you provide your own encryption keys Compute Engine uses your key to protect the Google-generated keys used to encrypt and decrypt your data.
+Only users that provide the correct key can use resources protected by a customer-supplied encryption key.
+Google does not store your keys on its servers and cannot access your protected data unless you provide the key.
+If you forget or lose your key Google is unable to recover the key or to recover any data encrypted with that key.
+To control and manage this encryption yourself, you must provide your own encryption keys.
+We recommend you supply your own encryption keys for Google to use, at a minimum to encrypt boot disks for instances.
+This helps protect the Google-generated keys used to encrypt and decrypt your data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_disk
+* *Field:* disk_encryption_key
+* *Resource:* google_compute_instance
+* *Arguments:* boot_disk:disk_encryption_key_raw
+
+
+[source,go]
+----
+//Option 2
+resource "google_compute_disk" "default" {
+  name  = "test-disk"
+  type  = "pd-ssd"
+  zone  = "us-central1-a"
+  image = "debian-8-jessie-v20170523"
+  physical_block_size_bytes = 4096
++  disk_encryption_key {
++    raw_key = <raw key>
+  or
++    kms_key_self_link = <key link>
+    }
+}
+
+//Option 2
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+  boot_disk {
+    disk_encryption_key_raw = <encryption key>
+    }
+}
+----
+

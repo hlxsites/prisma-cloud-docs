@@ -1,0 +1,59 @@
+== AWS AppSync's logging is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_193
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that AWS AppSync GraphQL APIs have logging enabled. Enabling logging for AppSync allows you to capture, store, and analyze the API activity, which is crucial for monitoring, troubleshooting, and ensuring the security of your API. This policy checks whether the `CloudWatchLogsRoleArn` property in the `LogConfig` configuration is set to a valid value.
+
+=== How to Fix
+
+
+*Terraform* 
+
+To mitigate this issue, ensure that `cloudwatch_logs_role_arn` is set in the `aws_appsync_graphql_api` resource.
+
+
+[source,go]
+----
+resource "aws_appsync_graphql_api" "enabled" {
+  authentication_type = "API_KEY"
+  name                = "example"
+
+  log_config {
+    cloudwatch_logs_role_arn = "aws_iam_role.example.arn"
+    field_log_level          = "ERROR"
+  }
+}
+----
+
+*CloudFormation*
+
+To fix this issue, ensure that the `CloudWatchLogsRoleArn` property in the `LogConfig` configuration of the `AWS::AppSync::GraphQLApi` resource is set to a valid IAM role ARN that grants permission to write logs to CloudWatch.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyAppSyncGraphQLApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: example-api
+      AuthenticationType: API_KEY
+      LogConfig:
+        CloudWatchLogsRoleArn: arn:aws:iam::123456789012:role/appsync-logging-role
+        FieldLogLevel: ALL
+      ...
+----

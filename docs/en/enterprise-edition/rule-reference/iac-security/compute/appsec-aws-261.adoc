@@ -1,0 +1,37 @@
+== AWS HTTP and HTTPS target groups do not define health check
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_261
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Health checks ensure that a target is reachable before sending traffic from a load balancer to the endpoint.
+This is a best practice compared to blindly sending traffic to what can be unhealthy targets.
+
+=== How to Fix
+* *Resource:* aws_lb_target_group, aws_alb_target_group
+* *Arguments:* health_check
+
+[source,go]
+----
+resource "aws_alb_target_group" "example" {
+name = "target-group-1"
+port = 80
+protocol = "HTTP"
+
+
+* has to be HTTP 200 or fails* 
+
+
+}
+----

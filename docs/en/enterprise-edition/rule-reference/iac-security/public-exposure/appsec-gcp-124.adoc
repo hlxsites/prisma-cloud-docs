@@ -1,0 +1,46 @@
+
+== GCP Cloud Function configured with overly permissive Ingress setting
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_124
+|Category |Public Exposure - APIs
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |505e6598-f26b-4054-9f9b-62702126622f
+|===
+
+
+=== Impact
+This policy checks whether GCP Cloud Functions are configured with overly permissive Ingress settings. Overly permissive Ingress settings allow all inbound requests to the function, both from the public and from resources within the same project. It is recommended to restrict the traffic to improve network-based access control, allowing traffic only from VPC networks within the same project or through the Cloud Load Balancer.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* google_cloudfunctions_function, google_cloudfunctions2_function
+* *Arguments:* ingress_settings
+
+To fix this issue, configure the "ingress" setting of the GCP Cloud Function to either "ALLOW_INTERNAL_AND_GCLB" or "ALLOW_INTERNAL_ONLY" to restrict the sources able to access the function.
+
+In the following example, the code is secure as it sets the ingress_settings of the Google Cloud Function to ALLOW_INTERNAL_ONLY, meaning that the function can only be accessed internally. This significantly restricts the potential sources of incoming traffic and reduces the risk of unauthorized access to the function.
+
+[source,go]
+----
+resource "google_cloudfunctions_function" "function" {
+  name        = "function-test"
+  description = "My function"
+  runtime     = "nodejs10"
+
+  available_memory_mb   = 128
+  source_archive_bucket = "my-bucket"
+  source_archive_object = "functions/my-function.zip"
+  trigger_http          = true
++  ingress_settings      = "ALLOW_INTERNAL_ONLY"
+  entry_point           = "httpsRequest"
+}
+----
+

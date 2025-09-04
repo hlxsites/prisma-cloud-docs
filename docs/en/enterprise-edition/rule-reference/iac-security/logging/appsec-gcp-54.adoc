@@ -1,0 +1,49 @@
+== GCP PostgreSQL instance database flag log_lock_waits is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_54
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |2a940029-8a0d-4798-b312-13d26783b43a
+|===
+
+
+=== Impact
+Deadlock timeout defines the time to wait on a lock before checking for any conditions.
+Frequent runovers on deadlock timeout can be an indication of an underlying issue.
+Log these waits on locks using the *log_lock_waits* database flag and use the information to identify poor performance due to locking delays, or if a specially-crafted SQL is attempting to starve resources through holding locks for excessive amounts of time.
+We recommended you set the *log_lock_waits* flag for a PostgreSQL instance to *On*.
+This will create a log for any session and allow you to identify waits that take longer than the allotted *deadlock_timeout* time to acquire a lock.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "POSTGRES_* " settings::database_flags: key:"log_lock_waits", value:  by default set to "off"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "POSTGRES_11"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "log_lock_waits"
++            value = "on"
+          }
+  }
+}
+----
+

@@ -1,0 +1,54 @@
+== Bedrock Agent not encrypted with Customer Master Key (CMK)
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_373
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether the AWS Bedrock Agent is encrypted with a Customer Master Key (CMK) instead of default encryption. Using a CMK provides greater control over key management and reduces the risk of unauthorized access, thereby enhancing the data security managed by the Bedrock Agent.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_bedrockagent_agent
+* *Arguments:* customer_encryption_key_arn
+
+Encrypt the Bedrock Agent using a Customer Master Key by setting the `customer_encryption_key_ar`n parameter in your configuration file.
+
+In this Terraform framework example, the `customer_encryption_key_arn`` parameter is added to the Bedrock Agent resource configuration, enabling the use of a Customer Master Key (CMK) for encryption.
+
+[source,go]
+----
+resource "aws_bedrockagent_agent" "bedrock_agent_with_kms_key" {
+  ...
++  customer_encryption_key_arn = aws_kms_key.example.arn
+}
+----
+
+
+*CloudFormation*
+
+* *Resource:* AWS::Bedrock::Agent
+* *Arguments:* CustomerEncryptionKeyArn
+
+In this CloudFormation framework example, the `customer_encryption_key_arn`` parameter is added to the Bedrock Agent resource configuration, enabling the use of a Customer Master Key (CMK) for encryption.
+
+[source,yaml]
+----
+Resources:
+  Pass:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: test
++      CustomerEncryptionKeyArn: arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+----

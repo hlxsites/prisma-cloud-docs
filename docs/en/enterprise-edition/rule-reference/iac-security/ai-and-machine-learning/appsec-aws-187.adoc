@@ -1,0 +1,68 @@
+== AWS Sagemaker domain not encrypted using Customer Managed Key
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_187
+|Category |AI & Machine Learning - Data Protection
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Amazon SageMaker Feature Store enables you to create two types of stores: an online store or offline store.
+The online store is used for low latency real-time inference use cases whereas the offline store is used for training and batch inference use cases.
+When you create a feature group for online or offline use you can provide a AWS Key Management Service customer managed key to encrypt all your data at rest.
+In case you do not provide a AWS KMS key then we ensure that your data is encrypted on the server side using an AWS owned AWS KMS key or AWS managed AWS KMS key.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+To fix this issue, ensure that the `kms_key_id` property in the `aws_sagemaker_domain` resource is set to a valid KMS key ARN or key ID.
+
+[source,go]
+----
+resource "aws_sagemaker_domain" "example" {
+  ...
+  + kms_key_id = "ckv_kms"
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `KmsKeyId` property in the `AWS::SageMaker::NotebookInstance` or `AWS::SageMaker::Domain` resource is set to a valid KMS key ARN or key ID.
+
+Example for a SageMaker Notebook Instance:
+
+[source,yaml]
+----
+Resources:
+  MySagemakerNotebookInstance:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      ...
+      KmsKeyId: arn:aws:kms:us-west-2:123456789012:key/example-key-arn
+      ...
+----
+
+Example for a SageMaker Domain:
+
+[source,yaml]
+----
+Resources:
+  MySagemakerDomain:
+    Type: AWS::SageMaker::Domain
+    Properties:
+      ...
+      KmsKeyId: arn:aws:kms:us-west-2:123456789012:key/example-key-arn
+      ...
+----

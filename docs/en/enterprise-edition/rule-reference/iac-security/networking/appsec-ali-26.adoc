@@ -1,0 +1,62 @@
+== Alibaba Cloud Kubernetes does not install plugin Terway or Flannel to support standard policies
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_26
+|Category |Networking - VPC/VCN/VNET
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that Kubernetes clusters on Alibaba Cloud are configured with either the Terway or Flannel CNI (Container Network Interface) plugin to support standard Kubernetes network policies. These plugins enable advanced networking features, such as isolation and traffic management, which are critical for secure and efficient cluster operations.
+
+Failing to install and configure these plugins can lead to suboptimal networking and security, reducing the cluster's ability to enforce Kubernetes network policies.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_cs_kubernetes
+* *Arguments:* pod_vswitch_ids, pod_cidr, addons
+
+To mitigate this issue, ensure that either the `Terway` plugin is installed with correctly configured `pod_vswitch_ids` or the `Flannel` plugin is installed with a defined `pod_cidr`.
+
+Example (Terway):
+
+[source,go]
+----
+resource "alicloud_cs_kubernetes" "example" {
+  name                = "example-cluster"
+  cluster_network_type = "terway-eniip"
+  pod_vswitch_ids     = ["vsw-123456"]
+  worker_vswitch_ids  = ["vsw-654321"]
+  master_vswitch_ids  = ["vsw-789012"]
+
+  addons {
+    name = "terway-eniip"
+  }
+}
+----
+
+Example (Flannel):
+
+[source,go]
+----
+resource "alicloud_cs_kubernetes" "example" {
+  name                = "example-cluster"
+  cluster_network_type = "flannel"
+  pod_cidr            = "192.168.0.0/16"
+
+  addons {
+    name = "flannel"
+  }
+}
+----

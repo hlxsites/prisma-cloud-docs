@@ -1,0 +1,54 @@
+== The --kubelet-client-certificate and --kubelet-client-key arguments are not set appropriately
+// '--kubelet-client-certificate' and '--kubelet-client-key' arguments not set appropriately
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_72
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Enable certificate based kubelet authentication.
+The apiserver, by default, does not authenticate itself to the kubelet's HTTPS endpoints.
+The requests from the apiserver are treated anonymously.
+You should set up certificate- based kubelet authentication to ensure that the apiserver authenticates itself to kubelets when submitting requests.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --kubelet-client-certificate=/path/to/cert
++   - --kubelet-client-key=/path/to/key
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

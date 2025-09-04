@@ -1,0 +1,43 @@
+== SSL validation disabled within Ansible DNF module
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_ANSIBLE_5
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether SSL certificate validation is enforced when using the DNF module in Ansible. SSL verifies the authenticity of the server's SSL certificate, ensuring that HTTPS connections are secure and the server's identity is validated. This is critical for preventing Man-in-the-Middle attacks.
+
+
+=== How to Fix
+
+*Ansible*
+
+* *Module:* dnf
+* *Attribute:* sslverify
+
+To mitigate this risk, ensure that the sslverify attribute is not set to 'false' in your DNF tasks. If not explicitly set, the default behavior is to perform SSL validation. It is recommended to explicitly set sslverify to 'true' to enforce clarity and intent in the code.
+
+
+Secure Code Example:
+
+
+[source,yaml]
+----
+- name: Example
+  ansible.builtin.dnf:
+    name: nginx
+    state: latest
+    sslverify: true
+----
+
+In this example, setting `sslverify` to 'true' ensures the integrity and authenticity of your SSL connections enhancing the security of your package management operations.
+

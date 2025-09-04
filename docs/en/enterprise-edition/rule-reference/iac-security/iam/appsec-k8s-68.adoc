@@ -1,0 +1,55 @@
+== The --anonymous-auth argument is not set to False for API server
+//'--anonymous-auth' argument not set to 'False' for API server
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_68
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Disable anonymous requests to the API server.
+When enabled, requests that are not rejected by other configured authentication methods are treated as anonymous requests.
+These requests are then served by the API server.
+You should rely on authentication to authorize access and disallow anonymous requests.
+If you are using RBAC authorization, it is generally considered reasonable to allow anonymous access to the API Server for health checks and discovery purposes, and hence this recommendation is not scored.
+However, you should consider whether anonymous discovery is an acceptable risk for your purposes.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind*: Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --anonymous-auth=false
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

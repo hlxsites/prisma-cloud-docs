@@ -1,0 +1,60 @@
+== AWS CloudWatch Log groups encrypted using default encryption key instead of KMS CMK
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_158
+|Category |Logging - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Log group data requires mandatory encryption settings in CloudWatch Logs.
+Developers can optionally use AWS Key Management Service for this encryption.
+
+This approach has several limitations:
+
+* If you revoke CloudWatch Logs access to an associated CMK or delete an associated CMK, your encrypted data in CloudWatch Logs can no longer be retrieved.
+* You cannot associate a CMK with a log group using the CloudWatch console.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_cloudwatch_log_group
+* *Arguments:*  kms_key_id
+
+NOTE: Resource's ARN should be used.
+
+
+[source,go]
+----
+resource "aws_cloudwatch_log_group" "pass" {
+  ...
++ kms_key_id        = "someKey"
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Logs::LogGroup
+* *Arguments:*  Properties.KmsKeyId
+
+
+[source,yaml]
+----
+Type: AWS::Logs::LogGroup
+    Properties: 
+      ...
++     KmsKeyId: "someKey"
+----

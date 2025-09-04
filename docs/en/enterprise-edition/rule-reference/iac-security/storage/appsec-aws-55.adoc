@@ -1,0 +1,58 @@
+== AWS S3 bucket IgnorePublicAcls is not set to True
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_55
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+The IgnorePublicAcls setting causes S3 to ignore all public ACLs on a bucket and any objects that it contains.
+Enabling this setting does not affect the persistence of any existing ACLs and does not prevent new public ACLs from being set.
+This setting will block public access granted by ACLs while still allowing PUT Object calls that include a public ACL.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket_public_access_block
+* *Arguments:* ignore_public_acls
+
+
+[source,go]
+----
+resource "aws_s3_bucket_public_access_block" "artifacts" {
+  ...
+  restrict_public_buckets = true
++ ignore_public_acls=true
+}
+----
+
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::S3::Bucket
+* *Arguments:* Properties.PublicAccessBlockConfiguration.IgnorePublicAcls
+
+
+[source,yaml]
+----
+Type: 'AWS::S3::Bucket'
+    Properties:
+    ...
+    PublicAccessBlockConfiguration:
+        ...
++       IgnorePublicAcls: true
+----

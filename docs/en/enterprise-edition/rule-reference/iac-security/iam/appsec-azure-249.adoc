@@ -1,0 +1,44 @@
+== Azure GitHub Actions OIDC trust policy is insecurely configured
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_249
+|Category |IAM
+|Provider |Azure
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether Azure GitHub Actions OIDC trust policies are insecurely configured, potentially allowing security vulnerabilities. Misconfigured policies can allow unauthorized access or introduce potential exploits via wildcards, abusable claims, or improperly formatted repository claims.
+
+=== How to Fix
+
+To mitigate this issue, ensure that the subject claims are securely specified (such as using specific repository or organization identifiers), without using wildcards in critical positions (such as the organization or repository name), and conform to standardized formats. See the https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect#configuring-the-oidc-trust-with-the-cloud[documentation] for more details.
+
+*Terraform*
+
+* *Resource: azuread_application_federated_identity_credential, azuread_application*
+* *Argument: identity_federation, subject* 
+
+To mitigate this issue, ensure your `azuread_application_federated_identity_credential` or `azuread_application` resources do not use insecure subject claims.
+
+- Avoid wildcards (`*`) or unsafe claim structures.
+- Ensure claims follow safe and restricted formats. Abusable claims include: "workflow", "environment", "ref", "context", "head_ref", "base_ref"
+- Use a specific repository reference.
+
+
+Example:
+
+[source,go]
+----
+resource "azuread_application_federated_identity_credential" "example" {
+  ...
+-  subject = "*"
++  subject = "repo:organization/repository"
+}
+----

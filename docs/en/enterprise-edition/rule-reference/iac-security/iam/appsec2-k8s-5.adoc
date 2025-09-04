@@ -1,0 +1,42 @@
+== No ServiceAccount/Node should be able to read all secrets
+// ServiceAccounts and Nodes should not be able to read all secrets
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_K8S_5
+|Category |IAM - Role Separation
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+In Kubernetes, a ServiceAccount is an account that is associated with a specific service.
+A ServiceAccount can be granted specific permissions, known as "roles," that determine what actions it is allowed to perform within a Kubernetes cluster.
+One potential issue with ServiceAccounts is that they could potentially be granted the ability to read all secrets in a Kubernetes cluster.
+This would allow the ServiceAccount to access sensitive information such as passwords, API keys, and other sensitive data that is stored as secrets in the cluster.
+Allowing a ServiceAccount to read all secrets could pose a security risk to the cluster, as it could potentially allow unauthorized access to sensitive information.
+Therefore, it is generally best to avoid granting ServiceAccounts the ability to read all secrets in a cluster.
+It is also important to note that nodes, which are the physical or virtual machines that run the Kubernetes cluster, can also potentially be granted the ability to read all secrets.
+Therefore, it is also important to ensure that nodes do not have this ability to prevent potential unauthorized access to sensitive information.
+
+=== How to Fix
+
+*Kubernetes*
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-service-account
+  annotations:
+    authorization.k8s.io/get: "[]"",
+}
+----
+

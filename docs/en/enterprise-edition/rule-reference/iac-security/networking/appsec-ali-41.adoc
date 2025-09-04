@@ -1,0 +1,40 @@
+== Alibaba Cloud MongoDB is not deployed inside a VPC
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_41
+|Category |Networking - VPC/VCN/VNET
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that MongoDB instances in Alibaba Cloud are deployed inside a VPC (Virtual Private Cloud). Deploying MongoDB inside a VPC provides network isolation and enhanced security, ensuring that the database is accessible only to resources within the same VPC and not exposed to the public internet.
+
+Failing to deploy MongoDB inside a VPC can result in exposure to public internet traffic, increasing the risk of unauthorized access and potential data breaches.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_mongodb_instance
+* *Attribute:* network_type
+
+To mitigate this issue, ensure that the `network_type` attribute in the `alicloud_mongodb_instance` resource is set to `VPC`.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_mongodb_instance" "example" {
+  ...
++  network_type = "VPC"
+}
+----

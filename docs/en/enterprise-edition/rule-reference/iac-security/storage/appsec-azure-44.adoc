@@ -1,0 +1,83 @@
+== Azure Storage Account using insecure TLS version
+// Azure Storage Account uses insecure version of TLS
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_44
+|Category |Storage - Encryption
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |57f1320f-33c3-461b-8e32-7fa873ae1d8e
+|===
+
+
+=== Impact
+Communication between a client application and an Azure Storage account is encrypted using Transport Layer Security (TLS).
+TLS is a standard cryptographic protocol that ensures privacy and data integrity between clients and services over the Internet.
+Azure Storage currently supports three versions of the TLS protocol: 1.0, 1.1, and 1.2.
+Azure Storage uses TLS 1.2 on public HTTPS endpoints, but TLS 1.0 and TLS 1.1 are still supported for backward compatibility.
+To follow security best practices and the latest PCI compliance standards, Microsoft recommends enabling the latest version of TLS protocol (TLS 1.2) for all your Microsoft Azure App Service web applications.
+PCI DSS information security standard requires that all websites accepting credit card payments uses TLS 1.2 after June 30, 2018.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_storage_account
+* *Attribute:* min_tls_version (Optional)  The minimum supported TLS version for the storage account.
+
+Possible values are TLS1_0, TLS1_1, and TLS1_2.
+Defaults to TLS1_0 for new storage accounts.
+Use TLS1_2.
+
+
+[source,go]
+----
+resource "azurerm_storage_account" "test" {
+  ...
++  min_tls_version      = "TLS1_2"
+  ...
+}
+----
+
+
+*ARM Template* 
+
+
+* *Resource:* Microsoft.Storage/storageAccounts
+* *Arguments:* minimumTlsVersion To configure the minimum TLS version for a storage account with a template, create a template with the MinimumTLSVersion property set to TLS1_0, TLS1_1, or TLS1_2.
+
+
+[source,go]
+----
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {
+        "storageAccountName": "[concat(uniqueString(subscription().subscriptionId), 'tls')]"
+    },
+    "resources": [
+        {
+        "name": "[variables('storageAccountName')]",
+        "type": "Microsoft.Storage/storageAccounts",
+        "apiVersion": "2019-06-01",
+        "location": "<location>",
+        "properties": {
+            "minimumTlsVersion": "TLS1_2"
+        },
+        "dependsOn": [],
+        "sku": {
+          "name": "Standard_GRS"
+        },
+        "kind": "StorageV2",
+        "tags": {}
+        }
+    ]
+}
+----

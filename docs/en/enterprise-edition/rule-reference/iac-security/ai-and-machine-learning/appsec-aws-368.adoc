@@ -1,0 +1,59 @@
+== AWS Sagemaker data quality job not using KMS to encrypt data on attached storage volume
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_368
+|Category |AI & Machine Learning - Data Protection
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy checks whether Amazon SageMaker Data Quality Jobs leverage AWS Key Management Service (KMS) to encrypt data on the attached storage volume. KMS encryption is crucial to safeguard sensitive information as it encrypts data on storage volumes attached to the Sagemaker instance. This prevents unauthorized access and data breaches and helps ensure compliance with regulations requiring the protection of specific data types.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_monitoring_schedule
+* *Arguments:* job_resources/cluster_config/volume_kms_key_id
+
+Provide a `volume_kms_key_id` attribute in your `aws_sagemaker_monitoring_schedule` of your Terraform configuration file to enable encryption using AWS KMS, as displayed in the example below.
+
+[source,go]
+----
+resource "aws_sagemaker_data_quality_job_definition" "example" {
+  ...
+  job_resources {
+    cluster_config {
+      ...
++      volume_kms_key_id = "arn:aws:kms:us-west-2:123456789012:key/my-existing-volume-kms-key-id"
+    }
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::DataQualityJobDefinition
+* *Arguments:* JobResources/ClusterConfig/VolumeKmsKeyId
+
+Provide a `VolumeKmsKeyId` attribute in your `AWS::SageMaker::DataQualityJobDefinition` of your CloudFormation configuration file, as displayed in the example below.
+
+[source,yaml]
+----
+  MyDataQualityJobDefinitionPass:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      ...
+      JobResources:
+        ClusterConfig:
+          ...
+          VolumeKmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-existing-volume-kms-key-id"
+----
+

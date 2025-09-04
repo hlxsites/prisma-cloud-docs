@@ -1,0 +1,54 @@
+== AWS RDS cluster not configured with IAM authentication
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_162
+|Category |IAM - Authentication Policies
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |f79f0e00-fcf1-49ef-ab0c-b3db225b086d
+|===
+
+
+=== Impact
+This policy identifies RDS clusters that are not configured with IAM authentication. If you enable IAM authentication you don't need to store user credentials in the database, because authentication is managed externally using IAM. IAM database authentication provides the network traffic to and from database clusters is encrypted using Secure Sockets Layer (SSL), Centrally manage access to your database resources and Profile credentials instead of a password, for greater security.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_rds_cluster
+* *Arguments:* iam_database_authentication_enabled
+
+
+[source,go]
+----
+resource "aws_rds_cluster" "enabled" {
+    ...
++ iam_database_authentication_enabled = true
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::RDS::DBCluster
+* *Arguments:* Properties.EnableIAMDatabaseAuthentication
+
+
+[source,yaml]
+----
+Resources:
+  Enabled:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      ...
++     EnableIAMDatabaseAuthentication: true
+----

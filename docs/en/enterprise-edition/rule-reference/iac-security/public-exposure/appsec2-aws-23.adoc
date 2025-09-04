@@ -1,0 +1,40 @@
+== Route53 A Record does not have Attached Resource
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_23
+|Category |Public Exposure - APIs
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This check ensures that Route53 A records point to resources part of your Account rather than just random IP addresses.
+On the platform this check additionally compares IP's against provisioned EIP.
+In Cortex Cloud the graph correlates the A record against know AWS resources from EIP to Global Accelerator.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_route53_record
+
+
+[source,go]
+----
+resource "aws_route53_record" "pass" {
+  zone_id = data.aws_route53_zone.primary.zone_id
+  name    = "dns.freebeer.site"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_eip.fixed.public_ip]
+}
+----

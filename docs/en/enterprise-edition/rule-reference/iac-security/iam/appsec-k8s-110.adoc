@@ -1,0 +1,51 @@
+== The --service-account-private-key-file argument for controller managers is not set appropriately
+// '--service-account-private-key-file' argument for controller managers not set appropriately
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_110
+|Category |IAM - Credential Exposure
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Explicitly set a service account private key file for service accounts on the controller manager.
+To ensure that keys for service account tokens can be rotated as needed, a separate public/private key pair should be used for signing service account tokens.
+The private key should be specified to the controller manager with --service-account-private-key-file as appropriate.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      component: kube-controller-manager
+      tier: control-plane
+    name: kube-controller-manager
+    namespace: kube-system
+  spec:
+    containers:
+    - command:
+      - kube-controller-manager
++     -  --service-account-private-key-file=public.pem
+      image: gcr.io/google_containers/kube-controller-manager-amd64:v1.6.0",
+}
+----
+

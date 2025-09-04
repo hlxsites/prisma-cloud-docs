@@ -1,0 +1,70 @@
+== Containers share host IPC namespace
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_18
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Pods share many resources, so it could make sense to share a process namespace.
+Some container images may expect to be isolated from other containers.
+Not sharing IPC namespaces  helps ensure isolation.
+Containers in different pods have distinct IP addresses and will need special configuration to communicate by IPC.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Pod / Deployment / DaemonSet / StatefulSet / ReplicaSet / ReplicationController / Job / CronJob
+* *Arguments:* hostIPC (Optional)  If true, the Pod uses the host's IPC namespace.
+Default to false.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+spec:
++ hostIPC: false # or do not include hostIPC
+----
+
+
+[source,cronjob]
+----
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: <name>
+spec:
+  schedule: <>
+  jobTemplate:
+    spec:
+      template:
+        spec:
++          hostIPC: false # or do not include hostIPC
+----
+
+[source,text]
+----
+apiVersion: <>
+kind: <kind>
+metadata:
+  name: <name>
+spec:
+  template:
+    spec:
++       hostIPC: false # or do not include hostIPC
+----

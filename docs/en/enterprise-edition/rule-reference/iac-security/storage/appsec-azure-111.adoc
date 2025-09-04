@@ -1,0 +1,41 @@
+== Key vault does not enable soft-delete
+// Key Vault does not enable soft-delete
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_111
+|Category |Storage - Backups
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Bicep, Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Deleting a key vault without soft delete enabled permanently deletes all secrets, keys, and certificates stored in the key vault.
+Accidental deletion of a key vault can lead to permanent data loss.
+Soft delete allows you to recover an accidentally deleted key vault for a configurable retention period.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_key_vault
+* *Arguments:* soft_delete_retention_days - (Optional) The number of days that items should be retained for once soft-deleted.
+
+This value can be between 7 and 90 (the default) days.
+
+
+[source,go]
+----
+resource "azurerm_key_vault" "example" {
+  ...
++   soft_delete_retention_days  = 7
+}
+----

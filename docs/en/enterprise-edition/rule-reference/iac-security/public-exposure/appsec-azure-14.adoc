@@ -1,0 +1,39 @@
+== Azure App Service Web app doesn't redirect HTTP to HTTPS
+// Azure App Service Web app does not enforce HTTPS-only traffic 
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_14
+|Category |Public Exposure - APIs
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |c6c62207-dbf7-45a1-b809-e1c896eb28fb
+|===
+
+
+=== Impact
+Azure Web Apps by default allows sites to run under both HTTP and HTTPS, and can be accessed by anyone using non-secure HTTP links.
+Non-secure HTTP requests can be restricted and all HTTP requests redirected to the secure HTTPS port.
+We recommend you enforce HTTPS-only traffic to increase security.
+This will redirect all non-secure HTTP requests to HTTPS ports.
+HTTPS uses the SSL/TLS protocol to provide a secure connection, which is both encrypted and authenticated.
+=== How to Fix
+
+
+*Terraform* 
+
+
+*Resource*: azurerm_app_service *Argument*: https_only
+
+
+[source,go]
+----
+resource "azurerm_app_service" "example" {
+    ...
++   https_only          = true
+}
+----

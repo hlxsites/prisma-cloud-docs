@@ -1,0 +1,44 @@
+== Azure Storage Account 'Trusted Microsoft Services' access not enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_36
+|Category |Storage - Permissions
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |04aaadfc-65e0-4347-9a3e-1922e9a2068e
+|===
+
+
+=== Impact
+Some Microsoft services that interact with storage accounts operate from networks that cannot be granted access through network rules.
+To help this type of service work as intended, you can allow the set of trusted Microsoft services to bypass the network rules.
+These services will use strong authentication to access the storage account.
+Allowing trusted Microsoft services grants access to the storage account for the following services: Azure Backup, Azure Site Recovery, Azure DevTest Labs, Azure Event Grid, Azure Event Hubs, Azure Networking, Azure Monitor and Azure SQL Data Warehouse (when registered in the subscription).
+Turning on firewall rules for a storage account will block access to incoming requests for data, including from other Azure services, such as using the portal and writing logs.
+Functionality can be re-enabled.
+The customer can get access to services like Monitor, Networking, Hubs, and Event Grid by enabling *Trusted Microsoft Services* through exceptions.
+Backup and Restore of Virtual Machines using unmanaged disks in storage accounts with network rules applied is supported by creating an exception.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:*  azurerm_storage_account  azurerm_storage_account_network_rules
+* *Arguments:* bypass
+
+
+[source,go]
+----
+resource "azurerm_storage_account" "example" {
+    ...
++   bypass                     = ["AzureServices"]
+    }
+}
+----
+

@@ -1,0 +1,39 @@
+== Alibaba Cloud RAM password policy does not expire in 90 days
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_16
+|Category |IAM - Authentication Policies
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy identifies Alibaba Cloud accounts for which do not have password expiration set to 90 days or less. As a best practice, change your password every 90 days or sooner to ensure secure access to the Alibaba Cloud console.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_ram_account_password_policy
+* *Arguments:* max_password_age
+
+To mitigate this issue, ensure the `max_password_age` attribute in the `alicloud_ram_account_password_policy` resource is set to a value between 1 and 90.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_ram_account_password_policy" "example" {
+  ...
+-  max_password_age             = 180
++  max_password_age             = 45
+}
+----

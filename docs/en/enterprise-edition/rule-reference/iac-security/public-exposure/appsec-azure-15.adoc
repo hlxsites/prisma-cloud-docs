@@ -1,0 +1,42 @@
+== Azure App Service Web app doesn't use latest TLS version
+// Azure App Service Web app does not use latest TLS version
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_15
+|Category |Public Exposure - Encryption and Protocols
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |f56bc36e-d357-46e2-a9d6-f451f17076fe
+|===
+
+
+=== Impact
+The Transport Layer Security (TLS) protocol secures transmission of data over the internet using standard encryption technology.
+Encryption should be set with the latest version of TLS.
+App service allows TLS 1.2 by default, which is the recommended TLS level by industry standards, for example, PCI DSS.
+App service currently allows the web app to set TLS versions 1.0, 1.1 and 1.2.
+For secure web app connections it is highly recommended to only use the latest TLS 1.2 version.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_app_service
+* *Arguments:* min_tls_version
+
+
+[source,go]
+----
+resource "azurerm_app_service" "example" {
+    ...
+-   min_tls_version = <version>
+    }
+}
+----
+

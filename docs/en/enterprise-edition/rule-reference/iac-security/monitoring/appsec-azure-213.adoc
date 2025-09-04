@@ -1,0 +1,44 @@
+== Azure App Service Health Check Missing
+// Ensure that App Service configures health check.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_213
+|Category |Monitoring - Resource Health
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== How to Fix
+
+*Terraform*
+
+*Resources:* 
+- azurerm_app_service
+- azurerm_linux_web_app
+- azurerm_windows_web_app
+
+*Arguments:* 
+- site_config/[0]/health_check_path
+
+[source,terraform]
+----
+resource "azurerm_app_service" "example" {
+  name                = "example-app-service"
+  # ... other configurations ...
+
+  site_config {
++     health_check_path = "/health"   # Set a path that determines the health of the app.
+     # ... other configurations ...
+  }
+
+  # ... other configurations ...
+}
+----
+
+Ensure that the `/health` endpoint or any other endpoint you define responds with appropriate health status. This response will be used by Azure App Service to make routing decisions.

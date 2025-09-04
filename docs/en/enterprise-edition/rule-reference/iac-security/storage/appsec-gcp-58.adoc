@@ -1,0 +1,48 @@
+== GCP SQL Server instance database flag 'cross db ownership chaining' is enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_58
+|Category |Storage - Permissions
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |1f618d6e-42c5-4861-b7bb-6636a597aeac
+|===
+
+
+=== Impact
+Use the *cross db ownership chaining* database flag to configure cross-database ownership chaining for an instance of Microsoft SQL Server.
+This server option allows you to control cross-database ownership chaining at database-level, or to allow cross-database ownership chaining for all databases.
+We recommend you disable the *cross db ownership chaining* flag for Cloud SQL SQL Server instances, by setting it to *Off*.
+Enabling *cross db ownership chaining* is only effective when all of the databases hosted by the instance of SQL Server participate in cross-database ownership chaining, and you are aware of the security implications of this setting.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "SQLSERVER_* " settings::database_flags: key:"cross db ownership chaining", value:  by default set to "on"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "SQLSERVER_2017_STANDARD"
+  region           = "us-central1"
+  
+  settings {
++         database_flags {
++            name  = "cross db ownership chaining""
++            value = "off"
+          }
+  }
+}
+----
+

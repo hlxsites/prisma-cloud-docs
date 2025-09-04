@@ -1,0 +1,49 @@
+== AWS ECS Cluster does not enable logging of ECS Exec
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_223
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+It is recommended to have a proper logging process for AWS ECS Cluster in order to track configuration changes conducted manually and programmatically and trace back unapproved changes.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_ecs_cluster" "pass2" {
+  name = "white-hart"
+  configuration {
+    execute_command_configuration {
+      # kms_key_id = aws_kms_key.example.arn
+      logging = "DEFAULT"
+
+      log_configuration {
+        # cloud_watch_encryption_enabled = true
+        # cloud_watch_log_group_name     = aws_cloudwatch_log_group.example.name
+
+        # or
+        # s3_bucket_name=   and
+        # s3_bucket_encryption_enabled =true
+      }
+    }
+  }
+  tags = { test = "fail" }
+}
+----

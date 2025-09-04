@@ -1,0 +1,62 @@
+== AWS Elastic File System (EFS) with encryption for data at rest is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_42
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |5eb50d57-7e94-4204-a4e7-3471b3f7e82e
+|===
+
+
+=== Impact
+Amazon Elastic File System (Amazon EFS) is a simple, scalable file storage solution for AWS services and on-premises resources.
+Amazon EFS is built to elastically scale on-demand.
+It grows and shrinks automatically as files are added and removed.
+It is essential to encrypt your Amazon EFS to protect data and metadata against unauthorized access.
+Encrypting your Amazon EFS also fulfils compliance requirements for data-at-rest encryption when file systems are used in production systems.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_efs_file_system
+* *Arguments:* encrypted - (Optional) If true, the disk will be encrypted.
+If you are using AWS KMS you can optionally provides a KMS customer master key.
+
+
+[source,go]
+----
+resource "aws_efs_file_system" "example"{
+  ...
+  creation_token                = "default-efs"
++ encrypted                   = true
++ kms_key_id = aws_kms_key.default-kms.arn
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::EFS::FileSystem
+* *Arguments:* Encrypted - (Optional) If true, the disk will be encrypted.
+If you are using AWS KMS you can optionally provides a KMS customer master key.
+
+
+[source,yaml]
+----
+Resources:
+  FileSystemResource:
+    Type: 'AWS::EFS::FileSystem'
+    Properties:
+      ...
++     Encrypted: true
+----

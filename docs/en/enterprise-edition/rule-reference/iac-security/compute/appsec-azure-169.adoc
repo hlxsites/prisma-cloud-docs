@@ -1,0 +1,33 @@
+== Azure Kubernetes Cluster (AKS) Nodes Do Not Use Scale Sets
+// Ensure Azure Kubernetes Cluster (AKS) nodes use scale sets.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_169
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* default_node_pool/type
+
+[source,terraform]
+----
+resource "azurerm_kubernetes_cluster" "example" {
+  ...
+  default_node_pool {
+    ...
++   type       = "AvailabilitySet"
+  }
+}
+----

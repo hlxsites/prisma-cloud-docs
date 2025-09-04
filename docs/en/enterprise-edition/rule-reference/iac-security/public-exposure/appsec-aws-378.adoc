@@ -1,0 +1,37 @@
+== AWS Load Balancer uses HTTP protocol
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_378
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether AWS Load Balancer Target Groups or Listeners use the HTTP protocol. Using HTTP instead of HTTPS for load balancer communication can expose sensitive traffic to eavesdropping and compromise. It is a security best practice to always configure AWS Load Balancers to use HTTPS, which ensures data encryption in transit and prevents the exposure of sensitive information.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_lb_target_group, aws_alb_target_group, aws_lb_listener, aws_alb_listener
+* *Arguments:* protocol
+
+To remediate this issue, update the protocol attribute to use HTTPS instead of HTTP for the following AWS Load Balancer components: aws_lb_target_group, aws_alb_target_group, aws_lb_listener, and aws_alb_listener.
+
+Example:
+
+[source,go]
+----
+resource "aws_lb_target_group" "example" {
+  ...
+-  protocal    = "HTTP"
++  protocol    = "HTTPS"
+}
+----

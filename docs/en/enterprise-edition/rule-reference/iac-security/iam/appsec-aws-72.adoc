@@ -1,0 +1,53 @@
+== SQS policy allows all actions
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_72
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that AWS SQS policies are configured to limit permissions to specific actions, avoiding the use of unrestricted wildcards like (*), in adherence to the principle of least privilege. By restricting actions to only those necessary for your application, you mitigate the risk of unauthorized access and potential misuse of your SQS queue.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Arguments:* aws_sqs_queue_policy
+* *Attribute*: policy.Statement.Action
+
+In the following example, the IAM policy is configured to allow only the `sqs:SendMessage` action, restricting access to the SQS queue. This helps prevent unauthorized actions and enhances security.
+
+
+[source,go]
+----
+resource "aws_sqs_queue_policy" "example" {
+  ...
+
+  policy = <<POLICY
+    {
+      ...
+      "Statement": [
+        {
+          "Sid": "Example",
+          "Effect": "Allow",
+-          "Action"   = "*",
++          "Action": ["sqs:SendMessage"],
+          ...
+        }
+      ]
+    }
+  POLICY
+}
+----

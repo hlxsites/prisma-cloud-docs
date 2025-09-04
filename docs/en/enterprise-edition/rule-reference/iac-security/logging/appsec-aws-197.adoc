@@ -1,0 +1,57 @@
+== AWS MQBroker audit logging is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_197
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that Amazon MQ Brokers have audit logging enabled. Audit logging is crucial for tracking access and changes to your MQ Brokers, thereby providing visibility into security-relevant events and supporting compliance requirements. This policy checks whether the `logs` property is configured to enable `audit` logging. Note that audit logging is not supported for RabbitMQ engine types.
+
+=== How to Fix
+
+
+*Terraform* 
+
+To fix this issue, ensure that the `logs` property in the `aws_mq_broker` resource includes `audit` set to `true`, unless the engine type is `RabbitMQ`.
+
+Example:
+
+[source,go]
+----
+resource "aws_mq_broker" "example" {
+  ...
+  logs {
+    audit = true
+  }
+  ...
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `Audit` property in the `Logs` configuration of the `AWS::AmazonMQ::Broker` resource is set to `true`, unless the engine type is `RabbitMQ`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyMQBroker:
+    Type: AWS::AmazonMQ::Broker
+    Properties:
+      ...
+      Logs:
+        Audit: true
+      ...
+----

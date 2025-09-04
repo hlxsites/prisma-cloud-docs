@@ -1,0 +1,43 @@
+== API management services do not use virtual networks
+// Azure API Management services do not use virtual networks
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_107
+|Category |Networking - VPC/VCN/VNET
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Bicep, Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+A virtual network is a logical network in Azure that is isolated from other networks.
+When you configure your API management service to use a virtual network, you can control the inbound and outbound network traffic to and from your service using network security groups (NSGs) and service endpoints.
+This can help to improve the security of your service and protect it from unauthorized access or attacks.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_api_management
+* *Arguments:*  virtual_network_configuration
+
+
+[source,go]
+----
+resource "azurerm_api_management" "example" {
+                  ...
+ +                virtual_network_configuration {
+                    subnet_id = azure_subnet.subnet_not_public_ip.id 
+                  }
+                  ....
+                }
+----
+

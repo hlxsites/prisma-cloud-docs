@@ -1,0 +1,44 @@
+== GCP Kubernetes Engine private cluster has private endpoint disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_25
+|Category |Networking - VPC/VCN/VNET
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |f698d4a8-6ee8-40b4-9cf1-211901b00ca3
+|===
+
+
+=== Impact
+Private clusters enable isolation of nodes from any inbound and outbound connectivity to the public internet.
+This is achieved as the nodes have internal RFC 1918 IP addresses only.
+In private clusters, the cluster master has private and public endpoints.
+You can configure which endpoint should be enabled or disabled to control access to the public internet.
+We recommend you enable private cluster when creating Kubernetes clusters.
+By creating a private cluster, the nodes will have a reserved set of IP addresses, ensuring their workloads are isolated from the public internet.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+Add Block: *private_cluster_config* with attribute  *enable_private_nodes* set to _true_.
+
+
+[source,go]
+----
+resource "google_container_cluster" "cluster" {
+...
++ private_cluster_config {
++   enable_private_nodes=true
++ }
+...
+}
+----
+

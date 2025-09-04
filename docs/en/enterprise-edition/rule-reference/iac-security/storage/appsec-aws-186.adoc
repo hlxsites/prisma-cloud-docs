@@ -1,0 +1,45 @@
+== AWS S3 bucket Object not encrypted using Customer Managed Key
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_186
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This is a simple check to ensure that the S3 bucket Object is using AWS key management - KMS to encrypt its contents.
+To resolve add the ARN of your KMS or link on creation of the object.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket_object
+* *Attribute:* kms_key_id - (Optional) Specifies the AWS KMS Key ARN to use for object encryption.
+This value is a fully qualified ARN of the KMS Key.
+
+
+[source,go]
+----
+resource "aws_s3_bucket_object" "object" {
+  bucket = "your_bucket_name"
+  key    = "new_object_key"
+  source = "path/to/file"
++ kms_key_id = "ckv_kms"
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  # etag = "${md5(file("path/to/file"))}"
+  etag = filemd5("path/to/file")
+}
+----

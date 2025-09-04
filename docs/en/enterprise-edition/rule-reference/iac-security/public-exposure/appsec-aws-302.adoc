@@ -1,0 +1,37 @@
+== AWS RDS snapshots are accessible to public
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_302
+|Category |Public Exposure - Storage Buckets
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |a707de6a-11b7-478a-b636-5e21ee1f6162
+|===
+
+
+=== Impact
+This policy is checking to ensure that database snapshots are not publicly accessible. Database snapshots are backups of your database that allow you to restore data from a particular point in time. Making these snapshots public can expose sensitive information, compromising the integrity and security of the data stored in your database. Therefore, it's crucial to keep these snapshots private to prevent unauthorized access and the potential misuse of your data.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_db_snapshot
+* *Arguments:* shared_accounts
+
+To fix this issue, you need to ensure that `shared_accounts` is not set to `all`.
+
+[source,go]
+----
+resource "aws_db_snapshot" "fail" {
+  db_instance_identifier = aws_db_instance.bar.id
+  db_snapshot_identifier = "testsnapshot1234"
+- shared_accounts=["all"]
+}
+----
+
+

@@ -1,0 +1,37 @@
+
+== Spanner Database does not have drop protection enabled
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_120
+|Category |Storage - Backups
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy is verifying whether the Spanner Database in Google Cloud Platform has drop protection enabled. The absence of this setting could lead to accidental deletion or losses of databases. "Drop protection" shields against the inadvertent dropping or deleting of a database, thus ensuring data persistency and integrity. Consequently, not having this setting activated can be a considerable risk, especially for mission-critical scenarios where any data loss could have damaging impacts on the business.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* google_spanner_database
+* *Arguments:* enable_drop_protection
+
+To fix this issue, you need to add the `enable_drop_protection` argument to the `google_spanner_database` resource in your Terraform code and set its value to `true`.
+
+[source,hcl]
+----
+resource "google_spanner_database" "database" {
+  name     = "spanner-database"
+  ...
++ enable_drop_protection = true
+}
+----
+

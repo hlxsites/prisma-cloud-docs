@@ -1,0 +1,39 @@
+== API Management with Public Access
+// Ensure API management public access is disabled
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_174
+|Category |Public Exposure - APIs
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_api_management
+* *Arguments:* public_network_access_enabled
+
+[source,terraform]
+----
+resource "azurerm_api_management" "example" {
+  name                = "example-api"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  publisher_name      = "My Company"
+  publisher_email     = "company@terraform.io"
+
++ public_network_access_enabled = false
+
+  tags = {
+    Environment = "production"
+  }
+}
+----

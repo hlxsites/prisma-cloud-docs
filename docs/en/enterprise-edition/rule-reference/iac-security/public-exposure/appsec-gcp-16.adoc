@@ -1,0 +1,47 @@
+== GCP Cloud DNS has DNSSEC disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_16
+|Category |Public Exposure - Encryption and Protocols
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |72a4b096-a34b-4a22-a77c-3f38cdbcf986
+|===
+
+
+=== Impact
+DNSSEC is a feature of the Domain Name System that authenticates responses to domain name lookups.
+DNSSEC prevents attackers from manipulating or poisoning the responses to DNS requests.
+We recommend you ensure DNSSEC is enabled in: any public DNS zone, the top level domain registry, and in the local DNS resolvers.
+
+NOTE: If *visibility* is set to *private*, then DNSSEC cannot be set, and this policy will pass.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_dns_managed_zone
+* *Arguments:* dnssec_config (Optional)  DNSSEC configuration Structure is documented below.
+
+
+[source,go]
+----
+{
+ "resource "google_dns_managed_zone" "example" {
+        description  = "Company Domain name"
+        dns_name     = "example.com."
+        
+      + dnssec_config { # forces replacement
+          + kind          = "dns#managedZoneDnsSecConfig" # forces replacement
+          + non_existence = "nsec3" # forces replacement
+          + state         = "on" # forces replacement",
+}
+----

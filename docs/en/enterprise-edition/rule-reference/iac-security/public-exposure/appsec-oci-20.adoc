@@ -1,0 +1,46 @@
+== OCI security lists allows unrestricted ingress access to port 3389
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_OCI_20
+|Category |Public Exposure - Sensitive Ports
+|Provider |Oracle
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy identifies Security list that allow inbound traffic on RDP port (3389) from the public internet.
+As a best practice, restrict security groups to only allow permitted traffic and limit brute force attacks on your network.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "oci_core_security_list" "pass0" {
+    ...
+    ingress_security_rules {
+        ...
+        source = "0.0.0.0/0"
+
+        tcp_options {
+            max = 4000
++            min = 3390
+-            min = 3389
+            ...
+        }
+    }
+}
+----
+

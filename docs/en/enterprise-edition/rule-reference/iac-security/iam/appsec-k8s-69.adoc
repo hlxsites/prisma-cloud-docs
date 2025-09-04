@@ -1,0 +1,84 @@
+== The --basic-auth-file argument is Set
+// '--basic-auth-file' argument is set
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_69
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Do not use basic authentication.
+Basic authentication uses plaintext credentials for authentication.
+Currently, the basic authentication credentials last indefinitely, and the password cannot be changed without restarting the API server.
+The basic authentication is currently supported for convenience.
+Hence, basic authentication should not be used.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: 127.0.0.1
+        path: /healthz
+        port: 6443
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: kube-apiserver
+    resources:
+      requests:
+        cpu: 250m
+    volumeMounts:
+    - mountPath: /etc/kubernetes/
+      name: k8s
+      readOnly: true
+    - mountPath: /etc/ssl/certs
+      name: certs
+    - mountPath: /etc/pki
+      name: pki
+  hostNetwork: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes
+    name: k8s
+  - hostPath:
+      path: /etc/ssl/certs
+    name: certs
+  - hostPath:
+      path: /etc/pki
+    name: pki",
+}
+----
+

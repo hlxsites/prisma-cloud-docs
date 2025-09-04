@@ -1,0 +1,40 @@
+== No ServiceAccount/Node should have `impersonate` permissions for groups/users/service-accounts
+// ServiceAccounts and Nodes should not have `impersonate` permissions for groups/users/service-accounts
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_K8S_3
+|Category |IAM - Overly Permissive
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+In Kubernetes, the impersonate permission allows a user or service account to perform actions as if they were another user or service account.
+This can be useful in certain situations, such as when one service needs to access another service on behalf of a user.
+However, allowing a ServiceAccount or Node to have impersonate permissions for other users or service accounts can potentially allow privilege escalation.
+This is because ServiceAccounts and Nodes are not typically associated with individual users, so granting them the ability to impersonate other users could potentially allow any user who is able to access the ServiceAccount or Node to gain the privileges of the impersonated user.
+For example, if a ServiceAccount has the impersonate permission for a user who has admin privileges, any user who is able to access the ServiceAccount would be able to perform actions as if they were an admin user.
+This could lead to unauthorized access to sensitive information or the ability to perform unauthorized actions, so it is generally best to avoid granting impersonate permissions to ServiceAccounts and Nodes.
+
+=== How to Fix
+
+*Kubernetes*
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-service-account
+  annotations:
+    authorization.k8s.io/impersonate: "false"",
+}
+----
+

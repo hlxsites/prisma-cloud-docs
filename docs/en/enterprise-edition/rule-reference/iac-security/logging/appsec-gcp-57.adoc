@@ -1,0 +1,49 @@
+== GCP PostgreSQL instance database flag log_min_duration_statement is not set to -1
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_57
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |71cba764-0eb0-47c2-94b2-09721384752d
+|===
+
+
+=== Impact
+Logging SQL statements may include sensitive information that should not be recorded in logs.
+This recommendation is applicable to PostgreSQL database instances.
+The *log_min_duration_statement* database flag defines the minimum amount of execution time in milliseconds of a statement where the total duration of the statement is logged.
+We recommend you ensure the *log_min_duration_statement* database flag for Cloud SQL PostgreSQL instances is disabled.
+To achieve this, set the value to *-1*.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "POSTGRES_* " settings::database_flags: key:"log_min_duration_statement", value:  by default set to -1
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "POSTGRES_11"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "log_min_duration_statement"
++            value = "-1"
+          }
+  }
+}
+----
+

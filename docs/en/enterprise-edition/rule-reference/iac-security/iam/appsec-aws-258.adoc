@@ -1,0 +1,69 @@
+== AWS Lambda function URL AuthType set to NONE
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_258
+|Category |IAM - Authentication Policies
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, CloudFormation
+|Mapped CSPM/KSPM Rule |92a3fce2-0875-49da-af5c-71c3366100bf
+|===
+
+
+=== Impact
+This policy identifies AWS Lambda functions which have function URL AuthType set to NONE. AuthType determines how Lambda authenticates or authorises requests to your function URL. When AuthType is set to NONE, Lambda doesn't perform any authentication before invoking your function. It is highly recommended to set AuthType to AWS_IAM for Lambda function URL to authenticate via AWS IAM.
+
+=== How to Fix
+
+
+*Terraform* 
+
+To fix this issue, ensure that the `authorization_type` property in the `aws_lambda_function_url` resource is set to a value other than `None`. For example, you can set it to `AWS_IAM` to enforce IAM-based authentication.
+
+[source,go]
+----
+resource "aws_lambda_function_url" "pass" {
+  function_name      = aws_lambda_function.test.function_name
+  qualifier          = "my_alias"
+-  authorization_type = "None"
++  authorization_type = "AWS_IAM"
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `AuthType` property in the `AWS::Lambda::Url` resource is set to a value other than `None`. For example, you can set it to `AWS_IAM` to enforce IAM-based authentication.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyLambdaFunctionURL": {
+      "Type": "AWS::Lambda::Url",
+      "Properties": {
+-        "AuthType": None,
++        "AuthType": "AWS_IAM",
+        ...
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyLambdaFunctionURL:
+    Type: AWS::Lambda::Url
+    Properties:
+-      AuthType: None
++      AuthType: AWS_IAM
+      ...
+----

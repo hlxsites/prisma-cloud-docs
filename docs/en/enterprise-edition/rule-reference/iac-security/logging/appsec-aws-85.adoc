@@ -1,0 +1,72 @@
+== AWS DocumentDB logging is not enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_85
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that Amazon DocumentDB (DocDB) clusters have logging enabled. Enabling logging helps you monitor and troubleshoot your DocDB clusters by providing visibility into database activity and operations. This policy checks whether the `EnableCloudwatchLogsExports` property includes the required log types (`profiler` and/or `audit`).
+
+=== How to Fix
+
+
+*Terraform*
+
+To fix this issue, ensure that the `enabled_cloudwatch_logs_exports` property in the `aws_docdb_cluster` resource includes one or both of the required log types (`profiler` and/or `audit`).
+
+Example:
+
+[source,hcl]
+----
+resource "aws_docdb_cluster" "example" {
+  ...
+  enabled_cloudwatch_logs_exports = ["profiler", "audit"]
+  ...
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `EnableCloudwatchLogsExports` property in the `AWS::DocDB::DBCluster` resource includes one or both of the required log types (`profiler` and/or `audit`).
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyDocDBCluster": {
+      "Type": "AWS::DocDB::DBCluster",
+      "Properties": {
+        "DBClusterIdentifier": "example-cluster",
+        "EnableCloudwatchLogsExports": ["profiler", "audit"],
+        ...
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyDocDBCluster:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      DBClusterIdentifier: example-cluster
+      EnableCloudwatchLogsExports:
+        - profiler
+        - audit
+      ...
+----

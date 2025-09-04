@@ -1,0 +1,62 @@
+== AWS EBS volumes are not encrypted
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_3
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Encrypting EBS volumes ensures that replicated copies of your images are secure even if they are accidentally exposed.
+AWS EBS encryption uses AWS KMS customer master keys (CMK) when creating encrypted volumes and snapshots.
+Storing EBS volumes in their encrypted state reduces the risk of data exposure or data loss.
+We recommend you encrypt all data stored in the EBS.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ebs_volume
+* *Arguments:* encrypted - (Optional) If true, the disk will be encrypted.
+
+
+[source,go]
+----
+resource "aws_ebs_volume" "example" {
+  ...
+  availability_zone = "${var.availability_zone}"
++ encrypted         = true
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::EC2::Volume
+* *Arguments:* Properties.Encrypted - (Optional) If true, the disk will be encrypted.
+
+
+[source,yaml]
+----
+{
+ "Resources: 
+  NewVolume:
+    Type: AWS::EC2::Volume
+    Properties: 
+      ...
++     Encrypted: true",
+       
+}
+----

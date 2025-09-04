@@ -1,0 +1,53 @@
+== The admission control plugin NodeRestriction is not set
+// Admission control plugin NodeRestriction is not set
+ 
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_85
+|Category |IAM - Role Separation
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Limit the `Node` and `Pod` objects that a kubelet could modify.
+Using the `NodeRestriction` plug-in ensures that the kubelet is restricted to the `Node` and ``Pod ``objects that it could modify as defined.
+Such kubelets will only be allowed to modify their own `Node` API object, and only modify `Pod` API objects that are bound to their node.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --enable-admission-plugins=NodeRestriction
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

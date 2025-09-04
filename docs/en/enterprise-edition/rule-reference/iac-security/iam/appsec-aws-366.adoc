@@ -1,0 +1,57 @@
+
+== AWS Cognito identity pool allows unauthenticated guest access
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_366
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |58b0f618-1fcf-415c-a72e-b92154e0602d
+|===
+
+
+=== Impact
+This policy checks whether AWS Cognito identity pools allows unauthenticated guest access. Guest access poses a security risk as it could enable unauthorized individuals to access sensitive data or functionality. Disabling guest access helps maintain system and data security.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_cognito_identity_pool
+* *Arguments:* allow_unauthenticated_identities
+
+To fix this issue:
+
+Set the `allow_unauthenticated_identities` property is set to false within the `aws_cognito_identity_pool` resource, as displayed in the example below.
+
+[source,go]
+----
+resource "aws_cognito_identity_pool" "example" {
+  ...
++  allow_unauthenticated_identities = false
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::Cognito::IdentityPool
+* *Arguments:* Properties/AllowUnauthenticatedIdentities
+
+To fix this issue:
+
+Set the `AllowUnauthenticatedIdentities` property within the `AWS::Cognito::IdentityPool` resource to false in your CloudFormation template, as displayed in the example below.
+
+[source,yaml]
+----
+Resources:
+  Pass:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      ...
++      AllowUnauthenticatedIdentities: False
+----
+

@@ -1,0 +1,62 @@
+== AWS SQS Queue not configured with server side encryption
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_27
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |816b8edc-773e-44a9-ad28-f8375ffdfe42
+|===
+
+
+=== Impact
+Amazon Simple Queue Service (SQS) provides the ability to encrypt queues so sensitive data is passed securely.
+It uses server-side-encrypyion (SSE) and supports AWS-managed Customer Master Key (CMK), as well as self-created/self-managed keys.
+SSE encrypts only the body of the message, with queue metadata and message metadata out of scope, and backlogged messages not encrypted.
+If you operate in a regulated market, such as HIPAA for healthcare, PCI DSS for finance, or FedRAMP for government, you need to ensure sensitive data messages passed in this service are encrypted at rest.
+We recommend you encrypt Data Queued using SQS.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_sqs_queue
+* *Arguments:*  kms_master_key_id - (Optional)
+The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK.
+
+kms_data_key_reuse_period_seconds - (Optional) The length of time, in seconds, for which Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again. An integer representing seconds, between 60 seconds (1 minute) and 86,400 seconds (24 hours).
+The default is 300 (5 minutes).
+
+
+[source,go]
+----
+resource "aws_sqs_queue" "example" {
+  name                              = "terraform-example-queue"
++ kms_master_key_id                 = "alias/aws/sqs"
++ kms_data_key_reuse_period_seconds = 300
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::SQS::Queue
+* *Arguments:* Properties.KmsMasterKeyId
+
+
+[source,yaml]
+----
+Type: AWS::SQS::Queue
+    Properties:
+      ...
++     KmsMasterKeyId: "kms_id"
+----

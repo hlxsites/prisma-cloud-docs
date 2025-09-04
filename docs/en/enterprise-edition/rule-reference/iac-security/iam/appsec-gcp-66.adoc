@@ -1,0 +1,46 @@
+== GCP Kubernetes Engine Clusters have binary authorization disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_66
+|Category |IAM - Authentication Policies
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |7073068c-5abc-454a-b176-2ef92f09dff0
+|===
+
+
+=== Impact
+Binary Authorization helps to protect supply-chain security by only allowing images with verifiable cryptographically signed metadata into the cluster.
+Binary Authorization provides software supply-chain security for images that you deploy to GKE from Google Container Registry (GCR) or another container image registry.
+Binary Authorization requires images to be signed by trusted authorities during the development process.
+These signatures are then validated at deployment time.
+By enforcing validation, you can gain tighter control over your container environment by ensuring only verified images are integrated into the build-and-release process.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_container_cluster
+* *Arguments:* enable_binary_authorization
+
+
+[source,go]
+----
+{
+ "resource "google_container_cluster" "success" {
+  name               = var.name
+  location           = var.location
+  initial_node_count = 1
+  project            = data.google_project.project.name
++ enable_binary_authorization = true
+",
+}
+----
+

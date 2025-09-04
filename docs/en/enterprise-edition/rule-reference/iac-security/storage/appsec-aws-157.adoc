@@ -1,0 +1,65 @@
+== RDS instances do not have Multi-AZ enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_157
+|Category |Storage - Redundancy
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Amazon RDS Multi-AZ deployments provide enhanced availability for databases within a single region.
+In the event of a planned or unplanned outage of your DB instance, Amazon RDS automatically switches to a standby replica in another Availability Zone if you have enabled Multi-AZ.
+RDS Multi-AZ deployments offer the following benefits:
+
+. Enhanced durability.
+
+. Increased availability.
+
+. Protection of your database performance.
+
+. Automatic failover.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_db_instance
+* *Arguments:* multi_az - Specifies if the RDS instance is Multi-AZ.
+
+
+[source,go]
+----
+resource "aws_db_instance" "default" {
+  ...
+  name                 = "mydb"
++ multi_az             = true 
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::RDS::DBInstance
+* *Arguments:* Properties.MultiAZ
+
+
+[source,yaml]
+----
+Resources:
+  MyDBEnabled:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      ...
++     MultiAZ: true
+----

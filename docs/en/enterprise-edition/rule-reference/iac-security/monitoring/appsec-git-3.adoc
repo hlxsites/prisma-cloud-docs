@@ -1,0 +1,45 @@
+== GitHub Repository defined in Terraform doesn't have vulnerability alerts enabled
+// GitHub Repository vulnerability alerts disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GIT_3
+|Category |Monitoring - Unintegrated
+|Provider |
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+GitHub has the ability to scan dependencies for vulnerabilities. To enable this, you must also enable it at the owner level as well. By default, this is enabled for public repos but not for private repos.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* github_repository
+* *Attribute:* vulnerability_alerts
+
+[source,hcl]
+----
+resource "github_repository" "example" {
+  name        = "example"
+  description = "Example repository"
+  private     = true  # or false for public repositories
+
+  # Enable vulnerability alerts for the repository
++ vulnerability_alerts = true
+
+  # ... other configurations ...
+
+  # If the repository is archived, alerts are disabled, and this configuration will not apply
+  # archived = false
+}
+----

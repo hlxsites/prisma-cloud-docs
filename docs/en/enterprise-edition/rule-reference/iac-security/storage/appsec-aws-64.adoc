@@ -1,0 +1,54 @@
+== AWS Redshift instances are not encrypted
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_64
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |0132bbb2-c733-4c36-9c5d-c58967c7d1a6
+|===
+
+
+=== Impact
+This policy identifies AWS Redshift instances which are not encrypted. These instances should be encrypted for clusters to help protect data at rest which otherwise can result in a data breach.
+
+=== How to Fix
+
+
+*Terraform*
+
+In order to mitigate this issue, ensure `encrypted` is set to `true`.
+
+[source,go]
+----
+resource "aws_redshift_cluster" "redshift" {
+  ...
+  cluster_identifier        = "shifty"
++ encrypted                 = true
+  kms_key_id                = var.kms_key_id
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Redshift::Cluster
+* *Arguments:* Properties.Encrypted
+
+In order to mitigate this issue, ensure that `Encrypted` is set to `true`.
+
+
+[source,yaml]
+----
+ Type: "AWS::Redshift::Cluster"
+    Properties:
+      ...
++     Encrypted: true
+----

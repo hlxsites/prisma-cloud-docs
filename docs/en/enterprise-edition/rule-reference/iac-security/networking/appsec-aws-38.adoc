@@ -1,0 +1,59 @@
+== AWS EKS cluster security group overly permissive to all traffic
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_38
+|Category |Networking - Ingress Controls
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |03c96719-f7cf-4c98-8b51-04098e035bdb
+|===
+
+
+=== Impact
+Amazon EKS creates an endpoint for any managed Kubernetes API server to communicate with the cluster.
+By default, this API server endpoint is public to the internet.
+Access to it should be regulated using AWS IAM and native Kubernetes RBAC.
+We recommend that your Kubernetes API server remains private so that all communication between worker nodes and APIs stays within your VPC.
+If public access is needed, at a minimum, restrict the IP addresses that can access your API server from the internet to reduce the potential attack surface.
+Ensure your Amazon EKS public endpoint is not accessible to 0.0.0.0/0.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_eks_cluster
+* *Argument:* endpoint_public_access, public_access_cidrs
+
+[source,go]
+----
+##Option 1
+resource "aws_eks_cluster" "disabled" {
+  name     = "example"
+  role_arn = "aws_iam_role.arn"
+
+  vpc_config {
+    subnet_ids = ["subnet-12345"]
+
+    endpoint_public_access = False
+  }
+
+##Option 2:
+resource "aws_eks_cluster" "restricted" {
+  name     = "example"
+  role_arn = "aws_iam_role.arn"
+
+  vpc_config {
+    subnet_ids = ["subnet-12345"]
+
+    public_access_cidrs = ["10.0.0.0/16"]
+  }
+}
+}
+----

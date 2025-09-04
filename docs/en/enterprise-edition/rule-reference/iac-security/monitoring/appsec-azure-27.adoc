@@ -1,0 +1,83 @@
+== Azure SQL Databases with disabled Email service and co-administrators for Threat Detection
+
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_27
+|Category |Monitoring - Alerting and Notifications
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |c2ce11a6-a1c2-48f9-9b24-f1384d6ced01
+|===
+
+
+=== Impact
+Enable Email Service and Co-administrators to receive security alerts from the SQL server.
+Providing the email address to receive alerts ensures that any detection of anomalous activities is reported as soon as possible, enabling early mitigation of any potential risk detected.
+=== How to Fix
+
+
+*ARM* 
+
+
+* *Resource:* Microsoft.Sql/servers/databases
+
+
+[source,json]
+----
+{
+    "type": "Microsoft.Sql/servers/databases",
+    "apiVersion": "2020-08-01-preview",
+    "name": "[variables('dbName')]",
+    "location": "[parameters('location')]",
+    "sku": {
+        "name": "[parameters('sku')]"
+    },
+    "kind": "v12.0,user",
+    "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "[mul(parameters('maxSizeMB'), 1048576)]",
+        "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+        "zoneRedundant": false,
+        "readScale": "Disabled",
+        "storageAccountType": "GRS"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(variables('dbName'), '/current')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('serverName'), parameters('databaseName'))]"
+            ],
+            "properties": {
+                "state": "Enabled",
+                "disabledAlerts": "",
+                "emailAddresses": "[variables('emailAddresses')[copyIndex()]]",
++               "emailAccountAdmins": "Enabled"
+            }
+        }
+    ]
+}
+----
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_mssql_server_security_alert_policy
+* *Arguments:* email_account_admins
+
+
+[source,go]
+----
+resource "azurerm_mssql_server_security_alert_policy" "example" {
+    ...
++   email_account_admins       = true
+}
+----

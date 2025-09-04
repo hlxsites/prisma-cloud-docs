@@ -1,0 +1,47 @@
+== CAP_SYS_ADMIN Linux capability is used
+// 'CAP_SYS_ADMIN' Linux capability used
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_39
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Capabilities permit certain named root actions without giving full root access and are considered a  fine-grained permissions model.
+We recommend all capabilities should be dropped from a pod, with only those required added back.
+There are a large number of capabilities, with CAP_SYS_ADMIN bounding most.
+CAP_SYS_ADMIN is a highly privileged access level equivalent to root access and should generally be avoided.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:*  Container
+* *Arguments:* securityContext:capabilities:add (Optional)  Add capabilities field allows granting certain privileges to a process.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <Pod name>
+spec:
+  containers:
+  - name: <container name>
+    image: <image>
+    securityContext:
+        capabilities:
+            add:
+-               -SYS_ADMIN
+----

@@ -1,0 +1,44 @@
+== GCP VM instance with the external IP address
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_40
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |bfd3c912-521f-4280-ab5c-4a49d67f3df7
+|===
+
+
+=== Impact
+To reduce your attack surface Compute instances should not have public IP addresses.
+To minimize the instance's exposure to the internet configure instances behind load balancers.
+We recommend you ensure compute instances are not configured to have external IP addresses.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+* *Resource:* google_compute_instance
+* *Field:* access_config
+
+
+[source,go]
+----
+resource "google_compute_instance" "example" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+  boot_disk {}
+-  access_config {
+    ...
+    }
+}
+----

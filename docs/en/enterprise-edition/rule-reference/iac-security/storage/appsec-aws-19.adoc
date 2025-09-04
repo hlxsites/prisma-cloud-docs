@@ -1,0 +1,62 @@
+== AWS S3 buckets do not have server side encryption
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_19
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |d0658e3d-4d59-4333-b80c-b90e2e28dbaa
+|===
+
+
+=== Impact
+SSE helps prevent unauthorized access to S3 buckets.
+Encrypting and decrypting data at the S3 bucket level is transparent to users when accessing data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket, aws_s3_bucket_server_side_encryption_configuration
+
+Ensure that the bucket is encrypted using either AES256 or a KMS key
+
+[source,go]
+----
++ resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
++   bucket = aws_s3_bucket.example.bucket
++ 
++   rule {
++     apply_server_side_encryption_by_default {
++       kms_master_key_id = aws_kms_key.mykey.arn
++       sse_algorithm     = "AES256"
++     }
++   }
++ }
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::S3::Bucket
+* *Arguments:* Properites.BucketEncryption
+
+
+[source,yaml]
+----
+Type: AWS::S3::Bucket
+    Properties:
+        ...
++       BucketEncryption:
++           ServerSideEncryptionConfiguration:
++               - ServerSideEncryptionByDefault:
++                   SSEAlgorithm: AES256
+----

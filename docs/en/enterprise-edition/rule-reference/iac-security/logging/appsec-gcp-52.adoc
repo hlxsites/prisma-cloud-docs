@@ -1,0 +1,48 @@
+== GCP PostgreSQL instance database flag log_connections is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_52
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |9d730b53-a7c7-4da2-9bd0-0822b9639d0d
+|===
+
+
+=== Impact
+PostgreSQL does not log attempted connections by default.
+Enabling the *log_connections* setting creates log entries for each attempted connection to the server, along with successful completion of client authentication.
+This information can be useful in troubleshooting issues and to determine any unusual connection attempts to the server.
+We recommend you set the *log_connections* database flag for Cloud SQL PostgreSQL instances to *on*.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "POSTGRES_* " settings::database_flags: key:"log_connections", value:  by default set to "off"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "POSTGRES_11"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "log_connections"
++            value = "on"
+          }
+  }
+}
+----
+

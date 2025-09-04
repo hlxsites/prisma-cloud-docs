@@ -1,0 +1,37 @@
+== Azure Container Instance is not configured with virtual network
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_245
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |9b413f80-4055-4afd-a634-5e45f31c8109
+|===
+
+
+=== Impact
+This policy detects whether Azure Container Instances (ACI) are configured with a virtual network. When ACIs are not deployed within a virtual network, they become publicly accessible, creating a security risk as they are directly exposed to the internet. To mitigate this risk, it is strongly recommended to configure all your container instances within a virtual network. By doing so, you establish a secure and isolated environment where your containers can communicate securely with other resources within the virtual network, preventing potential unauthorized access.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_container_group
+* *Arguments:* ip_address_type
+
+To remediate this issue, set the `ip_address_type`` attribute to Private or None in your Terraform configuration.
+
+Example:
+
+[source,go]
+----
+resource "azurerm_container_group" "example" {
+  ...
+-  ip_address_type = "Public"
++  ip_address_type = "Private"
+}
+----

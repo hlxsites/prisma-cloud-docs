@@ -1,0 +1,42 @@
+== Web PubSub Without SLA SKU
+// Ensure Web PubSub uses a SKU with an SLA
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_175
+|Category |Public Exposure - APIs
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Azure Web PubSub is a real-time web messaging service that allows you to build real-time applications using WebSockets and other WebSub-compatible protocols. The service's tier or SKU determines its pricing, features, and SLA. The "Free_F1" SKU does not come with an SLA. To ensure service availability and support, it's recommended to use a SKU that provides an SLA.
+
+This policy ensures that the Azure Web PubSub service is not using the "Free_F1" SKU, which lacks an SLA.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_web_pubsub
+* *Arguments:* sku
+
+[source,terraform]
+----
+resource "azurerm_web_pubsub" "example" {
+  name                = "example-webpubsub"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  
++ sku                 = "Standard_S1"  # or any other SKU with SLA
+  
+  tags = {
+    Environment = "production"
+  }
+}
+----

@@ -1,0 +1,64 @@
+== DocDB TLS is disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_90
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+TLS can be used to encrypt the connection between an application and a DocDB cluster.
+By default, encryption in transit is enabled for newly created clusters.
+It can optionally be disabled when the cluster is created, or at a later time.
+When enabled, secure connections using TLS are required to connect to the cluster.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_docdb_cluster_parameter_group
+* *Argument:* parameter - (Optional) A list of documentDB parameters to apply.
+
+
+[source,go]
+----
+resource "aws_docdb_cluster_parameter_group" "example" {
+  ...
+  name        = "example"
++ parameter {
++   name  = "tls"
++   value = "enabled"
++  }
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::DocDB::DBClusterParameterGroup
+* *Argument:* Parameters.tls
+
+
+[source,yaml]
+----
+Resources:
+  DocDBParameterGroupEnabled:
+    Type: AWS::DocDB::DBClusterParameterGroup
+    Properties: 
+        ...
+      Parameters: 
+        ...
+-       tls: "disabled"
++               tls: "enabled"
+----

@@ -1,0 +1,79 @@
+== Azure Storage account Encryption CMKs Disabled
+// Azure Storage account encryption CMKs disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_18
+|Category |Storage - Encryption
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+By default all data at rest in Azure Storage account is encrypted using Microsoft Managed Keys.
+It is recommended to use Customer Managed Keys to encrypt data in Azure Storage accounts for better control on Storage account data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_storage_account_customer_managed_key , azurerm_client_config,  azurerm_key_vault, azurerm_key_vault_key
+
+
+[source,go]
+----
+{
+ "data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault" "example" {
+  name                = "examplekv"
+  location            = "location"
+  resource_group_name = "group"
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  sku_name            = "standard"
+
+  purge_protection_enabled = true
+}
+
+
+resource "azurerm_key_vault_key" "example" {
+  name         = "tfex-key"
+  key_vault_id = azurerm_key_vault.example.id
+  key_type     = "RSA"
+  key_size     = 2048
+  key_opts     = ["decrypt", "encrypt", "sign", "unwrapKey", "verify", "wrapKey"]
+}
+
+
+
+resource "azurerm_storage_account" "storage_account_good_1" {
+  name                     = "examplestor"
+  resource_group_name      = "group"
+  location                 = "location"
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+}
+
+resource "azurerm_storage_account_customer_managed_key" "managed_key_good" {
+  storage_account_id = azurerm_storage_account.storage_account_good_1.id
+  key_vault_id       = azurerm_key_vault.example.id
+  key_name           = azurerm_key_vault_key.example.name
+  key_version = "1"
+}
+
+",
+}
+----

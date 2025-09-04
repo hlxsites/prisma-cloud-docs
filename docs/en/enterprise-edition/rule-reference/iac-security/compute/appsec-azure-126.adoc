@@ -1,0 +1,41 @@
+== Azure Service Fabric cluster not configured with cluster protection level security
+// Azure Service Fabric protection levels not set
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_126
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |0829d935-1c76-4f15-99f3-79addd6b7742
+|===
+
+
+=== Impact
+Service Fabric provides three levels of protection (None, Sign and EncryptAndSign) for node-to-node communication using a primary cluster certificate.
+Set the protection level to ensure that all node-to-node messages are encrypted and digitally signed
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_service_fabric_cluster
+* *Arguments:*  fabric_settings
+
+
+[source,go]
+----
+resource "azurerm_service_fabric_cluster" "example" {
+  ...
+  + azure_active_directory {
+  +     tenant_id = "tenant"
+  }
+  ...
+            }
+----

@@ -1,0 +1,59 @@
+
+== Azure Cognitive Services account configured with local authentication
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_236
+|Category |AI & Machine Learning - Permissions
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |9f9c1a6b-7138-48ae-a910-00a839b614ef
+|===
+
+
+=== Impact
+This policy checks whether local authentication is disabled in Azure Cognitive Services accounts. Local authentication, when enabled, allows any authenticated user to make changes, regardless of location. This can be risky because it doesn't enforce additional security measures beyond basic authentication, and can potentially lead to unauthorized access, data breaches, and other security issues. Disabling local authentication strengthens security by requiring users to utilize more secure methods.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_cognitive_account
+* *Arguments:* local_auth_enabled
+
+Set the `local_auth_enabled` parameter to false for the cognitive services resource.
+
+[source,go]
+----
+resource "azurerm_cognitive_account" "example" {
+  ...
++  local_auth_enabled = false
+}
+----
+
+*ARM*
+
+* *Resource:* Microsoft.CognitiveServices/accounts
+* *Arguments:* disableLocalAuth
+
+Set the `disableLocalAuth` parameter to `True` for the cognitive services resource.
+
+[source,yaml]
+----
+{
+  ...
+  "resources": [
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "kind": "CognitiveServices",
+      ...
+      "properties": {
++        "disableLocalAuth": True
+      }
+    }
+  ]
+}
+----

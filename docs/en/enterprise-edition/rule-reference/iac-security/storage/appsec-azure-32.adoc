@@ -1,0 +1,42 @@
+== Azure PostgreSQL database server with connection throttling parameter is disabled
+// Azure PostgreSQL Database Server 'connection throttling' parameter disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_32
+|Category |Storage - Disabled or Missing
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |950cc0a0-9c03-457e-965b-9008af4d73c7
+|===
+
+
+=== Impact
+Enabling *connection_throttling* allows the PostgreSQL Database to set the verbosity of logged messages.
+It generates query and error logs with respect to concurrent connections that could lead to a successful Denial of Service (DoS) attack by exhausting connection resources.
+A system can also fail or be degraded by an overload of legitimate users.
+Query and error logs can be used to identify, troubleshoot, repair configuration errors, and address sub-optimal performance issues.
+We recommend you set *connection_throttling* to *On* for PostgreSQL Server Databases.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_postgresql_configuration
+* *Arguments:* name + value
+
+
+[source,go]
+----
+- resource "azurerm_postgresql_configuration" "example" {
+-    name                = "connection_throttling"
+-    resource_group_name = data.azurerm_resource_group.example.name
+-    server_name         = azurerm_postgresql_server.example.name
+-    value               = "off"
+}
+----

@@ -1,0 +1,44 @@
+== GCP VM instances have IP Forwarding enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_36
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |87220e37-d092-4d21-81e6-1bc21a2ef5ec
+|===
+
+
+=== Impact
+The Compute Engine instance cannot forward a packet unless the source IP address of the packet matches the IP address of the instance.
+GCP will not deliver a packet with a destination IP address different to the IP address of the instance receiving the packet.
+Both capabilities are required when using instances to help route packets.
+To enable this source and destination IP check, disable the *canIpForward* field.
+The *canIpForward* field allows an instance to send and receive packets with non-matching destination or source IPs.
+We recommend the forwarding of data packets be disabled to prevent data loss and information disclosure.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_instance
+* *Arguments:* can_ip_forward  By default set to false.
+
+
+[source,go]
+----
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+- can_ip_forward = true
+}
+----
+

@@ -1,0 +1,53 @@
+
+== Azure Synapse Workspace vulnerability assessment is disabled
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_46
+|Category |AI & Machine Learning - Observability
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |c1f0192d-713d-41d0-956e-1444947edd02
+|===
+
+
+=== Impact
+This policy checks whether the 'Vulnerability Assessment' setting in Azure Synapse workspaces is disabled. The Vulnerability Assessment service scans Synapse workspaces for known security vulnerabilities, highlighting deviations from best practices, including misconfigurations, excessive permissions, and unprotected sensitive data. It is recommended to enable the Vulnerability Assessment on Synapse workspaces for enhanced security.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_workspace_security_alert_policy, azurerm_synapse_workspace, azurerm_synapse_workspace_vulnerability_assessment
+* *Arguments:* workspace_security_alert_policy_id
+
+To fix this issue, enable the 'Vulnerability Assessment' setting in your Azure Synapse workspace.
+
+[source,go]
+----
+resource "azurerm_synapse_workspace" "synapse_ws_pass_1" {
+  ...
+}
+
+resource "azurerm_synapse_workspace_security_alert_policy" "synapse_ws_policy_1" {
+  synapse_workspace_id       = azurerm_synapse_workspace.synapse_ws_pass_1.id
+  policy_state               = "Enabled"
+
+  ...
+}
+
+resource "azurerm_synapse_workspace_vulnerability_assessment" "va_pass" {
+  workspace_security_alert_policy_id = azurerm_synapse_workspace_security_alert_policy.synapse_ws_policy_1.id
+  ...
+
+  recurring_scans {
+    enabled = true
+  }
+}
+----
+
+This code enhances security by activating the 'Vulnerability Assessment' feature on Azure Synapse. This feature proactively identifies, tracks, and assists in remediating potential database vulnerabilities, thereby enhancing the security of your Synapse workspace. The feature can be scheduled for weekly scans, utilizing a Storage Account to store the detected vulnerabilities.
+

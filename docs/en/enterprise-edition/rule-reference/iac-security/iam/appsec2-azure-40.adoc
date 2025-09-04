@@ -1,0 +1,36 @@
+== Azure Storage account configured with Shared Key authorization
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_40
+|Category |IAM - Overly Permissive
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |64bd7f84-5afb-48b5-adb0-fbe55dcfec08
+|===
+
+
+=== Impact
+This policy is checking for any instance where a storage account is configured with Shared Key authorization. This is a poor security practice as Shared Key authorization utilizes a single key for both read and write permissions, leading to potential security breaches. If the shared key is compromised, the attacker will have full access to the storage account. Therefore, it's ideal to use separate keys for different operations or use a more secure method of authorization like Azure AD based authorization.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account
+* *Arguments:* shared_access_key_enabled
+
+To fix this issue, you should configure Azure Storage Service to use Azure Active Directory (Azure AD) for data plane authorization instead of shared key authorization. You can do this by ensuring that `shared_access_key_enabled` is set to disabled when creating a storage account.
+
+[source,go]
+----
+resource "azurerm_storage_account" "example" {
+  name                     = "storageaccountname"
+  ...
+  shared_access_key_enabled = false
+}
+----
+

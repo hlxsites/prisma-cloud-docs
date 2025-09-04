@@ -1,0 +1,46 @@
+== GCP Vertex AI instances are not private
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_89
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+*Vertex AI Workbench* is a data science service offered by GCP that leverages https://jupyterlab.readthedocs.io/en/stable/getting_started/overview.html[JupyterLab] to explore and access data.
+Workbenches have public IPs assigned by default which can increase your attack surface and expose sensitive data.
+We recommend you only assign private IPs to Vertex AI Workbenches.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_notebooks_instance
+* *Field:* no_public_ip
+
+
+[source,go]
+----
+resource "google_notebooks_instance" "public_instance" {
+  name = "my-notebook"
+  location = "us-west1-a"
+  machine_type = "e2-medium"
+  vm_image {
+    project      = "deeplearning-platform-release"
+    image_family = "tf-latest-cpu"
+
+- no_public_ip = false
++ no_public_ip = true
+  }
+}
+----

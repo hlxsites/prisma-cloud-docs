@@ -1,0 +1,67 @@
+== AWS NACL allows ingress from 0.0.0.0/0 to port 22
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_232
+|Category |Public Exposure - Sensitive Ports
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Network Access Control List (NACL) is stateless and provides filtering of ingress/egress network traffic to AWS resources.
+We recommend that NACLs do not allow unrestricted ingress access to port 22.
+Removing unfettered connectivity to remote console services, such as SSH, reduces a server's exposure to risk.
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+
+
+[source,yaml]
+----
+Resources:  
+  InboundRule:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: MyNACL
+       RuleNumber: 200
+       Protocol: 6
+       RuleAction: allow
+-      CidrBlock: 0.0.0.0/0
++      CidrBlock: 10.0.0.0/32
+       PortRange:
+         From: 22
+         To: 22
+----
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_network_acl_rule" "example" {
+  network_acl_id = aws_network_acl.example.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+- cidr_block     = "0.0.0.0/0"
++ cidr_block     = "10.0.0.0/32"
+  from_port      = 22
+  to_port        = 22
+}
+----

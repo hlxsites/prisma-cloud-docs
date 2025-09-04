@@ -1,0 +1,45 @@
+== Azure Key Vault Purge protection is not enabled
+// Azure Key Vault Purge protection disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_110
+|Category |Storage - Backups
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |df4f009d-f049-4e04-bbdf-06d98b1b040f
+|===
+
+
+=== Impact
+Purge protection is an optional Key Vault behavior and is not enabled by default.
+Purge protection can only be enabled once soft-delete is enabled.
+It can be turned on via CLI or PowerShell.
+When purge protection is on, a vault or an object in the deleted state cannot be purged until the retention period has passed.
+Soft-deleted vaults and objects can still be recovered, ensuring that the retention policy will be followed.
+The default retention period is 90 days, but it is possible to set the retention policy interval to a value from 7 to 90 days through the Azure portal.
+Once the retention policy interval is set and saved it cannot be changed for that vault.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_key_vault
+* *Arguments:* purge_protection_enabled - (Optional) Is Purge Protection enabled for this Key Vault?
+
+Defaults to false.
+
+
+[source,go]
+----
+resource "azurerm_key_vault" "example" {
+        ...
++  purge_protection_enabled    = true
+}
+----

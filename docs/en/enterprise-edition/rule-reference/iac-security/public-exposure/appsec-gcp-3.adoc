@@ -1,0 +1,66 @@
+== GCP Firewall rule allows all traffic on RDP port (3389)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_3
+|Category |Public Exposure - Sensitive Ports
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |34175634-0e4a-4e9d-9c77-0c75390b8bdc
+|===
+
+
+=== Impact
+Firewall rules setup fine grained allow/deny traffic policies to and from a virtual machine (VM).
+Enabled rules are always enforced, and help protecting instances from unwanted traffic.
+Firewall rules are defined at the network level, and only apply to the network where they are created.
+Every VPC functions as a distributed firewall.
+While firewall rules are defined at the network level, connections are allowed or denied on a per-instance basis.
+A default network is pre-populated with firewall rules that allow incoming traffic to instances.
+The *default-allow-rdp* rule permits ingress connections on TCP port 3389 from any source to any instance in the network.
+We recommend you restrict or remove the *default-allow-rdp* rule when you no longer need it.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_firewall
+* *Arguments:* deny.
+
+The deny block supports: *protocol* (Required) The IP protocol to which this rule applies.
+The protocol type is required when creating a firewall rule.
+This value can either be one of the following well known protocol strings (tcp, udp, icmp, esp, ah, sctp, ipip), or the IP protocol number.
+*ports* (Optional) An optional list of ports to which this rule applies.
+This field is only applicable for UDP or TCP protocol.
+Each entry must be either an integer or a range.
+If not specified, this rule applies to connections through any port.
+Example inputs include: ["22"], ["80","443"], and ["12345-12349"].
+
+
+[source,go]
+----
+{
+ "resource "google_compute_firewall" "default" {
+  name    = "test-firewall"
+  network = google_compute_network.default.name
+
+  allow {
+    protocol = "icmp"
+  }
+
+
+  deny {
+    protocol = "tcp"
+    ports    = ["3389"]
+  }
+
+",
+}
+----
+

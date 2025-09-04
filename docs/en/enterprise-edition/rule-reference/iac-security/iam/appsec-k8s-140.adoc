@@ -1,0 +1,54 @@
+== The --client-ca-file argument for API Servers is not set appropriately
+// '--client-ca-file' argument for API Servers not set appropriately
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_140
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Enable Kubelet authentication using certificates.
+The connections from the apiserver to the kubelet are used for fetching logs for pods, attaching (through kubectl) to running pods, and using the kubelet's port-forwarding functionality.
+These connections terminate at the kubelet's HTTPS endpoint.
+By default, the apiserver does not verify the kubelet's serving certificate, which makes the connection subject to man-in-the-middle attacks, and unsafe to run over untrusted and/or public networks.
+Enabling Kubelet certificate authentication ensures that the apiserver could authenticate the Kubelet before submitting any requests.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kubelet
+    tier: control-plane
+  name: kubelet
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kubelet
++   - --root-ca-file=test.pem
+    image: gcr.io/google_containers/kubelet-amd64:v1.6.0
+    ...",
+}
+----
+

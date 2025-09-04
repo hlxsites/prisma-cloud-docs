@@ -1,0 +1,71 @@
+== Glue Data Catalog encryption is not enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_94
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This examines the resource *aws_glue_data_catalog_encryption_settings* and checks that encryption is set up.
+The properties *encrypted_at_rest* and *connection_encrypted* in the blocks *connection_password_encryption* and *encryption_at_rest* are examined.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource* aws_glue_data_catalog_encryption_settings
+* *Arguments* data_catalog_encryption_settings\connection_password_encryption and data_catalog_encryption_settings\encryption_at_rest blocks
+
+
+[source,go]
+----
+resource "aws_glue_data_catalog_encryption_settings" "example" {
+  ...
++  data_catalog_encryption_settings {
++    connection_password_encryption {
++      aws_kms_key_id                       = aws_kms_key.glue.arn
++      return_connection_password_encrypted = true
++    }
++    encryption_at_rest {
++      catalog_encryption_mode = "SSE-KMS"
++      sse_aws_kms_key_id      = aws_kms_key.glue.arn
++    }
++  }
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource* AWS::Glue::DataCatalogEncryptionSettings
+* *Arguments* Properties.DataCatalogEncryptionSettings
+
+
+[source,yaml]
+----
+Resources:
+  Example:
+    Type: 'AWS::Glue::DataCatalogEncryptionSettings'
+    Properties:
+        ...
+      DataCatalogEncryptionSettings:
+        ConnectionPasswordEncryption:
+          ...
++         ReturnConnectionPasswordEncrypted: True
+        EncryptionAtRest:
+            ...
++         CatalogEncryptionMode: "SSE-KMS"
+----

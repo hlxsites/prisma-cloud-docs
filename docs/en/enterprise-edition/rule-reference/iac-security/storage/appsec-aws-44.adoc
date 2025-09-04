@@ -1,0 +1,60 @@
+== Neptune storage is not securely encrypted
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_44
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Amazon Neptune is a fully managed graph database service for building and running applications that work with connected datasets.
+Neptune supports graph query languages such as Apache TinkerPop Gremlin and W3C's SPARQL.
+Neptune also supports recommendation engines, fraud detection, knowledge graphs, drug discovery, and network security.
+Encryption of Neptune storage protects data and metadata against unauthorized access.
+It also fulfils compliance requirements for data-at-rest encryption of production file systems.
+Encryption for an existing database cannot be added or changed after it is created.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_neptune_cluster
+* *Arguments:* storage_encrypted - (Optional) Specifies whether the Neptune cluster is encrypted.
+The default is false if not specified.
+
+
+[source,go]
+----
+resource "aws_neptune_cluster" "example" {
+  ...
+  cluster_identifier                  = "neptune-cluster-demo"
++ storage_encrypted                   = true
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Neptune::DBCluster
+* *Arguments:* Proprties.StorageEncrypted
+
+
+[source,yaml]
+----
+Type: "AWS::Neptune::DBCluster"
+    Properties:
+      ...
++     StorageEncrypted: true
+----

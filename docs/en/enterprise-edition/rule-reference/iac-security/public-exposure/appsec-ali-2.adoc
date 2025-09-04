@@ -1,0 +1,42 @@
+== Alibaba Cloud Security group allow internet traffic to SSH port (22)
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_2
+|Category |Public Exposure - Sensitive Ports
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy identifies Security groups that allow inbound traffic on SSH port (22) from the public internet. As a best practice, restrict security groups to only allow permitted traffic and limit brute force attacks on your network.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_security_group_rule
+* *Attribute:* cidr_ip
+
+To mitigate this issue, ensure that the `cidr_ip` attribute in the `alicloud_security_group_rule` resource does not include `0.0.0.0/0` for ingress on port 22.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_security_group_rule" "example" {
+  ...
+  type = "ingress"
+  ip_protocol = "tcp"
+  port_range = "22/22"
+-  cidr_ip = "0.0.0.0/0"
++  cidr_ip = "192.168.1.0/24"
+}
+----

@@ -1,0 +1,65 @@
+== Azure Virtual Machine (Linux) does not authenticate using SSH keys
+// Azure instance not authenticated through SSH
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_1
+|Category |Public Exposure - Encryption and Protocols
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |ff4fcb80-03f6-41dd-8bd8-6179fd46b3a4
+|===
+
+
+=== Impact
+SSH is an encrypted connection protocol that allows secure sign-ins over unsecured connections.
+SSH is the default connection protocol for Linux VMs hosted in Azure.
+Using secure shell (SSH) key pairs, it is possible to spin up a Linux virtual machine on Azure that defaults to using SSH keys for authentication, eliminating the need for passwords to sign in.
+We recommend connecting to a VM using SSH keys.
+Using basic authentication with SSH connections leaves VMs vulnerable to brute-force attacks or guessing of passwords.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_linux_virtual_machine
+* *Arguments:* admin_ssh_key
+
+
+[source,go]
+----
+resource "azurerm_linux_virtual_machine" "example"
+  ...
+
++  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("~/.ssh/id_rsa.pub")
+  }
+----
+
+*ARM Template*
+
+
+* *Resource:* Microsoft.Compute/virtualMachines
+* *Arguments:* disablePasswordAuthentication
+
+
+[source,go]
+----
+...
+      "linuxConfiguration": {
++       "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [
+            {
+              "path": "string",
+              "keyData": "string"
+            }
+          ]
+ ...
+----

@@ -1,0 +1,54 @@
+== Backup Vault is not encrypted at rest using KMS CMK
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_166
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Encrypting your data and resources with KMS helps protect your data from unauthorized access or tampering.
+By encrypting your data, you can ensure that only authorized users can access and decrypt the data, and that the data is protected while in storage or in transit.
+Such action can help protect against external threats such as hackers or malware, as well as internal threats such as accidental or unauthorized access.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_backup_vault
+* *Arguments:*  kms_key_arn
+
+
+[source,go]
+----
+resource "aws_backup_vault" "backup_with_kms_key" {
+    ...
+  + kms_key_arn = aws_kms_key.example.arn
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Backup::BackupVault
+* *Arguments:*  Properties.EncryptionKeyArn
+
+
+[source,yaml]
+----
+Type: AWS::Backup::BackupVault
+    Properties:
+      ...
++     EncryptionKeyArn: example.arn/aws_kms_key
+----

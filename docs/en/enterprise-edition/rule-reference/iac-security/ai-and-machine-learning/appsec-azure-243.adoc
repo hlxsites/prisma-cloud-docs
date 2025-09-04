@@ -1,0 +1,52 @@
+== Azure Machine learning workspace is not configured with private endpoint
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_243
+|Category |AI & Machine Learning - Public Exposure
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |ARM, Bicep
+|Mapped CSPM/KSPM Rule |fb6849b4-d54a-4c95-a227-06a5ca1971e7
+|===
+
+
+=== Impact
+This policy detects whether an Azure Machine Learning workspace is configured with a private endpoint. Configuring a private endpoint for the Azure Machine Learning workspace is recommended to enhance security by restricting network access and preventing public internet access to the workspace.
+
+=== How to Fix
+
+*ARM*
+
+* *Resource:* Microsoft.MachineLearningServices/workspaces
+* *Arguments:* managedNetwork.outboundRules
+
+Configure the Azure Machine Learning workspace to use a private endpoint. To achieve this, add an outboundRule with the type set to PrivateEndpoint. This effectively directs traffic to the workspace solely through the secure private network connection.
+
+[source,json]
+----
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+      {
+        "type": "Microsoft.MachineLearningServices/workspaces",
+        "apiVersion": "2022-12-01",
+        "name": "fail1",
+        "location": "West US",
+        "properties": {
+          "managedNetwork": {
+            "outboundRules": {
+                "rule1": {
++                    "type": "PrivateEndpoint"
+                }
+            }
+          }
+        }
+      }
+    ]
+  }
+----

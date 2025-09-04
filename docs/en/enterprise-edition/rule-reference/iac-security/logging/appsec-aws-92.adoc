@@ -1,0 +1,62 @@
+== AWS Elastic Load Balancer (Classic) with access log disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_92
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |a9ba38da-42c3-414c-911b-57ecbe2d9600
+|===
+
+
+=== Impact
+These access logs can be used to analyze traffic patterns and troubleshoot security and operational issues.
+Access logging is an optional feature of ELB that is disabled by default.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_elb
+* *Arguments:* access_logs
+
+
+[source,go]
+----
+resource "aws_elb" "example" {
+  ...
+  name = "test-lb-tf"
++  access_logs {
++     bucket  = aws_s3_bucket.lb_logs.bucket
++     enabled = true
++  }
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ElasticLoadBalancing::LoadBalancer
+* *Arguments:* Properties.AccessLoggingPolicy.Enabled
+
+
+[source,yaml]
+----
+Resources:
+  Resource0:
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    Properties:
+      ...
+      AccessLoggingPolicy:
+        ...
++       Enabled: true
+----

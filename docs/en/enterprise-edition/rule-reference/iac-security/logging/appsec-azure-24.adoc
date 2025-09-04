@@ -1,0 +1,43 @@
+== Azure SQL Server audit log retention is not greater than 90 days
+// Azure SQL Server audit logs retention less than 90 days
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_24
+|Category |Logging - Retention
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Audit Logs can be used to check for anomalies and give insight into suspected breaches or misuse of information and access.
+We recommend you configure SQL server audit retention to be greater than 90 days.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_sql_server, azurerm_mssql_server
+* *Arguments:* retention_in_days*
+
+
+[source,go]
+----
+resource "azurerm_sql_server" "example" {
+    ...
+    extended_auditing_policy {
+      storage_endpoint            = azurerm_storage_account.example.primary_blob_endpoint
+      storage_account_access_key  = azurerm_storage_account.example.primary_access_key
+      storage_account_access_key_is_secondary = true
+ +       retention_in_days                       = <90 or greater>
+    }
+}
+----

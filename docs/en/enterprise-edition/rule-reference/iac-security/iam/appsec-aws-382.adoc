@@ -1,0 +1,48 @@
+== AWS Security Group allows unrestricted egress traffic
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_382
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether AWS Security Groups allow unrestricted egress (outbound) traffic. Permitting unrestricted outbound traffic from your resources can increase the risk of data exfiltration and other security vulnerabilities. As a best practice, explicitly define egress rules in your Security Groups to limit outbound traffic to known and trusted destinations only.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_security_group
+* *Arguments:* egress
+
+To mitigate this issue, for Security Groups, explicitly define restricted outbound traffic rules within the egress block of your Terraform configuration.
+
+Example:
+
+[source,go]
+----
+resource "aws_security_group" "example" {
+  ...
+-  egress {
+-    from_port   = 0
+-    to_port     = 0
+-    protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
+-  }
+
++  egress {
++    from_port   = 443
++    to_port     = 443
++    protocol    = "tcp"
++    cidr_blocks = ["10.0.0.0/16"]  # Restrict to known, trusted destination
++  }
+}
+----

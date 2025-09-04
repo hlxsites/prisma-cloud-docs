@@ -1,0 +1,73 @@
+== AWS EKS control plane logging disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_37
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |ddc8ccc2-2510-4779-b4ba-756a41214f18
+|===
+
+
+=== Impact
+Amazon EKS control plane logging provides valuable diagnostic logs for all control plane related actions.
+Logging streams include cover for the following modules:
+
+. Kubernetes API server component logs (api) see kube-apiserver in the Kubernetes documentation.
+
+. Audit (audit).
++
+Kubernetes audit logs provide a record of the individual users, administrators, or system components that have affected your cluster.
++
+For more information, see Auditing in the Kubernetes documentation.
+
+. Authenticator (authenticator).
++
+For more information, see *authorization* in the Kubernetes documentation.
+
+. Controller manager (controllerManager).
++
+For more information, see *kube-controller-manager* in the Kubernetes documentation.
+
+. Scheduler (scheduler).
++
+For more information, see *kube-scheduler* in the Kubernetes documentation.
++
+Amazon EKS control plane logging is used to detect anomalous configuration activity by your customer.
++
+It is used to track configuration changes conducted manually and programmatically, and trace back unapproved changes.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+The code below enables control plane logging.
+Resource: aws_eks_cluster Attributes: enabled_cluster_log_types
+
+
+[source,go]
+----
+resource "aws_eks_cluster" "pike" {   
+  name_prefix= var.name
+  role_arn = aws_iam_role.pike
+  vpc_config {
+    endpoint_public_access = false
+    subnet_ids = var.subnet_ids
+  }
+
+  tags = {
+    pike="permissions"
+  }
+  encryption_config {
+    resources = ["secrets"]
+  }
++  enabled_cluster_log_types = ["api", "audit", "authenticator","controllerManager","scheduler"]
+}
+----

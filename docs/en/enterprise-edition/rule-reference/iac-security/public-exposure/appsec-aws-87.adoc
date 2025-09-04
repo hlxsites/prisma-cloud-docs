@@ -1,0 +1,59 @@
+== AWS Redshift cluster instance with public access setting enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_87
+|Category |Public Exposure - Database Endpoints
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |363c26e8-3875-4b4c-a8e2-809f7fc8457f
+|===
+
+
+=== Impact
+Redshift clusters deployed within a VPC can be accessed from: the Internet, EC2 Instances outside the VPC via VPN, bastion hosts that you can launch in your public subnet, and using Amazon Redshift's Publicly Accessible option.
+To use public connectivity, create your Redshift clusters with the *Publicly Accessible* option set to *Yes*, your Redshift clusters within a VPC will be fully accessible outside your VPC.
+If you do not want your Redshift clusters accessible from the Internet or outside your VPC, disable the Redshift *Publicly Accessible* option.
+If your AWS account allows you to create EC2-Classic clusters, the default option for *Publicly Accessible* is *No*.
+Public access to a Redshift cluster can increase the opportunity for malicious activity such as SQL injections or Distributed Denial of Service (DDoS) attacks.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_redshift_cluster
+* *Arguments:* publicly_accessible
+
+
+[source,go]
+----
+resource "aws_redshift_cluster" "default" {
+  cluster_identifier = "tf-redshift-cluster"
+  ...
+- publicly_accessible= "true"
++ publicly_accessible= "false"  
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Redshift::Cluster
+* *Arguments:* Properties.PubliclyAccessible
+
+
+[source,yaml]
+----
+Type: "AWS::Redshift::Cluster"
+    Properties:
+      ...
+-     PubliclyAccessible: true
++           PubliclyAccessible: false
+----

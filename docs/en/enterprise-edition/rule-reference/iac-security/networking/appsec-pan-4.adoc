@@ -1,0 +1,43 @@
+== Disable Server Response Inspection (DSRI) enabled in security policies for Palo Alto Networks devices
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_PAN_4
+|Category |Networking - Egress Controls
+|Provider |
+|Severity |MEDIUM
+|Framework |Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether Disable Server Response Inspection (DSRI) is enabled in security policies for Palo Alto Networks devices. Enabling DSRI disables the inspection of server responses, potentially allowing malicious content to pass through the network unchecked, thereby reducing security.
+
+=== How to Fix
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* disable_server_response_inspection
+
+To mitigate this issue, ensure that the disable_server_response_inspection attribute is either set to 'false' or omitted in your panos_security_rule definitions. Disabling DSRI ensures that server responses are inspected, maintaining the efficacy of security policies.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Verify tests
+  hosts: all
+  connection: local
+  tasks:
+    - name: Security_rule
+      paloaltonetworks.panos.panos_security_rule:
+        rule_name: 'Test rule'
+        ...
+-        disable_server_response_inspection: true
+----
+
+In this example, explicitly setting disable_server_response_inspection to 'false' or omitting it ensures that DSRI is disabled, and that server responses are inspected.

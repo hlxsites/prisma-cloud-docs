@@ -1,0 +1,45 @@
+== Liveness probe is not configured
+// Liveness probe not configured
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_8
+|Category |Monitoring - Resource Health
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+The kubelet uses liveness probes to know when to schedule restarts for containers.
+Restarting a container in a deadlock state can help to make the application more available, despite bugs.
+If a container is unresponsive, either to a deadlocked application or a multi-threading defect, restarting the container can make the application more available, despite the defect.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Container
+* *Field:* livenessProbe (Optional)  The probe describes a health check to be performed against a container to determine whether it is alive or not.
+Its arguments may include: exec, failureThreshold, httpGet, initialDelaySeconds, periodSeconds, successThreshold, tcpSocket and timeoutSeconds.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+spec:
+  containers:
+  - name: <container name>
+    image: <image>
++   livenessProbe:
+      <Probe arguments>
+----

@@ -1,0 +1,56 @@
+== AWS DynamoDB encrypted using AWS owned CMK instead of AWS managed CMK
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_119
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |458c6ad0-ed21-4a99-872a-431ef81deb05
+|===
+
+
+=== Impact
+This rule detects whether DynamoDB tables are encrypted at rest and, if so, whether they are using a Customer Managed Key (CMK) for encryption, which provides an added layer of security, rather than the default AWS-owned keys. Encrypting DynamoDB tables with AWS KMS Customer Managed Keys (CMKs) enhances data security by giving you control over the encryption keys. This control enables detailed key management, including key rotation, key policies, and audit capabilities through CloudTrail. Therefore, ensuring DynamoDB tables are encrypted with KMS Customer Managed CMKs is crucial for sensitive data requiring stringent compliance and security standards.
+
+=== How to Fix
+
+*Terraform*
+
+To mitigate this issue, ensure the server_side_encryption configuration is enabled and specifies a KMS Customer Managed CMK.
+
+[source,go]
+----
+resource "aws_dynamodb_table" "example" {
+  ...
+  server_side_encryption {
++   enabled     = true
++   kms_key_arn = aws_kms_key.example.arn
+  }
+}
+
+resource "aws_kms_key" "example" {
+  description = "KMS key for DynamoDB table encryption"
+}
+----
+
+
+*CloudFormation*
+
+To mitigate this issue, ensure the SSESpecification attribute specifies SSEEnabled as true and includes a KMSMasterKeyId pointing to a Customer Managed CMK.
+
+
+[source,yaml]
+----
+Resources:
+  SecureDynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      ...
+      SSESpecification:
+        SSEEnabled: true
++       KMSMasterKeyId: 'alias/YourKMSCMKAlias'  # Specify your KMS Customer Managed CMK ARN or Alias
+----

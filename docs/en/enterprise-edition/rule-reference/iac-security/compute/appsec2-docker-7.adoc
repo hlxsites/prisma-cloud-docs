@@ -1,0 +1,29 @@
+== Dockerfile APK package manager is configured to allow untrusted repositories
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_DOCKER_7
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Using the `--allow-untrusted` option with the APK package manager (`apk`) in Dockerfiles is a significant security risk. This flag tells APK to skip the signature verification process for packages, allowing the installation of packages that have not been cryptographically signed.
+
+By bypassing the signature verification, you expose your Docker containers to potential threats like tampered packages, which can lead to the inclusion of malicious code or vulnerable software versions in your container images. 
+
+=== How to Fix
+
+*Docker*
+
+[source,dockerfile]
+----
+- RUN apk add --no-cache --allow-untrusted somepackage
++ RUN apk add --no-cache somepackage
+----

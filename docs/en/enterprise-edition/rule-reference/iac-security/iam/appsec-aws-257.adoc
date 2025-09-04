@@ -1,0 +1,43 @@
+== AWS Codecommit branch changes has less than 2 approvals
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_257
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+The best practice for merging new code into a code base is to have at least two reviewers.
+AWS CodeCommit can enforce this policy.
+
+=== How to Fix
+
+
+*Terraform* 
+
+[source,text]
+----
+resource "aws_codecommit_approval_rule_template" "example" {
+...
+  content = <<EOF
+{
+    "Version": "2018-11-08",
+    "DestinationReferences": ["refs/heads/master"],
+    "Statements": [{
+        "Type": "Approvers",
++        "NumberOfApprovalsNeeded": 2,
+        "ApprovalPoolMembers": ["arn:aws:sts::123456789012:assumed-role/CodeCommitReview/*"]
+    }]
+}
+EOF
+...
+}
+----

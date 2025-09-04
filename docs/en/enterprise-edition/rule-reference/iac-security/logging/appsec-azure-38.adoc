@@ -1,0 +1,42 @@
+== Azure Monitor log profile does not capture all activities
+// Azure Monitor log profile not configured to collect logs for all categories
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_38
+|Category |Logging - Disabled or Missing
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |03a90ea7-d8f5-4761-beb7-ffcc24237741
+|===
+
+
+=== Impact
+A log profile controls how the activity log is exported.
+Configuring the log profile to collect logs for the categories *Write*, *Delete* and *Action* ensures that all control/management plane activities performed on the subscription are exported.
+We recommend you configure the log profile to export all activities from the control/management plane.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_monitor_log_profile
+* *Arguments:* categories
+
+
+[source,go]
+----
+resource "azurerm_monitor_log_profile" "example" {
+    ...
+    categories = [
+ +   "Action",
+ +   "Delete",
+ +   "Write",
+    ]
+}
+----

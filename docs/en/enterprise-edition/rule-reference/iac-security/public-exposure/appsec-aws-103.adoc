@@ -1,0 +1,133 @@
+== AWS Load Balancer is not using TLS 1.2
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_103
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that the Load Balancer Listener is using at least TLS v1.2. TLS (Transport Layer Security) is a protocol that ensures privacy between communicating applications and their users on the Internet. When a server and client communicate, TLS ensures that no third party can eavesdrop or tamper with any message. This check validates that ElasticLoadBalancing V2 Listener is using at least TLS v1.2 to maintain strong security standards.
+
+=== How to Fix
+
+
+*Terraform* 
+
+To fix this issue, you should ensure that your load balancer listener configuration has the `ssl_policy` property set to at least TLS v1.2. Below is an example of how to set this property in a Terraform configuration:
+
+[source,go]
+----
+resource "aws_lb_listener" "example" {
+  load_balancer_arn = aws_lb.example.arn
+  protocol          = "HTTPS"
+  port              = "443"
+  
+  ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.example.arn
+  }
+}
+----
+
+[source,go]
+----
+resource "aws_alb_listener" "example" {
+  load_balancer_arn = aws_alb.example.arn
+  protocol          = "HTTPS"
+  port              = "443"
+  
+  ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_alb_target_group.example.arn
+  }
+}
+----
+
+Additionally, if your load balancer listener uses a redirect action, ensure that the `default_action.redirect.protocol` property is set to `HTTPS`.
+
+Example:
+
+[source,go]
+----
+resource "aws_lb_listener" "example_redirect" {
+  load_balancer_arn = aws_lb.example.arn
+  protocol          = "HTTP"
+  port              = "80"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      protocol = "HTTPS"
+      port     = "443"
+      status_code = "HTTP_301"
+    }
+  }
+}
+----
+
+[source,go]
+----
+resource "aws_alb_listener" "example_redirect" {
+  load_balancer_arn = aws_alb.example.arn
+  protocol          = "HTTP"
+  port              = "80"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      protocol = "HTTPS"
+      port     = "443"
+      status_code = "HTTP_301"
+    }
+  }
+}
+----
+
+
+*CloudFormation*
+
+To mitigate this issue, ensure that the `SslPolicy` property in the `AWS::ElasticLoadBalancingV2::Listener` resource is properly configured to use at least TLS v1.2.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "ExampleALBListener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "Protocol": "HTTPS",
+        "SslPolicy": "ELBSecurityPolicy-TLS-1-2-2017-01",
+        ...
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  ExampleALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-TLS-1-2-2017-01
+      ...
+----

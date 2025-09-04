@@ -1,0 +1,56 @@
+== Timestream database is not encrypted with KMS CMK
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_160
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Timestream encryption at rest provides enhanced security by encrypting all your data at rest using encryption keys stored in AWS Key Management Service (AWS KMS).
+This functionality helps reduce the operational burden and complexity involved in protecting sensitive data.
+With encryption at rest, you can build security-sensitive applications that meet strict encryption compliance and regulatory requirements.
+AWS KMS is required for encryption at rest in Timestream.
+Using a customer managed key in KMS to encrypt your Timestream data is recommended, in order to have more control over the permissions and lifecycle of your keys, including the ability to have them automatically rotated on an annual basis.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_timestreamwrite_database
+* *Arguments:*  kms_key_id
+
+
+[source,go]
+----
+resource "aws_timestreamwrite_database" "test" {
+    ...
++ kms_key_id = var.kms_key_id
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Timestream::Database
+* *Arguments:*  Properties.KmsKeyId
+
+
+[source,yaml]
+----
+Type: AWS::Timestream::Database
+    Properties:
+      ...
++     KmsKeyId: kms-key-id
+----

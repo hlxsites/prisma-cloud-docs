@@ -1,0 +1,83 @@
+== seccomp is not set to Docker/Default or Runtime/Default
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_31
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Secure computing mode (seccomp) is a Linux kernel feature used to restrict actions available within the container.
+The seccomp() system call operates on the seccomp state of the calling process.
+The default seccomp profile provides a reliable setting for running containers with seccomp and disables non-essential system calls.
+
+=== How to Fix
+
+
+*Kubernetes*
+
+
+* *Resource:* Pod / Deployment / DaemonSet / StatefulSet / ReplicaSet / ReplicationController / Job / CronJob
+* *Arguments:* securityContext: seccompProfile: type: (Optional: Kubernetes > v1.19)  Addition of seccompProfile type: RuntimeDefault or DockerDefault
+
+
+[source,pod]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+spec:
+  containers:
+  - name: <container name>
+    image: <image>
+  securityContext:
++    seccompProfile:
++      type: RuntimeDefault
+       or
++      type: DockerDefault
+----
+
+
+[source,cronjob]
+----
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: <name>
+spec:
+  schedule: <>
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
++            seccompProfile:
++              type: RuntimeDefault
+               or
++              type: DockerDefault
+----
+
+[source,text]
+----
+apiVersion: <>
+kind: <kind>
+metadata:
+  name: <name>
+spec:
+  template:
+    spec:
+      securityContext:
++        seccompProfile:
++          type: RuntimeDefault
+           or
++          type: DockerDefault
+----

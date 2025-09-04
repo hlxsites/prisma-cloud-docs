@@ -1,0 +1,61 @@
+== Unencrypted ECR repositories
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_136
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+Encrypting your ECR repositories helps protect your data from unauthorized access or tampering.
+That way, you can ensure that only authorized users can access and modify the contents of your repositories.
+Such action can help protect against external threats such as hackers or malware, as well as internal threats such as accidental or unauthorized access.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ecr_repository
+* *Arguments:* encryption_configuration.encryption_type
+
+
+[source,go]
+----
+resource "aws_ecr_repository" "example" {
+  ...
+  name                 = "bar"
++ encryption_configuration {
++   encryption_type = "KMS"
++ }
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ECR::Repository
+* *Arguments:* Properties.EncryptionConfiguration.EncryptionType
+
+
+[source,yaml]
+----
+Resources:
+  KMSEncryption:
+    Type: AWS::ECR::Repository
+    Properties: 
+      ...
++     EncryptionConfiguration:
++       EncryptionType: "KMS"
+        ...
+----

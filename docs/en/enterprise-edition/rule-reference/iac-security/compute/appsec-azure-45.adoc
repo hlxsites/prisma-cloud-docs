@@ -1,0 +1,57 @@
+== Secrets are exposed in Azure VM customData
+// Secrets exposed in Azure VM customData
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_45
+|Category |Compute - Credentials and Auth
+|Provider |Azure
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_45
+|Category |Compute - Credentials and Auth
+|Provider |Azure
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+The Azure VM metadata field *customData* allows custom code to run right after the VM is launched.
+It contains code exposed to any entity which has the most basic access to the VM, including read-only of configurations.
+The code is not encrypted.
+We recommend you use Azure Key Vault to access secrets from the VM.
+Removing secrets from unencrypted places which can be easily accessed reduces the risk of passwords, private keys and more from being exposed to third parties.
+=== How to Fix
+
+
+*Terraform* 
+
+
+Remove the following attribute from the Terraform resource.
+
+
+[source,go]
+----
+resource "azurerm_virtual_machine" "main" {
+  name                  = "${var.prefix}-vm"
+  ...
+  os_profile {
+    ...
+-   custom_data = "MY_SECRET_VALUE"
+  }
+  ...
+}
+----

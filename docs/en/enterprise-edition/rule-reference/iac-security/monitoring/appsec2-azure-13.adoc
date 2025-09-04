@@ -1,0 +1,66 @@
+== Azure SQL server Defender setting is set to Off
+// Microsoft Defender for SQL Server disabled 
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_13
+|Category |Monitoring - Unintegrated
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |d7d19f58-2868-47a1-9ed6-63bf8074770d
+|===
+
+
+=== Impact
+Azure Defender for SQL provides a new layer of security, which enables customers to detect and respond to potential threats as they occur by providing security alerts on anomalous activities.
+Users will receive an alert upon suspicious database activities, potential vulnerabilities, SQL injection attacks, as well as anomalous database access patterns.
+Advanced threat protection alerts provide details of suspicious activity and recommend action on how to investigate and mitigate the threat.
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_sql_server, azurerm_mssql_server_security_alert_policy
+* *Arguments:* server_name (of _azurerm_mssql_server_security_alert_policy_ )
+
+
+[source,go]
+----
+{
+ "resource "azurerm_sql_server" "sql_server_good_1" {
+  name                         = "mysqlserver"
+  resource_group_name          = "group"
+  location                     = "location"
+  version                      = "12.0"
+  administrator_login          = "4dm1n157r470r"
+  administrator_login_password = "4-v3ry-53cr37-p455w0rd"
+}
+
+
+resource "azurerm_sql_server" "sql_server_good_2" {
+  name                         = "mysqlserver"
+  resource_group_name          = "group"
+  location                     = "location"
+  version                      = "12.0"
+  administrator_login          = "4dm1n157r470r"
+  administrator_login_password = "4-v3ry-53cr37-p455w0rd"
+}
+
+
+
+resource "azurerm_mssql_server_security_alert_policy" "alert_policy_good" {
+  resource_group_name        = "group"
+  server_name                = azurerm_sql_server.sql_server_good_1.name
+  state                      = "Enabled"
+  retention_days = 20
+}
+
+
+",
+}
+----
