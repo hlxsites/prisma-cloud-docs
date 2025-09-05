@@ -1,0 +1,37 @@
+== IBM Cloud Multi-Factor Authentication (MFA) not enabled at the account level in Terraform misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_IBM_4
+|Category |IAM - MFA
+|Provider |IBM
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether Multi-Factor Authentication (MFA) is disabled at the account level within an Identity and Access Management (IAM) framework. Disabled MFA increases vulnerability to attacks such as phishing, credential stuffing, and brute force. MFA requires users to provide multiple forms of verification, helping to protect sensitive data and resources by preventing unauthorized access, even if passwords are compromised.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* ibm_iam_account_settings
+* *Arguments:* mfa
+
+Ensure that (MFA) is enabled at the account level by setting up the required IAM policy within your Terraform configuration with MFA configured to one of the supported values other than NONE.
+
+In this example, the 'mfa attribute' within the 'ibm_iam_account_settings' resource is used to enable MFA configuration at the account level.
+
+[source,go]
+----
+resource "ibm_iam_account_settings" "account_settings" {
+  account_id = var.account_id
+
++  mfa = "LEVEL3" // or you can specify the types like TOTP, LEVEL1, etc.
+}
+----

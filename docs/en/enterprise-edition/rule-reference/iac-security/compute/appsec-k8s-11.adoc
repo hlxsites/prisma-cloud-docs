@@ -1,0 +1,51 @@
+== CPU limits are not set misconfiguration detected in code
+// CPU limits not set
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_11
+|Category |Compute - Over-Provisioned
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Kubernetes allows administrators to set CPU quotas in namespaces, as hard limits for resource usage.
+Containers cannot use more CPU than the configured limit.
+Provided the system has CPU time free, a container is guaranteed to be allocated as much CPU as it requests.
+CPU quotas are used to ensure adequate utilization of shared resources.
+A system without managed quotas could eventually collapse due to  inadequate resources for the tasks it bares.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Container
+* *Arguments:* resources:limits:cpu (Optional)
+
+Defines the CPU limit for the container.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+spec:
+  containers:
+  - name: <container name>
+    image: <image>
+    resources:
+      limits:
++       cpu: <cpu limit>
+----

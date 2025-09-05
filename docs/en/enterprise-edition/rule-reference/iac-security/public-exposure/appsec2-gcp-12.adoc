@@ -1,0 +1,45 @@
+== GCP Firewall with Inbound rule overly permissive to All Traffic misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_GCP_12
+|Category |Public Exposure - Ingress Controls
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |33142dd4-733b-44d1-8320-8ccacf39adf9
+|===
+ 
+
+
+
+=== Impact
+This policy identifies GCP Firewall rules which allows inbound traffic on all protocols from public internet.
+Doing so, may allow a bad actor to brute force their way into the system and potentially get access to the entire network.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+# pass
+resource "google_compute_firewall" "compute-firewall-ok-1" {
+  name    = "compute-firewall-ok-1"
+  network = google_compute_network.example.name
+
+  deny {
+    protocol = "all"
+  }
+  source_ranges = ["0.0.0.0/0"]
+  disabled = false
+}
+----
+

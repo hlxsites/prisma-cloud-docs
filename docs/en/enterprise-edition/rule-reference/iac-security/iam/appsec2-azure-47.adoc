@@ -1,0 +1,37 @@
+== Anonymous blob access configured in Azure storage account misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_47
+|Category |IAM - Overly Permissive
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy checks whether a storage account is configured to allow anonymous access to blob data. Anonymous access to blob data permits anyone on the internet to access or view the stored data without the need for any authentication. This poses a potential risk, as it exposes sensitive data to the public, increasing the likelihood of data leaks and privacy breaches.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_storage_account
+* *Arguments:* allow_nested_items_to_be_public
+
+To fix the issue, disable anonymous access to the blob content of your storage account: Set the `allow_nested_items_to_be_public` attribute to `false`. This ensures that no one can read blob content without proper authentication and authorization.
+
+
+[source,go]
+----
+resource "azurerm_storage_account" "storage_account" {
+    ...
+    allow_nested_items_to_be_public = false
+}
+----
+
+This code sets the `allow_nested_items_to_be_public` attribute to `false`, disabling anonymous access to the blob content.

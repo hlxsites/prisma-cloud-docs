@@ -1,0 +1,47 @@
+== GCP Google compute firewall ingress allow FTP port (20) access misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_77
+|Category |Public Exposure - Sensitive Ports
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+It is a best practice to ensure that your firewall ingress rules do not allow unrestricted access to FTP port 20, as it can increase the risk of unauthorized access or attacks on your network.
+FTP (File Transfer Protocol) is a widely used protocol for transferring files between computers, but it can also be a potential security risk if not properly configured.
+By restricting access to only specific IP addresses or ranges that you trust, you can help secure your network from potential threats.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_compute_firewall" "restricted" {
+  name    = "example"
+  network = "google_compute_network.vpc.name"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["20"]
+  }
+
+  source_ranges = ["172.1.2.3/32"]
+  target_tags   = ["ftp"]
+}
+----
+

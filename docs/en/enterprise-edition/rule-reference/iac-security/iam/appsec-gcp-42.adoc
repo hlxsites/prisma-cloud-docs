@@ -1,0 +1,36 @@
+== GCP IAM Service account does have admin privileges misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_42
+|Category |IAM - Overly Permissive
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_project_iam_member
+* *Arguments:* role + member
+
+
+[source,go]
+----
+resource "google_project_iam_member" "project" {
+  project = "your-project-id"
+-  role    = "roles/owner"
+-  member  = "user:test@example-project.iam.gserviceaccount.com"
+}
+----
+

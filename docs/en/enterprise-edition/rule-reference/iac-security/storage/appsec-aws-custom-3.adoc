@@ -1,0 +1,46 @@
+== Not all data stored in the EBS snapshot is securely encrypted misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_CUSTOM_3
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+EBS snapshots must be encrypted, as they often include sensitive information, customer PII or CPNI.
+Amazon EBS encryption uses AWS Key Management Service (AWS KMS) customer master keys (CMK) when creating encrypted volumes and snapshots.
+With EBS encryption enabled, you no longer have to build, maintain, and secure your own key management infrastructure.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ebs_snapshot
+* *Arguments:* encrypted - Whether the snapshot is encrypted.
+
+Example fix:
+
+
+[source,go]
+----
+{
+ "resource "aws_ebs_snapshot" "example" {
+  volume_id = "${aws_ebs_volume.example.id}"
++ encrypted = true
+  ...
+}
+}
+----

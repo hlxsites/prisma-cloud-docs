@@ -1,0 +1,44 @@
+== AWS Kendra index Server side encryption does not use Customer Managed Keys (CMKs) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_262
+|Category |AI & Machine Learning - Data Protection
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies Kendra index servers which are encrypted with default KMS keys and not with Keys managed by Customer.
+It is a best practice to use customer managed KMS Keys to encrypt your Kendra index server data.
+It gives you full control over the encrypted data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_kendra_index
+* *Arguments:* server_side_encryption_configuration.kms_key_id
+
+
+[source,go]
+----
+resource "aws_kendra_index" "pass" {
+  name     = "example"
+  role_arn = aws_iam_role.this.arn
+
+  server_side_encryption_configuration {
+    kms_key_id = data.aws_kms_key.this.arn
+  }
+}
+----

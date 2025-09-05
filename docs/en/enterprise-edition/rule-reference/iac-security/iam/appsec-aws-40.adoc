@@ -1,0 +1,59 @@
+== AWS IAM policy attached to users misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_40
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |2b7e07ba-56c8-42db-8db4-a4b65f5066c4
+|===
+ 
+
+
+=== Impact
+This policy identifies IAM policies attached to user. By default, IAM users, groups, and roles have no access to AWS resources. IAM policies are the means by which privileges are granted to users, groups, or roles. It is recommended that IAM policies be applied directly to groups but not users.
+
+=== How to Fix
+
+
+*Terraform*
+
+To fix this issue, ensure that IAM policies are not directly attached to users. Instead, attach the policies to groups or roles.
+
+Example:
+
+[source,go]
+----
+resource "aws_iam_policy_attachment" "fail" {
+  name       = "example"
+  policy_arn = "aws_iam_policy.policy.arn"
+
+-  users = ["example"]
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::IAM::Policy
+* *Arguments:* Properties.Users
+
+
+[source,yaml]
+----
+{
+ "Resources:
+  ExamplePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      ...
+-     Users:
+-       - example_user",
+}
+----

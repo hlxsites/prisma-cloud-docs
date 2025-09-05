@@ -1,0 +1,36 @@
+== IBM Cloud Virtual Private Cloud (VPC) classic access is enabled in Terraform misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_IBM_2
+|Category |Networking - VPC/VCN/VNET
+|Provider |IBM
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that VPC classic access is disabled. It checks for configurations in your cloud infrastructure to confirm that virtual private cloud (VPC) instances are not allowing classic access. Classic access can pose several security risks as it may enable connections from legacy environments that lack modern security features and controls. Disabling this access minimizes the potential attack surface and enhances the overall security posture of your infrastructure.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* ibm_is_vpc
+* *Arguments:* classic_access
+
+Ensure that the `classic_access` attribute in the ibm_is_vpc resource is set to `false`, preventing access from legacy environments.
+
+In this example, the `classic_access` attribute is set to `false` in the ibm_is_lb resource to disable classic access to the VPC.
+
+[source,go]
+----
+resource "ibm_is_vpc" "secure_vpc" {
+  ...
++  classic_access = false
+}
+----

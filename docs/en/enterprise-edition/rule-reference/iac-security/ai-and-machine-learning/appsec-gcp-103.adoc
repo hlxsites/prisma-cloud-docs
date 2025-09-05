@@ -1,0 +1,54 @@
+== GCP Dataproc Clusters have public IPs misconfiguration detected in code
+
+Dataproc is commonly used for data lake modernization, ETL, and data science workloads.
+A Dataproc cluster contains at least one "management" VM and one "compute" VM which are deployed into a VPC network.
+A common misconfiguration is creating a *Dataproc cluster* with public IPs.
+This security misconfiguration could put your data at risk of accidental exposure, because a public IP accompanied by an open firewall rule allows potentially unauthorized access to the underlining Dataproc VMs.
+We recommend you only assign private IPs to your Dataproc clusters.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_103
+|Category |AI & Machine Learning - Public Exposure
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_dataproc_cluster
+* *Field:* internal_ip_only
+
+
+[source,go]
+----
+resource "google_dataproc_cluster" "accelerated_cluster" {
+  name   = "my-cluster-with-gpu"
+  region = "us-central1"
+
+  cluster_config {
+    gce_cluster_config {
+      zone = "us-central1-a"
+-     internal_ip_only = false
++     internal_ip_only = true
+    }
+
+    master_config {
+      accelerators {
+        accelerator_type  = "nvidia-tesla-k80"
+        accelerator_count = "1"
+      }
+    }
+  }
+}
+----

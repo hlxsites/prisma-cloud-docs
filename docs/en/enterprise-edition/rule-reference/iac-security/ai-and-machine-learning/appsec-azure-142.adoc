@@ -1,0 +1,55 @@
+== Azure Machine Learning Compute Cluster Local Authentication is enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_142
+|Category |AI & Machine Learning - Permissions
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Disabling local authentication for Azure Machine Learning Compute Clusters can help improve the security of your clusters.
+Local authentication allows users to access the cluster using a local account and password, rather than an Azure Active Directory (Azure AD) account.
+
+//
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_machine_learning_compute_cluster
+* *Arguments:* local_auth_enabled
+
+
+[source,go]
+----
+resource "azurerm_machine_learning_compute_cluster" "ckv_unittest_pass" {
+  name                          = "example"
+  location                      = "West Europe"
+  vm_priority                   = "LowPriority"
+  vm_size                       = "Standard_DS2_v2"
+  machine_learning_workspace_id = azurerm_machine_learning_workspace.example.id
+  local_auth_enabled            = false
+
+  scale_settings {
+    min_node_count                       = 0
+    max_node_count                       = 1
+    scale_down_nodes_after_idle_duration = "PT30S" # 30 seconds
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+----
+

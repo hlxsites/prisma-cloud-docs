@@ -1,0 +1,45 @@
+== AWS Security Group allows all traffic on all ports misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_277
+|Category |Public Exposure - Ingress Controls
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+By allowing all ingress traffic on all ports, AWS security group permits unrestricted internet access.
+Make sure that ports are defined properly
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_security_group" "example" {
+  name = "allow-all-ingress"
+
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+-    from_port   = -1
+-    to_port     = -1
++    from_port   = 443
++    to_port     = 443
+    protocol    = "tcp"
+  }
+}
+----

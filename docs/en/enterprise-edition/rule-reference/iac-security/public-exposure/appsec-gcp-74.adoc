@@ -1,0 +1,44 @@
+== GCP VPC Network subnets have Private Google access disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_74
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |899e01c6-9092-44a8-ae43-1f8a891b01b6
+|===
+ 
+
+
+
+=== Impact
+Enabling private IP Google access for your Google Cloud Platform (GCP) subnet can help improve the security and performance of your network.
+Private IP Google access allows resources in your subnet to access Google APIs and services over a private IP connection, rather than a public connection.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+[source,go]
+----
+resource "google_compute_subnetwork" "pass" {
+  name          = "example"
+  ip_cidr_range = "10.0.0.0/16"
+  network       = "google_compute_network.vpc.self_link"
+
+  log_config {
+    aggregation_interval = "INTERVAL_10_MIN"
+    flow_sampling        = 0.5
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
++ private_ip_google_access = true
+}
+----
+

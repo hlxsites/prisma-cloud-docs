@@ -1,0 +1,45 @@
+== AWS Execution Role ARN and Task Role ARN are different in ECS Task definitions misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_249
+|Category |IAM - Role Separation
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== Impact
+In Amazon ECS, it's important to distinguish between the execution task roles as they fulfill separate roles and serve distinct purposes:
+
+* The *execution role* is used by the ECS agent to make AWS API calls on behalf of the user.
+* The *task role* grants permissions specifically to the tasks.
+
+If the same role is used for both purposes, it might lead to a broader set of permissions than required. For example, the execution role might end up with unnecessary task-specific permissions, or the task role might have permissions that are not relevant to the execution role.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ecs_task_definition
+* *Arguments:*  execution_role_arn, task_role_arn
+
+Ensure that the `execution_role_arn` does not match the `task_role_arn`
+
+[source,go]
+----
+resource "aws_ecs_task_definition" "example" {
+    ...
++  execution_role_arn = "arn:aws:iam::123456789012:role/execution_role"
++  task_role_arn      = "arn:aws:iam::123456789012:role/task_role"
+    ...
+}
+----

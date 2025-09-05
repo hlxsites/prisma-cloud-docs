@@ -1,0 +1,40 @@
+
+== Azure Synapse Workspace does not have extended audit logs misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AZURE_53
+|Category |AI & Machine Learning - Observability
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether extended audit logs are disabled on an Azure Synapse Workspace. Logging mechanisms are essential for tracking user actions, policy breaches, data access, and troubleshooting issues, making it a critical practice for maintaining security and compliance within Azure environments. Extended audit logs provide detailed records of access and activity within the workspace, which are crucial for monitoring and investigating potential security risks like unauthorized access or anomalies.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_synapse_workspace
+* *Arguments:* azurerm_synapse_workspace_extended_auditing_policy
+
+Ensure that all `azurerm_synapse_workspace` resources are connected to a `azurerm_synapse_workspace_extended_auditing_policy`. In this example, extended audit logging is configured for your Terraform templates.
+
+[source,go]
+----
+resource "azurerm_synapse_workspace" "example" {
+  ...
+}
+
+resource "azurerm_synapse_workspace_extended_auditing_policy" "example" {
+  synapse_workspace_id                    = azurerm_synapse_workspace.example.id
+  ...
+}
+----
+

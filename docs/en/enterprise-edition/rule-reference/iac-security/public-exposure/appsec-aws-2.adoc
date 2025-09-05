@@ -1,0 +1,78 @@
+== AWS Elastic Load Balancer v2 (ELBv2) listener that allow connection requests over HTTP misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_2
+|Category |Public Exposure - Load Balancing
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |b50c6eb5-eb27-4a28-978d-11984bf326c5
+|===
+ 
+
+
+
+=== Impact
+This policy identifies Elastic Load Balancers v2 (ELBv2) listener that are configured to accept connection requests over HTTP instead of HTTPS. As a best practice, use the HTTPS protocol to encrypt the communication between the application clients and the application load balancer.
+
+=== How to Fix
+
+*Terraform*
+
+To fix this issue, ensure that the `protocol` property in the `aws_lb_listener` or `aws_alb_listener` resource is set to "HTTPS", "TLS", "TCP", "UDP", "TCP_UDP", or if using `HTTP`, redirect it to `HTTPS`.
+
+Example:
+
+[source,hcl]
+----
+resource "aws_lb_listener" "example_https" {
+  ...
+  protocol          = "HTTPS"
+}
+----
+
+[source,hcl]
+----
+resource "aws_lb_listener" "example_http" {
+  ...
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      ...
+      protocol = "HTTPS"
+    }
+  }
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ElasticLoadBalancingV2::Listener
+* *Arguments:* Properties.Protocol / Properties.DefaultActions
+
+
+[source,yaml]
+----
+Resources:
+    ListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      ...
+      # Option 1:
++     Protocol: HTTPS # Or TCP / TLS / UDP / TCP_UDP
+      # Option 2:
++     DefaultActions:
++       - Type: redirect
++         RedirectConfig:
++           Protocol: HTTPS
+            ...
+----

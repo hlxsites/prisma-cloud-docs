@@ -1,0 +1,46 @@
+== AWS CloudFront response header policy does not enforce Strict Transport Security misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_259
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Enforcing Strict Transport Security (HSTS) in your AWS CloudFront response header policy can help to improve the security of your website or application.
+HSTS is a security feature that tells web browsers to only communicate with a website using secure HTTPS connections, rather than insecure HTTP connections.
+This helps to prevent man-in-the-middle attacks and other types of vulnerabilities that could be exploited over an unencrypted connection.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_cloudfront_response_headers_policy" "pass" {
+  name    = "test"
+
+  security_headers_config {
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      override                   = true
+      preload                    = true
+    }
+  }
+}
+----

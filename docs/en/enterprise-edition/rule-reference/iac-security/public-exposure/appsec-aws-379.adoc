@@ -1,0 +1,56 @@
+
+== AWS S3 bucket not configured with secure data transport policy misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_379
+|Category |Public Exposure - APIs
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |dd9a332e-673b-44c6-8bd2-e801fdea4a12
+|===
+
+
+=== Impact
+To ensure secure data transport, configure your AWS S3 bucket to block public access or explicitly enforce aws:SecureTransport = true in your bucket policy. This ensures that all data transfers to and from the bucket use HTTPS, providing encryption and protecting the data from unauthorized access during transit.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_s3_bucket_acl
+* *Arguments:* aws_s3_bucket_public_access_block, access_control_policy
+
+To ensure secure data transport, configure your AWS S3 bucket to block public access or explicitly enforce `aws:SecureTransport = true` in your bucket policy. This ensures that all data transfers to and from the bucket use HTTPS, providing encryption and protecting the data from unauthorized access during transit.
+
+The following example demonstrates how to configure an AWS S3 bucket policy in Terraform to enforce secure data transport by requiring HTTPS for all data transfers to and from the bucket.
+
+[source,go]
+----
+resource "aws_s3_bucket_policy" "example" {
+  ...
+  policy = jsonencode({
+    ...
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.example.arn
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "true"
+          }
+        }
+      }
+    ]
+  })
+}
+----
+

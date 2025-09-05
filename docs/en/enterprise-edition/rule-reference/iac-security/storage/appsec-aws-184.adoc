@@ -1,0 +1,41 @@
+== AWS Elastic File System (EFS) is not encrypted using Customer Managed Key misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_184
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies Elastic File Systems (EFSs) which are encrypted with default KMS keys and not with Keys managed by Customer.
+It is a best practice to use customer managed KMS Keys to encrypt your EFS data.
+It gives you full control over the encrypted data.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_efs_file_system
+* *Arguments:* encrypted
+
+
+[source,go]
+----
+resource "aws_efs_file_system" "enabled" {
+  creation_token = "example"
+  kms_key_id = <kms key>
+}
+----

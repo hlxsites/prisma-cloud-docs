@@ -1,0 +1,73 @@
+== AWS EC2 Auto Scaling Launch Configuration is not using encrypted EBS volumes misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_8
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |b22e16a9-69a5-4d5b-b59c-4dc34fcd9d57
+|===
+ 
+
+
+
+=== Impact
+Amazon Elastic Block Store (EBS) volumes allow you to create encrypted launch configurations when creating EC2 instances and auto scaling.
+When the entire EBS volume is encrypted, data stored at rest on the volume, disk I/O, snapshots created from the volume, and data in-transit between EBS and EC2 are all encrypted.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_launch_configuration
+* *Attribute*: encrypted - (Optional) Whether the volume should be encrypted or not.
+Do not use this option if you are using snapshot_id as the encrypted flag will be determined by the snapshot.
+(Default: false).
+
+
+[source,go]
+----
+resource "aws_launch_configuration" "example" {
+  ...
+  instance_type = "t2.micro"
++ root_block_device {
++ encrypted     = true
++ }
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::AutoScaling::LaunchConfiguration
+* *Attribute*: Properties.BlockDeviceMappings
+
+
+[source,yaml]
+----
+AutoScalingConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ...
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sdk"
++       Ebs:
+          ...
++         Encrypted: true
+      - DeviceName: "/dev/sdf"
+        Ebs:
+            ...
+-         Encrypted: false
+            - DeviceName: "/dev/sdc"
+-       VirtualName: ephermal
+----

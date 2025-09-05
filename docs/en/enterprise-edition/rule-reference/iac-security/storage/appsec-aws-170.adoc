@@ -1,0 +1,58 @@
+== QLDB ledger permissions mode is not set to STANDARD misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_170
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Amazon Quantum Ledger Database (Amazon QLDB) is a fully managed ledger database for cryptographically verifiable transaction logging.
+You can use the QLDB API or the AWS Command Line Interface (AWS CLI) to create, update, and delete ledgers in Amazon QLDB.
+You can also list all the ledgers in your account, or get information about a specific ledger.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_qldb_ledger
+* *Arguments:*  permissions_mode
+
+
+[source,go]
+----
+resource "aws_qldb_ledger" "standard" {
+  ...
++ permissions_mode = "STANDARD"
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::QLDB::Ledger
+* *Arguments:*  Properties.PermissionsMode
+
+
+[source,yaml]
+----
+Resources:
+  Default:
+    Type: "AWS::QLDB::Ledger"
+    Properties:
+      ...
++     PermissionsMode: "STANDARD"
+----

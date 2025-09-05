@@ -1,0 +1,61 @@
+== AWS DMS replication instance automatic version upgrade disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_222
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |677f11a4-3238-4940-90f2-a5b9ff25fbaa
+|===
+ 
+
+
+
+=== Impact
+When AWS Database Migration Service (AWS DMS) supports a new version, you can upgrade your replication instances to it.
+There are two kinds of upgrades: major version upgrades and minor version upgrades.
+Minor upgrades helps maintain a secure and stable DMS with minimal impact on the replication.
+For this reason, we recommend that your automatic minor upgrade is enabled.
+Minor version upgrades only occur automatically if a minor upgrade replaces an unsafe version, such as a minor upgrade that contains bug fixes for a previous version.
+
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+
+
+[source,yaml]
+----
+Resources:
+  Example:
+    Type: 'AWS::DMS::ReplicationInstance'
+    Properties:
+      EngineVersion: 3.1.4
+      ReplicationInstanceIdentifier: example
+      ReplicationInstanceClass: dms.t2.micro
++     AutoMinorVersionUpgrade: true
+----
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_dms_replication_instance" "example" {
+  engine_version               = "3.1.4"
+  replication_instance_class   = "dms.t2.micro"
+  replication_instance_id      = "example"
++ auto_minor_version_upgrade   = true
+}
+----

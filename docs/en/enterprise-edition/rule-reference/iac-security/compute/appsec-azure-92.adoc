@@ -1,0 +1,50 @@
+== Azure Linux and Windows Virtual Machines does not utilize Managed Disks misconfiguration detected in code
+// Azure Linux and Windows Virtual Machines do not use Managed Disks
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_92
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Using Azure Managed disk over traditional BLOB based VHD's has more advantage features like Managed disks are by default encrypted, reduces cost over storage accounts and more resilient as Microsoft will manage the disk storage and move around if underlying hardware goes faulty.
+It is recommended to move BLOB based VHD's to Managed Disks.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_windows_virtual_machine
+* *Arguments:* storage_os_disk
+
+
+[source,go]
+----
+{
+ "resource "azurerm_windows_virtual_machine" "example" {
+  ...
+  + storage_os_disk {
+    name              = "myosdisk1"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  ...
+}    ",
+
+}
+----

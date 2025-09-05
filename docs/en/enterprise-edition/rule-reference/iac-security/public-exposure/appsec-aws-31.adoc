@@ -1,0 +1,66 @@
+== AWS ElastiCache Redis cluster with Redis AUTH feature disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_31
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |49dbb5bd-ea99-4d84-9f76-48aba9c92243
+|===
+ 
+
+
+
+=== Impact
+In Amazon ElastiCache, the Redis authentication command asks users to enter a password prior to being granted permission to execute Redis commands on a password-protected server.
+Authentication can only be enabled when you are creating clusters with the in-transit encryption option enabled.
+When Redis authentication is enabled, users are required to pass through an additional layer of authentication before gaining access to the server and gaining permission to perform actions.
+We recommend that all data stored in the ElastiCache Replication Group is securely encrypted in-transit with an authentication token.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_elasticache_replication_group
+* *Arguments:* auth_token - (Optional) The password used to access a password protected server.
+Can be specified only if transit_encryption_enabled = true
+
+
+[source,go]
+----
+resource "aws_elasticache_replication_group" "example" {
+  ...
+  at_rest_encryption_enabled    = true
++ auth_token                    = var.auth_token
++ transit_encryption_enabled    = true
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ElastiCache::ReplicationGroup
+* *Arguments:* AuthToken - (Optional) The password used to access a password protected server.
+Can be specified only if TransitEncryptionEnabled = true
+
+
+[source,yaml]
+----
+Resources:
+    ReplicationGroup:
+    Type: 'AWS::ElastiCache::ReplicationGroup'
+    Properties:
+        ...
++     AuthToken: 'MySecret!AuthToken$'
++     TransitEncryptionEnabled: True
+----

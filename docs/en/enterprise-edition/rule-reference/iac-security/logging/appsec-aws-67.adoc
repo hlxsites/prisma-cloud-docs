@@ -1,0 +1,54 @@
+== AWS CloudTrail is not enabled with multi trail and not capturing all management events misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_67
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |36a5345a-230d-438e-a04c-a287a513e3dc
+|===
+
+
+
+=== Impact
+This policy identifies the AWS accounts which do not have a CloudTrail with multi trail enabled and capturing all management events. AWS CloudTrail is a service that enables governance, compliance, operational & risk auditing of the AWS account. It is a compliance and security best practice to turn on CloudTrail across different regions to get a complete audit trail of activities across various services.
+
+NOTE: If you have Organization Trail enabled in your account, this policy can be disabled, or alerts generated for this policy on such an account can be ignored; as Organization Trail by default enables trail log for all accounts under that organization.
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+To fix this issue, ensure that the `IsMultiRegionTrail` property in the `AWS::CloudTrail::Trail` resource is set to `true`.
+
+
+[source,yaml]
+----
+ Resources: 
+  MyTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties: 
+      ...
++     IsMultiRegionTrail: True
+----
+
+*Terraform* 
+
+
+To fix this issue, ensure that the `is_multi_region_trail` property in the `aws_cloudtrail` resource is set to `true`.
+
+
+[source,go]
+----
+resource "aws_cloudtrail" "foobar" {
+  ...
++ is_multi_region_trail = true
+}
+----

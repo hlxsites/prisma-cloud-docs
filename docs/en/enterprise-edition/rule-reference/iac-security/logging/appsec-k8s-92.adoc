@@ -1,0 +1,55 @@
+== The --audit-log-maxage argument is not set appropriately misconfiguration detected in code
+// Retention period for '--audit-log-maxage' argument insufficient
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_92
+|Category |Logging - Retention
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Retain the logs for at least 30 days or as appropriate.
+Retaining logs for at least 30 days ensures that you can go back in time and investigate or correlate any events.
+Set your audit log retention period to 30 days or as per your business requirements.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++    - kube-apiserver
++    - --audit-log-maxage=40
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

@@ -1,0 +1,59 @@
+== AWS App Flow connector profile does not use Customer Managed Keys (CMKs) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_264
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies App Flow connector profile which are encrypted with default KMS keys and not with Keys managed by Customer.
+It is a best practice to use customer managed KMS Keys to encrypt your App Flow connector profile data.
+It gives you full control over the encrypted data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_appflow_connector_profile" "pass" {
+  name            = "example_profile"
+  connector_type  = "Redshift"
+  connection_mode = "Public"
+  kms_arn = aws_kms_key.example.arn
+
+
+  connector_profile_config {
+
+    connector_profile_credentials {
+      redshift {
+        password = aws_redshift_cluster.example.master_password
+        username = aws_redshift_cluster.example.master_username
+      }
+    }
+
+    connector_profile_properties {
+      redshift {
+        bucket_name  = aws_s3_bucket.example.name
+        database_url = "jdbc:redshift://${aws_redshift_cluster.example.endpoint}/${aws_redshift_cluster.example.database_name}"
+        role_arn     = aws_iam_role.example.arn
+      }
+    }
+  }
+}
+----

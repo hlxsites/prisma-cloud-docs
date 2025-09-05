@@ -1,0 +1,82 @@
+== Azure subscriptions with custom roles does not have minimum permissions misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_39
+|Category |IAM - Overly Permissive
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+*Option 1* 
+
+
+* *Resource:* azurerm_role_definition
+* *Arguments:* actions
+
+
+[source,go]
+----
+resource "azurerm_role_definition" "example" {
+    name        = "my-custom-role"
+    scope       = data.azurerm_subscription.primary.id
+    description = "This is a custom role created via Terraform"
+
+    permissions {
+    actions     = [
+ -    "*"
+ +    <selected actions>
+     ]
+    not_actions = []
+    }
+
+    assignable_scopes = [
+    "/"
+    ]
+}
+----
+
+
+*Option 2*
+
+
+* *Resource:* azurerm_role_definition
+* *Arguments:* assignable_scopes
+
+
+[source,json]
+----
+resource "azurerm_role_definition" "example" {
+    name        = "my-custom-role"
+    scope       = data.azurerm_subscription.primary.id
+    description = "This is a custom role created via Terraform"
+    permissions {
+    actions     = [
+     "*"
+     ]
+    not_actions = []
+    }
+
+    assignable_scopes = [
++    <narrower scopes than subscriptions>
+-    "/"
+-   data.azurerm_subscription.primary.id
+-   resource.azurerm_subscription.primary.id
+    ]
+}
+----

@@ -1,0 +1,80 @@
+== AWS Elasticsearch domain logging is not enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_84
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Amazon Elasticsearch Service (Amazon ES) exposes logs through CloudWatch. ES logs enable troubleshooting performance and stability issues, as well as audit logs to track user activity for compliance purposes.
+Supported ES logs include error logs, search slow logs, index slow logs, and audit logs.
+All logs are disabled by default.
+
+We recommend you enable Elasticsearch domain logging.
+
+NOTE: If enabled, standard CloudWatch pricing applies.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_elasticsearch_domain
+* *Arguments:* log_publishing_options - (Optional) Options for publishing slow and application logs to CloudWatch Logs.
+This block can be declared multiple times, for each log_type, within the same resource.
+
+
+[source,go]
+----
+{
+ "resource "aws_elasticsearch_domain" "example" {
+  ...
+  domain_name           = "example"
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.example.arn
+    log_type                 = "INDEX_SLOW_LOGS"
+  }
+
+}
+",
+ 
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Elasticsearch::Domain
+* *Arguments:* Properties.LogPublishingOptions.AUDIT_LOGS.Enabled
+
+
+[source,yaml]
+----
+{
+ "Resources:
+  Resource0:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties:
+      ...
+      LogPublishingOptions:
+        AUDIT_LOGS:
++         Enabled: True
+          ...
+",
+       
+}
+----

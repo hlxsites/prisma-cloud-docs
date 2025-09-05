@@ -1,0 +1,71 @@
+== Containers share the host network namespace misconfiguration detected in code
+// Containers share host network namespace
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_19
+|Category |Networking - VPC/VCN/VNET
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+When using the host network mode for a container, that container's network stack is not isolated from the Docker host, so the container shares the host's networking namespace and does not get its own IP-address allocation.
+To limit an attacker's options to escalate privileges from within a container, we recommend you to configure containers to not share the host network namespace.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Pod / Deployment / DaemonSet / StatefulSet / ReplicaSet / ReplicationController / Job / CronJob
+* *Arguments:* hostNetwork (Optional)  If true, the Pod uses the host's network namespace.
+Default to false.
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+spec:
++ hostNetwork: false # or do not include hostNetwork
+----
+
+
+[source,yaml]
+----
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: <name>
+spec:
+  schedule: <>
+  jobTemplate:
+    spec:
+      template:
+        spec:
++          hostNetwork: false # or do not include hostNetwork
+----
+
+[source,text]
+----
+apiVersion: <>
+kind: <kind>
+metadata:
+  name: <name>
+spec:
+  template:
+    spec:
++       hostNetwork: false # or do not include hostNetwork
+----

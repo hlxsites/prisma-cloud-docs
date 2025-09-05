@@ -1,0 +1,45 @@
+== GCP Kubernetes Engine Clusters have Cloud Logging disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_1
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |8a072630-8e86-45eb-98cf-c4c234a1cccc
+|===
+ 
+
+
+
+=== Impact
+Stackdriver is the default logging solution for clusters deployed on GKE.
+Stackdriver logging is deployed to a new cluster by default, explicitly set to *opt-out*.
+Stackdriver logging collects only the container's standard output and standard error streams.
+To ingest logs, Stackdriver logging agent must be deployed to each node in the cluster.
+Stackdriver provides a single-pane-of-glass view of metrics, logs, and traces through Kubernetes Engine clusters and workloads.
+We recommend you use Stackdriver logging as a unified data logging solution for GKE workloads unless additional observability tooling is already in place.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_container_cluster" "primary" {
+  name     = "my-gke-cluster"
+  location = "us-central1"
+  remove_default_node_pool = true
+  initial_node_count       = 1
+  logging_service = "logging.googleapis.com/kubernetes"
+}
+----
+

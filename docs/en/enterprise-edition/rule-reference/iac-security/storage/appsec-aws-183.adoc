@@ -1,0 +1,43 @@
+== AWS EBS Snapshot Copy not encrypted using Customer Managed Key misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_183
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This is a simple check to ensure that the EBS Snapshot copy is using AWS key management - KMS to encrypt its contents.
+To resolve add the ARN of your KMS or link on creation of the snapshot.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ebs_snapshot_copy
+* *Attribute:* kms_key_id - The ARN for the KMS encryption key.
+
+
+[source,go]
+----
+resource "aws_ebs_snapshot_copy" "example_copy" {
+  source_snapshot_id = aws_ebs_snapshot.example_snapshot.id
+  source_region      = "us-west-2"
+  + kms_key_id           = "ckv_kms"
+  tags = {
+    Name = "HelloWorld_copy_snap"
+  }
+}
+----

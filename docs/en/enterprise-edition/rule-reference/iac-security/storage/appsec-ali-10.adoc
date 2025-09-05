@@ -1,0 +1,45 @@
+== Alibaba Cloud OSS bucket has versioning disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_10
+|Category |Storage - Versioning
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that versioning is enabled for Alibaba Cloud OSS (Object Storage Service) buckets. Versioning helps protect against accidental deletion or overwriting of objects by maintaining multiple versions of an object. Enabling versioning is a best practice for data protection and recovery in case of user errors or malicious actions.
+
+Failing to enable versioning could lead to irreversible data loss if objects are deleted or modified unintentionally.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_oss_bucket
+* *Arguments:* versioning.status
+
+To mitigate this issue, ensure the `versioning.status` attribute in the `alicloud_oss_bucket` resource is set to `Enabled`.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_oss_bucket" "example" {
+  ...
+
+  versioning {
++    status = "Enabled"
+  }
+}
+----

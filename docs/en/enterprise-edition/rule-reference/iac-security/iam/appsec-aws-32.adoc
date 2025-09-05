@@ -1,0 +1,79 @@
+== AWS Private ECR repository policy is overly permissive misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_32
+|Category |IAM - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |8ce95833-8811-4ab6-b475-d8c9a59dbca6
+|===
+ 
+
+
+
+=== Impact
+This policy identifies AWS Private ECR repositories that have overly permissive registry policies. An ECR(Elastic Container Registry) repository is a collection of Docker images available on the AWS cloud. These images might contain sensitive information which should be restricted to unauthorized users.
+
+
+=== How to Fix
+
+*Terraform*
+
+To fix this issue, ensure that the `policy` property in the `aws_ecr_repository_policy` resource does not allow public access.
+
+Example:
+
+[source,go]
+----
+resource "aws_ecr_repository_policy" "example" {
+  repository = aws_ecr_repository.example.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = aws_ecr_repository.example.arn
+        Principal = {
+          AWS = "arn:aws:iam::123456789012:role/your-role"
+        }
+      }
+    ]
+  })
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ECR::Repository
+* *Argument:* Properties.RepositoryPolicyText.Statement.Principal
+
+
+[source,yaml]
+----
+Resources: 
+  MyRepository: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      ...
+      RepositoryPolicyText: 
+        ...
+        Statement: 
+          - ...
+-           Principal: "*"
++                       Principal:
++             AWS: 
++                - "arn:aws:iam::123456789012:user/Bob"
++                - ...
+----

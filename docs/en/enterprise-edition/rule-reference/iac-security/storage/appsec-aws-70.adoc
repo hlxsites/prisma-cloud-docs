@@ -1,0 +1,44 @@
+== AWS S3 bucket policy overly permissive to any principal misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_70
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |eecb0c21-2dbe-40f4-8727-fbbaacef69dc
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+[source,go]
+----
+resource "aws_s3_bucket" "bucket" {
+  bucket = "bucket"
+
+  policy = <<POLICY
+{
+    "Id": "Policy1597273448050",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::bucket/*",
+-           "Principal": "*"
+        },
+     ...
+----

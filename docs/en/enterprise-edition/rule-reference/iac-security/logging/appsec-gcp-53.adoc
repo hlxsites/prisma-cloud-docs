@@ -1,0 +1,52 @@
+== GCP PostgreSQL instance database flag log_disconnections is disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_53
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |05244425-d5d0-4055-a461-198000dd1b25
+|===
+ 
+
+
+
+=== Impact
+Enabling the *log_disconnections* database flag logs the end of each session, including the session duration.
+PostgreSQL does not log session details by default, including duration and session end details.
+Enabling the *log_disconnections* database flag creates log entries at the end of each session, useful when troubleshooting issues and determining unusual activity across a time period.
+The *log_disconnections* and *log_connections* work hand in hand and usually the pair would be enabled/disabled together.
+We recommended you set the *log_disconnections* flag for a PostgreSQL instance to *On*.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "POSTGRES_* " settings::database_flags: key:"log_disconnections", value:  by default set to "off"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "POSTGRES_11"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "log_disconnections"
++            value = "on"
+          }
+  }
+}
+----
+

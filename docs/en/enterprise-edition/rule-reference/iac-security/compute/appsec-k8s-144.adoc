@@ -1,0 +1,56 @@
+== The --protect-kernel-defaults argument is not set to True misconfiguration detected in code
+// '--protect-kernel-defaults' argument not set to True
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_144
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Protect tuned kernel parameters from overriding kubelet default kernel parameter values.
+Kernel parameters are usually tuned and hardened by the system administrators before putting the systems into production.
+These parameters protect the kernel and the system.
+Your kubelet kernel defaults that rely on such parameters should be appropriately set to match the desired secured system state.
+Ignoring this could potentially lead to running pods with undesired kernel behavior.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kubelet
+    tier: control-plane
+  name: kubelet
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kubelet
++   - --protect-kernel-defaults=true
+    image: gcr.io/google_containers/kubelet-amd64:v1.6.0
+    ...",
+}
+----
+

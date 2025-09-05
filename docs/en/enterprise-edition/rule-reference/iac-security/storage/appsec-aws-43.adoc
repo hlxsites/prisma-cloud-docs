@@ -1,0 +1,72 @@
+
+== AWS Kinesis streams are not encrypted using Server Side Encryption misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_43
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |6ceaee38-344c-4249-8cff-eb62a8ee94ed
+|===
+ 
+
+
+
+=== Impact
+Amazon Kinesis Data Firehose is a streaming data pipeline service that can route messages to destinations such as S3, Redshift Elasticsearch and others.
+It can also be used to transform data properties before streaming to a defined destination.
+Kinesis provides server-side data encryption to protect sensitive information contained in the data stream.
+We recommend you ensure that your Kinesis streams are encrypted using server-side encryption (SSE).
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_kinesis_stream
+* *Arguments:* encryption_type - (Optional) The encryption type to use.
+
+The only acceptable values are NONE or KMS.
+The default value is NONE.
+kms_key_id - (Optional) The GUID for the customer-managed KMS key to use for encryption.
+You can also use a Kinesis-owned master key by specifying the alias alias/aws/kinesis.
+
+
+[source,go]
+----
+
+resource "aws_kinesis_stream" "test_stream" {
+  ...
+  name             = "terraform-kinesis-test"
+ + encryption_type = KMS
+ + kms_key_id = <value>
+  ...
+ }
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Kinesis::Stream
+* *Arguments:* Properties.StreamEncryption.EncryptionType
+
+
+[source,yaml]
+----
+Resources:
+  KMSEncryption:
+      Type: AWS::Kinesis::Stream
+      Properties:
+          ...
+          StreamEncryption:
+             ...
+             EncryptionType: KMS
+----

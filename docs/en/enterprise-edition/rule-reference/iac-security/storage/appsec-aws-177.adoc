@@ -1,0 +1,48 @@
+== AWS Kinesis Video Stream not encrypted using Customer Managed Key misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_177
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This is a simple check to ensure that Kinesis Video Stream is using AWS key management - KMS to encrypt its contents.
+To resolve add the ARN of your KMS or link on creation of the cluster.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_kinesis_video_stream
+* *Attribute:* kms_key_id - (Optional)
+
+The ID of the AWS Key Management Service (AWS KMS) key that you want Kinesis Video Streams to use to encrypt stream data.
+If no key ID is specified, the default, Kinesis Video-managed key (aws/kinesisvideo) is used.
+
+
+[source,go]
+----
+resource "aws_kinesis_video_stream" "default" {
+  name                    = "terraform-kinesis-video-stream"
+  data_retention_in_hours = 1
+  device_name             = "kinesis-video-device-name"
+  media_type              = "video/h264"
+  + kms_ke_id                             = "ckv_kms"
+  tags = {
+    Name = "terraform-kinesis-video-stream"
+  }
+}
+----

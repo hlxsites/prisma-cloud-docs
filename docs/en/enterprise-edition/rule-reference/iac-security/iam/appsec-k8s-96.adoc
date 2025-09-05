@@ -1,0 +1,55 @@
+== The --service-account-lookup argument is not set to true misconfiguration detected in code
+// '--service-account-lookup' argument not set to True
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_96
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Validate service account before validating token.
+If `--service-account-lookup` is not enabled, the apiserver only verifies that the authentication token is valid, and does not validate that the service account token mentioned in the request is actually present in etcd.
+This allows using a service account token even after the corresponding service account is deleted.
+This is an example of time of check to time of use security issue.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --service-account-lookup=true
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+   ...",
+}
+----
+

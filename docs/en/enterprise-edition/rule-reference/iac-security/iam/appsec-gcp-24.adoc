@@ -1,0 +1,42 @@
+== GCP Kubernetes Engine Clusters have pod security policy disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_24
+|Category |IAM - Role Separation
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+*PodSecurityPolicy* is an admission controller resource created to validate requests to create and update Pods on your cluster.
+The *PodSecurityPolicy* defines a set of conditions that Pods must meet to be accepted by the cluster.
+When a request to create or update a Pod does not meet the conditions in the PodSecurityPolicy, that request is rejected and an error is returned.
+We recommend you enable PodSecurityPolicy Controller on Kubernetes engine clusters.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+First, be sure to have the *google-beta* provider setup in the *google_container_cluster*, then add the following block of code:
+
+
+[source,go]
+----
+pod_security_policy_config {
+    enabled = true
+}
+----
+
+More information at: https://www.terraform.io/docs/providers/google/r/container_cluster.html#pod_security_policy_config

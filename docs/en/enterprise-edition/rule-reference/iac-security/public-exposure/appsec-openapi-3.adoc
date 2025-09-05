@@ -1,0 +1,43 @@
+== Cleartext credentials over unencrypted channel should not be accepted for the operation misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_OPENAPI_3
+|Category |Public Exposure - APIs
+|Provider |
+|Severity |HIGH
+|Framework |OPENAPI
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Sending credentials over HTTP in cleartext exposes API calls to attacks including man-in-the-middle attacks.
+Ensure that you are using an encrypted channel for sending credentials.
+
+=== How to Fix
+
+
+*OpenAPI* 
+
+
+Ensure that you aren't using the unencryptedScheme.
+For example:
+[source,yaml]
+----
+components:
+securitySchemes:
+-    unencryptedScheme:
+-      type: http
+-      scheme: basic
+paths:
+"/":
+get:
+security:
+-        - unencryptedScheme: []
+----

@@ -1,0 +1,56 @@
+== GCP Cloud Run services are anonymously or publicly accessible misconfiguration detected in code
+
+Cloud Run services are fully managed serverless environments used to develop and deploy containerized applications.
+In GCP, Cloud Run services support a wide variety of authentication methods to execute (invoke) the container.
+One of those methods is based to the usage of two special IAM principals: _allUsers_ and _allAuthenticatedUsers_.
+When those IAM principals have access to the Cloud Run service - anyone on the internet can execute or access the Cloud Run service.
+We recommend you ensure that neither anonymous or public access to Cloud Run services are allowed.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_102
+|Category |Public Exposure - APIs
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_cloud_run_service_iam_binding
+* *Field:* members
+* *Resource:* google_cloud_run_service_iam_member
+* *Field:* member
+
+
+[source,go]
+----
+resource "google_cloud_run_service_iam_binding" "public_binding" {
+  location = google_cloud_run_service.default.location
+  service = google_cloud_run_service.default.name
+  role = "roles/run.invoker"
+
+  members = [
+-    "allUsers",
+-    "allAuthenticatedUsers",
+  ]
+}
+
+resource "google_cloud_run_service_iam_member" "public_member" {
+  location = google_cloud_run_service.default.location
+  service = google_cloud_run_service.default.name
+  role = "roles/run.invoker"
+
+-  member = "allUsers"
+-  member = "allAuthenticatedUsers"
+}
+----

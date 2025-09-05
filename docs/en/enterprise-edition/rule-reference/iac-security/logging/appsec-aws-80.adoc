@@ -1,0 +1,75 @@
+== Amazon MSK cluster logging is not enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_80
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Amazon MSK enables you to build and run applications that use Apache Kafka to process streaming data.
+It also provides a control-plane for advanced operations, for example, creating, updating, and deleting clusters.
+Consistent cluster logging helps you determine if a  request was made with root or AWS Identity and Access Management (IAM) user credentials and whether the request was made with temporary security credentials for a role or federated user.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_msk_cluster
+* *Arguments:* logging_info - (Optional) Configuration block for streaming broker logs to Cloudwatch/S3/Kinesis Firehose.
+
+See below.
+
+
+[source,go]
+----
+resource "aws_msk_cluster" "example" {
+  cluster_name           = "example"
+  ...
++  logging_info {
++    broker_logs {
++      cloudwatch_logs {
++        enabled   = true
++        log_group = aws_cloudwatch_log_group.test.name
+      }
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::MSK::Cluster
+* *Argument:* LoggingInfo.
+Configure your MSK cluster to send broker logs to different destination types.
+This is a container for the configuration details related to broker logs.
+
+
+[source,go]
+----
+{
+  "Type" : "AWS::MSK::Cluster",
+  "Properties" : {
+      ...
++    "LoggingInfo" : {
++      "BrokerLogs" : {
++        "CloudWatchLogs" : CloudWatchLogs,
++        "Firehose" : Firehose,
++        "S3" : S3
+      }
+    }
+  }
+}
+----

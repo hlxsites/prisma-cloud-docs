@@ -1,0 +1,49 @@
+== AWS S3 Object Copy not encrypted using Customer Managed Key misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_181
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This is a simple check to ensure that the S3 Object Copy is using AWS key management - KMS to encrypt its contents.
+To resolve add the ARN of your KMS or link on creation of the cluster.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_object_copy
+* *Attribute:* kms_key_id - (Optional) Specifies the AWS KMS Key ARN to use for object encryption.
+This value is a fully qualified ARN of the KMS Key.
+
+
+[source,go]
+----
+resource "aws_s3_object_copy" "test" {
+  bucket = "destination_bucket"
+  key    = "destination_key"
+  source = "source_bucket/source_key"
++ kms_key_id = "aws_kms_key.foo.arn"
+
+
+  grant {
+    uri         = "http://acs.amazonaws.com/groups/global/AllUsers"
+    type        = "Group"
+    permissions = ["READ"]
+  }
+}
+----

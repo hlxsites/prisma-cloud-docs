@@ -1,0 +1,39 @@
+== AWS RDS DB snapshot does not use Customer Managed Keys (CMKs) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_266
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies database snapshots that were not encrypted with KMS.
+It is a best practice to manage your own encryption keys for all storage volumes and snapshots.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_db_snapshot_copy
+* *Arguments:* kms_key_id
+
+[source,go]
+----
+resource "aws_db_snapshot_copy" "pass" {
+source_db_snapshot_identifier = aws_db_snapshot.example.db_snapshot_arn
+target_db_snapshot_identifier = "testsnapshot1234-copy"
+}
+----

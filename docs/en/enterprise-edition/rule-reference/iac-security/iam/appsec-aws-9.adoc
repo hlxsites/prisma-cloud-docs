@@ -1,0 +1,45 @@
+== AWS IAM password policy does not expire in 90 days misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_9
+|Category |IAM - Authentication Policies
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |f53107a2-00b2-46fb-98a9-1f12262c7d44
+|===
+ 
+
+
+
+=== Impact
+Password policies are used to enforce the creation and use of password complexity.
+Your IAM password policy should require passwords to be rotated or expired within a specified timeframe, we recommend passwords expire after 90 days or less.
+
+Reducing the lifetime of a password by enforcing regular password changes increases account resilience towards:
+
+* Brute force attack.
+* Passwords being stolen or compromised, sometimes without your knowledge.
+* Web filters and proxy servers intercepting and recording traffic, including encrypted data.
+* Use of the same user password across work, email, and personal systems.
+* End user workstations compromised by a keystroke logger.
+
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+[source,go]
+----
+resource "aws_iam_account_password_policy" "strict" {
+  ...
++  max_password_age               = 89 # greater than 0, less than 90
+}
+----

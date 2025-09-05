@@ -1,0 +1,39 @@
+== GCP SQL database instance does not have backup configuration enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_14
+|Category |Storage - Backups
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Cloud SQL is a fully managed relational database service for MySQL, PostgreSQL and SQL Server.
+It offers data encryption at rest and in transit, Private connectivity with VPC and user-controlled network access with firewall protection.
+Backups provide a way to restore a Cloud SQL instance to recover lost data or recover from a problem with your instance.
+We recommend you enable automated backups for instances that contain data of high importance.
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "main" {
+  name             = "main-instance"
+  database_version = "POSTGRES_14"
+  region           = "us-central1"
+  settings {
+    backup_configuration {
+        enabled = True
+    }
+  }
+}
+----
+

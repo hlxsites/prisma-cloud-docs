@@ -1,0 +1,36 @@
+== Dockerfile certificate validation is disabled with curl misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_DOCKER_2
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |HIGH
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy checks for the use of either the --insecure option or the -k shorthand with `curl`. Both these flags tell curl to skip verifying the server's certificate when making a request over HTTPS.
+
+Bypasses SSL Verification: By using either --insecure or -k, you're telling curl to not validate the SSL certificate of the server it's connecting to. This makes the request vulnerable to man-in-the-middle (MitM) attacks, where an attacker can intercept and possibly modify the traffic between curl and the server.
+
+
+=== How to Fix
+
+*Docker*
+
+Don't use the --insecure flag.
+
+[source,dockerfile]
+----
+- RUN curl --insecure https://example.com/somepackage.tar.gz | tar xz
++ RUN curl https://example.com/somepackage.tar.gz | tar xz
+----
+

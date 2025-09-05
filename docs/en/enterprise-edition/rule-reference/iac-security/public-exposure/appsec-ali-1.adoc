@@ -1,0 +1,41 @@
+== Alibaba Cloud OSS bucket accessible to public misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_1
+|Category |Public Exposure - Storage Buckets
+|Provider |Alibaba Cloud
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies Object Storage Service (OSS) buckets which are publicly accessible. Alibaba Cloud OSS allows customers to store and retrieve any type of content from anywhere on the web. Often, customers have legitimate reasons to expose the OSS bucket to the public, for example, to host website content. However, these buckets often contain highly sensitive enterprise data which if left open to the public may result in sensitive data leaks.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_oss_bucket
+* *Arguments:* acl
+
+To mitigate this issue, ensure the `acl` attribute of the `alicloud_oss_bucket` resource is set to `private`.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_oss_bucket" "example" {
+  ...
+-  acl = "public-read"
++  acl = "private"
+}
+----

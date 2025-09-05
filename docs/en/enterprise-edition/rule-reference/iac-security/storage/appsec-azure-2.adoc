@@ -1,0 +1,102 @@
+== Azure VM data disk is not encrypted with ADE/CMK misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_2
+|Category |Storage - Encryption
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+Azure encrypts data disks by default Server-Side Encryption (SSE) with platform-managed keys [SSE with PMK].
+It is recommended to use either SSE with Azure Disk Encryption [SSE with PMK+ADE] or Customer Managed Key [SSE with CMK] which improves on platform-managed keys by giving you control of the encryption keys to meet your compliance needs.
+Encryption does not impact the performance of managed disks and there is no additional cost for the encryption.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_managed_disk
+* *Arguments:* encryption_settings - Is Encryption enabled on this Managed Disk?
+
+Changing this forces a new resource to be created.
+Add the encryption_settings block as show:
+
+
+[source,text]
+----
+resource "azurerm_managed_disk" "example" {
+  name                 = var.disk_name
+  location             = var.location
+  resource_group_name  = var.resource_group_name
+  storage_account_type = var.storage_account_type
+  create_option        = "Empty"
+  disk_size_gb         = var.disk_size_gb
+ + encryption_settings {
+ +   enabled = true
+ + }
+  tags = var.common_tags
+}
+----
+
+
+*ARM Templates* 
+
+
+* *Resource:* encryptionOperation
+* *Arguments:* EnableEncryption
+
+
+[source,go]
+----
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the virtual machine"
+      }
+    },
+    "volumeType": {
+      "type": "string",
+      "defaultValue": "Data",
+      "allowedValues": [
+        "Data"
+      ],
+      "metadata": {
+        "description": "Decryption is supported only on data drives for Linux VMs."
+      }
+    },
+    "sequenceVersion": {
+      "type": "string",
+      "defaultValue": "1.0",
+      "metadata": {
+        "description": "Pass in an unique value like a GUID everytime the operation needs to be force run"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "variables": {
+    "extensionName": "AzureDiskEncryptionForLinux",
+    "extensionVersion": "0.1",
++   "encryptionOperation": "EnableEncryption",
+  
+  ...
+----

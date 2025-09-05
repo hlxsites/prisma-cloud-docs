@@ -1,0 +1,45 @@
+== Gitlab project defined in Terraform does not require signed commits misconfiguration detected in code
+// Gitlab project commits not signed
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GLB_4
+|Category |IAM - Overly Permissive
+|Provider |
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+In GitLab, administrators can turn on the capability to require signed commits for a project.
+When you enable required commit signing on a branch, contributors and bots can only push commits that have been signed and verified to the branch.
+If a collaborator pushes an unsigned commit to a branch that requires commit signatures, the collaborator will need to rebase the commit to include a verified signature, then force push the rewritten commit to the branch.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* Resource: gitlab_project
+* Attribute: prevent_secrets
+
+
+[source,go]
+----
+resource "gitlab_project" "example-two" {
+...
+  push_rules {
+    ...
++    reject_unsigned_commits        = true
+  }
+}
+----
+

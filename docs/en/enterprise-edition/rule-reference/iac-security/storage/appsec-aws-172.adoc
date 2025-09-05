@@ -1,0 +1,67 @@
+== AWS QLDB ledger has deletion protection is disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_172
+|Category |Storage - Backups
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Amazon Quantum Ledger Database (Amazon QLDB) is a fully managed ledger database for cryptographically verifiable transaction logging.
+You can use the QLDB API or the AWS Command Line Interface (AWS CLI) to create, update, and delete ledgers in Amazon QLDB.
+You can also list all the ledgers in your account, or get information about a specific ledger.
+Deletion protection is enabled by default.
+To successfully delete this resource via Terraform, deletion_protection = false must be applied before attempting deletion.
+In CloudFormation the flag that prevents a ledger from being deleted by any user.
+If not provided on ledger creation, this feature is enabled (true) by default.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_qldb_ledger
+* *Arguments:*  deletion_protection
+
+
+[source,go]
+----
+resource "aws_qldb_ledger" "sample-ledger" {
+  name             = "sample-ledger"
+  permissions_mode = "STANDARD"
++ deletion_protection = true 
+}
+----
+
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::QLDB::Ledger
+* *Arguments:*  DeletionProtection
+
+
+[source,yaml]
+----
+
+Type: AWS::QLDB::Ledger
+Properties: 
++  DeletionProtection: true
+  KmsKey: String
+  Name: String
+  PermissionsMode: String
+  Tags: 
+    - Tag
+----

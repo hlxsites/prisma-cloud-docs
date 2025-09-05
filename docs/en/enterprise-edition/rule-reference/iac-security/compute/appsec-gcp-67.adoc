@@ -1,0 +1,48 @@
+== GCP Kubernetes Engine Clusters have legacy compute engine metadata endpoints enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_67
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |ea1503e1-6927-4416-ac45-b975571d96cb
+|===
+ 
+
+
+
+=== Impact
+Disable the legacy GCE instance metadata APIs for GKE nodes.
+Under some circumstances, these can be used from within a pod to extract the node's credentials.
+The legacy GCE metadata endpoint allows simple HTTP requests to be made returning sensitive information.
+To prevent the enumeration of metadata endpoints and data exfiltration, the legacy metadata endpoint must be disabled.
+Without requiring a custom HTTP header when accessing the legacy GCE metadata endpoint, a flaw in an application that allows an attacker to trick the code into retrieving the contents of an attacker-specified web URL could provide a simple method for enumeration and potential credential exfiltration.
+By requiring a custom HTTP header, the attacker needs to exploit an application flaw that allows them to control the URL and also add custom headers in order to carry out this attack successfully.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_container_cluster
+* *Arguments:* min_master_version
+
+
+[source,go]
+----
+resource "google_container_cluster" "example" {
+  name               = var.name
+  location           = var.location
+  initial_node_count = 1
+  project            = data.google_project.project.name
+
++ min_master_version = 1.12 // (or higher)
+}
+----
+

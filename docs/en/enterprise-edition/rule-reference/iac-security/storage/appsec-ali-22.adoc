@@ -1,0 +1,45 @@
+== Alibaba Cloud Transparent Data Encryption is disabled on instance misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_22
+|Category |Storage - Encryption
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Transparent Data Encryption (TDE) is enabled on Alibaba Cloud RDS (Relational Database Service) instances. TDE helps protect data at rest by encrypting the storage of an entire database. It ensures that data is secured, meeting compliance requirements for protecting sensitive data.
+
+Failing to enable Transparent Data Encryption can result in data breaches if unauthorized users gain access to the underlying storage of the database.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_db_instance
+* *Attribute:* tde_status
+
+To mitigate this issue, ensure that the `tde_status` attribute is set to `Enabled` for the `alicloud_db_instance` resource. Confirm that the `engine` is either `MySQL` or `SQLServer` and that the `engine_version` is supported.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_db_instance" "example" {
+  ...
+
+  engine          = "MySQL"
+  engine_version  = "8.0"
++  tde_status      = "Enabled"
+}
+----

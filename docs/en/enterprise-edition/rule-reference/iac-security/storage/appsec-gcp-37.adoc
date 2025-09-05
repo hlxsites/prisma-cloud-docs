@@ -1,0 +1,68 @@
+== GCP VM disks not encrypted with Customer-Supplied Encryption Keys (CSEK) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_37
+|Category |Storage - Encryption
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |f1652347-aa74-4e95-baa0-f71c9d9c9c77
+|===
+ 
+
+
+
+=== Impact
+Customer-Supplied Encryption Keys (CSEK) are a feature in Google Cloud Storage and Google Compute Engine.
+Google Compute Engine encrypts all data at rest by default.
+Compute Engine handles and manages this encryption automatically, with no additional action required.
+When you provide your own encryption keys Compute Engine uses your key to protect the Google-generated keys used to encrypt and decrypt your data.
+Only users that provide the correct key can use resources protected by a customer-supplied encryption key.
+Google does not store your keys on its servers and cannot access your protected data unless you provide the key.
+If you forget or lose your key Google is unable to recover the key or to recover any data encrypted with that key.
+To control and manage this encryption yourself, you must provide your own encryption keys.
+We recommend you supply your own encryption keys for Google to use, at a minimum to encrypt business critical VM disks.
+This helps protect the Google-generated keys used to encrypt and decrypt your data.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_disk
+* *Field:* disk_encryption_key
+
+
+[source,go]
+----
+// Option 1
+resource "google_compute_disk" "default" {
+
+  ...
+  
++  disk_encryption_key {
++    raw_key = <raw key>
+  or
++    kms_key_self_link = <key link>
+    }
+ +  boot_disk {
+ +    disk_encryption_key_raw = <encryption key>
+    }
+
+}
+// Option 2
+resource "google_compute_instance" "default" {
+  
+  ...
+  
++  boot_disk {
++    disk_encryption_key_raw = <encryption key>
+    }
+}
+----

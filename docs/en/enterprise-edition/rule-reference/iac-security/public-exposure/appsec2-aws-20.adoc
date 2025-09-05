@@ -1,0 +1,62 @@
+== ALB does not redirect HTTP requests into HTTPS ones misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_20
+|Category |Public Exposure - Load Balancing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Ensure that the behaviour of the Load balancer is redirect any traffic from the encrypted endpoint rather than handling on http or failing to respond.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_lb, aws_lb_listener
+* *Arguments:* _redirect_ of  aws_lb_listener
+
+
+[source,go]
+----
+{
+ "
+resource "aws_lb" "lb_good" {
+}
+
+
+
+resource "aws_lb_listener" "listener_good" {
+  load_balancer_arn = aws_lb.lb_good.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+
+
+  }
+
+}
+
+",
+}
+----

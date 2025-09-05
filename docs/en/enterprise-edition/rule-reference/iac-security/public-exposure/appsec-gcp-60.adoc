@@ -1,0 +1,49 @@
+== GCP Cloud SQL database instances have public IPs misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_60
+|Category |Public Exposure - Database Endpoints
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+To lower the organization's attack surface, Cloud SQL databases should not have public IPs.
+Private IPs provide improved network security and lower latency for your application.
+We recommend you configure Second Generation SQL instances to use private IPs instead of public IPs.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "SQLSERVER_* " settings::ip_configuration: by default set to "true"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "SQLSERVER_2017_STANDARD"
+  region           = "us-central1"
+ 
+  settings {
++         ip_configuration{
++            ipv4_enabled    = "false"
+          }
+  }
+}
+----
+

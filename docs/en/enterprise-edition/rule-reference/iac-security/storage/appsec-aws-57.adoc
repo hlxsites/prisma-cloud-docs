@@ -1,0 +1,50 @@
+== AWS S3 Bucket has an ACL defined which allows public WRITE access misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_57
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::S3::Bucket
+* *Arguments:* Properties.AccessControl
+
+
+[source,yaml]
+----
+Type: AWS::S3::Bucket
+    Properties:
+        ...
+-     AccessControl: PublicReadWrite
+----
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket, aws_s3_bucket_acl
+* *Arguments:* acl
+
+
+[source,go]
+----
+resource "aws_s3_bucket_acl" "example" {
+  bucket = aws_s3_bucket.example.id
+-  acl    = "public-read-write"
++  acl    = "private"
+}
+----

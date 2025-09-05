@@ -1,0 +1,55 @@
+== AWS MQ is publicly accessible misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_69
+|Category |Public Exposure - Database Endpoints
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |ac5e8046-6e9f-4eba-8132-9a6500fd760e
+|===
+ 
+
+
+
+=== Impact
+This policy identifies the AWS MQ brokers which are publicly accessible. It is advisable to use MQ brokers privately only from within your AWS Virtual Private Cloud (VPC). Ensure that the AWS MQ brokers provisioned in your AWS account are not publicly accessible from the Internet to avoid sensitive data exposure and minimize security risks. 
+
+=== How to Fix
+
+
+*Terraform*
+
+To fix this issue, ensure that the `publicly_accessible` property in the `aws_mq_broker` resource is set to `false`.
+
+Example:
+
+[source,go]
+----
+resource "aws_mq_broker" "example" {
+  ...
+  publicly_accessible = false
+  ...
+}
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `PubliclyAccessible` property in the `AWS::AmazonMQ::Broker` resource is set to `false`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyMQBroker:
+    Type: AWS::AmazonMQ::Broker
+    Properties:
+      ...
+      PubliclyAccessible: false
+      ...
+----

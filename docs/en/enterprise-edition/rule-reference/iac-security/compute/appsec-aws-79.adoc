@@ -1,0 +1,92 @@
+== AWS EC2 instance not configured with Instance Metadata Service v2 (IMDSv2) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_79
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |81c165ce-f66e-441a-8ea0-56a107175ccc
+|===
+ 
+
+
+
+=== Impact
+The Instance Metadata Service (IMDS) is an on-instance component used by code on the instance to securely access instance metadata.
+
+You can access instance metadata from a running instance using one of the following methods:
+
+* Instance Metadata Service Version 1 (IMDSv1) -- a request/response method
+* Instance Metadata Service Version 2 (IMDSv2) -- a session-oriented method
+
+As a request/response method IMDSv1 is prone to local misconfigurations:
+
+* Open proxies, open NATs and routers, server-side reflection vulnerabilities.
+* One way or another, local software might access local-only data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_instance
+* *Arguments:* http_tokens - (Optional) Whether or not the metadata service requires session tokens, the mechanism used for Instance Metadata  Service Version 2.
+
+Can be "optional" or "required".
+(Default: "optional").
+*Set to "required" to enable Instance Metadata Service V2.*
+Alternatively, disable the metadata service altogether by setting `http_endpoint = "disabled"`.
+
+
+[source,go]
+----
+resource "aws_instance" "example" {
+  ...
+  instance_type     = "t2.micro"
++   metadata_options {
+        ...
++       http_endpoint = "enabled"
++       http_tokens   = "required"
++  }
+  ...
+}
+----
+
+If setting `http_tokens = "required"` in a launch template that is being used for a EKS worker/node group, you should consider setting the `http_put_response_hop_limit = 2` per the https://aws.amazon.com/about-aws/whats-new/2020/08/amazon-eks-supports-ec2-instance-metadata-service-v2/[default behavior in EKS].
+Without this setting the default service account in EKS will not be able to access the instance metadata service.
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::EC2::LaunchTemplate
+* *Arguments:* Properties.MetadataOptions.HttpEndpoint /  Properties.MetadataOptions.HttpTokens
+
+
+[source,yaml]
+----
+Resources:
+  IMDSv1Disabled:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+        ...
+      LaunchTemplateData:
+        ...
++       MetadataOptions:
++         HttpEndpoint: disabled
+          
+  IMDSv2Enabled:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      ...
+      LaunchTemplateData:
+        ...
++       MetadataOptions:
++         HttpTokens: required
+----

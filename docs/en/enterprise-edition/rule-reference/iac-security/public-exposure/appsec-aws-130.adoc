@@ -1,0 +1,39 @@
+== AWS VPC subnets should not allow automatic public IP assignment misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_130
+|Category |Public Exposure - VPC/VCN/VNET
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |11743cd3-35e4-4639-91e1-bc87b52d4cf5
+|===
+ 
+
+
+
+=== Impact
+VPC subnet is a part of the VPC having its own rules for traffic.
+Assigning the Public IP to the subnet automatically (on launch) can accidentally expose the instances within this subnet to internet and should be edited to 'No' post creation of the Subnet.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_subnet
+* *Arguments:* map_public_ip_on_launch
+
+
+[source,go]
+----
+resource "aws_subnet" "test" {
+ ...
++ map_public_ip_on_launch = false
+  }
+----

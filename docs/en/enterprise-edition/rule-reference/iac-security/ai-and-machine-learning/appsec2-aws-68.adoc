@@ -1,0 +1,81 @@
+
+== AWS SageMaker notebook instance IAM policy is overly permissive misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_68
+|Category |AI & Machine Learning - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy checks whether IAM policies for SageMaker Notebook Instances are overly permissive. Overly permissive IAM policies can grant unauthorized access, potentially leading to data breaches or loss. This includes unauthorized users modifying configurations or deleting resources. This policy enforces least privilege, ensuring users only have necessary permissions for their tasks, strengthening your security posture.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_notebook_instance, aws_iam_role
+* *Arguments:* policy
+
+Ensure the IAM role attached to the SageMaker notebook does not have an Allow statement with Action = "*".
+
+[source,go]
+----
+resource "aws_iam_role" "example_role_restricted" {
+  name = "example_role_restricted"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+-        Action = "*"
++        Action = "s3:ListBucket"
+        Resource = "arn:aws:s3:::example-bucket"
+      }
+    ]
+  })
+  assume_role_policy = ""
+}
+
+resource "aws_sagemaker_notebook_instance" "example" {
+  ...
+  role_arn = aws_iam_role.example_role_restricted.arn
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::NotebookInstance, AWS::IAM::Role
+* *Arguments:* AssumeRolePolicyDocument
+
+Ensure the IAM role attached to the SageMaker notebook does not have an Allow statement with Action = "*" in your CloudFormation template.
+
+[source,yaml]
+----
+Resources:
+  Example:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      ...
+      RoleArn: !GetAtt ExampleRole.Arn
+
+  ExampleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+-            Action: *
++            Action: sts:AssumeRole
+----
+

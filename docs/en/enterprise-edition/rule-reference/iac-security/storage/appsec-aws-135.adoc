@@ -1,0 +1,55 @@
+== EC2 EBS is not optimized misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_135
+|Category |Storage - Redundancy
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Ensuring that EC2 instances are EBS-optimized will help to deliver enhanced performance for EBS workloads.
+They provide dedicated throughput to Amazon Elastic Block Store (EBS) volumes, which can result in improved EBS performance.
+Additionally, EBS-optimized instances use a separate network connection for EBS traffic, which can reduce network latency and improve the performance of EBS-intensive workloads.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_instance
+* *Arguments:* ebs_optimized
+
+
+[source,go]
+----
+resource "aws_instance" "foo" {
+  ...
++ ebs_optimized = true
+}
+----
+
+*Ansible*
+
+
+[source,yaml]
+----
+- name: Example
+  amazon.aws.ec2_instance:
+    name: my_ec2_instance
+    image_id: ami-123456
+    instance_type: t2.micro
++    ebs_optimized: true
+----
+
+In this example, `ebs_optimized` is set to `true` that helps improve performance and latency.

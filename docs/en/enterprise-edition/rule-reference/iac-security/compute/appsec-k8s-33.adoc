@@ -1,0 +1,50 @@
+== Kubernetes dashboard is deployed misconfiguration detected in code
+// Kubernetes dashboard deployed
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_33
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+The Terraform provider for Azure enables the capability to disable the Kubernetes dashboard on an AKS cluster.
+This is achieved by providing the Kubernetes dashboard as an AKS add-on, similar to the Azure Monitor, for containers integration, AKS virtual nodes, and the HTTP application routing.
+In mid-2019 Tesla was hacked where their kube-dashboard was exposed to the internet.
+Hackers browsed around, found credentials, and deployed pods running bitcoin mining software.
+We recommend you disable the kube-dashboard if it's not needed, to prevent the need to manage its individual access interface and limit it as an attack vector.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Resource:* Container
+* *Arguments:*  labels:app / k8s-app - specifies the app label for the pod image - defines the image used by the container
+
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <name>
+  labels:
+-   app: kubernetes-dashboard
+-   k8s-app: kubernetes-dashboard
+spec:
+  containers:
+  - name: <container name>
+-   image: kubernetes-dashboard
+-   image: kubernetesui
+----

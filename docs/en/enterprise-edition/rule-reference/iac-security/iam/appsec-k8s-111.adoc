@@ -1,0 +1,54 @@
+== The --root-ca-file argument for controller managers is not set appropriately misconfiguration detected in code
+// 'The '--root-ca-file' argument for controller managers not set appropriately
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_111
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Allow pods to verify the API server's serving certificate before establishing connections.
+Processes running within pods that need to contact the API server must verify the API server's serving certificate.
+Failing to do so could be a subject to man-in-the-middle attacks.
+Providing the root certificate for the API server's serving certificate to the controller manager with the --root-ca-file argument allows the controller manager to inject the trusted bundle into pods so that they can verify TLS connections to the API server.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      component: kube-controller-manager
+      tier: control-plane
+    name: kube-controller-manager
+    namespace: kube-system
+  spec:
+    containers:
+    - command:
+      - kube-controller-manager
++     -  --root-ca-file=private.pem
+      image: gcr.io/google_containers/kube-controller-manager-amd64:v1.6.0",
+}
+----

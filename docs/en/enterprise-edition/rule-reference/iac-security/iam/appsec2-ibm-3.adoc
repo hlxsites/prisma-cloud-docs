@@ -1,0 +1,36 @@
+== IBM Cloud API key creation is not restricted in account settings in Terraform misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_IBM_3
+|Category |IAM - Overly Permissive
+|Provider |IBM
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy detects whether API key creation is unrestricted in account settings. Unrestricted API key creation can increase the risk of unauthorized access. By restricting creation, you can better control who has access to your resources, minimizing the potential for keys to be created without oversight, and mitigate the risk of malicious use.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* ibm_iam_account_settings
+* *Arguments:* restrict_create_platform_apikey
+
+Ensure that API key creation is restricted to authorized processes and users by setting the `restrict_create_platform_apikey` attribute to `RESTRICTED` in account settings. This helps prevent unauthorized access to IBM Cloud resources.
+
+In this example, the `restrict_create_platform_apikey` attribute is set to `RESTRICTED` in the `ibm_iam_account_settings` resource to restrict API key creation.
+
+[source,go]
+----
+resource "ibm_iam_account_settings" "example" {
+  ...
+  restrict_create_platform_apikey = "RESTRICTED"  # Restricts API key creation
+}
+----

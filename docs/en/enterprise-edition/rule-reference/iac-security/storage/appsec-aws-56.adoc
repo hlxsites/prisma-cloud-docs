@@ -1,0 +1,59 @@
+== AWS S3 bucket RestrictPublicBucket is not set to True misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_56
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+The S3 Block Public Access configuration enables specifying whether S3 should restrict public bucket policies for buckets in this account.
+Setting  RestrictPublicBucket to TRUE restricts access to buckets with public policies to only AWS services and authorized users within this account.
+Enabling this setting does not affect previously stored bucket policies.
+Public and cross-account access within any public bucket policy, including non-public delegation to specific accounts, is blocked.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket_public_access_block
+* *Arguments:* restrict_public_buckets
+
+
+[source,go]
+----
+resource "aws_s3_bucket_public_access_block" "artifacts" {
+  ...
++ restrict_public_buckets = true
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::S3::Bucket
+* *Arguments:* Properties.PublicAccessBlockConfiguration.RestrictPublicBuckets
+
+
+[source,yaml]
+----
+Type: 'AWS::S3::Bucket'
+    Properties:
+      ...
+      PublicAccessBlockConfiguration:
+        ...
++       RestrictPublicBuckets: true
+----

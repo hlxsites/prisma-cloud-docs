@@ -1,0 +1,75 @@
+== The --kubelet-https argument is not set to True misconfiguration detected in code
+// '--kubelet-https' argument not set to True
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_71
+|Category |Networking - Encryption and Protocols
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+////
+Bridgecrew
+Prisma Cloud
+* The --kubelet-https argument is not set to True* 
+
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_71
+|Category |Networking - Encryption and Protocols
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+////
+
+
+=== Impact
+Use https for kubelet connections.
+Connections from apiserver to kubelets could potentially carry sensitive data such as secrets and keys.
+It is thus important to use in-transit encryption for any communication between the apiserver and kubelets.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --kubelet-https=true
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

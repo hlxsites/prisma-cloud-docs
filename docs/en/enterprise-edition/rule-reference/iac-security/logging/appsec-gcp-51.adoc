@@ -1,0 +1,51 @@
+== GCP PostgreSQL instance with log_checkpoints database flag is disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_51
+|Category |Logging - Disabled or Missing
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |56f48aa7-73c7-4b85-bb71-2b4d063864d5
+|===
+ 
+
+
+
+=== Impact
+Enabling *log_checkpoints* causes checkpoints and restart points to be logged in the server log.
+Some statistics are included in the log messages, including the number of buffers written, and the time spent writing them.
+This parameter can only be set in the *postgresql.conf* file or on the server command line.
+We recommended you set the *log_checkpoints* database flag for the Cloud SQL PostgreSQL instance to *on*.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:*  database_version = "POSTGRES_* " settings::database_flags: key:"log_checkpoints", value:  by default set to "off"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "POSTGRES_11"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "log_checkpoints"
++            value = "on"
+          }
+  }
+}
+----
+

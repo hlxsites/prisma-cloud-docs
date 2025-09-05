@@ -1,0 +1,41 @@
+== Azure Cognitive Services account hosted with OpenAI is not configured with data loss prevention misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_247
+|Category |AI & Machine Learning - Guardrails
+|Provider |Azure
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |745fdc76-0c47-4e32-9bb1-3bd5f5733cf3
+|===
+
+
+=== Impact
+Azure Cognitive Services accounts hosted with OpenAI lacking data loss prevention settings risk unauthorized data exfiltration. This misconfiguration allows sensitive data processed by the service to be sent to unintended destinations.
+
+OpenAI-hosted Azure Cognitive Services utilize outbound network connections. Without data loss prevention enabled, these connections are unrestricted, creating an opportunity for malicious actors to exploit misconfigured settings and exfiltrate sensitive data. An attacker could potentially leverage this to gain access to confidential information.
+
+The impact of this misconfiguration includes data breaches, regulatory non-compliance, and reputational damage. Implementing data loss prevention is crucial for maintaining data confidentiality and integrity, minimizing the risk of sensitive information leakage.
+
+To mitigate this risk, explicitly configure allowed outbound URLs within the Azure Cognitive Services account's data loss prevention settings. Restrict access only to trusted domains, regularly review and update these settings, and enforce the principle of least privilege to limit potential exposure.
+
+=== How to Fix
+
+*Terraform*
+
+Ensure that your Azure Cognitive Services has the  `outbound_network_access_restricted` argument set to `true` and has valid `fqdns`.
+
+[source,go]
+----
+resource "azurerm_cognitive_account" "example" {
+  ...
+  kind                = "OpenAI"
+
++  outbound_network_access_restricted = true  # Restricted outbound
++  fqdns = ["openai.example.com"]  # Valid FQDN
+}
+----
+

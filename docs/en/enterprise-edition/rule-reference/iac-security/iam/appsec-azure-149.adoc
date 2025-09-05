@@ -1,0 +1,47 @@
+== Azure SQL on Virtual Machine (Linux) with basic authentication misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_149
+|Category |IAM - Authentication Policies
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Bicep, Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |187eec1a-b273-413d-90e4-91a3cfe3c71d
+|===
+ 
+
+
+
+=== Impact
+Disabling password authentication for your Azure virtual machine (VM) can help improve the security of your VM.
+Password authentication allows users to access the VM using a password, rather than an Azure Active Directory (Azure AD) account or other form of authentication.
+By disabling password authentication, you can help prevent unauthorized access to your VM and protect it from potential security threats such as data breaches or unauthorized access.
+Instead, you should use more secure forms of authentication such as Azure AD, SSH keys, or multi-factor authentication.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_linux_virtual_machine_scale_set
+* *Arguments:* disable_password_authenticatio
+
+
+[source,go]
+----
+resource "azurerm_linux_virtual_machine_scale_set" "pass" {
+  name                            = var.scaleset_name
+  resource_group_name             = var.resource_group.name
+  location                        = var.resource_group.location
+  sku                             = var.sku
+  instances                       = var.instance_count
+  admin_username                  = var.admin_username
+  disable_password_authentication = true
+  tags                            = { test = "Fail" }
+}
+----

@@ -1,0 +1,44 @@
+== Dynamodb point in time recovery is not enabled for global tables misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_165
+|Category |Storage - Backups
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Enabling point-in-time recovery (PITR) for Amazon DynamoDB global tables can help to protect against data loss due to accidental write or delete operations, or due to data corruption.
+With PITR enabled, you can restore a global table to any point in time within the specified recovery window (typically up to 35 days).
+This can be helpful if you need to undo unintended changes or recover from data corruption.
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+* *Resource:*  AWS::DynamoDB::GlobalTable
+* *Arguments:* Properties.DistributionConfig.Logging/Bucket
+
+
+[source,yaml]
+----
+Resources:
+  MyCloudFrontDistribution:
+    Type: AWS::DynamoDB::GlobalTable
+    Properties: 
+            ...
+      Replicas: 
++       - PointInTimeRecoverySpecification: 
++           - PointInTimeRecoveryEnabled
+----

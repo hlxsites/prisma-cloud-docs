@@ -1,0 +1,50 @@
+
+== Athena Database is not encrypted at rest misconfiguration detected in code
+
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_77
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+AWS Athena is a query service managed by AWS that uses standard SQL to analyze data directly in Amazon S3.
+Encryption of data while in transit between Amazon Athena and S3 is provided by default using SSL/TLS, but encryption of query results at rest is not enabled by default.
+Athena encryption at rest provides an additional layer of data protection by helping secure your data against unauthorized access to the underlying Amazon S3 storage. We recommend enabling encryption at rest.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_athena_database
+* *Arguments:* encryption_configuration - (Optional) The encryption key block AWS Athena uses to decrypt the data in S3, such as an AWS Key Management Service (AWS KMS) key.
+
+An encryption_configuration block is documented below.
+
+
+[source,go]
+----
+resource "aws_athena_database" "example" {
+  ...
+  name   = "database_name"
++ encryption_configuration {
++   encryption_option = var.encryption_option
++   kms_key           = var.kms_key_arn
++ }
+  ...
+}
+----

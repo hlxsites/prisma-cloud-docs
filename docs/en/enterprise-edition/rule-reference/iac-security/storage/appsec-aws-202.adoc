@@ -1,0 +1,43 @@
+== AWS MemoryDB data is not encrypted in transit misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_202
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies the AWS MemoryDB  that are configured with disabled in-transit data encryption.
+It is recommended that these resources will be configured with in-transit data encryption to minimize risk for sensitive data being leaked.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_memorydb_cluster" "pass2" {
+  acl_name                 = "open-access"
+  name                     = "my-cluster"
+  node_type                = "db.t4g.small"
+  num_shards               = 2
+  security_group_ids       = [aws_security_group.example.id]
+  snapshot_retention_limit = 7
+  subnet_group_name        = aws_memorydb_subnet_group.example.id
+  tls_enabled              = true
+}
+----

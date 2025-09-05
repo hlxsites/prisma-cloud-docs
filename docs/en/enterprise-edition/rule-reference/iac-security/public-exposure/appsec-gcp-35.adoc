@@ -1,0 +1,57 @@
+== GCP VM instances have serial port access enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_35
+|Category |Public Exposure - Admin Interface
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |85abf9ea-0225-4706-af2c-7e0177ebfd88
+|===
+ 
+
+
+
+=== Impact
+Interacting with a serial port is often referred to as the serial console.
+It is similar to using a terminal window: input and output is entirely in text mode with no graphical interface or mouse support.
+If the interactive serial console on an instance is enabled, clients can attempt to connect to that instance from any IP address.
+For security purposes interactive serial console support should be disabled.
+A virtual machine instance has four virtual serial ports.
+Interacting with a serial port is similar to using a terminal window: input and output is entirely in text mode with no graphical interface or mouse support.
+The instance's BIOS operating system and other system-level entities write output to the serial ports and accept input, for example, commands and responses to prompts.
+Typically, these system-level entities use the first serial port (port 1).
+Serial port 1 is often referred to as the serial console.
+The interactive serial console does not support IP-based access restrictions, for example, an IP whitelist.
+If you enable the interactive serial console on an instance, clients can connect to that instance from any IP address.
+This allows anybody with the correct SSH key, username, project ID, zone, and instance name to connect to that instance.
+To stop this type of access interactive serial console support should be disabled.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_instance
+* *Arguments:* serial-port-enable By default set to false.
+
+
+[source,go]
+----
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+  boot_disk {}
+  metadata = {
+-     serial-port-enable = true
+  }
+}
+----
+

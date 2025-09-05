@@ -1,0 +1,42 @@
+== Azure Container Registry (ACR) Doesn't Have a Retention Policy Set misconfiguration detected in code
+// Ensures that Azure Container Registry (ACR) has a retention policy set to clean up untagged manifests.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_167
+|Category |Storage - Backups
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+Azure Container Registry retention policies help to manage image storage by automatically deleting untagged manifests. Enabling this policy ensures efficient usage of storage and removes potential vulnerabilities associated with stale or unused images.
+
+This policy checks if the retention policy is enabled for Azure Container Registry, ensuring that untagged manifests are automatically deleted.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_container_registry
+* *Arguments:* retention_policy
+
+[source,terraform]
+----
+resource "azurerm_container_registry" "example" {
+  ...
+  # If using azurerm version below 4.0
++ retention_policy {
++    enabled = true
++    days    = 7
++  }
+
+  # If using azurerm version 4.0 and above
++ retention_policy_in_days = 7
+}
+----

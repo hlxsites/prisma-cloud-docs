@@ -1,0 +1,68 @@
+
+== ECR image tags are not immutable misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_51
+|Category |Storage - Versioning
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Amazon ECR supports immutable tags, preventing image tags from being overwritten.
+
+Tag immutability enables users to rely on the descriptive tags of an image as a mechanism to track and uniquely identify images.
+
+By setting an image tag as immutable, developers can use the tag to correlate the deployed image version with the build that produced the image.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ecr_repository
+* *Arguments:* image_tag_mutability - (Optional) The tag mutability setting for the repository.
+Must be one of: MUTABLE or IMMUTABLE.
+Defaults to MUTABLE.
+
+
+[source,go]
+----
+resource "aws_ecr_repository" "example" {
+  ...
+  name                 = "bar"
++ image_tag_mutability = "IMMUTABLE"
+}
+----
+
+
+
+*CloudFormation*
+
+
+* *Resource:* AWS::ECR::Repository
+* *Arguments:* Properties.ImageTagMutability - (Optional) The tag mutability setting for the repository.
+Must be one of: MUTABLE or IMMUTABLE.
+Defaults to MUTABLE.
+
+
+[source,yaml]
+----
+Resources: 
+  MyRepository:
+    Type: AWS::ECR::Repository
+    Properties: 
+      ...
++     ImageTagMutability: "IMMUTABLE"
+----

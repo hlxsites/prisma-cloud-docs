@@ -1,0 +1,68 @@
+== AWS RDS database instance not configured with encryption in transit misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_69
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |4ea6de73-a950-4d1b-95ba-84a5d9f4b5d4
+|===
+
+
+=== Impact
+This policy detects whether an Amazon RDS database instance is not configured to use data-in-transit encryption, potentially exposing sensitive data to unauthorized access through unencrypted data transmission between the database and other services or clients. A lack of encryption in transit increases the risk of data interception and unauthorized access, leading to potential data breaches. Implementing encryption in transit is crucial for maintaining data integrity and confidentiality in cloud environments."
+
+=== How to Fix
+
+Configure the following database types to enforce secure connections by configuring the relevant Terraform settings.
+
+* Postgres and SQLserver: rds.force_ssl set to 1
+* MariaDB and MySQL: require_secure_transport set to 1
+* DB2: db2comm set to SSL
+
+*Terraform*
+
+* *Resource:* aws_db_instance, aws_db_parameter_group
+* *Arguments:* parameter
+
+
+
+This example shows how to configure an Amazon RDS instance to enforce encryption in transit.
+
+[source,go]
+----
+resource "aws_db_instance" "example" {
+  # ... other configurations ...
+
+  # Ensure the RDS instance is configured with encryption in transit
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::RDS::DBInstance, AWS::RDS::DBParameterGroup
+* *Arguments:* Parameters
+
+
+This example shows how to configure SSL enforcement for a DB2 instance using an AWS RDS DBParameterGroup in a CloudFormation template.
+
+[source,yaml]
+----
+Resources:
+  DB2PassParam:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: "My DB2 parameter group"
+      Family: "1db2-ae1"
+      Parameters:
+        db2comm: "SSL"
+----
+

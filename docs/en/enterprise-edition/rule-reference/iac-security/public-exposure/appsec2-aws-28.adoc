@@ -1,0 +1,43 @@
+== AWS Application Load Balancer (ALB) not configured with AWS Web Application Firewall v2 (AWS WAFv2) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_28
+|Category |Public Exposure - Ingress Controls
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |44191c88-265d-40ac-af7f-0e78a57d252d
+|===
+ 
+
+
+
+=== Impact
+AWS WAF is a web application firewall service that helps protect your web applications from common web exploits that could affect your application's availability, integrity, or confidentiality.
+By attaching AWS WAF to your public-facing ALBs, you can create rules that block or allow traffic based on the characteristics of the traffic, such as the IP address, the HTTP method, or the values of specific headers.
+This can help to protect your application from common web exploits such as SQL injection attacks, cross-site scripting attacks, and other types of malicious traffic.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_lb" "lb_good_1" {
+  internal= false
+}
+
+
+resource "aws_wafregional_web_acl_association" "foo" {
+  resource_arn = aws_lb.lb_good_1.arn
+  web_acl_id = aws_wafregional_web_acl.foo.id
+}
+----

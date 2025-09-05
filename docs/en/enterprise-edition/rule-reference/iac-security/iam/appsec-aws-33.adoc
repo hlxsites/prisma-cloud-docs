@@ -1,0 +1,73 @@
+== AWS KMS Key policy overly permissive misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_33
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |1867d4c1-87ed-4ed1-a11e-f88a1ca9ead7
+|===
+ 
+
+
+
+=== Impact
+This policy identifies KMS Keys that have a key policy overly permissive. Key policies are the primary way to control access to customer master keys (CMKs) in AWS KMS. It is recommended to follow the principle of least privilege ensuring that KMS key policy does not have all the permissions to be able to complete a malicious action.
+
+For more details:
+https://docs.aws.amazon.com/kms/latest/developerguide/control-access-overview.html#overview-policy-elements
+
+=== How to Fix
+
+
+*Terraform*
+
+To fix this issue, ensure that the KMS key policy does not use wildcard (`*`) principals. Instead, specify specific AWS accounts or roles.
+
+Example:
+
+[source,go]
+----
+resource "aws_kms_key" "example" {
+  description = "example key"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Allow access for Key Administrators"
+        Effect = "Allow"
+        Principal = {
+-          AWS = "*"
++          AWS = "arn:aws:iam::123456789012:role/admin"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      }
+    ]
+  })
+}
+----
+
+
+*CloudFormation* 
+
+To fix this issue, ensure that the KMS key policy does not use wildcard (`*`) principals. Instead, specify specific AWS accounts or roles.
+
+
+[source,yaml]
+----
+Type: AWS::KMS::Key
+    Properties:
+        ...
+        Statement:
+            - ...
+        Principal:
+-           "*"
+-           AWS: "*"
++                   AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+----

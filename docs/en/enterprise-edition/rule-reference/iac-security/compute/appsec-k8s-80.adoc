@@ -1,0 +1,57 @@
+== The admission control plugin AlwaysPullImages is not set misconfiguration detected in code
+// Admission control plugin AlwaysPullImages is not set
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_80
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Always pull images.
+Setting admission control policy to AlwaysPullImages forces every new pod to pull the required images every time.
+In a multi-tenant cluster users can be assured that their private images can only be used by those who have the credentials to pull them.
+Without this admission control policy, once an image has been pulled to a node, any pod from any user can use it simply by knowing the image's name, without any authorization check against the image ownership.
+When this plug-in is enabled, images are always pulled prior to starting containers, which means valid credentials are required.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --enable-admission-plugins=AlwaysPullImages
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+

@@ -1,0 +1,43 @@
+== Azure Microsoft Defender for Cloud is set to Off for Servers misconfiguration detected in code
+// Azure Microsoft Defender for Cloud disabled for Servers
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_55
+|Category |Monitoring - Alerting and Notifications
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |3b5a4a78-f4d4-442d-b688-0c299a6305b1
+|===
+ 
+
+
+
+=== Impact
+Azure Defender is a cloud workload protection service that utilizes and agent-based deployment to analyze signals from Azure network fabric and the service control plane, to detect threats across all Azure resources.
+It can also analyze non-Azure resources, utilizing Azure Arc, including those on-premises and in both AWS and GCP (once they've been onboarded).
+Azure Defender for servers adds threat detection and advanced defenses for Windows and Linux machines.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_security_center_subscription_pricing
+* *Arguments:* resource_type - (Required) The resource type this setting affects.
+
+Ensure that `SqlServers` is declared to pass this check.
+
+
+[source,go]
+----
+resource "azurerm_security_center_subscription_pricing" "example" {
+  tier          = "Standard"
+  resource_type = "AppServices,ContainerRegistry,KeyVaults,KubernetesService,SqlServers,SqlServerVirtualMachines,StorageAccounts,VirtualMachines,ARM,DNS"
+}
+----

@@ -1,0 +1,44 @@
+== Alibaba cloud ALB ACL does not restrict public access misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_29
+|Category |Public Exposure - Load Balancing
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Alibaba Cloud Application Load Balancer (ALB) ACL (Access Control List) entries do not allow unrestricted access (i.e., `0.0.0.0/0`). Allowing unrestricted access can expose your load balancer to the entire internet, increasing the risk of unauthorized access and potential attacks.
+
+Configuring ACL entries to restrict access helps protect the ALB from exposure to malicious traffic and ensures that only trusted IP ranges can access the resources behind the load balancer.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* alicloud_alb_acl_entry_attachment
+* *Attribute:* entry
+
+To mitigate this issue, ensure that the `entry` attribute in the `alicloud_alb_acl_entry_attachment` resource does not include `0.0.0.0/0`.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_alb_acl_entry_attachment" "example" {
+  ...
+  entry {
+-    entry = "0.0.0.0/0"
++    entry = "192.168.1.0/24"
+  }
+}
+----

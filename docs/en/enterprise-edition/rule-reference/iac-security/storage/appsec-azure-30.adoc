@@ -1,0 +1,45 @@
+== Azure PostgreSQL database server with log checkpoints parameter disabled misconfiguration detected in code
+// Azure PostgreSQL Database Server 'log checkpoints' parameter disabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_30
+|Category |Storage - Disabled or Missing
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |52e0ab32-b1ae-4e4e-9245-4bd0f8057895
+|===
+ 
+
+
+
+=== Impact
+Enabling *log_checkpoints* helps the PostgreSQL Database to log each checkpoint and generate query and error logs.
+Access to transaction logs is not supported.
+Query and error logs can be used to identify, troubleshoot, repair configuration errors, and address sub-optimal performance issues.
+We recommend you set *log_checkpoints* to *On* for PostgreSQL Server Databases.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_postgresql_configuration
+* *Arguments:* name + value
+
+
+[source,go]
+----
+- resource "azurerm_postgresql_configuration" "example" {
+-    name                = "log_checkpoints"
+-    resource_group_name = data.azurerm_resource_group.example.name
+-    server_name         = azurerm_postgresql_server.example.name
+-    value               = "off"
+}
+----
+

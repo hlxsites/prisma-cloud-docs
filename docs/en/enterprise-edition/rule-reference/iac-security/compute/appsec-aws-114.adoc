@@ -1,0 +1,48 @@
+== AWS EMR cluster is not configured with Kerberos Authentication misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_114
+|Category |Compute - Credentials and Auth
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |0ac889c6-a0e6-45f1-bb4e-ae3544b59d8c
+|===
+ 
+
+
+
+=== Impact
+Ensuring that the Kerberos Realm is set can help to improve the security of your EMR clusters by allowing you to more effectively manage and control access to your clusters.
+For example, you can use the Kerberos Realm to specify which users and groups are allowed to access your clusters, and which actions they are allowed to perform.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_emr_cluster
+* *Arguments:* kerberos_attributes.realm
+
+
+[source,go]
+----
+resource "aws_emr_cluster" "test" {
+...
+  kerberos_attributes {
+    kdc_admin_password                = "somePassword"
++   realm                             = "EC2.INTERNAL"
+    }
+}resource "aws_emr_cluster" "test" {
+...
+  kerberos_attributes {
+    kdc_admin_password                = "somePassword"
++   realm                             = "EC2.INTERNAL"
+    }
+}
+----

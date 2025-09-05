@@ -1,0 +1,69 @@
+== AWS Elastic Load Balancer v2 (ELBv2) with access log disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_91
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |b9cdd43b-3483-48a1-9a98-313c40d3989f
+|===
+ 
+
+
+
+=== Impact
+ELBv2 provide access logs that capture information about the TLS requests sent to NLBs.
+These access logs can be used to analyze traffic patterns and troubleshoot security and operational issues.
+Access logging is an optional feature of ELB that is disabled by default.
+There is no additional charge for access logs.
+You are charged storage costs for Amazon S3, but not charged for the bandwidth.
+After you enable access logging for your load balancer, ELBv2 captures the logs as compressed files and stores them in the Amazon S3 bucket that you specify.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_lb
+* *Arguments:* access_logs - (Optional) An Access Logs block.
+Access Logs documented below.
+
+
+[source,go]
+----
+resource "aws_lb" "test" {
+  ...
+  name               = "test-lb-tf"
++ access_logs {
++   bucket  = aws_s3_bucket.lb_logs.bucket
++   prefix  = "test-lb"
++   enabled = true
++ }
+}
+----
+
+
+*CloudFormation* 
+
+
+*Resource: AWS::ElasticLoadBalancingV2::LoadBalancer *Argument: Properties.LoadBalancerAttributes
+
+
+[source,yaml]
+----
+Resources:
+  Resource0:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      ...
+      LoadBalancerAttributes:
++     - Key: access_logs.s3.enabled
++       Value: "true"
+----

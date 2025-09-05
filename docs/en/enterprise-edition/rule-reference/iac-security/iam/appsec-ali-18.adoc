@@ -1,0 +1,43 @@
+== Alibaba Cloud RAM password policy does not prevent password reuse misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_18
+|Category |IAM - Authentication Policies
+|Provider |Alibaba Cloud
+|Severity |MEDIUM
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that RAM (Resource Access Management) password policies prevent password reuse by specifying a value for `password_reuse_prevention`. Restricting password reuse forces users to create unique passwords for each password change, reducing the likelihood of credential compromise through previously used or weak passwords.
+
+Failing to set a password reuse prevention policy can increase the risk of unauthorized access due to predictable or previously compromised passwords being reused.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_ram_account_password_policy
+* *Arguments:* password_reuse_prevention
+
+To mitigate this issue, ensure the `password_reuse_prevention` attribute in the `alicloud_ram_account_password_policy` resource is set to a value of 24.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_ram_account_password_policy" "example" {
+  ...
+-  password_reuse_prevention    = 5
++  password_reuse_prevention    = 24
+}
+----

@@ -1,0 +1,56 @@
+
+== AWS Sagemaker data quality job not encrypting communications between instances used for monitoring jobs misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_369
+|Category |AI & Machine Learning - Data Protection
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy checks whether all communications between instances used for monitoring jobs in Amazon SageMaker Data Quality Jobs are encrypted. Encryption is crucial to safeguard sensitive information during transmission. Unencrypted data can be easily intercepted by unauthorized individuals, potentially leading to data breaches or other security incidents.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_sagemaker_data_quality_job_definition
+* *Arguments:* network_config/enable_inter_container_traffic_encryption
+
+Ensure that the `network_config`` block includes the `enable_inter_container_traffic_encryption`` argument, and set this argument to `true`, as displayed in the example below. 
+
+[source,go]
+----
+resource "aws_sagemaker_data_quality_job_definition" "job_definition" {
+  job_definition_name = "data-quality-job-definition"
+  ...
+  network_config {
++    enable_inter_container_traffic_encryption = true
+  }
+}
+----
+
+*CloudFormation*
+
+* *Resource:* AWS::SageMaker::DataQualityJobDefinition
+* *Arguments:* Properties/NetworkConfig/EnableInterContainerTrafficEncryption
+
+Ensure that the `NetworkConfig` block includes the `EnableInterContainerTrafficEncryption` argument in your CloudFormation configuration file, and that this argument is set to `True`, as displayed in the example below.
+
+[source,yaml]
+----
+Resources:
+  DataQualityJobDefinitionPass:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      ...
+      NetworkConfig:
++        EnableInterContainerTrafficEncryption: True
+----

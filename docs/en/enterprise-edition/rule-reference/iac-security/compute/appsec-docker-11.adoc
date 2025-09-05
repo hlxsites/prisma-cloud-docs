@@ -1,0 +1,38 @@
+== Docker From alias is not unique for multistage builds misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_DOCKER_11
+|Category |Compute - Startup Script Leaks
+|Provider |
+|Severity |LOW
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This rule detects whether each FROM instruction in a Dockerfile uses a unique alias when building multistage images. Aliases help to identify stages, making Dockerfiles more readable and maintainable. Enforcing unique aliases ensures clarity, prevents conflicts and avoids any unintentional overwriting of stages.
+
+=== How to Fix
+
+
+*Docker* 
+
+To mitigate this issue, ensure that each `FROM` instruction in your multistage Dockerfile uses a unique alias.
+
+Example:
+
+[source,dockerfile]
+----
+FROM node:14 as builder
+...
+- FROM node:14 as builder # Duplicate alias
++ FROM node:14 as builder_2 # Unique alias
+...
+----

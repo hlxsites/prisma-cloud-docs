@@ -1,0 +1,47 @@
+== Azure Databricks workspace is public misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_158
+|Category |AI & Machine Learning - Public Exposure
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Disabling the public network access property improves security by ensuring your Azure Databricks workspace can only be accessed from a private endpoint.
+This configuration strictly disables access from any public address space outside of Azure IP range and denies all logins that match IP or virtual network-based firewall rules.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_databricks_workspace
+* *Arguments:* public_network_access_enabled
+
+
+[source,go]
+----
+resource "azurerm_databricks_workspace" "pass" {
+  name                          = "databricks-test"
+  resource_group_name           = azurerm_resource_group.example.name
+  location                      = azurerm_resource_group.example.location
+  sku                           = "standard"
+  public_network_access_enabled = false
+
+  tags = {
+    Environment = "Production"
+  }
+}
+----
+

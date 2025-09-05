@@ -1,0 +1,88 @@
+== Azure SQL server send alerts to field value is not set misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_26
+|Category |Logging - Disabled or Missing
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Provide the email address where alerts will be sent when anomalous activities are detected on SQL servers.
+Providing the email address to receive alerts ensures that any detection of anomalous activities is reported as soon as possible, enabling early mitigation of any potential risk detected.
+We recommend you add an email address to the *Send Alerts to* field value for MSSQL servers.
+
+=== How to Fix
+
+
+
+
+*ARM* 
+
+
+* *Resource:* Microsoft.Sql/servers/databases
+
+
+[source,json]
+----
+{
+    "type": "Microsoft.Sql/servers/databases",
+    "apiVersion": "2020-08-01-preview",
+    "name": "[variables('dbName')]",
+    "location": "[parameters('location')]",
+    "sku": {
+        "name": "[parameters('sku')]"
+    },
+    "kind": "v12.0,user",
+    "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "[mul(parameters('maxSizeMB'), 1048576)]",
+        "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+        "zoneRedundant": false,
+        "readScale": "Disabled",
+        "storageAccountType": "GRS"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(variables('dbName'), '/current')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('serverName'), parameters('databaseName'))]"
+            ],
+            "properties": {
+                "state": "Enabled",
+                "disabledAlerts": "",
++               "emailAddresses": "[variables('emailAddresses')[copyIndex()]]",
+                "emailAccountAdmins": "Enabled"
+            }
+        }
+    ]
+}
+----
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_mssql_server_security_alert_policy
+* *Arguments:* email_addresses
+
+
+[source,go]
+----
+resource "azurerm_mssql_server_security_alert_policy" "example" {
+    ...
++   email_addresses = ["example@gmail.com"]
+}
+----

@@ -1,0 +1,41 @@
+== PostgreSQL server does not disable public network access misconfiguration detected in code
+// PostgreSQL server public network access enabled
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_68
+|Category |Public Exposure - Database Endpoints
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Disabling the public network access property improves security by ensuring your Azure Database for PostgreSQL single servers can only be accessed from a private endpoint.
+This configuration strictly disables access from any public address space outside of Azure IP range and denies all logins that match IP or virtual network-based firewall rules.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_postgresql_server
+* *Arguments:* public_network_access_enabled
+
+
+[source,go]
+----
+resource "azurerm_postgresql_server" "example" {
+              ...
++             public_network_access_enabled    = false
+              ...
+            }
+----

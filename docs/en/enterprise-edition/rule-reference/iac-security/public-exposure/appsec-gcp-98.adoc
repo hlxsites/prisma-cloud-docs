@@ -1,0 +1,54 @@
+== GCP Dataproc clusters are anonymously or publicly accessible misconfiguration detected in code
+
+Dataproc is commonly used for data lake modernization, ETL, and data science workloads.
+A Dataproc cluster contains at least one "management" VM and one "compute" VM.
+Access to Dataproc clusters is controlled via IAM policies.
+These IAM policies can be set for public access via the *allUsers* and *allAuthenticatedUsers* IAM principals which can inadvertently expose your data to the public.
+We recommend you ensure anonymous and public access to Dataproc clusters is not allowed.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_98
+|Category |Public Exposure - Database Endpoints
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_dataproc_cluster_iam_member
+* *Field:* member
+* *Resource:* google_dataproc_cluster_iam_binding
+* *Field:* members
+
+
+[source,go]
+----
+//Option 1
+resource "google_dataproc_cluster_iam_member" "editor" {
+  cluster = "your-dataproc-cluster"
+  role    = "roles/editor"
+-  member        = "allUsers"
+-  member        = "allAuthenticatedUsers"
+}
+
+//Option 2
+resource "google_dataproc_cluster_iam_binding" "editor" {
+  cluster = "your-dataproc-cluster"
+  role    = "roles/editor"
+  members = [
+-    "allUsers",
+-    "allAuthenticatedUsers"
+  ]
+}
+----

@@ -1,0 +1,58 @@
+== AWS SNS topic has SSE disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_26
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Amazon SNS is a publishers and subscribers messaging service.
+When you publish messages to encrypted topics, customer master keys (CMK), powered by AWS KMS, can be used to encrypt your messages.
+If you operate in a regulated market, such as HIPAA for healthcare, PCI DSS for finance, or FedRAMP for government, you need to ensure sensitive data messages passed in this service are encrypted at rest.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_sns_topic
+* *Arguments:* kms_master_key_id - (Optional) The ID of an AWS-managed customer master key (CMK) for Amazon SNS or a custom CMK.
+
+
+[source,go]
+----
+resource "aws_sns_topic" "example" {
+  ...
+  name              = "user-updates-topic"
++ kms_master_key_id = "alias/aws/sns"
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::SNS::Topic
+* *Arguments:* Properties.KmsMasterKeyId
+
+
+[source,yaml]
+----
+Type: AWS::SNS::Topic
+    Properties:
+      ...
++     KmsMasterKeyId: "kms_id"
+----

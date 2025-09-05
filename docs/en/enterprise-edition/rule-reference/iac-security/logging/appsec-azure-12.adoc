@@ -1,0 +1,44 @@
+== Azure Network Watcher Network Security Group (NSG) flow logs retention is less than 90 days misconfiguration detected in code
+// Azure Network Watcher Network Security Group (NSG) flow logs retention less than 90 days
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_12
+|Category |Logging - Retention
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |7c0570f7-d467-4652-b699-9189d5fe86a3
+|===
+ 
+
+
+
+=== Impact
+Flow logs enable capturing information about IP traffic flowing in and out of network security groups.
+Logs can be used to check for anomalies and give insight into suspected breaches.
+We recommend your Network Security Group (NSG) Flow Log *Retention Period* is set to greater than or equal to 90 days.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_network_watcher_flow_log
+* *Arguments:* days
+
+
+[source,go]
+----
+resource "azurerm_network_watcher_flow_log" "test" {
+    ...
++   retention_policy {
++   enabled = true
++   days    = <90 or greater>
+    }
+}
+----

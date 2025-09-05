@@ -1,0 +1,44 @@
+== Alibaba Cloud RDS Instance SQL Collector Retention Period is less than 180 misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_ALI_25
+|Category |Logging - Retention
+|Provider |Alibaba Cloud
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Alibaba Cloud RDS (Relational Database Service) instances have the SQL collector enabled and its retention period set to 180 days or more. Enabling the SQL collector and setting an adequate retention period helps in tracking and analyzing the SQL queries made to the database, which can be useful for performance tuning, troubleshooting, and security analysis.
+
+Failing to enable the SQL collector or setting a short retention period may result in insufficient data for analysis, making it difficult to identify performance issues or security threats.
+
+=== How to Fix
+
+
+*Terraform* 
+
+* *Resource:* alicloud_db_instance
+* *Arguments:* sql_collector_status, sql_collector_config_value
+
+To mitigate this issue, ensure that the `sql_collector_status` attribute is set to `Enabled`, and the `sql_collector_config_value` attribute is set to `180` or more in the `alicloud_db_instance` resource.
+
+Example:
+
+[source,go]
+----
+resource "alicloud_db_instance" "example" {
+  ...
+
++  sql_collector_status       = "Enabled"
++  sql_collector_config_value = 180
+}
+----

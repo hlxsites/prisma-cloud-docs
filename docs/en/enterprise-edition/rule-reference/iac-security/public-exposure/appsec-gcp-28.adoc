@@ -1,0 +1,57 @@
+== GCP Storage bucket is anonymously or publicly accessible misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_28
+|Category |Public Exposure - Storage Buckets
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Allowing anonymous or public access to a Cloud Storage bucket grants permissions to anyone to access the bucket's content.
+If you are storing sensitive data in the bucket anonymous and public access may not be desired.
+We recommend you ensure anonymous and public access to a bucket is not allowed.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_storage_bucket_iam_member
+* *Arguments:* member
+* *Resource:* google_storage_bucket_iam_binding
+* *Field:* members
+
+
+[source,go]
+----
+//Option 1
+resource "google_storage_bucket_iam_member" "member" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+-  member = "allUsers"
+-  member = "allAuthenticatedUsers"
+}
+
+//Option 2
+resource "google_storage_bucket_iam_binding" "binding" {
+  bucket = google_storage_bucket.default.name
+  role = "roles/storage.admin"
+  members = [
+-    "allAuthenticatedUsers",
+-    "allUsers"
+  ]
+}
+----
+

@@ -1,0 +1,63 @@
+== DynamoDB PITR is disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_28
+|Category |Storage - Backups
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+DynamoDB Point-In-Time Recovery (PITR) is an automatic backup service for DynamoDB table data that helps protect your DynamoDB tables from accidental write or delete operations.
+Once enabled, PITR provides continuous backups that can be controlled using various programmatic parameters.
+PITR can also be used to restore table data from any point in time during the last 35 days, as well as any incremental backups of DynamoDB tables.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_dynamodb_table
+* *Arguments:* point_in_time_recovery - (Optional) Point-in-time recovery options.
+
+
+[source,go]
+----
+resource "aws_dynamodb_table" "example" {
+  ...
+  name           = "GameScores"
++ point_in_time_recovery {
++   enabled = true
++  }
+  ...
+}
+----
+
+
+*CloudFormation / Serverless*
+
+* *Resource:* AWS::DynamoDB::Table
+* *Property*: PointInTimeRecoverySpecification
+
+
+[source,yaml]
+----
+Resources:
+    iotCatalog:
+      Type: AWS::DynamoDB::Table 
+      Properties:
+        ...
+        PointInTimeRecoverySpecification:
++         PointInTimeRecoveryEnabled: true
+----

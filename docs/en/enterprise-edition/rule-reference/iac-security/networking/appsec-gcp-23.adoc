@@ -1,0 +1,46 @@
+== GCP Kubernetes Engine Clusters have Alias IP disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_23
+|Category |Networking - VPC/VCN/VNET
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |79ac5d52-f01a-4b82-8aab-f2dd674452a3
+|===
+ 
+
+
+
+=== Impact
+In GKE, clusters can be set apart based on how they route traffic from one pod to another.
+A cluster that uses alias IP ranges is called a VPC-native cluster.
+A cluster that uses Google Cloud Routes is called a routes-based cluster.
+We recommend you create Kubernetes clusters with alias IP ranges enabled.
+Alias IP ranges allow Pods to directly access hosted services without using a NAT gateway.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_container_cluster" "primary" {
+  name     = "my-gke-cluster"
+  location = "us-central1"
+  remove_default_node_pool = true
+  initial_node_count       = 1
+  ip_allocation_policy
+  {
+  }
+}
+----
+

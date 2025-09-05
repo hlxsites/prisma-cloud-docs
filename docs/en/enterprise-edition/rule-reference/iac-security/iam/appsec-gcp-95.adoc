@@ -1,0 +1,52 @@
+== GCP Memorystore for Redis has AUTH disabled misconfiguration detected in code
+
+//*Memorystore for Redis has AUTH disabled* 
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_95
+|Category |IAM - Authentication Policies
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+https://cloud.google.com/memorystore/docs/redis/auth-overview[AUTH] is an optional security feature on Memorystore for Redis that requires incoming connections to authenticate with an AUTH string.
+Every AUTH string is a Universally Unique Identifier (UUID), and each Redis instance with AUTH enabled has a unique AUTH string.
+When you enable the AUTH feature on your Memorystore instance, incoming client connections must authenticate in order to connect.
+Once a client authenticates with an AUTH string, it remains authenticated for the lifetime of that connection, even if you change the AUTH string.
+We recommend that you enble AUTH on your Memorystore for Redis database to protect against unwanted or non-approved connections.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_redis_instance
+* *Field:* auth_enabled
+
+
+[source,go]
+----
+{
+ "resource "google_redis_instance" "cache" {
+  name           = "memory-cache"
+  display_name   = "memory cache db"
+  tier           = "STANDARD_HA"
+  memory_size_gb = 1
+
+- auth_enabled = false
++ auth_enabled = true",
+ 
+}
+----

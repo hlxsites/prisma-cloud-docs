@@ -1,0 +1,43 @@
+== GCP Storage Bucket does not have Access and Storage Logging enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_62
+|Category |Storage - Alerting
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |5c1b3dec-df2d-4254-8c7d-37425f2c617a
+|===
+ 
+
+
+
+=== Impact
+Some resources  require a record of who access them and when.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_storage_bucket
+* *Arguments:* logging/log_bucket to specify a Bucket to store access log in.
+
+
+[source,go]
+----
+resource "google_storage_bucket" "logging" {
+  name     = "jgwloggingbucket"
+  location = var.location
+  uniform_bucket_level_access = true
++  logging {
++    log_bucket = "mylovelybucket"
++  }
+}
+----
+

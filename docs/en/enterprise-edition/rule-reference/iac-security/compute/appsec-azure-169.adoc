@@ -1,0 +1,39 @@
+== Azure Kubernetes Cluster (AKS) Nodes Do Not Use Scale Sets misconfiguration detected in code
+// Ensure Azure Kubernetes Cluster (AKS) nodes use scale sets.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_169
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+*Description*
+
+For Azure Kubernetes Service (AKS), it's recommended to use Virtual Machine Scale Sets instead of Availability Sets for nodes in the cluster. Scale Sets provide high availability to your applications, and enable you to centrally manage, configure, and update a large number of VMs. 
+
+This policy ensures that AKS nodes are configured to use Virtual Machine Scale Sets and not Availability Sets.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* default_node_pool/type
+
+[source,terraform]
+----
+resource "azurerm_kubernetes_cluster" "example" {
+  ...
+  default_node_pool {
+    ...
++   type       = "AvailabilitySet"
+  }
+}
+----

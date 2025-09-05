@@ -1,0 +1,59 @@
+== GCP Pub/Sub Topics are anonymously or publicly accessible misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_99
+|Category |Public Exposure - APIs
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+Pub/Sub is commonly used for asynchronous communication for applications in GCP.
+Messages are published to a *Pub/Sub Topic* and the ability to publish a message is controlled via IAM policies.
+It is possible to make *Pub/Sub Topics* publicly or anonymously accessible.
+Public notification topics can expose sensitive data and are a target for data exfiltration.
+We recommend you ensure that neither anonymous or public access to *Pub/Sub Topics* is allowed.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_pubsub_topic_iam_binding
+* *Field:* members
+* *Resource:* google_pubsub_topic_iam_member
+* *Field:* member
+
+
+[source,go]
+----
+resource "google_pubsub_topic_iam_binding" "public_binding" {
+  topic = google_pubsub_topic.example.name
+  role = "roles/pubsub.publisher"
+
+  members = [
+-    "allUsers",
+-    "allAuthenticatedUsers",
+  ]
+}
+----
+
+
+[source,go]
+----
+resource "google_pubsub_topic_iam_member" "public_member" {
+  topic = google_pubsub_topic.example.name
+  role = "roles/pubsub.publisher"
+
+-  member = "allUsers"
+-  member = "allAuthenticatedUsers"
+}
+----

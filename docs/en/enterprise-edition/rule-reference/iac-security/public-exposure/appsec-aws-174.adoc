@@ -1,0 +1,82 @@
+== AWS CloudFront web distribution using insecure TLS version misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_174
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |3eb5afe3-259d-48d0-8437-ec58668be0d3
+|===
+ 
+
+
+
+=== Impact
+This policy identifies AWS CloudFront web distributions which are configured with TLS versions for HTTPS communication between viewers and CloudFront. As a best practice, use recommended TLSv1.2_2021 as the minimum protocol version in your CloudFront distribution security policies.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* minimum_protocol_version
+
+
+[source,go]
+----
+resource "aws_cloudfront_distribution" "pass" {
+...
+
+  viewer_certificate {
+    cloudfront_default_certificate = false
+    minimum_protocol_version = "TLSv1.2_2018"
+  }
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `MinimumProtocolVersion` property in the `ViewerCertificate` configuration of the `AWS::CloudFront::Distribution` resource is set to one of the approved TLS v1.2 versions (`TLSv1.2_2018`, `TLSv1.2_2019`, or `TLSv1.2_2021`).
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyCloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "ViewerCertificate": {
+            "MinimumProtocolVersion": "TLSv1.2_2021",
+            ...
+          },
+          ...
+        }
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        ViewerCertificate:
+          MinimumProtocolVersion: TLSv1.2_2021
+          ...
+        ...
+----

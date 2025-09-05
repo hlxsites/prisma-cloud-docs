@@ -1,0 +1,73 @@
+
+== DocumentDB is not encrypted at rest misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_74
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Amazon DocumentDB (DocDB) clusters are encrypted at rest. Encrypting data at rest protects the data stored in your DocDB clusters from unauthorized access and potential data breaches. By default, DocDB clusters are unencrypted, so it is crucial to enable encryption to secure your data.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_docdb_cluster
+* *Arguments:* storage_encrypted - Specifies whether the DB cluster is encrypted.
+
+
+[source,go]
+----
+resource "aws_docdb_cluster" "example" {
+  ...
+  cluster_identifier = "docdb-cluster-demo"
++ storage_encrypted  = true
+  ...
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `StorageEncrypted` property in the `AWS::DocDB::DBCluster` resource is set to `true`.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyDocDBCluster": {
+      "Type": "AWS::DocDB::DBCluster",
+      "Properties": {
++        "StorageEncrypted": true,
+        ...
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyDocDBCluster:
+    Type: AWS::DocDB::DBCluster
+    Properties:
++      StorageEncrypted: true
+      ...
+----

@@ -1,0 +1,50 @@
+== GCP project is configured with legacy network misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_GCP_2
+|Category |Networking - VPC/VCN/VNET
+|Provider |GCP
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |5b9d9b21-bba4-4e05-82ec-ba6ff67b3f4a
+|===
+ 
+
+
+
+=== Impact
+In order to prevent use of legacy networks, a project should not have a legacy network configured.
+Legacy networks have a single network IPv4 prefix range and a single gateway IP address for the whole network.
+The network is global in scope and spans all cloud regions.
+Subnetworks cannot be created in a legacy network and are unable to switch from legacy to auto or custom subnet networks.
+Legacy networks can have an impact for high network traffic projects and are subject to a single point of contention or failure.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_project
+* *Arguments:* google_compute_network
+
+
+[source,go]
+----
+resource "google_project" "bad_project" {
+  name       = "My Project"
+  project_id = "bad"
+  org_id     = "1234567"
+}
+
+resource "google_compute_network" "vpc_network_bad" {
+  name = "vpc-legacy"
+- auto_create_subnetworks = true
+  project = google_project.bad_project.id
+}
+----
+

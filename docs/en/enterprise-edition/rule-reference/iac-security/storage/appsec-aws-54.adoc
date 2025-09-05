@@ -1,0 +1,57 @@
+== AWS S3 Bucket BlockPublicPolicy is not set to True misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_54
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Amazon S3 buckets have the `block public policy` setting enabled. Enabling this setting ensures that public bucket policies cannot be set, which helps prevent unauthorized access to the data stored in the S3 bucket. This policy checks whether the `BlockPublicPolicy` option is enabled in the `PublicAccessBlockConfiguration` of S3 buckets.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+To fix this issue, ensure that the `block_public_policy` property in the `aws_s3_bucket_public_access_block` resource is set to `true`.
+
+
+[source,go]
+----
+resource "aws_s3_bucket_public_access_block" "artifacts" {
+  ...
++ block_public_policy = true
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `BlockPublicPolicy` property in the `PublicAccessBlockConfiguration` of the `AWS::S3::Bucket` resource is set to `true`.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: example-bucket
+      PublicAccessBlockConfiguration:
++        BlockPublicPolicy: true
+        ...
+----

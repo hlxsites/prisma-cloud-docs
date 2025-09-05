@@ -1,0 +1,43 @@
+== Azure Network Security Group allows all traffic on SSH port 22 misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_10
+|Category |Public Exposure - Sensitive Ports
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |3beed53c-3f2d-47b6-bb6f-95da39ff0f26
+|===
+ 
+
+
+=== Impact
+A potential security problem using SSH over the Internet is that attackers can use various brute force techniques to gain access to Azure Virtual Machines.
+Once the attackers gain access, they can use a virtual machine as a launch point for compromising other machines on the Azure Virtual Network.
+The attackers could also access and attack networked devices outside of Azure.
+We recommend you disable SSH access over the internet to Network Security Groups.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_network_security_rule
+* *Arguments:* access + protocol + destination_port_range + source_address_prefix
+
+
+[source,go]
+----
+resource "azurerm_network_security_rule" "example" {
+-    access                      = "Allow"
+-    protocol                    = "TCP"
+-    destination_port_range      = ["22" / <port range including 22>]]
+-    source_address_prefix       = "*" / "0.0.0.0" / "<nw>/0" / "/0" / "internet" / "any"
+}
+----

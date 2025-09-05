@@ -1,0 +1,42 @@
+== AWS FSX Windows filesystem not encrypted using Customer Managed Key misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_179
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This is a simple check to ensure that FSX Windows file system is using AWS key management - KMS to encrypt its contents.
+To resolve add the ARN of your KMS or link on creation of the cluster
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_fsx_windows_file_system
+* *Attribute*:  kms_key_id
+
+
+[source,go]
+----
+resource "aws_fsx_windows_file_system" "example" {
+  active_directory_id = aws_directory_service_directory.example.id
+  kms_key_id          = aws_kms_key.example.arn
+  storage_capacity    = 300
+  subnet_ids          = [aws_subnet.example.id]
+  throughput_capacity = 1024
+}
+----

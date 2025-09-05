@@ -1,0 +1,50 @@
+== Azure Event Grid Topic Public Network Access misconfiguration detected in code
+// Ensure public network access is disabled for Azure Event Grid Topic.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_193
+|Category |Public Exposure - APIs
+|Provider |Azure
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+*Description*
+
+Azure Event Grid is a fully managed intelligent event-routing service that allows for uniform event consumption using a publish-subscribe model. The service is commonly used to trigger workflows, build richer app-to-app communication, and enable event-based architectures in the cloud.
+
+For security and compliance purposes, it is recommended to disable public network access to Azure Event Grid Topics. Disabling public network access ensures that the Event Grid Topic is only accessible within the virtual network, enhancing the security by reducing exposure to potential threats from the public internet.
+
+This policy ensures that public network access is disabled for Azure Event Grid Topics.
+
+
+=== How to Fix
+
+*Terraform*
+
+*Resource:* 
+- azurerm_eventgrid_topic 
+
+*Arguments:* 
+- public_network_access_enabled
+
+[source,terraform]
+----
+resource "azurerm_eventgrid_topic" "example" {
+  name                  = "example-topic"
+  location              = azurerm_resource_group.example.location
+  resource_group_name   = azurerm_resource_group.example.name
+
+  # ... other configurations ...
+
++ public_network_access_enabled = false
+
+  # ... other configurations ...
+}
+----
+

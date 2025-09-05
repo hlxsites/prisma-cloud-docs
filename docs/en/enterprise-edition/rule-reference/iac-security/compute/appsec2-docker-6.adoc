@@ -1,0 +1,29 @@
+== Dockerfile Node.js certificate validation is disabled with the NODE_TLS_REJECT_UNAUTHORIZED environment variable misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_DOCKER_6
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |HIGH
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+Setting the `NODE_TLS_REJECT_UNAUTHORIZED` environment variable to `0` within Dockerfiles for Node.js applications is a security risk. This setting instructs Node.js to bypass SSL/TLS certificate verification for outgoing HTTPS requests.
+
+By disabling SSL/TLS certificate verification, Node.js applications are exposed to potential man-in-the-middle (MitM) attacks. Attackers can intercept, modify, or eavesdrop on the traffic between the Node.js application and an external server, potentially leading to data breaches or the injection of malicious code.
+
+=== How to Fix
+
+*Docker*
+
+[source,dockerfile]
+----
+- ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+RUN npm install somepackage
+----

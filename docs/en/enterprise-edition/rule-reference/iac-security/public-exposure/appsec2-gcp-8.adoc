@@ -1,0 +1,56 @@
+== GCP Cloud KMS Key Rings are anonymously or publicly accessible misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_GCP_8
+|Category |Public Exposure - Encryption and Protocols
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_kms_key_ring_iam_member
+* *Field:* member 
+* *Resource:* google_kms_key_ring_iam_binding
+* *Field:* members
+
+
+[source,text]
+----
+{
+ "
+ //Option 1
+resource "google_kms_key_ring_iam_member" "member" {
+  key_ring_id = google_kms_key_ring.default.id
+  role          = "roles/cloudkms.cryptoKeyEncrypter"
+-  member        = "allUsers"
+-  member        = "allAuthenticatedUsers"
+}
+
+
+//Option 2
+resource "google_kms_key_ring_iam_binding" "binding" {
+  key_ring_id = google_kms_key_ring.default.id
+  role          = "roles/cloudkms.cryptoKeyEncrypter"
+  members = [
+-    "allUsers",
+-    "allAuthenticatedUsers"
+  ]
+}
+
+",
+}
+----
+

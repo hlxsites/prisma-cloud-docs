@@ -1,0 +1,43 @@
+== GCP storage bucket is logging to itself misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_63
+|Category |Storage - Alerting
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |f86eb55e-e113-4248-9471-774d5f0e7f0b
+|===
+ 
+
+
+
+=== Impact
+A check to ensure that the specified logging bucket is not itself.
+A bucket must not log access to itself, logging requires a second separate bucket.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_storage_bucket This check will trigger if you attempt to self reference:
+
+
+[source,go]
+----
+resource "google_storage_bucket" "mylovelybucket" {
+  name     = "mylovelybucket"
+  location = var.location
+  uniform_bucket_level_access = true
+  logging {
+    log_bucket = "mylovelybucket"
+    }
+}
+----
+

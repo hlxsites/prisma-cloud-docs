@@ -1,0 +1,41 @@
+
+== OCI Kubernetes Engine Cluster endpoint is not configured with Network Security Groups misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_OCI_3
+|Category |Public Exposure - Ingress Controls
+|Provider |Oracle
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy is checking to ensure that a Kubernetes engine cluster is configured with Network Security Group(s), or NSG(s). Failure to do so can greatly increase the security risk. NSGs offer an additional layer of security, acting as a firewall at the subnet level, controlling ingress and egress by defining rules based on the source and destination IP addresses, ports, and protocols. Without an NSG, a Kubernetes cluster could be more vulnerable to network attacks.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* oci_containerengine_cluster
+* *Arguments:* endpoint_config.nsg_ids
+
+To address this issue, you should associate a Network Security Group (NSG) with the cluster's subnet. An NSG contains a list of access control lists (ACLs) that allow or deny traffic to subnets or network interfaces. 
+
+[source,hcl]
+----
+resource "oci_containerengine_cluster" "pass" {
+
+  endpoint_config {
+    nsg_ids = [
++      "ocid1.networksecuritygroup.oc1..pud_cki_1",
++      "ocid2.networksecuritygroup.oc1..pud_cki_2",
+    ]
+  }
+}
+----
+

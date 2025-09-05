@@ -1,0 +1,84 @@
+== Azure Activity Log retention should not be set to less than 365 days misconfiguration detected in code
+// Activity Log retention less than 365 days
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_37
+|Category |Logging - Retention
+|Provider |Azure
+|Severity |LOW
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |700e9da9-b460-41f7-a4c6-b38cc9fcf588
+|===
+ 
+
+
+
+=== Impact
+A log profile controls how the activity log is exported and retained.
+Since the average time to detect a breach is 210 days, the activity log should be retained for 365 days or more, providing time to respond to any incidents.
+We recommend you set activity log retention for 365 days or greater.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_monitor_log_profile
+* *Arguments:* retention policy
+
+
+*Option 1* 
+
+
+
+
+[source,go]
+----
+resource "azurerm_monitor_log_profile" "example" {
+    name = "default"
+    categories = [
+    "Action",
+    "Delete",
+    "Write",
+    ]
+    locations = [
+    "westus",
+    "global",
+    ]
++    retention_policy {
++    enabled = true
++    days    = 365
+    }
+}
+----
+
+
+*Option 2* 
+
+
+
+
+[source,go]
+----
+resource "azurerm_monitor_log_profile" "example" {
+    name = "default"
+    categories = [
+    "Action",
+    "Delete",
+    "Write",
+    ]
+    locations = [
+    "westus",
+    "global",
+    ]
++    retention_policy {
++    enabled = false
++    days    = 0
+    }
+}
+----

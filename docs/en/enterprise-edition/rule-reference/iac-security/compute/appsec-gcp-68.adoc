@@ -1,0 +1,49 @@
+== GCP Kubernetes cluster shielded GKE node with Secure Boot disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_68
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |f092a573-b0f8-4f02-95bb-85c101e1c005
+|===
+ 
+
+
+
+=== Impact
+Enable Secure Boot for Shielded GKE Nodes to verify the digital signature of node boot components.
+An attacker may seek to alter boot components to persist malware or root kits during system initialization.
+Secure Boot helps ensure that the system only runs authentic software by verifying the digital signature of all boot components, and halting the boot process if signature verification fails.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_container_cluster / google_container_node_pool
+* *Arguments:* node_config.shielded_instance_config.enable_secure_boot
+
+
+[source,go]
+----
+resource "google_container_cluster" "success" {
+  name               = var.name
+  
+  ...
+  node_config {
+    workload_metadata_config {
+      node_metadata = "GKE_METADATA_SERVER"
+    }
+    shielded_instance_config {
+-     enable_secure_boot = false
+    }
+  }
+----
+

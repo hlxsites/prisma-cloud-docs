@@ -1,0 +1,60 @@
+== Not all IAM users are members of at least one IAM group misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_21
+|Category |IAM - Unused
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |24e85db6-055c-4536-8886-7defaea8160b
+|===
+ 
+
+
+
+=== Impact
+It is generally a best practice to assign all IAM users to at least one IAM group.
+This can help to ensure that each user has the necessary permissions to perform their tasks and responsibilities.
+By assigning users to groups, you can more easily manage the permissions for those users.
+For example, if you need to change the permissions for a group of users, you can simply update the group's policy rather than updating the policies for each individual user.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_iam_group_membership, aws_iam_group, aws_iam_user
+* *Arguments:* _users *and *group_ of aws_iam_group_membership
+
+
+[source,go]
+----
+{
+ "resource "aws_iam_group_membership" "ok_group" {
+  name = "tf-testing-group-membership"
+
+  users = [
+    aws_iam_user.user_good.name,
+  ]
+
+  group = aws_iam_group.group.name
+}
+
+
+resource "aws_iam_group" "group" {
+  name = "test-group"
+}
+
+
+resource "aws_iam_user" "user_good" {
+  name = "test-user"
+}
+
+",
+}
+----

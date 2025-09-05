@@ -1,0 +1,80 @@
+== AWS IAM role allows all services or principals to be assumed misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_60
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+The IAM role is an identity with specific permissions.
+An IAM role is similar to an IAM user: it has an AWS identity with permission policies that determine what the identity can and cannot do in AWS.
+When a user assumes a role, it is provided with temporary security credentials for a bounded session.
+The list of principals able to assume a role should be limited as much as possible, and should not include "*", meaning that any authenticated identity across all of AWS can assume the role.
+We recommend that you define fine-grained roles for specific services or principles.
+For example, when setting up an AWS service role it is recommended to include only the permissions required for the service to access the AWS resources required.
+Alternatively, you can use a principal as an entity that can perform actions and access resources.
+The main benefit of the principal entity is to limit the use of wildcards in the policy document.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_iam_role" "test_role" {
+  name = "test_role"
+    ...
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "AWS": [
+-         "*"
+        ]
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+}
+}
+----
+
+
+*CloudFormation*
+
+
+* *Resource:* AWS::IAM::Role
+* *Arguments:* Properties.AssumeRolePolicyDocument.Statement
+
+
+[source,yaml]
+----
+Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              "AWS":
+-               - "*"
+----

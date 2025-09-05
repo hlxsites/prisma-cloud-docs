@@ -1,0 +1,96 @@
+== Not every Security Group rule has a description misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_23
+|Category |Public Exposure - Ingress Controls
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that each security group rule has a description to help identify the purpose of the rule. Descriptions improve the manageability and understanding of security group rules.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+Add a description to your ingress or egress rule.
+
+
+[source,go]
+----
+resource "aws_security_group" "examplea" {
+  name        = var.es_domain
+  description = "Allow inbound traffic to ElasticSearch from VPC CIDR"
+  vpc_id      = var.vpc
+
+
+  ingress {
+    cidr_blocks = ["10.0.0.0/16"]
+   + description = "What does this rule enable"
+    from_port   = 80
+    protocol    = "tcp"
+    to_port     = 80
+  }
+}
+----
+
+*CloudFormation*
+
+To mitigate this issue, ensure that the `Description` field is added to all security group rules in `AWS::EC2::SecurityGroup`, `AWS::EC2::SecurityGroupIngress`, and `AWS::EC2::SecurityGroupEgress` resources.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "My security group",
+        "SecurityGroupIngress": [
+          {
+            ...
++            "Description": "Allow HTTP traffic"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            ...
++            "Description": "Allow HTTPS traffic"
+          }
+        ]
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: My security group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          ...
++          Description: Allow HTTP traffic
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          ...
++          Description: Allow HTTPS traffic
+----

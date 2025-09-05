@@ -1,0 +1,46 @@
+== AWS API deployments do not enable Create before Destroy misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_217
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+It is recommended to enable create_before_destroy argument inside the resource lifecycle configuration block to avoid possible return errors such as `BadRequestException: Active stages pointing to this deployment must be moved or deleted` on recreation.
+
+=== How to Fix
+
+
+*CloudFormation* 
+
+
+CloudFormation creates a new deployment first and then will delete the old one automatically.
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_api_gateway_deployment" "example" {
+  rest_api_id = aws_api_gateway_rest_api.example.id
+  stage_name  = "example"
+  
++ lifecycle {
++   create_before_destroy = true
++ }
+}
+----

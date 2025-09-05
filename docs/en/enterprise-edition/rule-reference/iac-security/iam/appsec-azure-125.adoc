@@ -1,0 +1,42 @@
+== Active Directory is not used for authentication for Service Fabric misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_125
+|Category |IAM - Authentication Policies
+|Provider |Azure
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, ARM, Bicep
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+A Service Fabric cluster requires creating Azure Active Directory (AD) applications to control access to the cluster: one web application and one native application.
+After the applications are created, you will be required to assign users to read-only and admin roles.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_service_fabric_cluster
+* *Arguments:* azure_active_directory - (Optional) An azure_active_directory block as defined below.
+
+
+[source,go]
+----
+resource "azurerm_service_fabric_cluster" "example" {
+  ...
+  + azure_active_directory {
+  +     tenant_id = "tenant"
+  }
+  ...
+            }
+----

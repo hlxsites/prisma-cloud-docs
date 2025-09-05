@@ -1,0 +1,49 @@
+== AWS SageMaker endpoint data encryption at rest not configured misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_98
+|Category |AI & Machine Learning - Data Protection
+|Provider |AWS
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |30fef5fe-8615-40a8-a1bb-aa8b2eb0f830
+|===
+ 
+
+
+
+=== Impact
+This is a straight-forward check to ensure data encryption for Sagemaker notebooks, this check verifies that the cluster is encrypted with a Customer managed Key (CMK).
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_sagemaker_endpoint_configuration
+* *Arguments:* kms_key_arn, specifying a KMS key will ensure data encryption.
+This modification will result in the resource being recreated.
+
+
+[source,go]
+----
+resource "aws_sagemaker_endpoint_configuration" "example" {
+  ...
+  name        = "my-endpoint-config"
++ kms_key_arn = aws_kms_key.examplea.arn
+  production_variants {
+    variant_name           = "variant-1"
+    model_name             = aws_sagemaker_model.examplea.name
+    initial_instance_count = 1
+    instance_type          = "ml.t2.medium"
+  }
+  ...
+}
+----
+

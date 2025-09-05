@@ -1,0 +1,56 @@
+== The --authorization-mode argument is set to AlwaysAllow for API server misconfiguration detected in code
+// '--authorization-mode' argument  set to 'AlwaysAllow' for API server
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_139
+|Category |IAM - Overly Permissive
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Do not allow all requests.
+Enable explicit authorization.
+Kubelets, by default, allow all authenticated requests (even anonymous ones) without needing explicit authorization checks from the apiserver.
+You should restrict this behavior and only allow explicitly authorized requests.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kubelet
+    tier: control-plane
+  name: kubelet
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kubelet
++   - --authorization-mode=RBAC,node
+    image: gcr.io/google_containers/kubelet-amd64:v1.6.0
+    ...",
+}
+----
+

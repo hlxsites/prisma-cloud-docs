@@ -1,0 +1,105 @@
+== AWS Lambda Function is not assigned to access within VPC misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_117
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+By default, Lambda runs functions in a secure VPC with access to AWS services and the internet.
+Lambda owns this VPC, which isn't connected to the account's default VPC.
+Internet access from a private subnet requires Network Address Translation (NAT).
+To give your function access to the internet, route outbound traffic to a NAT gateway in a public subnet.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_lambda_function
+* *Arguments:* vpc_config.subnet_ids
+
+
+For network connectivity to AWS resources in a VPC, specify a list of security groups and subnets in the VPC.
+When you connect a function to a VPC, it can only access resources and the internet through that VPC.
+`subnet_ids` - List of subnet IDs associated with the Lambda function.
+
+NOTE: If both subnet_ids and security_group_ids are empty then vpc_config is considered to be empty or unset.
+
+
+[source,go]
+----
+resource "aws_lambda_function" "test_lambda" {
+  ...
+  vpc_config {
+    // Every subnet should be able to reach an EFS mount target in the same Availability Zone. 
+    // Cross-AZ mounts are not permitted.
++   subnet_ids         = [aws_subnet.subnet_for_lambda.id]
+    security_group_ids = [aws_security_group.sg_for_lambda.id]
+  }
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, you should ensure that your AWS Lambda function configuration includes the `VpcConfig` property. Below is an example of how to set this property in a CloudFormation configuration:
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "ExampleLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": "arn:aws:iam::123456789012:role/lambda-role",
+        "Code": {
+          "S3Bucket": "my-bucket",
+          "S3Key": "my-function.zip"
+        },
+        "VpcConfig": {
+          "SubnetIds": [
+            "subnet-0bb1c79de3EXAMPLE"
+          ],
+          "SecurityGroupIds": [
+            "sg-085912345678492fb"
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  ExampleLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: "index.handler"
+      Role: "arn:aws:iam::123456789012:role/lambda-role"
+      Code:
+        S3Bucket: "my-bucket"
+        S3Key: "my-function.zip"
+      VpcConfig:
+        SubnetIds:
+          - "subnet-0bb1c79de3EXAMPLE"
+        SecurityGroupIds:
+          - "sg-085912345678492fb"
+----

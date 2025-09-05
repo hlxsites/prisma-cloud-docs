@@ -1,0 +1,67 @@
+== API Gateway does not have access logging enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_76
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Enabling the custom access logging option in API Gateway allows delivery of custom logs to CloudWatch Logs, which can be analyzed using CloudWatch Logs Insights.
+Using custom domain names in Amazon API Gateway allows insights into requests sent to each custom domain name.
+If there is more than one custom domain name mapped to a single API, understanding the quantity and type of requests by domain name may help understand request patterns.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_api_gateway_stage
+* *Arguments:* access_log_settings - (Optional) Enables access logs for the API stage.
+
+
+[source,go]
+----
+resource "aws_api_gateway_stage" "test" {
+  ...
+  stage_name    = "prod"
++ access_log_settings {
++   destination_arn = "${aws_cloudwatch_log_group.example.arn}"
++   format          = "..."  
++  }
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ApiGateway::Stage
+* *Arguments:* Properties.AccessLogSettings.DestinationArn
+
+
+[source,yaml]
+----
+Resources:
+  MyStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      ...
+      AccessLogSetting:
+        DestinationArn: 'arn:aws:logs:us-east-1:123456789:log-group:example-log-group'
+        Format: "..."
+        ...
+----

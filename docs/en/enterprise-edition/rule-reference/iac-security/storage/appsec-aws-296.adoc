@@ -1,0 +1,50 @@
+== DMS endpoint is not using a Customer Managed Key (CMK) misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_296
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+
+
+=== Impact
+This policy ensures that Database Migration Service (DMS) endpoints use a Customer Managed Key (CMK) for encryption. This is crucial because relying on a default encryption key provided by AWS introduces potential security risks. Customer Managed Keys offer a higher level of control over the cryptographic keys, including their rotation and deletion. Lack of such control can lead to unauthorized data accessibility and potential data breaches.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_dms_endpoint
+* *Arguments:* server_side_encryption_kms_key_id
+
+To fix this issue, you must ensure that your AWS DMS (Data Migration Service) endpoint uses a Customer Managed Key (CMK) for encryption.
+
+[source,go]
+----
+resource "aws_dms_endpoint" "pass" {
+  certificate_arn             = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+  database_name               = "test"
+  endpoint_id                 = "test-dms-endpoint-tf"
+  endpoint_type               = "source"
+  engine_name                 = "aurora"
+  extra_connection_attributes = ""
++ kms_key_arn                 = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+  password                    = "test"
+  port                        = 3306
+  server_name                 = "test"
+  ssl_mode                    = "none"
+
+  tags = {
+    Name = "test"
+  }
+
+  username = "test"
+}
+----
+

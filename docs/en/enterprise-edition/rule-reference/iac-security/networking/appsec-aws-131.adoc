@@ -1,0 +1,81 @@
+== ALB does not drop HTTP headers misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_131
+|Category |Networking - Encryption and Protocols
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Application Load Balancers (ALBs) are configured to drop HTTP headers that do not conform to RFC specifications. This improves security by preventing header injection attacks and other potential misuse of faulty headers.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_alb
+* *Arguments:* drop_invalid_header_fields
+
+
+[source,go]
+----
+resource "aws_alb" "test_success" {
+    name               = "test-lb-tf"
+    internal           = false
+                    load_balancer_type = "network"
+                    subnets            = aws_subnet.public.*.id
+ +                  drop_invalid_header_fields = true
+}
+----
+
+*CloudFormation*
+
+To mitigate this issue, ensure the `LoadBalancerAttributes` parameter in the `AWS::ElasticLoadBalancingV2::LoadBalancer` resource includes the attribute `routing.http.drop_invalid_header_fields.enabled` set to `true`.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        ...
+        "Type": "application",
+        "LoadBalancerAttributes": [
+          {
+            "Key": "routing.http.drop_invalid_header_fields.enabled",
+            "Value": "true"
+          }
+        ]
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      ...
+      Type: application
+      LoadBalancerAttributes:
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: "true"
+----

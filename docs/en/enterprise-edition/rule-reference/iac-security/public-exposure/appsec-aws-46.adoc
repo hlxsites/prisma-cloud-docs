@@ -1,0 +1,64 @@
+== EC2 user data exposes secrets misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_46
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+*User Data* is a metadata field of an EC2 instance that allows custom code to run after the instance is launched.
+It contains code exposed to any entity which has the most basic access to EC2, even read-only configurations.
+This code is not encrypted.
+Removing secrets from easily-accessed unencrypted places reduces the risk of passwords, private keys and more from being exposed to third parties.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_instance
+* *Argument:* user_data In this case, the analysis has found a likely AWS secret being used in your user_data.
+
+Remove these secrets, substitute with dynamic (i.e.
+Obtain from Vault) or use instance profiles.
+
+
+[source,go]
+----
+resource "aws_instance" "web" {
+    ...
+    instance_type = "t3.micro"
+-    user_data = "access_key=123456ABCDEFGHIJZTLA and secret_key=AAAaa+Aa4AAaAA6aAkA0Ad+Aa8aA1aaaAAAaAaA"
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::EC2::Instance
+* *Argument:* Properties.UserData
+
+
+[source,yaml]
+----
+Resources:
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ...
+-     UserData: "..."
+----

@@ -1,0 +1,57 @@
+== GCP Memorystore for Redis does not use intransit encryption misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_97
+|Category |Storage - Encryption
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies the GCP Memorystore for Redis that are configured with disabled in-transit data encryption.
+It is recommended that these resources will be configured with in-transit data encryption to minimize risk for sensitive data being leaked.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_redis_instance" "pass" {
+  provider       = google-beta
+  name           = "mrr-memory-cache"
+  tier           = "STANDARD_HA"
+  memory_size_gb = 5
+
+  location_id             = "us-central1-a"
+  alternative_location_id = "us-central1-f"
+
+  authorized_network = data.google_compute_network.redis-network.id
+
+  redis_version      = "REDIS_6_X"
+  display_name       = "Terraform Test Instance"
+  reserved_ip_range  = "192.168.0.0/28"
+  replica_count      = 5
+  read_replicas_mode = "READ_REPLICAS_ENABLED"
+  # auth_enabled=true
+  labels = {
+    my_key    = "my_val"
+    other_key = "other_val"
+  }
+  transit_encryption_mode = "SERVER_AUTHENTICATION"
+}
+----
+

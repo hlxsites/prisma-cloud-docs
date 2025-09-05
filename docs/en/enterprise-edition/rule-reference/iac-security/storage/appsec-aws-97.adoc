@@ -1,0 +1,68 @@
+== EFS volumes in ECS task definitions do not have encryption in transit enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_97
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This check examines ECS tasks, and checks the definitions for EFS and if attached that the transit is encrypted.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_ecs_task_definition
+* *Arguments:* efs_volume_configuration/transit_encryption needs to ENABLED if there is an attached EFS.
+
+
+[source,go]
+----
+resource "aws_ecs_task_definition" "example" {
+  ...
+  family                = "service"
+  volume {
+        ...
++     transit_encryption      = "ENABLED"
+      }
+    }
+  }
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ECS::TaskDefinition
+* *Arguments:* Properties.Volumes.EFSVolumeConfiguration.TransitEncryption.EFSVolumeConfiguration needs to ENABLED if there is an attached EFS.
+
+
+[source,yaml]
+----
+Resources:
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ...
+      Volumes: 
+        - ...
+          EFSVolumeConfiguration:
+            ...
++           TransitEncryption: "ENABLED"
+----

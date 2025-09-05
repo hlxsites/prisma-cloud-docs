@@ -1,0 +1,47 @@
+== Wildcard use is not minimized in Roles and ClusterRoles misconfiguration detected in code
+// Wildcard use not minimized in Roles and ClusterRoles
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_49
+|Category |IAM - Overly Permissive
+|Provider |
+|Severity |MEDIUM
+|Framework |Kubernetes, Terraform, Helm, Kustomize, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+In Kubernetes, roles and ClusterRoles are used to define the permissions that are granted to users, service accounts, and other entities in the cluster.
+Roles are namespaced and apply to a specific namespace, while ClusterRoles are cluster-wide and apply to the entire cluster.
+When you define a role or ClusterRole, you can use wildcards to specify the resources and verbs that the role applies to.
+For example, you might specify a role that allows users to perform all actions on all resources in a namespace by using the wildcard "*" for the resources and verbs.
+However, using wildcards can be a security risk because it grants broad permissions that may not be necessary for a specific role.
+If a role has too many permissions, it could potentially be abused by an attacker or compromised user to gain unauthorized access to resources in the cluster.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+
+
+[source,go]
+----
+resource "kubernetes_cluster_role" "pass" {
+  metadata {
+    name = "terraform-example"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["namespaces", "pods"]
+    verbs      = ["get", "list", "watch"]
+  }
+----

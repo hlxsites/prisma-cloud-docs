@@ -1,0 +1,49 @@
+== GCP VM instances do have block project-wide SSH keys feature disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_32
+|Category |Public Exposure - Admin Interface
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Project-wide SSH keys are stored in Compute/Project-meta-data.
+Project wide SSH keys can be used to login into all instances within a project.
+Using project-wide SSH keys eases SSH key management.
+If SSH keys are compromised, the potential security risk can impact all instances within a project.
+We recommend you use Instance specific SSH keys instead of common/shared project-wide SSH key(s), to limit the attack surface should the SSH keys be compromised.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_instance
+* *Field:* metadata
+* *Arguments:* block-project-ssh-keys
+
+
+[source,go]
+----
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+  metadata = {
++     block-project-ssh-keys = true
+  }
+}
+----
+

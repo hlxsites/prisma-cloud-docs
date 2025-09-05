@@ -1,0 +1,57 @@
+== Neptune logging is not enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_101
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |HIGH
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that logging is enabled for Amazon Neptune clusters. Enabling logging for your Neptune clusters is critical for auditing and monitoring purposes. It helps in capturing database activities that can be useful for debugging and compliance requirements. This check validates that `enable_cloudwatch_logs_exports` includes the required log types.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_neptune_cluster
+* *Arguments:* enable_cloudwatch_logs_exports
+
+
+[source,go]
+----
+resource "aws_neptune_cluster" "Pike" {
+  cluster_identifier   = var.DBClusterIdentifier
+ 
+    ...
++ enable_cloudwatch_logs_exports      = ["audit"]
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Neptune::DBCluster
+* *Arguments:* Properties.EnableCloudWatchLogExports
+
+
+[source,yaml]
+----
+Type: "AWS::Neptune::DBCluster"
+    Properties:
+        ...
++       EnableCloudwatchLogsExports: ["audit"]
+----

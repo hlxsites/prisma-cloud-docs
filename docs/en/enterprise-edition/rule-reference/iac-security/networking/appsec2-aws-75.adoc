@@ -1,0 +1,73 @@
+
+== AWS Lambda function URL having overly permissive cross-origin resource sharing permissions misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_75
+|Category |Networking
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |c7ce78c7-5412-43f0-ae9c-c90410957502
+|===
+
+
+=== Impact
+AWS Lambda functions with overly permissive CORS configurations expose sensitive data and functionality to unauthorized access. Improperly configured CORS settings, specifically using wildcard characters in 'allowOrigins', enable any origin to invoke the function.
+
+Lambda functions act as crucial components in serverless architectures. Misconfiguration of CORS settings allows malicious actors to send unauthorized requests, potentially leading to data breaches, denial-of-service attacks, or exploitation of the function's logic via cross-site scripting. This undermines the security of your application and its associated data.
+
+The impact of this misconfiguration is significant, potentially resulting in unauthorized data access, application logic manipulation, and service disruption. Restricting CORS configuration to specific origins and HTTP methods ensures that only legitimate clients can interact with the Lambda function, mitigating these risks.
+
+To remediate, configure Lambda function CORS settings to explicitly list allowed origins ('allowOrigins') and HTTP methods ('allowMethods'). Avoid using wildcard characters. Regularly review and update these settings as your application's access needs change. Employ least privilege principles in configuring your Lambda function's access control.
+
+=== How to Fix
+
+*Terraform*
+
+To ensure that no open CORS policy is applied to your S3 buckets, configure the `cors_rule`. Set appropriate allowed origins, allowed methods, and other parameters to restrict access as necessary.
+
+[source,go]
+----
+resource "aws_lambda_function" "example" {
+  ...
+}
+
+resource "aws_lambda_function_url" "example" {
+  function_name = aws_lambda_function.invalid_lambda_function.example
+  cors {
+-    allow_origins = ["*"]
+-    allow_methods = ["*"]
++    allow_origins = ["https://example.com"]
++    allow_methods = ["GET", "POST"]
+  }
+  authorization_type = "AWS_IAM"
+}
+----
+
+*CloudFormation*
+
+To ensure that no open CORS policy is applied to your S3 buckets, configure the `cors_rule`. Set appropriate allowed origins, allowed methods, and other parameters to restrict access as necessary.
+
+[source,yaml]
+----
+  Example:
+    Type: AWS::Lambda::Function
+    Properties:
+      ...
+
+  Example:
+    Type: AWS::Lambda::Url
+    Properties:
+      FunctionName: !Ref Example
+      Cors:
+        AllowOrigins:
+-          - "*"
++          - https://example.com
+        AllowMethods:
+-          - "*"
++          - GET
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+----

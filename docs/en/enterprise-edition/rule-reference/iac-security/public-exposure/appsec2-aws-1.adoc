@@ -1,0 +1,61 @@
+== AWS Network ACL is not in use misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_1
+|Category |Public Exposure - Ingress Controls
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |96e722ed-6d1d-4144-a997-81be0f6d5b18
+|===
+ 
+
+
+
+=== Impact
+Network Access Control Lists (NACLs) are used to allow or deny traffic to and from subnets in a Virtual Private Cloud (VPC) in Amazon Web Services (AWS).
+It's important to ensure that all NACLs are attached to subnets because this allows you to set specific rules for controlling inbound and outbound traffic for those subnets.
+This can help to improve the security and connectivity of your VPC by allowing you to specify which traffic is allowed to enter or leave your subnets.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_vpc,  aws_network_acl, aws_subne
+* *Arguments:* s__ubnet_ids__ of  aws_network_acl
+
+
+[source,go]
+----
+{
+ "
+resource "aws_vpc" "ok_vpc" {
+  cidr_block = "10.0.0.0/16"
+}
+
+
+resource "aws_subnet" "main" {
+  vpc_id     = aws_vpc.ok_vpc.id
+  cidr_block = "10.0.1.0/24"
+}
+
+
+resource "aws_subnet" "main" {
+  cidr_block = "10.0.1.0/24"
+}
+
+
+resource "aws_network_acl" "acl_ok" {
+  vpc_id = aws_vpc.ok_vpc.id
+  subnet_ids = [aws_subnet.main.id]
+}
+
+",
+}
+----

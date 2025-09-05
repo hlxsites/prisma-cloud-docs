@@ -1,0 +1,72 @@
+== AWS Security Group allows all traffic on SSH port (22) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_24
+|Category |Public Exposure - Sensitive Ports
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |62c42bbc-1764-408f-814c-68d2b392af1f
+|===
+ 
+
+
+
+=== Impact
+Security groups are stateful and provide filtering of ingress/egress network traffic to AWS resources.
+We recommend that security groups do not allow unrestricted ingress access to port 22.
+Removing unfettered connectivity to remote console services, such as SSH, reduces a server's exposure to risk.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+* *Resource:* aws_security_group
+
+
+[source,go]
+----
+resource "aws_security_group" "example" {
+...
+ingress {
+    cidr_blocks = [
+-     "0.0.0.0/0"
++     "10.0.0.1/32"
+    ]
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+  }
+}
+----
+
+
+*CloudFormation* 
+
+
+
+* *Resource:* AWS::EC2::SecurityGroup
+* *Arguments:* Properties.SecurityGroupIngress
+
+
+[source,yaml]
+----
+Type: AWS::EC2::SecurityGroup
+    Properties:
+      ...
+      SecurityGroupIngress:
+      - Description: SSH Ingress
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+-       CidrIp: "0.0.0.0/0"
++       CidrIp: "10.10.10.0/24"
+----

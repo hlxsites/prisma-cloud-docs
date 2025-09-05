@@ -1,0 +1,57 @@
+== AWS MWAA environment has webserver logs disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_244
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+It is recommended to have a proper logging process for AWS MWAA environment webserver in order to track configuration changes conducted manually and programmatically and trace back unapproved changes.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_mwaa_environment" "pass" {
+  dag_s3_path        = "dags/"
+  execution_role_arn = "aws_iam_role.example.arn"
+
+  logging_configuration {
+    dag_processing_logs {
+      enabled   = true
+      log_level = "DEBUG"
+    }
+
+    webserver_logs {
+      enabled   = true
+      log_level = "INFO"
+    }
+  }
+
+  name = "example"
+
+   network_configuration {
+    security_group_ids = ["aws_security_group.example.id"]
+    subnet_ids         = "aws_subnet.private[*].id"
+  }
+
+  source_bucket_arn = "aws_s3_bucket.example.arn"
+}
+----

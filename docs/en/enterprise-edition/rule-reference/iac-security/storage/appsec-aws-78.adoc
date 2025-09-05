@@ -1,0 +1,80 @@
+
+== CodeBuild project encryption is disabled misconfiguration detected in code
+
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_78
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+AWS CodeBuild is a fully managed build service in the cloud, that compiles source code, runs unit tests, and produces artifacts that are ready to deploy.
+
+We recommend enabling CodeBuild project encryption to protect sensitive information such as passwords and other credentials required to access external services during the build process, from security breaches. 
+
+NOTE: Build artifacts, such as a cache, logs, exported raw test report data files, and build results are encrypted by default using CMKs for Amazon S3 that are managed by the AWS Key Management Service.
+
+If you do not want to use these CMKs, you must create and configure a customer-managed CMK.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_codebuild_project
+* *Arguments:* encryption_disabled - (Optional) If set to true, output artifacts will not be encrypted.
+
+If type is set to NO_ARTIFACTS then this value will be ignored.
+Defaults to false.
+To fix, either set to false or remove attribute.
+
+
+[source,go]
+----
+resource "aws_codebuild_project" "project-with-cache" {
+  ...
+  name           = "test-project-cache"
+  artifacts {
++    encryption_disabled = false
+  }
+  ...
+}
+----
+
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::CodeBuild::Project
+* *Arguments:* Properties.Artifacts - (Optional) If set to true, output artifacts will not be encrypted.
+
+If type is set to NO_ARTIFACTS then this value will be ignored.
+Defaults to false.
+
+
+[source,yaml]
+----
+Resources: 
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties: 
+      ...
+      Artifacts:
+        ...
+                Type: S3       
+-               EncryptionDisabled: True
++               EncryptionDisabled: False
+----

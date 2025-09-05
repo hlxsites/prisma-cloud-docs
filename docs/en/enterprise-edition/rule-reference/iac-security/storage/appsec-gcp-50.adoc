@@ -1,0 +1,54 @@
+== GCP MySQL instance with local_infile database flag is not disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_50
+|Category |Storage - Permissions
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |a063c6eb-ae91-4f80-9756-20b070a5733c
+|===
+ 
+
+
+
+=== Impact
+The *local_infile* database flag controls the server-side LOCAL capability for LOAD DATA statements.
+Depending on the *local_infile* setting, the server refuses or permits local data loading by clients that have LOCAL enabled on the client side.
+To explicitly cause the server to refuse LOAD DATA LOCAL statements start *mysqld* with *local_infile* disabled, regardless of how client programs and libraries are configured at build time or runtime.
+*local_infile* can also be set at runtime.
+We recommended you set the *local_infile* database flag for a Cloud SQL MySQL instance to *off* to address the security issues associated with the flag.
+
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:* database_version = "MYSQL_* " 
+settings::database_flags: key:"local_infile", value:  by default set to "on"
+
+
+[source,go]
+----
+resource "google_sql_database_instance" "default" {
+  name             = "master-instance"
+  database_version = "MYSQL_8_0"
+  region           = "us-central1"
+
+  settings {
++         database_flags {
++            name  = "local_infile"
++            value = "off"
+          }
+  }
+}
+----
+

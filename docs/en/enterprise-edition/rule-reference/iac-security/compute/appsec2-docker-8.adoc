@@ -1,0 +1,29 @@
+== Dockerfile APT package manager is configured to allow unauthenticated packages misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_DOCKER_8
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |MEDIUM
+|Framework |Docker
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+Utilizing the `--allow-unauthenticated` or `--force-yes` option with the APT package manager (`apt-get`) in Dockerfiles poses a security concern. These flags allow the installation of packages without verifying their authenticity, effectively bypassing the signature verification process.
+
+Without proper signature verification, there's a heightened risk of installing tampered or malicious packages. This can introduce vulnerabilities or malicious software into your Docker images, potentially compromising the container's security and the integrity of applications running within.
+
+=== How to Fix
+
+*Docker*
+
+[source,dockerfile]
+----
+- RUN apt-get update && apt-get install -y --allow-unauthenticated somepackage
++ RUN apt-get update && apt-get install -y somepackage
+----

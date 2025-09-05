@@ -1,0 +1,69 @@
+== AWS ElastiCache Redis cluster with in-transit encryption disabled (Replication group) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_30
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |8d5d0339-c7be-4913-a610-3c7195106f60
+|===
+ 
+
+
+
+=== Impact
+ElastiCache for Redis offers optional encryption in transit.
+In-transit encryption provides an additional layer of data protection when transferring data over standard HTTPS protocol.
+
+In-transit encryption can only be enabled on Redis replication groups at time of their creation.
+
+ElastiCache for Redis in-transit encryption enables the following features:
+
+* Encrypted connections: server and client connections are Secure Socket Layer (SSL) encrypted.
+* Encrypted replication: data transfer between primary replicas is encrypted.
+* Server authentication.
+* Client authentication.
+
+//
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_elasticache_replication_group
+* *Arguments:* transit_encryption_enabled - (Optional) Whether to enable encryption in transit.
+
+
+[source,go]
+----
+resource "aws_elasticache_replication_group" "example"{
+  ...
+  replication_group_id          = "default-1"
++ transit_encryption_enabled    = true
+  ...
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::ElastiCache::ReplicationGroup
+* *Arguments:* Properties.TransitEncryptionEnabled - (Optional) Whether to enable encryption in transit.
+
+
+[source,yaml]
+----
+Resources:
+    ReplicationGroup:
+    Type: 'AWS::ElastiCache::ReplicationGroup'
+    Properties:
+      ...
++     TransitEncryptionEnabled: True
+----

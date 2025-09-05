@@ -1,0 +1,62 @@
+== AWS Security Group allows all traffic on RDP port (3389) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_25
+|Category |Public Exposure - Sensitive Ports
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |0351493c-9989-4b33-ad86-18dbe406e710
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+The issue is the CIDR specified in the ingress control rule - "0.0.0.0/0".
+Change it from this:
+
+
+[source,go]
+----
+resource "aws_security_group" "example" {
+  ...
+  ingress {
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+-   cidr_blocks = ["0.0.0.0/0"]
++   cidr_blocks = ["10.0.0.1/32"]
+  }  
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::EC2::SecurityGroup
+* *Arguments:* Properties.SecurityGroupIngress
+
+
+[source,yaml]
+----
+Type: AWS::EC2::SecurityGroup
+    Properties:
+      ...
+      SecurityGroupIngress:
+      - Description: SSH Ingress
+        IpProtocol: tcp
+        FromPort: 3389
+        ToPort: 3389
+-       CidrIp: "0.0.0.0/0"
++       CidrIp: "10.10.10.0/24"
+----

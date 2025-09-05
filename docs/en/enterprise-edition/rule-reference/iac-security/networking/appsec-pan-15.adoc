@@ -1,0 +1,42 @@
+== Include ACL (Access Control List) not defined for a security zone in Palo Alto Networks devices with User-ID enabled misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_PAN_15
+|Category |Networking - Ingress Controls
+|Provider |
+|Severity |LOW
+|Framework |Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+This policy detects whether an 'Include ACL' (Access Control List) is defined when User-ID is enabled on a security zone in Palo Alto Networks devices. User-ID is a feature that maps IP addresses to users, allowing for policy enforcement based on user identity. When User-ID is enabled, the 'Include ACL' specifies which traffic should be included for user mapping. If the 'Include ACL' property is not defined, User-ID might incorrectly process or exclude important traffic.
+
+=== How to Fix
+
+*Palo Alto Networks*
+
+* *Resource:* panos_zone
+* *Attributes:* enable_userid, include_acl
+
+To mitigate this risk, ensure that for each panos_zone where enable_userid attribute is 'true', there is a corresponding include_acl attribute that is non-empty. The 'Include ACL' should specify the traffic to be included in the User-ID mapping process, enhancing the accuracy and effectiveness of user-based policies.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  ...
+  tasks:
+    - name: Zone
+      paloaltonetworks.panos.panos_zone:
+        ...
+        enable_userid: true
+        include_acl: ['10.0.200.0/24']
+----
+
+In this example, by defining an 'Include ACL' for zones where User-ID is enabled, you ensure that user identification is accurately applied to the correct set of traffic.

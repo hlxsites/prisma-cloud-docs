@@ -1,0 +1,62 @@
+== DocDB does not have audit logs enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_104
+|Category |Storage - Alerting
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Enabling audit logs for Amazon DocumentDB (DocDB) can help you to monitor and track activity within your DocDB cluster.
+Audit logs provide a record of database activity, including details about the activity itself (e.g., which database was accessed, what type of operation was performed), as well as information about the user or application that initiated the activity.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_docdb_cluster_parameter_group
+* *Arguments:*  parameter.audit_logs
+
+
+[source,go]
+----
+resource "aws_docdb_cluster_parameter_group" "test" {
+     ...
++  parameter {
++    name  = "audit_logs"
++    value = "enabled"
+  }
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::DocDB::DBClusterParameterGroup
+* *Arguments:*  Parameters.audit_logs
+
+
+[source,yaml]
+----
+Resources:
+    DocDBParameterGroupEnabled:
+        Type: "AWS::DocDB::DBClusterParameterGroup"
+        Properties:
+        ...
++       Parameters: 
++       audit_logs: "enabled"
+            ...
+----

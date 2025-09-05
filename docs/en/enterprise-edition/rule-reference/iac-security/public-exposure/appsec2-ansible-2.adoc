@@ -1,0 +1,38 @@
+== HTTPS url not used with Ansible get_url module misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_ANSIBLE_2
+|Category |Public Exposure - APIs
+|Provider |
+|Severity |MEDIUM
+|Framework |Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+This policy detects whether HTTPS URLs are used in the Ansible get_url module to ensure secure data transmission. Using HTTPS encrypts the data transmitted, providing confidentiality and integrity. It verifies that the tasks interact with URLs over a secure channel.
+
+=== How to Fix
+
+*Ansible*
+
+* *Module:* get_url
+* *Attribute:* url
+
+To align with this policy, make sure that all tasks using the `get_url` module specify URLs that start with "https://". This practice ensures that the data is transferred over an encrypted connection.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  ansible.builtin.get_url:
+    url: "https://example.com/file.tar.gz"
+    dest: "/tmp/file.tar.gz"
+----
+
+In this example, by ensuring that URLs in your Ansible playbooks' get_url tasks start with 'https://', the security of your data transfer is enhanced.

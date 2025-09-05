@@ -1,0 +1,56 @@
+== AWS RDS DB cluster encryption is disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_16
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |bf007096-b372-4921-848c-11b29e042f4f
+|===
+ 
+
+
+
+=== Impact
+AWS RDS is a managed DB service enabling quick deployment and management of MySQL, MariaDB, PostgreSQL, Oracle, and Microsoft SQL Server DB engines.
+Native RDS encryption helps protect your cloud applications and fulfils compliance requirements for data-at-rest encryption.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+To mitigate this issue, set the `storage_encrypted` attribute of the `aws_db_instance` to true.
+
+
+[source,go]
+----
+resource "aws_db_instance" "example" {
+  ...
+  name                 = "mydb"
++ storage_encrypted    = true 
+}
+----
+
+
+*CloudFormation* 
+
+To mitigate this issue, set the `StorageEncrypted` attribute of the `AWS::RDS::DBInstance` to true.
+
+
+[source,yaml]
+----
+ Resources:
+  DB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      ...
++     StorageEncrypted: true
+----

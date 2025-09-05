@@ -1,0 +1,67 @@
+== GCP BigQuery dataset is publicly accessible misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_15
+|Category |Public Exposure - Storage Buckets
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |c347d096-1c4b-4605-8eea-cbf1343ce6c7
+|===
+ 
+
+////
+Bridgecrew
+Prisma Cloud
+* GCP BigQuery dataset is publicly accessible* 
+
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_15
+|Category |Public Exposure - Storage Buckets
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |c347d096-1c4b-4605-8eea-cbf1343ce6c7
+|===
+ 
+////
+
+
+=== Impact
+Dataset-level permissions help determine which users, groups, and service accounts are allowed to access tables, views, and table data in a specific BigQuery dataset.
+You can configure BigQuery permissions at a higher level in the Cloud IAM resource hierarchy.
+Your configurations are inherited and based on the IAM structure you select to apply.
+We recommend you ensure private datasets remain private by avoiding the *All Authenticated Users* option which  gives all Google account holders access to the dataset, and makes the dataset public.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_bigquery_dataset" "pass_special_group" {
+  dataset_id                  = "example_dataset"
+  friendly_name               = "test"
+  description                 = "This is a test description"
+  location                    = "US"
+
+  access {
+    role          = "READER"
+    special_group = "projectReaders"
+  }
+}
+----
+

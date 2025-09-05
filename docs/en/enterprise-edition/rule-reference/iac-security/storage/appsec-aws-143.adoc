@@ -1,0 +1,48 @@
+== S3 bucket lock configuration disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_143
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Object Lock is an Amazon S3 feature that blocks object version deletion during a user-defined retention period, to enforce retention policies as an additional layer of data protection and/or for strict regulatory compliance.
+The feature provides two ways to manage object retention: retention periods and legal holds.
+A retention period specifies a fixed time frame during which an S3 object remains locked, meaning that it can't be overwritten or deleted.
+A legal hold implements the same protection as a retention period, but without an expiration date.
+Instead, a legal hold remains active until you explicitly remove it.
+Ensure that your Amazon S3 buckets have Object Lock feature enabled in order to prevent the objects they store from being deleted.
+Used in combination with versioning, which protects objects from being overwritten, AWS S3 Object Lock enables you to store your S3 objects in an immutable form, providing an additional layer of protection against object changes and deletion.
+S3 Object Lock feature can also help you meet regulatory requirements within your organization when it comes to data protection.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_s3_bucket
+* *Arguments:* object_lock_enabled
+
+
+[source,go]
+----
+resource "aws_s3_bucket" "test" {
+   ...
++  object_lock_configuration = {
++     object_lock_enabled = "Enabled"
++  }
+}
+----

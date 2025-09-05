@@ -1,0 +1,79 @@
+== Athena workgroup does not prevent disabling encryption misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_82
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+You can configure settings at the workgroup level, enforce control over the workgroup.
+This only affects you if you run queries in the workgroup;
+if you do, workgroup settings are used.
+If a query runs in a workgroups and the workgroup overrides client-side settings, Athena uses the workgroup's settings for encryption.
+It also overrides any other settings specified for the query in the console, by using API operations, or with drivers.
+
+
+=== How to Fix
+
+
+*Terraform*
+
+
+* *Resource:* aws_athena_workgroup
+* *Arguments:* enforce_workgroup_configuration - (Optional) Boolean whether the settings for the workgroup override client-side settings.
+
+For more information, see Workgroup Settings Override Client-Side Settings.
+Defaults to true.
+
+
+[source,go]
+----
+resource "aws_athena_workgroup" "example" {
+  name = "example"
+ ...
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
+
+    result_configuration {
+      output_location = "s3://{aws_s3_bucket.example.bucket}/output/"
+
+      encryption_configuration {
+        encryption_option = "SSE_KMS"
+        kms_key_arn       = aws_kms_key.example.arn
+      }
+    }
+  }
+}
+----
+
+
+*CloudFormation*
+
+
+* *Resource:* AWS::Athena::WorkGroup
+* *Arguments:* Properties.WorkGroupConfiguration.EnforceWorkGroupConfiguration
+
+
+[source,yaml]
+----
+Resources:
+  MyAthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      ...
++     WorkGroupConfiguration:
++       EnforceWorkGroupConfiguration: true
+        ...
+----

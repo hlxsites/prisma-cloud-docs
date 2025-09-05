@@ -1,0 +1,48 @@
+== OpenStack instance use basic credentials misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_OPENSTACK_4
+|Category |IAM - Authentication Policies
+|Provider |
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+When managing a compute instance in Terraform, you can override the root password using admin_pass.
+However, this is stored in plaintext and therefore exposes the root password to credential theft.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* openstack_compute_instance_v2
+* *Arguments:* admin_pass
+
+[source,go]
+----
+resource "openstack_compute_instance_v2" "fail" {
+  name            = "basic"
+  image_id        = "ad091b52-742f-469e-8f3c-fd81cadf0743"
+  flavor_id       = "3"
+-  admin_pass      = "N0tSoS3cretP4ssw0rd"
+  security_groups = ["default"]
+  user_data       = "#cloud-config
+  hostname: instance_1.example.com
+  fqdn: instance_1.example.com"
+
+  network {
+    name = "my_network"
+  }
+}
+----

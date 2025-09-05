@@ -1,0 +1,59 @@
+== GCP Projects do have OS Login disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_33
+|Category |Public Exposure - Admin Interface
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Enabling OSLogin ensures that SSH keys used to connect to instances are mapped with IAM users.
+Revoking access to IAM user will revoke all the SSH keys associated with that particular user.
+It facilitates centralized and automated SSH key pair management.
+This is useful in handling cases such as response to compromised SSH key pairs and/or revocation of external/third-party/Vendor users.
+We recommend you enable OSLogin to bind SSH certificates to IAM users and facilitates effective SSH certificate management.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_compute_project_metadata
+* *Arguments:* enable-oslogin
+* *Resource:* google_compute_instance
+* *Arguments:* enable-oslogin Should not override project metadata: should not be set to false.
+
+
+[source,go]
+----
+//Option 1
+resource "google_compute_project_metadata" "default" {
+  metadata = {
++    enable-oslogin = true
+  }
+}
+
+//Option 2
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+  boot_disk {}
+  metadata = {
+-     enable-oslogin = false
+  }
+}
+----
+

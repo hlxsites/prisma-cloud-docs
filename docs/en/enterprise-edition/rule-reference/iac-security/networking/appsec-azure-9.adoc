@@ -1,0 +1,39 @@
+== Azure RDP Internet access is not restricted misconfiguration detected in code
+// Azure RDP internet access not restricted
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_9
+|Category |Networking - Ingress Controls
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_network_security_rule
+* *Arguments:* access + protocol + destination_port_range + source_address_prefix
+
+
+[source,go]
+----
+resource "azurerm_network_security_rule" "example" {
+     ...
+-    access                      = "Allow"
+-    protocol                    = "TCP"
+-    destination_port_range      = ["3389" / <port range including 3389>]]
+-    source_address_prefix       = "*" / "0.0.0.0" / "<nw>/0" / "/0" / "internet" / "any"
+     ...
+}
+----

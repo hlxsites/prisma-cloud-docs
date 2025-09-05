@@ -1,0 +1,38 @@
+== AWS Bedrock agent is not associated with Bedrock guardrails misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_383
+|Category |AI & Machine Learning - Guardrails
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |4a122e5c-6bc6-4e4f-a757-fb9bcb3c9cc4
+|===
+
+
+=== Impact
+This policy detects whether the AWS Bedrock agent is associated with Bedrock guardrails. Amazon Bedrock Guardrails provides crucial governance and compliance controls for generative AI applications, ensuring their safe and responsible use. Associating Guardrails with the Bedrock agent is essential for enforcing these controls, mitigating the risk of non-compliance and potentially harmful outputs. Not associating Guardrails may expose organizations to various risks, including generating biased, inappropriate, or harmful content. By linking Guardrails, organizations can implement safeguards and prevent unwanted behavior in model responses or user messages.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_bedrockagent_agent
+* *Arguments:* guardrail_configuration.guardrail_identifier
+
+To mitigate this issue, configure the `guardrail_configuration` block in your Terraform configuration to include a valid `guardrail_identifier` argument. This ensures that the appropriate guardrails are associated with the Bedrock agent.
+
+Example:
+
+[source,go]
+----
+resource "aws_bedrockagent_agent" "example" {
+  ...
++  guardrail_configuration {
++    guardrail_identifier = "your-guardrail-id"  # Replace with a valid guardrail identifier
++  }
+}
+----

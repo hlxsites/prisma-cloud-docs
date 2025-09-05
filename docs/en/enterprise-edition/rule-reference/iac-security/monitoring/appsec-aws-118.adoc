@@ -1,0 +1,57 @@
+== AWS Amazon RDS instances Enhanced Monitoring is disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_118
+|Category |Monitoring - Performance Monitoring
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that enhanced monitoring is enabled for Amazon RDS instances. Enhanced monitoring provides detailed metrics in real-time for the operating system that your DB instance runs on, which helps in identifying and diagnosing performance issues. This policy checks whether the `MonitoringInterval` property is set to a valid value for enabling enhanced monitoring.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_db_instance
+* *Arguments:* monitoring_interval
+
+
+[source,go]
+----
+resource "aws_db_instance" "default" {
+  allocated_storage    = 10
+  ...
++ monitoring_interval  = 5
+  }
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `MonitoringInterval` property in the `AWS::RDS::DBInstance` resource is set to a valid value (1, 5, 10, 15, 30, or 60 seconds).
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: example-instance
++      MonitoringInterval: 60
+      ...
+----

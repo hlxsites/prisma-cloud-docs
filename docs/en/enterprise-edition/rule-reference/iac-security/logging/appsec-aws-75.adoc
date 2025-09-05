@@ -1,0 +1,51 @@
+== Global Accelerator does not have Flow logs enabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_75
+|Category |Logging - Disabled or Missing
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Global Accelerator is a networking service that sends traffic through AWS's global network enabling global access to your web apps.
+Flow logs allow capturing information about the IP address traffic going to and from network interfaces in the AWS Global Accelerator.
+Flow log data is published to Amazon S3, where it can be retrieved and viewed.
+Flow logs enable troubleshooting if specific traffic is not reaching an endpoint, helping you to diagnose overly restrictive security group rules.
+It can also be used to monitor the traffic that is reaching endpoints in a VPC and establish if they should be receiving that traffic.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+* *Resource:* aws_globalaccelerator_accelerator
+* *Arguments:* flow_logs_enabled - (Optional) Indicates whether flow logs are enabled.
+
+
+[source,go]
+----
+resource "aws_globalaccelerator_accelerator" "example" {
+  name            = "Example"
+  ip_address_type = "IPV4"
+  enabled         = true
+
+  attributes {
++    flow_logs_enabled   = true
++    flow_logs_s3_bucket = "example-bucket"
++    flow_logs_s3_prefix = "flow-logs/"
+  }
+}
+----

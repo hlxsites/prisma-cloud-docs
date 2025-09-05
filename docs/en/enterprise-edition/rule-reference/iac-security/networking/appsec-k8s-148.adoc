@@ -1,0 +1,55 @@
+== The --tls-cert-file and --tls-private-key-file arguments for Kubelet are not set appropriately misconfiguration detected in code
+// 'The '--tls-cert-file' and '--tls-private-key-file' arguments for Kubelet not set appropriately
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_148
+|Category |Networking - Encryption and Protocols
+|Provider |
+|Severity |HIGH
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+API server communication contains sensitive parameters that should remain encrypted in transit.
+Configure the API server to serve only HTTPS traffic by setup TLS connection on the API server.
+By default, --tls-cert-file and --tls-private-key-file arguments are not set.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "  apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: null
+    labels:
+      component: kube-apiserver
+      tier: control-plane
+    name: kube-apiserver
+    namespace: kube-system
+  spec:
+    containers:
+    - command:
+       - kube-apiserver
++      - --tls-cert-file=/path/to/cert
++      - --tls-private-key-file=/path/to/key
+      image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+      ...",
+}
+----
+

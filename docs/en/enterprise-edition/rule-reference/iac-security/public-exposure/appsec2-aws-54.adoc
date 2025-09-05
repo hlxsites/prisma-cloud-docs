@@ -1,0 +1,48 @@
+== AWS CloudFront distribution is using insecure SSL protocols for HTTPS communication misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_54
+|Category |Public Exposure - Encryption and Protocols
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |90b66466-c8e7-4cc0-a49d-104ae5451e52
+|===
+ 
+
+=== Impact
+This policy detects AWS CloudFront distributions that are not configured to use secure SSL protocols for HTTPS communication. 
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* origin.custom_origin_config.origin_ssl_protocols
+
+[source,go]
+----
+resource "aws_cloudfront_distribution" "example" {
+  # ... other configuration ...
+
+  origin {
+    domain_name = "my-origin.example.com"
+    origin_id   = "myOriginID"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
++      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+
+      # ... other configuration ...
+    }
+  }
+
+  # ... other configuration ...
+----
+
+In the provided Terraform example, the aws_cloudfront_distribution resource is configured to exclude SSLv3 from the origin_ssl_protocols, adhering to the Cortex Cloud policy by specifying only secure TLS versions such as TLSv1, TLSv1.1, and TLSv1.2. To further enhance security, the viewer_certificate is set with a minimum protocol version of TLSv1.2_2019, aligning with best security practices and ensuring that both the origin communication and the viewer connection utilize secure SSL protocols. It is important to tailor additional Terraform configurations to your specific requirements and to always prefer the latest supported TLS versions for optimal security.

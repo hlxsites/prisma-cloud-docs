@@ -1,0 +1,44 @@
+== AWS IAM policy allows full administrative privileges misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_40
+|Category |IAM - Overly Permissive
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |ccf65e9c-8c63-4a1d-89f3-1b01ff2439b3
+|===
+
+
+=== Impact
+This policy detects if an AWS IAM policy allows full IAM privileges. Granting full IAM privileges can lead to unauthorized access, privilege escalation, and potential security breaches.
+
+=== How to Fix
+
+*Terraform*
+
+* *Resource:* aws_iam_policy, aws_iam_role_policy, aws_iam_group_policy, aws_iam_user_policy
+* *Arguments:* statement
+
+To fix this issue, review the IAM policy and remove any explicit Allow actions for IAM. Limit the IAM policy to only the necessary permissions required for the specific role or group.
+
+Secure code example:
+
+[source,go]
+----
+data "aws_iam_policy_document" "example" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:Get*",
+      "s3:List*",
+    ]
+    resources = ["arn:aws:s3:::my-bucket/*"]
+  }
+}
+----
+
+The above code is secure because it only allows the necessary actions ("s3:Get*" and "s3:List*") on a specific S3 bucket.

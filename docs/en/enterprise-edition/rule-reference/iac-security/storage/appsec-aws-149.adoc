@@ -1,0 +1,56 @@
+== AWS Secrets Manager secret not encrypted by Customer Managed Key (CMK) misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_149
+|Category |Storage - Encryption
+|Provider |AWS
+|Severity |LOW
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |e6503172-b262-4949-b651-e8ffb3947167
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that AWS Secrets Manager secrets are encrypted using a customer-managed key (CMK) in AWS Key Management Service (KMS). Using a CMK provides additional control over the encryption keys used to protect your secrets, allowing you to manage key policies, rotation, and usage. This policy checks whether the `KmsKeyId` property is set to a value that does not contain the prefix `aws/` which indicates the use of the default AWS-managed key.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_secretsmanager_secret
+* *Arguments:*  kms_key_id
+
+
+[source,go]
+----
+resource "aws_secretsmanager_secret" "enabled" {
+   ...
+ + kms_key_id = var.kms_key_id
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `KmsKeyId` property in the `AWS::SecretsManager::Secret` resource is set to a customer-managed KMS key ARN or ID.
+
+Example:
+
+[source,yaml]
+----
+Resources:
+  MySecretManagerSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: example-secret
+      KmsKeyId: arn:aws:kms:us-west-2:123456789012:key/example-key-arn
+      ...
+----

@@ -1,0 +1,45 @@
+== OCI VCN has no inbound security list misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_OCI_16
+|Category |Public Exposure - Ingress Controls
+|Provider |Oracle
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy identifies the OCI Virtual Cloud Networks (VCN) that lack ingress rules configured in their security lists.
+It is recommended that Virtual Cloud Networks (VCN) security lists are configured with ingress rules which provide stateful and stateless firewall capability to control network access to your instances.
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* oci_core_security_list
+* *Arguments:* vcn_id + ingress_security_rules
+
+
+[source,go]
+----
+resource "oci_core_security_list" "pass" {
+    compartment_id = oci_identity_compartment.tf-compartment.id
+    vcn_id = oci_core_vcn.test_vcn.id
++    ingress_security_rules {
++        protocol = "all"
++        source="192.168.1.0/24"
++    }
+}
+----
+

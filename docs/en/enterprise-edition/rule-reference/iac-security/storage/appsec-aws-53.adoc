@@ -1,0 +1,72 @@
+== AWS S3 Bucket has the block public ACLs disabled misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_53
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |MEDIUM
+|Framework |CloudFormation, Terraform, Terraform Plan, Serverless
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that Amazon S3 buckets have the `block public ACLs` setting enabled. Blocking public ACLs helps prevent the exposure of sensitive data by ensuring that public access permissions are not granted through ACLs. This setting is crucial for maintaining the security and privacy of the data stored in S3 buckets. This policy checks whether the `BlockPublicAcls` option is enabled in the `PublicAccessBlockConfiguration` of S3 buckets.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+[source,go]
+----
+resource "aws_s3_bucket_public_access_block" "example" {
+  ...
+  
++ block_public_acls   = true
+}
+----
+
+
+*CloudFormation*
+
+To fix this issue, ensure that the `BlockPublicAcls` property in the `PublicAccessBlockConfiguration` of the `AWS::S3::Bucket` resource is set to `true`.
+
+Example:
+
+[source,json]
+----
+{
+  "Resources": {
+    "MyS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "example-bucket",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          ...
+        }
+      }
+    }
+  }
+}
+----
+
+[source,yaml]
+----
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: example-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        ...
+----

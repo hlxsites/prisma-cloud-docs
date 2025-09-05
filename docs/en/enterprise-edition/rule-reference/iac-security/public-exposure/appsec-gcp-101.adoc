@@ -1,0 +1,61 @@
+== GCP Artifact Registry repositories are anonymously or publicly accessible misconfiguration detected in code
+
+*Artifact Registry* is a service that stores artifacts and build dependencies for your GCP applications.
+Artifact registry repositories can contain sensitive credentials that are baked into containers, personal data (like PII), or confidential data that you may not want publicly accessible.
+Repositories can be made anonymously or publicly accessible via IAM policies containing the IAM members _allUsers_ or _allAuthenticatedUsers_.
+We recommend you ensure that neither anonymous or public access to *Artifact Registry repositories* is allowed.
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_101
+|Category |Public Exposure - Storage Buckets
+|Provider |GCP
+|Severity |HIGH
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_artifact_registry_repository_iam_binding
+* *Field:* members
+* *Resource:* google_storage_bucket_iam_member
+* *Field:* member
+
+
+[source,go]
+----
+resource "google_artifact_registry_repository_iam_binding" "public_binding" {
+  provider = google-beta
+  location = google_artifact_registry_repository.my-repo.location
+  repository = google_artifact_registry_repository.my-repo.name
+  role = "roles/artifactregistry.writer"
+
+  members = [
+-    "allUsers",
+-    "allAuthenticatedUsers",
+  ]
+}
+----
+
+
+[source,go]
+----
+resource "google_artifact_registry_repository_iam_member" "public_member" {
+  provider = google-beta
+  location = google_artifact_registry_repository.my-repo.location
+  repository = google_artifact_registry_repository.my-repo.name
+  role = "roles/artifactregistry.writer"
+
+-  member = "allUsers"
+-  member = "allAuthenticatedUsers"
+}
+----

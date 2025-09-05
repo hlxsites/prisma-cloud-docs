@@ -1,0 +1,56 @@
+== AWS Lambda function is not configured for function-level concurrent execution Limit misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_115
+|Category |Compute - Over-Provisioned
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, Terraform Plan, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Adding concurrency to Lambda initializes that number of execution environments for multiple parallel requests at low latency.
+However, this could spike costs and open the door for abuse.
+Adding concurrency limits can prevent a rapid spike in usage and costs, while also increasing or lowering the default concurrency limit.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* aws_lambda_function
+* *Arguments:* reserved_concurrent_executions
+
+
+[source,go]
+----
+resource "aws_lambda_function" "example" {
+   ...
++  reserved_concurrent_executions = 100
+}
+----
+
+
+*CloudFormation* 
+
+
+* *Resource:* AWS::Lambda::Function, AWS::Serverless::Function
+* *Arguments:* Properties/ReservedConcurrentExecutions
+
+[source,text]
+----
+Type: AWS::Lambda::Function
+Properties: 
+  ...
+  ReservedConcurrentExecutions: 100
+  ...
+----

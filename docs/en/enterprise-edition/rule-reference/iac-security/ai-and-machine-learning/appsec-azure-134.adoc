@@ -1,0 +1,44 @@
+== Azure Cognitive Services account configured with public network access misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_134
+|Category |AI & Machine Learning - Public Exposure
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Bicep, Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |30f9ba6b-a3bf-49e9-bada-25d695309b31
+|===
+ 
+
+
+
+=== Impact
+Disabling the public network access property improves security by ensuring your  Azure Cognitive Services can only be accessed from a private endpoint.
+This configuration strictly disables access from any public address space outside of Azure IP range and denies all logins that match IP or virtual network-based firewall rules.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* azurerm_cognitive_account
+* *Arguments:* public_network_access_enabled
+
+
+[source,go]
+----
+resource "azurerm_cognitive_account" "examplea" {
+  name                = "example-account"
+  location            = var.resource_group.location
+  resource_group_name = var.resource_group.name
+  kind                = "Face"
+  public_network_access_enabled = false
+  sku_name = "S0"
+}
+----
+

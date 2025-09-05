@@ -1,0 +1,112 @@
+== AWS Glue component is not associated with a security configuration misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AWS_195
+|Category |Storage - Permissions
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform, CloudFormation
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+This policy ensures that AWS Glue components (Crawlers, DevEndpoints, and Jobs) have a security configuration associated. Associating a security configuration with Glue components helps ensure the security of data in transit and at rest, which is critical for maintaining data integrity and protecting sensitive information. This policy checks whether the `CrawlerSecurityConfiguration` or `SecurityConfiguration` property is configured appropriately for Glue components.
+
+=== How to Fix
+
+
+*Terraform*
+
+To fix this issue, ensure that the `security_configuration` property in the `aws_glue_crawler`, `aws_glue_dev_endpoint`, and `aws_glue_job` resources is set to a valid security configuration.
+
+Example for a Glue Crawler:
+
+[source,go]
+----
+resource "aws_glue_crawler" "example" {
+  ...
+  security_configuration = "example-security-configuration"
+  ...
+}
+----
+
+Example for a Glue DevEndpoint:
+
+[source,go]
+----
+resource "aws_glue_dev_endpoint" "example" {
+  ...
+  security_configuration = "example-security-configuration"
+  ...
+}
+----
+
+Example for a Glue Job:
+
+[source,go]
+----
+resource "aws_glue_job" "example" {
+  ...
+  security_configuration = "example-security-configuration"
+  ...
+}
+----
+
+*CloudFormation*
+
+To fix this issue, ensure that the appropriate security configuration properties are set for your Glue components.
+
+Example for a Glue Crawler:
+
+[source,yaml]
+----
+Resources:
+  MyGlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: example-crawler
+      Role: arn:aws:iam::123456789012:role/glue-role
+      DatabaseName: example-database
+      Targets:
+        ...
+      CrawlerSecurityConfiguration: example-security-configuration
+      ...
+----
+
+Example for a Glue DevEndpoint:
+
+[source,yaml]
+----
+Resources:
+  MyGlueDevEndpoint:
+    Type: AWS::Glue::DevEndpoint
+    Properties:
+      EndpointName: example-dev-endpoint
+      RoleArn: arn:aws:iam::123456789012:role/glue-role
+      SecurityConfiguration: example-security-configuration
+      ...
+----
+
+Example for a Glue Job:
+
+
+[source,yaml]
+----
+Resources:
+  MyGlueJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: example-job
+      Role: arn:aws:iam::123456789012:role/glue-role
+      Command:
+        ...
+      SecurityConfiguration: example-security-configuration
+      ...
+----

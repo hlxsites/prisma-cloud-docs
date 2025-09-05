@@ -1,0 +1,45 @@
+== A MySQL database instance allows anyone to connect with administrative privileges misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_GCP_7
+|Category |IAM - Overly Permissive
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+It is recommended to set a password for the administrative user (root by default) to prevent unauthorized access to the SQL database instances.
+This recommendation is applicable only for MySQL Instances.
+PostgreSQL does not offer any setting for No Password from the cloud console.
+At the time of MySQL Instance creation, not providing an administrative password allows anyone to connect to the SQL database instance with administrative privileges.
+The root password should be set to ensure only authorized users have these privileges.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:* google_sql_database_instance
+* *Arguments:* google_sql_user
+
+
+[source,go]
+----
+resource "google_sql_user" "root_with_password" {
+  name     = "root"
+  instance = google_sql_database_instance.db_instance.name
+  host     = "me.com"
++ password = "1234"
+}
+----
+

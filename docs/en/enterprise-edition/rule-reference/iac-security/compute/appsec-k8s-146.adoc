@@ -1,0 +1,87 @@
+== The --hostname-override argument is set misconfiguration detected in code
+// '--hostname-override' argument is set
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_146
+|Category |Compute - Unsanctioned Resource or Type
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+Do not override node hostnames.
+Overriding hostnames could potentially break TLS setup between the kubelet and the apiserver.
+Additionally, with overridden hostnames, it becomes increasingly difficult to associate logs with a particular node and process them for security analytics.
+Hence, you should setup your kubelet nodes with resolvable FQDNs and avoid overriding the hostnames with IPs.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kubelet
+    tier: control-plane
+  name: kubelet
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kubelet
+    - --read-only-port=80
+    image: gcr.io/google_containers/kubelet-amd64:v1.6.0
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: 127.0.0.1
+        path: /healthz
+        port: 6443
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: kubelet
+    resources:
+      requests:
+        cpu: 250m
+    volumeMounts:
+    - mountPath: /etc/kubernetes/
+      name: k8s
+      readOnly: true
+    - mountPath: /etc/ssl/certs
+      name: certs
+    - mountPath: /etc/pki
+      name: pki
+  hostNetwork: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes
+    name: k8s
+  - hostPath:
+      path: /etc/ssl/certs
+    name: certs
+  - hostPath:
+      path: /etc/pki
+    name: pki",
+}
+----
+

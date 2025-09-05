@@ -1,0 +1,42 @@
+== IPsec profile uses insecure authentication protocols on Palo Alto Networks devices misconfiguration detected in code
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_PAN_13
+|Category |Networking - Encryption and Protocols
+|Provider |
+|Severity |MEDIUM
+|Framework |Ansible
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== Impact
+This policy detects whether IPsec profiles in Palo Alto Networks devices use insecure protocols. Specifically, it emphasizes avoiding the AH (Authentication Header) protocol in IPsec configurations due to its lack of encryption and lower security compared to ESP (Encapsulating Security Payload). It promotes the use of ESP for secure IPsec tunnels.
+
+=== How to Fix
+
+*Palo Alto Networks*
+
+* *Resource:* panos_ipsec_profile
+* *Attribute:* ah_authentication
+
+To mitigate this risk, do not configure the ah_authentication attribute in your panos_ipsec_profile resources. Omitting this attribute ensures the use of ESP, which provides both authentication and encryption, enhancing the security of your IPsec VPN connections.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  ...
+  tasks:
+    - name: ipsec
+      paloaltonetworks.panos.panos_ipsec_profile:
+        ...
+-        ah_authentication: 'sha1' # Unencrypted AH should not be used
++        esp_encryption: ['aes-256-gcm'] # Encrypted ESP, not unencrypted AH, should be used
+----
+
+In this example, by not defining ah_authentication in your IPsec profile, you ensure the use of ESP, which provides both authentication and encryption, enhancing the security of your IPsec VPN connections.

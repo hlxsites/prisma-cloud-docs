@@ -1,0 +1,61 @@
+== GCP Kubernetes Engine cluster not using Release Channel for version management misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_GCP_70
+|Category |Monitoring - Resource Health
+|Provider |GCP
+|Severity |LOW
+|Framework |Terraform, Terraform Plan
+|Mapped CSPM/KSPM Rule |7456f76f-cef6-40e6-bf60-18bae6fddd8a
+|===
+ 
+
+
+
+=== Impact
+The release channels allow organizations to better set their expectation of what is stable.
+GKE's release channel options include "`rapid,`" "`regular,`" and "`stable.`" This allows you to opt for the alpha releases as part of the "`rapid`" option, "`regular`" for standard release needs and "`stable`" when the tried-and-tested version becomes available.
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "google_container_cluster" "success" {
+  name               = var.name
+  location           = var.location
+  initial_node_count = 1
+  project            = data.google_project.project.name
+
+  network    = var.network
+  subnetwork = var.subnetwork
+
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block       = var.ip_allocation_policy["cluster_ipv4_cidr_block"]
+    cluster_secondary_range_name  = var.ip_allocation_policy["cluster_secondary_range_name"]
+    services_ipv4_cidr_block      = var.ip_allocation_policy["services_ipv4_cidr_block"]
+    services_secondary_range_name = var.ip_allocation_policy["services_secondary_range_name"]
+  }
+
+  node_config {
+    workload_metadata_config {
+      node_metadata = "GKE_METADATA_SERVER"
+    }
+  }
+
+  release_channel {
+    channel = var.release_channel
+  }
+
+}
+----
+

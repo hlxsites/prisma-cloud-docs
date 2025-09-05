@@ -1,0 +1,35 @@
+== Azure SQL Servers Firewall rule allow ingress access from 0.0.0.0/0 misconfiguration detected in code
+// Azure SQL Servers Firewall rule allow ingress access from IP address 0.0.0.0/0
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_AZURE_11
+|Category |Public Exposure - Sensitive Ports
+|Provider |Azure
+|Severity |HIGH
+|Framework |ARM, Terraform, Bicep, Terraform Plan
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+* *Resource:*  azurerm_mariadb_firewall_rule azurerm_sql_firewall_rule azurerm_postgresql_firewall_rule azurerm_mysql_firewall_rule
+* *Arguments:* start_ip_address
+
+
+[source,go]
+----
+resource "azurerm_mysql_firewall_rule" "example" {
+    ...
+-   start_ip_address    = "0.0.0.0"
+-   end_ip_address      = "255.255.255.255"
+}
+----

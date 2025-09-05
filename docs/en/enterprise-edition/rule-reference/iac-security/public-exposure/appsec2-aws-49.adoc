@@ -1,0 +1,54 @@
+== AWS Database Migration Service endpoint do not have SSL configured misconfiguration detected in code
+
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC2_AWS_49
+|Category |Public Exposure - Database Endpoints
+|Provider |AWS
+|Severity |LOW
+|Framework |Terraform
+|Mapped CSPM/KSPM Rule |61764822-555e-4492-b9d6-0b5210e11ee4
+|===
+ 
+
+
+
+=== Impact
+This policy identifies Database Migration Service (DMS) endpoints that are not configured with SSL to encrypt connections for source and target endpoints.
+
+It is recommended to use SSL connection for source and target endpoints; enforcing SSL connections help protect against 'man in the middle' attacks by encrypting the data stream between endpoint connections.
+
+NOTE: Not all databases use SSL in the same way.
+
+An Amazon Redshift endpoint already uses an SSL connection and does not require an SSL connection set up by AWS DMS.
+So there are some exclusions included in policy RQL to report only those endpoints which can be configured using DMS SSL feature.
+For more details  https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Security.html#CHAP_Security.SSL[see here.]
+
+=== How to Fix
+
+
+*Terraform* 
+
+
+
+
+[source,go]
+----
+resource "aws_dms_endpoint" "pass_source_1" {
+  certificate_arn             = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+  database_name               = "test"
+  endpoint_id                 = "test-dms-endpoint-tf"
+  endpoint_type               = "source"
+  engine_name                 = "aurora"
+  extra_connection_attributes = ""
+  kms_key_arn                 = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+  password                    = "test"
+  port                        = 3306
+  server_name                 = "test"
+  ssl_mode                    = "require"
+  username = "test"
+}
+----

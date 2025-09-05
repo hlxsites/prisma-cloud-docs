@@ -1,0 +1,54 @@
+== The admission control plugin SecurityContextDeny is set if PodSecurityPolicy is used misconfiguration detected in code
+// Admission control plugin SecurityContextDeny is set if PodSecurityPolicy is used
+
+=== Rule Details
+
+[cols="1,2"]
+|===
+|Cortex AppSec Rule ID |APPSEC_K8S_81
+|Category |IAM - Role Separation
+|Provider |
+|Severity |LOW
+|Framework |Kubernetes, Helm, Kustomize
+|Mapped CSPM/KSPM Rule |None
+|===
+ 
+
+
+
+=== Impact
+The SecurityContextDeny admission controller can be used to deny pods which make use of some SecurityContext fields which could allow for privilege escalation in the cluster.
+This should be used where PodSecurityPolicy is not in place within the cluster.
+SecurityContextDeny can be used to provide a layer of security for clusters which do not have PodSecurityPolicies enabled.
+
+=== How to Fix
+
+
+*Kubernetes* 
+
+
+* *Kind:* Pod
+
+
+[source,yaml]
+----
+{
+ "apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
++   - kube-apiserver
++   - --enable-admission-plugins=SecurityContextDeny
+    image: gcr.io/google_containers/kube-apiserver-amd64:v1.6.0
+    ...",
+}
+----
+
