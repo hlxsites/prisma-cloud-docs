@@ -1,0 +1,401 @@
+== Features Introduced in October 2025
+
+Learn what's new in the Prisma® Cloud October 2025 release.
+
+
+//* <<new-features>>
+//* <<enhancements>>
+* <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<policy-updates>>
+* <<policy-deletion>>
+//* <<iam-policy-updates>>
+//* <<new-compliance-benchmarks-and-updates>>
+//* <<rest-api-updates>>
+//* <<deprecation-notices>>
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Python 3.9 Support*
+//No Jira. Received via Slack by J.Bakst.
+|Starting October 1st, Checkov will officially support Python 3.9. Newer Checkov versions will no longer be supported on Python 3.8 and below. To continue using newer Checkov versions (post 3.2.271), please upgrade to Python 3.9.
+
+|===
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+
+|*Service*
+|*API Details*
+
+|*Azure SQL Database*
+//RLP-156935
+
+|*azure-sql-db-list*
+
+The resource JSON for this API has been updated to include following fields:
+
+* `properties.encryptionProtector`
+* `properties.encryptionProtectorAutoRotation`
+
+|*Azure Security Center*
+//RLP-157048
+
+|*azure-security-center-settings*
+
+The `Microsoft.Security/autoProvisioningSettings/read` deprecated permission has been removed from the CFT template to align with the latest Azure API requirements.
+
+|*Azure Security Center*
+//RLP-157055
+
+|*azure-security-center-settings*
+
+The `autoProvisioningSettings[*]` field has been removed in the JSON resource for this API as it is no longer supported by the Azure API.
+
+|*Google AI Applications*
+//RLP-156754
+
+|*gcloud-ai-applications-cmek-config*
+
+Additional permissions required:
+
+* `discoveryengine.cmekConfigs.list`
+
+The Viewer role includes the permission.
+
+
+
+|===
+
+
+[#new-policies]
+=== New Policies
+[cols="40%a,60%a"]
+|===
+|*Policies*
+|*Description*
+
+|*Azure Network Watcher virtual network flow log is disabled*
+//RLP-156590
+
+|The absence of network flow logging prevents comprehensive monitoring of network traffic within virtual networks, hindering security incident detection and forensic analysis efforts.
+
+Network flow logs record information about IP traffic through Network Security Groups, providing details like source/destination IP, port, protocol, and traffic allowed/denied. If Virtual Network flow logs are disabled, there is no visibility into internal network communications. This lack of logging hinders the ability to detect anomalous traffic patterns indicative of a breach, such as data exfiltration attempts, command and control communications, or internal reconnaissance.
+
+The impact of disabled network flow logs is a significant blind spot in network security. Without these logs, it is nearly impossible to reconstruct a security incident, determine the extent of a compromise, or identify the source and destination of malicious traffic within the network. This severely impedes incident response capabilities and post-mortem analysis. Maintaining enabled flow logs is a best practice for a strong security posture, providing essential telemetry for threat hunting, compliance auditing, and network performance troubleshooting.
+
+To mitigate this misconfiguration, ensure Network Watcher flow logging is enabled for all Virtual Networks. Configure flow logs to capture all traffic that passes through Network Security Groups and direct them to a secure, immutable storage account for long-term retention. Integrate these logs with a security information and event management (SIEM) solution for real-time analysis, alerting, and correlation with other security data.
+
+*Policy Severity—* Informational
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where api.name = 'azure-network-vnet-list' AND json.rule = ['properties.provisioningState'] equal ignore case Succeeded AND flowLogs[*].id does not exist
+----
+
+|*Azure SQL Server not using Entra-only authentication*
+//RLP-156165
+
+|Azure SQL Server authentication relies on verifying the identity of users and applications connecting to the database. When not using Entra-only authentication, the SQL server might be using older/legacy authentication methods which are less secure.
+
+Allowing SQL older/legacy authentication methods increases the risk of credential compromise, such as brute-force attacks, password spraying, and stolen credentials. Legacy authentication protocols often lack modern security features like multi-factor authentication (MFA) and conditional access, making them more susceptible to exploitation. This exposes the database to unauthorized access and potential data breaches.
+
+The impact of not using Entra-only authentication includes an increased risk of unauthorized access, data breaches, and compliance violations. Security incidents may arise from compromised credentials, leading to data exfiltration or system disruptions. Enforcing Entra-only authentication helps to strengthen the security posture and reduce the attack surface.
+
+To mitigate the risks, configure Azure SQL Server to use Entra-only authentication and disable SQL older/legacy authentication methods. Enforce MFA for all Entra accounts accessing the database. Regularly monitor authentication logs for suspicious activity and implement strong password policies to enhance security and prevent unauthorized access.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-server-list' AND json.rule = ['sqlServer'].['properties.state'] equal ignore case ready and (['sqlServer'].['properties.administrators'].['azureADOnlyAuthentication'] is false or ['sqlServer'].['properties.administrators'].['azureADOnlyAuthentication'] does not exist)
+----
+
+|===
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*Azure Microsoft Defender for Cloud disk encryption monitoring is set to disabled*
+//RLP-156565
+
+|*Changes–* The policy RQL and remediation steps are updated.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and properties.parameters.diskEncryptionMonitoringEffect.value equals Disabled) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and (properties.parameters.gcLinuxDiskEncryptionMonitoringEffect.value equals Disabled or properties.parameters.gcWindowsDiskEncryptionMonitoringEffect.value equals Disabled)) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Existing alerts will be resolved as `Policy Updated`.
+
+|*Azure Microsoft Defender for Cloud system updates monitoring is set to disabled*
+//RLP-156565
+
+|*Changes–* The policy RQL and remediation steps are updated.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and properties.parameters.systemUpdatesMonitoringEffect.value equals Disabled) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-policy-assignments' AND json.rule = '((name == SecurityCenterBuiltIn and properties.parameters.systemUpdatesV2MonitoringEffect.value equals Disabled) or (name == SecurityCenterBuiltIn and properties.parameters[*] is empty and properties.displayName does not start with "ASC Default"))'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Existing alerts will be resolved as `Policy Updated`.
+
+
+|*Azure Microsoft Defender for Cloud security contact additional email is not set*
+//RLP-156922
+
+|*Changes–* The policy RQL is updated to refine the policy logic.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[?any(properties.email is empty)] exists) and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-security-center-settings' AND json.rule = (securityContacts is empty or securityContacts[?any(properties.emails is empty)] exists) and pricings[?any(properties.pricingTier equal ignore case Standard)] exists
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* You may notice an increase in count for the number of alerts for policy violations.
+
+
+|*Azure App Service web apps with public network access*
+//RLP-156747
+
+|*Changes–* The policy RQL is updated to consider private endpoints as well to reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with app and properties.state equal ignore case running and properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled and config.ipSecurityRestrictions[?any(action equals Allow and ipAddress equals Any)] exists'
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-app-service' AND json.rule = 'kind starts with app and properties.state equal ignore case running and ((properties.publicNetworkAccess exists and properties.publicNetworkAccess equal ignore case Enabled) or (properties.publicNetworkAccess does not exist and (properties.privateLinkIdentifiers does not exist or properties.privateLinkIdentifiers is empty))) and config.ipSecurityRestrictions[?any((action equals Allow and ipAddress equals Any) or (action equals Allow and ipAddress equals 0.0.0.0/0))] exists'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. Existing alerts for private link identifiers will be resolved. New alerts will be generated for application services where the IP rule allows access from 0.0.0.0/0.
+
+|*Azure Network Watcher Network Security Group (NSG) flow logs retention is less than 90 days*
+//RLP-156742
+
+|*Changes–* The policy RQL and remediation steps are updated to incorporate changes introduced by the CSP and to reduce false positive alerts.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule =  ' $.flowLogsSettings does not exist or  $.flowLogsSettings.enabled is false or  ($.flowLogsSettings.retentionPolicy.days does not equal 0 and $.flowLogsSettings.retentionPolicy.days less than 90) '
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings.retentionPolicy.days does not equal 0 and flowLogsSettings.retentionPolicy.days less than 90) and tags.created-by does not contain "prismacloud-agentless-scan"
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Existing alerts where the Flow logs did not exist for NSG will be resolved.
+
+|*Azure Network Watcher Network Security Group (NSG) flow logs are disabled*
+//RLP-156741
+
+|*Changes–* The policy RQL and remediation steps are updated to incorporate changes introduced by the CSP and to reduce false positive alerts.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings does not exist or flowLogsSettings.enabled is false) and tags.created-by does not contain "prismacloud-agentless-scan"
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' AND json.rule = (flowLogsSettings.storageId is not empty and flowLogsSettings.enabled is false) and tags.created-by does not contain "prismacloud-agentless-scan"
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. Existing alerts where the Flow logs did not exist for NSG will be resolved.
+
+|*Azure Key Vault audit logging is disabled*
+//RLP-156668
+
+|*Changes–* The policy RQL is updated to resolve a syntax issue.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND  api.name = 'azure-key-vault-list' AND json.rule =  "not ( diagnosticSettings.value[*].properties.logs[*].enabled any equal true and diagnosticSettings.value[*].properties.logs[*].enabled size greater than 0 )"
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-key-vault-list' AND json.rule = not(diagnosticSettings.value[?any(properties.logs[?any(enabled equals "true")] exists )] exists and diagnosticSettings.value[*].properties.logs[*].enabled size > 0)
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* None. No impact on alerts.
+
+
+|*GCP Cloud Run function is using default service account with editor role*
+//RLP-156933
+
+|*Changes–* The policy RQL is updated to match the GCP API.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' and api.name = 'gcloud-projects-get-iam-user' AND json.rule = user contains "compute@developer.gserviceaccount.com" and roles[*] contains "roles/editor" as X; config from cloud.resource where api.name = 'gcloud-cloud-function-v2' AND json.rule = status equals ACTIVE and serviceConfig.serviceAccountEmail contains "compute@developer.gserviceaccount.com" as Y; filter ' $.X.user equals $.Y.serviceConfig.serviceAccountEmail '; show Y;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' and api.name = 'gcloud-projects-get-iam-user' AND json.rule = user contains "compute@developer.gserviceaccount.com" and roles[*] contains "roles/editor" as X; config from cloud.resource where api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE and serviceConfig.serviceAccountEmail contains "compute@developer.gserviceaccount.com" as Y; filter ' $.X.user equals $.Y.serviceConfig.serviceAccountEmail '; show Y;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. New alerts will be generated for policy violations.
+
+|*GCP PostgreSQL instance database flag log_min_error_statement is not set to Error or higher*
+//RLP-156779
+
+|*Changes–* The policy RQL is updated to stop generating alerts for GCP PostgreSQL instances where the `log_min_error_statement` database flag is not explicitly set to its default value of 'Error'.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equal ignore case "RUNNABLE" and databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_error_statement')].value is not member of ( "error" , "log", "fatal", "panic")
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equal ignore case "RUNNABLE" and databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_error_statement')].value exists and settings.databaseFlags[?(@.name=='log_min_error_statement')].value is not member of ( "error" , "log", "fatal", "panic")
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Existing alerts will be resolved on GCP PostgreSQL instances where the `log_min_error_statement` database flag was not explicitly configured.
+
+|*GCP PostgreSQL instance database flag log_min_messages is not set to Warning or higher*
+//RLP-156777
+
+|*Changes–* The policy RQL is updated to stop generating alerts for GCP PostgreSQL instances where the `log_min_messages` database flag is not explicitly set to its default value of 'Warning'.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equal ignore case "RUNNABLE" and databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_messages')].value is not member of ( "warning", "error", "log", "fatal", "panic")
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list' AND json.rule = state equal ignore case "RUNNABLE" and databaseVersion contains POSTGRES and settings.databaseFlags[?(@.name=='log_min_messages')].value exists and settings.databaseFlags[?(@.name=='log_min_messages')].value is not member of ( "warning", "error", "log", "fatal", "panic")
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Existing alerts will be resolved on GCP PostgreSQL instances where the `log_min_messages` database flag was not explicitly configured.
+
+|===
+
+[#policy-deletion]
+=== Policy Deletion
+
+[cols="50%a,50%a"]
+|===
+|*Policy Deletion*
+|*Description*
+
+|*Azure Policies*
+//RLP-156560
+
+|The following policies have been deleted because the CSP updated the Azure Microsoft Defender for Cloud service, making these policies obsolete:
+
+* Azure Microsoft Defender for Cloud adaptive application controls monitoring is set to disabled
+* Azure Microsoft Defender for Cloud endpoint protection monitoring is set to disabled
+* Azure Microsoft Defender for Cloud security configurations monitoring is set to disabled
+
+Microsoft Defender for Cloud has modernized its approach by replacing individual security setting monitors with comprehensive plans such as "Defender for Servers."
+
+*Impact—* Low. Previously generated alerts are resolved as `Policy_Deleted`.
+|===
+
+
+
+//[#new-compliance-benchmarks-and-updates]
+//=== New Compliance Benchmarks and Updates
+
+//[cols="50%a,50%a"]
+//|===
+//|*Compliance Benchmark*
+//|*Description*
+//|===
+
+
+//[#rest-api-updates]
+//=== REST API Changes and New APIs
+
+//[cols="37%a,63%a"]
+//|===
+//|*REST API*
+//|*Description*
+//|===
+
+//[#deprecation-notices]
+//=== Deprecation Notices
+//[cols="50%a, 50%a"]
+//|===
+//|*Change*
+//|*Description*
+//|===
