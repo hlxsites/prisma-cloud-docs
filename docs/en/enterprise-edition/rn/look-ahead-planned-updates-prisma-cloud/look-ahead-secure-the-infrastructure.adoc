@@ -13,7 +13,7 @@ The details and functionalities listed below are a preview and the actual releas
 
 //* <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
+* <<policy-updates>>
 * <<policy-deletions>>
 //* <<api-ingestions>>
 * <<deprecation-notices>>
@@ -53,17 +53,38 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 
+[cols="40%a,60%a"]
+|===
+|*Policy Updates*
+|*Description*
 
-//[cols="40%a,60%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+2+|*Policy Updates—RQL*
 
-//2+|*Policy Updates—RQL*
-//|===
+|*GCP Load Balancer HTTPS proxy permits SSL policies with weak cipher suites*
+//RLP-156940
+
+|*Changes–* The policy RQL will be updated to improve accuracy and reduce false positives. 
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-compute-target-https-proxies' as X; config from cloud.resource where api.name = 'gcloud-compute-ssl-policies' as Y; filter " $.X.sslPolicy does not exist or ($.Y.profile equals COMPATIBLE and $.Y.selfLink contains $.X.sslPolicy) or ( ($.Y.profile equals MODERN or $.Y.profile equals CUSTOM) and $.Y.minTlsVersion does not equal TLS_1_2 and $.Y.selfLink contains $.X.sslPolicy ) or ( $.Y.profile equals CUSTOM and ( $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_GCM_SHA256 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_GCM_SHA384 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_3DES_EDE_CBC_SHA ) and $.Y.selfLink contains $.X.sslPolicy ) "; show X;
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-compute-target-https-proxies' as X; config from cloud.resource where api.name = 'gcloud-compute-ssl-policies' as Y; filter " $.X.sslPolicy does not exist or ($.Y.profile equals COMPATIBLE and $.Y.selfLink equals $.X.sslPolicy) or ( ($.Y.profile equals MODERN or $.Y.profile equals CUSTOM) and $.Y.minTlsVersion does not equal TLS_1_2 and $.Y.selfLink equals $.X.sslPolicy ) or ( $.Y.profile equals CUSTOM and ( $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_GCM_SHA256 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_GCM_SHA384 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_3DES_EDE_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA) and $.Y.selfLink equals $.X.sslPolicy ) "; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Medium. Existing alerts with an an SSL policy containing http proxy as a substring will be resolved as `Policy Updated`. New alerts will be generated for policy violations.
+
+|===
 
 [#policy-deletions]
 === Policy Deletions
