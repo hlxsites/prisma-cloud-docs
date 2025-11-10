@@ -1,17 +1,15 @@
 == Look Ahead—Planned Updates to Secure the Runtime
 
-Currently, there are no previews or announcements for updates.
+// Currently, there are no previews or announcements for updates.
 
-// The following sections provide a preview of the planned updates for the `v34.02` release of Runtime Security. 
+The following sections provide a preview of the planned updates for the `v34.03` release of Runtime Security. 
 
 // //*<<announcement>>
 // //*<<intelligence-stream-updates>>
-// <<enhancements>>
-
-// <<addressed-issues>>
+* <<enhancements>>
+* <<addressed-issues>>
 
 // //<<changes-in-existing-behavior>>
-
 // //* <<new-policies>>
 // //* <<policy-updates>>
 // //* <<iam-policy-update>>
@@ -20,70 +18,81 @@ Currently, there are no previews or announcements for updates.
 // //* <<deprecation-notices>>
 // <<rest-api-updates>>
 
-// *NOTE*: 
+*NOTE*: 
 
-// The details and functionality listed below provide a preview of what is planned for the `v34.02` release. Both the updates and their actual release dates are subject to potential changes.
+The details and functionality listed below provide a preview of what is planned for the `v34.03` release. Both the updates and their actual release dates are subject to potential changes.
 
-// === Enhancements
-// [cols="50%a,50%a"]
-// |===
+=== Enhancements
+[cols="50%a,50%a"]
+|===
 
-// |*Feature*
-// |*Description*
+|*Feature*
+|*Description*
 
-// //CWP-63522 
-// |Enhanced security coverage for CaaS (Containers as a Service) containers
-// |Defenders will support the following container services:
+//CWP-64072 
+|NVD score utilization and impact
+|NVD traditionally provides two scores: a primary score from NIST and a secondary score from other sources. Previously, the secondary score was not used, even when the primary score was unavailable.
 
-// * ACI Container Group for Azure
-// * Google Cloud Run platform 
-// * Amazon EKS on AWS Fargate
+*Updated behavior*
 
-// Also:
+* If the NVD primary score is missing and a CISA ADP secondary score is available, the secondary score will be used as the CVE score (for example,  https://nvd.nist.gov/vuln/detail/CVE-2025-8671).
+* Once the NVD primary score becomes available, it will revert to being the CVE score. 
 
-// * Account ID attribution will be available for ACI container groups, and  
-// * Cloud Discovery will identify undefended vs defended ECS, EKS and Google Cloud Run CaaS containers.
+*Note:* The secondary score is used only if the primary score is not available and the secondary score is based on a CISA-ADP evaluation.
 
-// //CWP-63568 
-// |OCI tags updates
-// |For Oracle Cloud Infrastructure (OCI), a tag-based filtering mechanism enables you to exclude and include hosts. Also, compartment-level tags are introduced for the OCI cloud provider.
+*Impact on vulnerability reporting*
 
-// |===
+This improvement will lead to a change in how vulnerabilities are classified. Previously, vulnerabilities without a score, would be assigned a score of “0" and were categorized as "Low" severity. With this enhancement, they will now be assigned the CVSS and severity provided by CISA-ADP. This could result in an increase of up to 0.58% in the total number of reported Medium, High, or Critical vulnerabilities.
 
-// === Addressed Issues
 
-// [cols="50%a,50%a"]
-// |===
+//CWP-63569 
+|Account-level reporting of scan date and time
+|The scan start and end date and time were earlier reported at the region level and were not precise in some situations. This enhancement ensures accurate reporting of scan start and end date and time at the individual account level.
 
-// |*Issue ID*
-// |*Description*
+//CWP-63936 
+|Enhanced Alma Linux vulnerability assessment
+|Vulnerability assessments for Alma Linux have significantly improved due to the integration of CVEs from Alma Linux security advisories (currently for releases 8 and 9) into the Intelligence Stream. This enhancement provides a more comprehensive and accurate picture of security risks, ultimately improving the security of Alma Linux 8 and 9 systems.
 
-// |CWP-63817
-// |*Azure Logic App functions*:
 
-// Serverless scanning is not supported for Azure Logic App functions. The issue where some scan results for Azure Logic App functions were included in the Monitor → Vulnerabilities → Functions tab is fixed. 
+|===
 
-// |CWP-63194
-// |*Red Hat VEX version compare issue fixed*:
+=== Addressed Issues
 
-// Added support for the epoch prefix in Red Hat images. Previously, the epoch was omitted during image scanning, causing version comparisons to ignore it and resulting in false positives. This fix ensures the epoch value is included, allowing accurate version comparisons and preventing incorrect vulnerability matches.
+[cols="50%a,50%a"]
+|===
 
-// |CWP-63808
-// |*Gateway Timeout while Loading Feeds fixed*:
+|*Issue ID*
+|*Description*
 
-// Feed changed notifications to Defenders are now batched and spread to prevent 504 Gateway Timeout errors from concurrent downloads. Defenders also use Exponential Backoff with Jitter for retries.
+// |CWP-64229
+// |*Fixed Customer bug*:
 
-// |CWP-63880
-// |*Base Image History Tagging fixed*:
+// Description. 
 
-// Scanning over 50 digests under one rule caused older base image digests to be deleted, removing base image links. The Base Image tag incorrectly remained under the Layers tab for these images. This has been fixed: the Base Image tag is now correctly removed from the Layers tab for images whose original base images were overridden.
+|CWP-63632
+|*Windows host defender displaying incorrect OS name*
 
-// |CWP-63341
-// |*Defender periodic scan fixed*:
+This issue is fixed now. 
 
-// Defenders will no longer perform scans when the interval is set to zero. Setting the scan interval to 0 in *Manage* > *System* > *Scan* settings disables periodic scans for images, containers, and hosts.
+The method for detecting the Windows Server release has been updated to align with Microsoft's revised approach for storing this information in the Windows registry.
+ 
 
-// |===
+// |CWP-64196 
+// |*App-embedded defender exits in case it can't read the socket address*
+
+// Description. 
+
+// |CWP-64185
+// |*crio, read only FS, delegate calls to the default runtime*:
+
+// Description. 
+
+// |CWP-63632
+// |*Windows release name is resolved incorrectly for certain versions of Windows Server*:
+
+// Description. 
+
+|===
 
 
 // === REST API Updates
