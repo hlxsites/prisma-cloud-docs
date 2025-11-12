@@ -202,6 +202,27 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-netw
 * Azure Network Security Group allows all traffic on VNC Listener (TCP Port 5500)
 * Azure Network Security Group allows all traffic on Telnet (TCP Port 23)
 
+|*AWS IAM user is not a member of any IAM group*
+//RLP-157374
+
+|*Changes–* : The Policy RQL is updated to improve accuracy and reduce false positives. 
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-list-users' AND json.rule = groupList is empty
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-iam-list-users' AND json.rule = groupList is empty and userId does not equal ignore case "root"
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Informational
+
+*Impact–* Low. Alerts will be resolved only for user root user, as root user cannot be added to IAM Groups.
+
 2+|*Policy Updates—Metadata*
 
 |*AWS S3 bucket publicly writable*
