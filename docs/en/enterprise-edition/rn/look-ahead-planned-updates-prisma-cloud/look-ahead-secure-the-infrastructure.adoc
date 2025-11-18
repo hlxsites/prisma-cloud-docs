@@ -111,34 +111,8 @@ config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-de
 
 *Impact–* Medium. Alerts will be generated for the NLBs not using the latest recommended security policies 'ELBSecurityPolicy-TLS13-1-2-Res-2021-06', 'ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'. Open Alerts, which use either of the latest recommended security policies 'ELBSecurityPolicy-TLS13-1-2-Res-2021-06', 'ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04', will be resolved.
 
-|*GCP Load Balancer HTTPS proxy permits SSL policies with weak cipher suites*
-//RLP-156940
 
-|*Changes–* : The Policy RQL is updated to improve accuracy and reduce false positives. 
-
-*Current RQL–*
-----
-config from cloud.resource where api.name = 'gcloud-compute-target-https-proxies' as X; config from cloud.resource where api.name = 'gcloud-compute-ssl-policies' as Y; filter " $.X.sslPolicy does not exist or ($.Y.profile equals COMPATIBLE and $.Y.selfLink contains $.X.sslPolicy) or ( ($.Y.profile equals MODERN or $.Y.profile equals CUSTOM) and $.Y.minTlsVersion does not equal TLS_1_2 and $.Y.selfLink contains $.X.sslPolicy ) or ( $.Y.profile equals CUSTOM and ( $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_GCM_SHA256 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_GCM_SHA384 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_3DES_EDE_CBC_SHA ) and $.Y.selfLink contains $.X.sslPolicy ) "; show X; 
-----
-
-*Proposed RQL–*
-----
-config from cloud.resource where api.name = 'gcloud-compute-target-https-proxies' as X; config from cloud.resource where api.name = 'gcloud-compute-ssl-policies' as Y; filter " $.X.sslPolicy does not exist or ($.Y.profile equals COMPATIBLE and $.Y.selfLink equals $.X.sslPolicy) or ( ($.Y.profile equals MODERN or $.Y.profile equals CUSTOM) and $.Y.minTlsVersion does not equal TLS_1_2 and $.Y.selfLink equals $.X.sslPolicy ) or ( $.Y.profile equals CUSTOM and ( $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_GCM_SHA256 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_GCM_SHA384 or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_AES_256_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_RSA_WITH_3DES_EDE_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA or $.Y.enabledFeatures[*] contains TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA) and $.Y.selfLink equals $.X.sslPolicy ) "; show X;
-----
-
-*Policy Type–* Config 
-
-*Policy Severity–* Low
-
-*Impact–* Medium. 
-
-* Open alerts with an SSL policy containing http proxy as a substring will be marked as resolved.
-* New Alerts would be opened in case of CUSTOM profile with these SSL features TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
-TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
-TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
-TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
-
-|*Azure Network Watcher Network Security Group (NSG) flow logs are disabled{}*
+|*Azure Network Watcher Network Security Group (NSG) flow logs are disabled*
 //RLP-157343
 
 |*Changes–* : The Policy RQL is updated to improve accuracy and reduce false positives. 
@@ -319,7 +293,7 @@ Note: This policy excludes AWS S3 buckets that are configured to host public sta
 |*Service*
 |*API Details*
 
-|*AWS Sagemaker*
+|*Amazon SageMaker*
 //RLP-157210
 
 |*aws-sagemaker-model-package-group*
@@ -332,19 +306,19 @@ Additional permissions required:
 
 The Security audit role includes the permissions.
 
-|*AWS Sagemaker*
+|*Amazon SageMaker*
 //RLP-157218
 
 |*aws-sagemaker-image*
 
 Additional permissions required:
 
-* `sagemaker:ListImages
+* `sagemaker:ListImages`
 * `sagemaker:ListTags`
 
 The Security audit role includes the permissions.
 
-|*AWS Sagemaker*
+|*Amazon SageMaker*
 //RLP-157232
 
 |*aws-sagemaker-feature-group*
@@ -357,7 +331,7 @@ Additional permissions required:
 
 The Security audit role includes the permissions.
 
-|*AWS Sagemaker*
+|*Amazon SageMaker*
 //RLP-157260
 
 |*aws-sagemaker-app*
@@ -381,7 +355,7 @@ Additional permissions required:
 
 No existing role includes the permissions.
 
-|*AWS Sagemaker*
+|*AWS SageMaker*
 //RLP-157262
 
 |*aws-sagemaker-project*
@@ -394,7 +368,7 @@ Additional permissions required:
 
 The Security audit role includes the permissions.
 
-|*AWS Sagemaker*
+|*AWS SageMaker*
 //RLP-157255
 
 |*aws-sagemaker-pipeline*
@@ -407,7 +381,7 @@ Additional permissions required:
 
 The Security audit role includes the permissions.
 
-|*AWS Sagemaker*
+|*AWS SageMaker*
 //RLP-157255
 
 |*aws-sagemaker-data-quality-job-definition*
@@ -423,25 +397,25 @@ The Security audit role includes the permissions.
 |*Amazon Redshift*
 //RLP-157178
 
-|*aws-sagemaker-project*
+|*aws-redshift-cluster-subnet-group*
 
 Additional permissions required:
 
 * `redshift:DescribeClusterSubnetGroups`
 
-The Security audit role includes the permissions.
+The Security audit role includes the permission.
 
 |*Amazon CloudWatch*
 tt:[Update]
 //RLP-157179
 
-|*aws-sagemaker-pipeline*
+|*aws-cloudwatch-log-group*
 
-Additional permissions required:
+The API now ingests the additional attribute `dataProtectionPolicy`. The following permission is required for this attribute to be ingested.
 
 * `logs:GetDataProtectionPolicy`
 
-The Security audit role does not include the permissions.
+The Security audit role does not include the permission.
 
 |*Amazon RDS*
 //RLP-157177
@@ -464,7 +438,7 @@ Additional permissions required:
 
 * `config:DescribeAggregationAuthorizations`
 
-The Security audit role includes the permissions.
+The Security audit role includes the permission.
 
 |*Amazon MQ*
 //RLP-157118
@@ -475,7 +449,7 @@ Additional permissions required:
 
 * `mq:ListConfigurations`
 
-The Security audit role includes the permissions.
+The Security audit role includes the permission.
 
 |*AWS Backup*
 //RLP-157115
@@ -576,7 +550,7 @@ Additional permissions required:
 
 * `redshift-serverless:ListEndpointAccess`
 
-The Security audit role does not include the permissions.
+The Security audit role does not include the permission.
 
 |*AWS Systems Manager*
 //RLP-157202
@@ -641,9 +615,9 @@ The Security audit role includes the permissions.
 tt:[Update]
 //RLP-157097
 
-|*aws-step-functions-activity*
+|*aws-appsync-graphql-api*
 
-1. The API now ingests additional attribute "apiCache"
+1. The API now ingests additional attribute `apiCache``
 2. Following permission is required for this attribute to be ingested.
 
 * `appsync:GetApiCache`
@@ -657,7 +631,7 @@ Additional permissions required:
 
 * `kafka:ListClustersV2`
 
-The Security audit role includes the permissions.
+The Security audit role includes the permission.
 
 |*AWS Glue*
 //RLP-157186
@@ -753,9 +727,9 @@ Update: Added regionId key:value to the ingested resource.
 
 Additional permissions required:
 
-* ` athena:ListWorkGroups`
-* ` athena:ListNamedQueries`
-* ` athena:GetNamedQuery`
+* `athena:ListWorkGroups`
+* `athena:ListNamedQueries`
+* `athena:GetNamedQuery`
 
 The Security audit role includes the permissions.
 
@@ -822,7 +796,7 @@ The Security audit role includes the permissions.
 |*AWS Security Hub*
 //RLP-157213
 
-|*aws-code-deploy-application*
+|*aws-securityhub-finding-aggregator*
 
 Additional permissions required:
 
@@ -864,7 +838,9 @@ The Viewer role includes the permission.
 |*Google Artifact Registry*
 tt:[Update]
 //RLP-157122
-|*gcloud-cloud-task-queue*
+|*gcloud-artifact-registry-repository*
+
+Update to existing API: The API response will now include the resource's location. No additional permissions are required.
 
 Additional permissions needed:
 
@@ -873,7 +849,7 @@ Additional permissions needed:
 * `artifactregistry.repositories.getIamPolicy`
 
 The Viewer role includes the permissions.
-Update to existing API: The API response will now include the resource's location. No additional permissions are required.
+
 
 |*Google Compute Engine*
 //RLP-156993
@@ -915,10 +891,10 @@ Update to existing API:
 * The result json now has an additional attributes `features` and `labels`.
 * Requires the permission `aiplatform.featureViews.list` for this field to be ingested.
 
-|*Google Vertex AI AIPlatform*
+|*Google Vertex AI Platform*
 tt:[Update]
 //RLP-157039
-|*gcloud-vertex-ai-aiplatform-feature-group*
+|*gcloud-vertex-aiplatform-feature-group*
 
 Update to existing API: 
 
@@ -1002,13 +978,20 @@ tt:[Update]
 //RLP-157182
 |*gcloud-logging-bucket*
 
+Additional permissions required:
+
+* `logging.buckets.list`
+* `logging.links.list`
+
+The Viewer role includes the permissions. 
+
 Update to existing API: 
 
-* Added buckets link to the ingested resource.
+* Added buckets link to the ingested resource. 
 
 |*Google Cloud Data Loss Prevention*
 //RLP-157261
-|*gcloud-logging-bucket-log-views*
+|*gcloud-dlp-discovery-scan-configuration*
 
 Additional permissions needed:
 
