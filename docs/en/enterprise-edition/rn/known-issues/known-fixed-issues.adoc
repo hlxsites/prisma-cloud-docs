@@ -23,7 +23,10 @@ The list of fixed issues are not cumulative; only the issues that are fixed with
 
 tt:[25.12.1]
 
-|If Prisma Cloud Compute is enabled on a specific resource or account and you have configured it to ingest data from third party sources such as Tenable, Qualys or AWS inspector, Prisma will only list findings from Compute and not from third party sources for that particular resource. 
+|If Prisma Cloud Compute is enabled on a specific resource or account and you have configured it to ingest data from third party sources such as Tenable, Qualys or AWS inspector, Prisma will only list findings from Compute and not from third party sources for that particular resource. Before enabling AWS Inspector integration on Prisma Cloud, keep the following in mind:
+
+* With AWS Inspector Classic you can ingest old findings which were detected on AWS.
+* With AWS Inspector Next Version you cannot ingest old findings which were detected on AWS. 
 
 
 |*Live Status Check Limitation*
@@ -624,6 +627,72 @@ If defender and remote repository are in different subnet, the image tag pulling
 |===
 |*ISSUE ID*
 |*DESCRIPTION*
+
+|*PCSUP*
+
+//PCSUP-29054
+
+tt:[Secure the Runtime]
+
+tt:[34.03.138]
+
+|*Standardized Non-Privileged User ID for Defender CLI*
+
+To enhance security across all supported operating systems, the Defender component will now use the standardized, *non-privileged* User ID (1100) when executing Command Line Interface (CLI) commands.
+
+
+|*CWP-63569*
+
+tt:[Secure the Runtime]
+
+tt:[34.03.138]
+
+|*Account-level reporting of scan date and time*
+
+The scan start and end date and time were earlier reported at the region level and weren't precise in some situations. This fix ensures accurate reporting of scan start and end date and time at the individual account level. 
+
+
+|*CWP-63632*
+
+tt:[Secure the Runtime]
+
+tt:[34.03.138]
+
+|*Release name for Windows Server 2025 doesn't resolve correctly*
+
+This issue is fixed now. The release name for Windows Server 2025 displays correctly.
+
+
+|*CWP-64185*
+
+tt:[Secure the Runtime]
+
+tt:[34.03.138]
+
+|*Improved defender stability with Read-only 'runc' paths*
+
+Previously, in crio environments, if the paths to `runc` were located in read-only directories, the defender would delegate the calls to the first runtime it found, increasing the risk of node instability.
+
+This issue has now been resolved, and defender will use the default runtime. To properly deploy the newer version containing this fix, follow these steps:
+
+. Remove the existing defender daemonset.
+
+. Ensure that no ZZ-twistlock.conf file is present in /etc/crio/crio.conf.d. If it exists, delete it.
+
+. Restart the affected node.
+
+. Deploy the new defender.
+
+
+|*CWP-64196*
+
+tt:[Secure the Runtime]
+
+tt:[34.03.138]
+
+|*App-embedded Defender crashes on thread termination*
+
+The App-embedded defender crashes if the application it is protecting, or a thread of the application, terminates while it is connecting to the app-embedded defender.
 
 
 |*CWP-61530*
