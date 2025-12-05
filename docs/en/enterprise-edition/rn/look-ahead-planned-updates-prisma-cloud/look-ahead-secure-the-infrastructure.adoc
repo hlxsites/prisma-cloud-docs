@@ -18,7 +18,7 @@ The details and functionalities listed below are a preview and the actual releas
 //* <<api-ingestions>>
 * <<deprecation-notices>>
 
-There are currently no API ingetions or Policy updates for the 2.1 release.
+There are currently no API ingetions for the 2.1 release.
 
 
 //[#changes-in-existing-behavior]
@@ -54,16 +54,99 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 
-//[cols="40%a,60%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+[cols="40%a,60%a"]
+|===
+|*Policy Updates*
+|*Description*
 
+|*Azure Storage account diagnostic setting for blob is disabled*
+//RLP-157561
 
-//|===
+|*Changes–* The policy RQL is updated to exclude irrelevant resources, helping reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-blob-diagnostic-settings' AND json.rule = (properties.logs[?(@.categoryGroup)] exists and properties.logs[*].enabled any true) or (properties.logs[?(@.category)] exists and properties.logs[*].enabled all true) as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded and kind does not contain FileStorage as X; config from cloud.resource where api.name = 'azure-storage-account-blob-diagnostic-settings' AND json.rule = (properties.logs[?(@.categoryGroup)] exists and properties.logs[*].enabled any true) or (properties.logs[?(@.category)] exists and properties.logs[*].enabled all true) as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts will be resolved for storage accounts where diagnostic settings are not applicable.
+
+|*Azure Storage account diagnostic setting for file is disabled*
+//RLP-157560
+
+|*Changes–* The policy RQL is updated to exclude irrelevant resources, helping reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-file-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded and not(kind equal ignore case BlockBlobStorage or (kind equal ignore case StorageV2 and sku.tier equal ignore case Premium)) as X; config from cloud.resource where api.name = 'azure-storage-account-file-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts will be resolved for storage accounts where diagnostic settings are not applicable.
+
+|*Azure Storage account diagnostic setting for table is disabled*
+//RLP-157559
+
+|*Changes–* The policy RQL is updated to exclude irrelevant resources, helping reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-table-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded and not(sku.tier equal ignore case Premium or (kind equal ignore case FileStorage and sku.tier equal ignore case Standard)) as X; config from cloud.resource where api.name = 'azure-storage-account-table-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts will be resolved for storage accounts where diagnostic settings are not applicable.
+
+|*Azure Storage account diagnostic setting for queue is disabled*
+//RLP-157558
+
+|*Changes–* The policy RQL is updated to exclude irrelevant resources, helping reduce false positives.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded as X; config from cloud.resource where api.name = 'azure-storage-account-queue-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X; 
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-storage-account-list' AND json.rule = properties.provisioningState equal ignore case Succeeded and not(sku.tier equal ignore case Premium or (kind equal ignore case FileStorage and sku.tier equal ignore case Standard)) as X; config from cloud.resource where api.name = 'azure-storage-account-queue-diagnostic-settings' AND json.rule = properties.logs[*].enabled all true as Y; filter 'not($.X.name equal ignore case $.Y.StorageAccountName)'; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts will be resolved for storage accounts where diagnostic settings are not applicable.
+
+|===
 
 
 
