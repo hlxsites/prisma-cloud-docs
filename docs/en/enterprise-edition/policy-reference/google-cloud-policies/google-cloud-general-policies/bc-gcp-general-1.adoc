@@ -59,4 +59,22 @@ resource "google_sql_database_instance" "main" {
 }
 ----
 
+"TRUSTED_CLIENT_CERTIFICATE_REQUIRED" is https://docs.cloud.google.com/sql/docs/sqlserver/configure-ssl-instance#overview[not supported by Microsoft SQL Server database type]. "ENCRYPTED_ONLY" is enforced.
+[source,go]
+----
+resource "google_sql_database_instance" "main_sqlserver" {
+  name             = "main-instance"
+  database_version = "SQLSERVER_2022_STANDARD"
+  region           = "us-central1"
+
+  settings {
+    tier = "db-f1-micro"
+    
+    ip_configuration {
+        ssl_mode = "ENCRYPTED_ONLY"
+    }
+  }
+}
+----
+
 
