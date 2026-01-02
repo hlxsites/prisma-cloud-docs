@@ -62,6 +62,8 @@ Use the *policies* folder to review the JSON for each policy that is added or up
 |*Policy Updates*
 |*Description*
 
+2+|*Policy Updates—RQL*
+
 |*Azure Storage account diagnostic setting for blob is disabled*
 //RLP-157561
 
@@ -145,6 +147,63 @@ config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-stor
 *Policy Severity–* Low
 
 *Impact–* Low. Open alerts will be resolved for storage accounts where diagnostic settings are not applicable.
+
+|*AWS Application Load Balancer (ALB) is not using the latest predefined security policy*
+//RLP-157694
+
+|*Changes–* The policy RQL is updated with the latest recommended security policy.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = type equals application and listeners[?any(protocol equals HTTPS and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09','ELBSecurityPolicy-TLS13-1-2-FIPS-PQ-2025-09'))] exists 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts where the latest policy is configured will be resolved. A new alert will be triggered where the load balancer is not configured with the latest security policy.
+
+|*AWS Network Load Balancer (NLB) is not using the latest predefined security policy*
+//RLP-157695
+
+|*Changes–* The policy RQL is updated with the latest recommended security policy.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = state.code equals "active" and type equals "network" and listeners[?any(protocol equals "TLS" and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04'))] exists 
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elbv2-describe-load-balancers' AND json.rule = state.code equals "active" and type equals "network" and listeners[?any(protocol equals "TLS" and sslPolicy exists and sslPolicy is not member of ('ELBSecurityPolicy-TLS13-1-2-Res-2021-06','ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09','ELBSecurityPolicy-TLS13-1-2-FIPS-PQ-2025-09'))] exists 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Low
+
+*Impact–* Low. Open alerts where the latest policy is configured will be resolved. A new alert will be triggered where the load balancer is not configured with the latest security policy.
+
+2+|*Policy Updates—Metadata*
+
+|*Azure VM disk configured with overly permissive network access*
+
+|*Updated Description–* Policy description is updated to convey the "defense-in-depth" perscpective.
+
+Azure Virtual Machine disks configured with public network access pose a secondary security risk in the event of a host-level breach. While disk access is restricted by identity, enabling a public network access creates a reachable path that can be exploited if the attached Virtual Machine is also compromised.
+
+Azure Virtual Machine disks are storage resources attached to Virtual Machines. When disk public network access is enabled, it provides an internet-routable access for the disk data. If an attacker successfully compromises the attached VM or its associated credentials, this public configuration allows them to bypass internal network perimeters and exfiltrate or manipulate disk data directly from the internet.
+
+The impact of this configuration includes simplified data exfiltration and unauthorized modification following a system compromise. By restricting access to private or trusted networks, you ensure that even if a VM is breached, the data remains shielded from the public internet. This best practice enforces a layered 'defense-in-depth' strategy.
+
+To mitigate this risk, disable public network access for all Azure Virtual Machine disks. Utilize Azure Private Link or restricted Disk Access settings to ensure that storage traffic remains within the private network. Regularly review and audit network configurations to identify and remediate any disks that remain exposed to public routing.
+
 
 |===
 
