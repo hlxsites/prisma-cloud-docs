@@ -13,9 +13,9 @@ The details and functionalities listed below are a preview and the actual releas
 
 //* <<changes-in-existing-behavior>>
 * <<new-policies>>
-//* <<policy-updates>>
+* <<policy-updates>>
 * <<policy-deletions>>
-//* <<api-ingestions>>
+* <<api-ingestions>>
 * <<deprecation-notices>>
 
 
@@ -54,37 +54,179 @@ Use the changelog.md file for a cumulative list of all policies that are added t
 Use the *policies* folder to review the JSON for each policy that is added or updated as listed in the changelog. The filename for each policy matches the policy name listed in the changelog. Within each policy file, the JSON field names are described aptly to help you easily identify the characteristic it represents. The JSON field named searchModel.query provides the RQL for the policy.
 
 
-//[#policy-updates]
-//=== Policy Updates
+[#policy-updates]
+=== Policy Updates
 
-//[cols="40%a,60%a"]
-//|===
-//|*Policy Updates*
-//|*Description*
+[cols="40%a,60%a"]
+|===
+|*Policy Updates*
+|*Description*
 
-//2+|*Policy Updates—RQL*
+2+|*Policy Updates—RQL*
+
+|*GCP Dataproc Cluster on Compute Engine is using default network*
+//RLP-156954
+
+|*Changes–* The policy RQL will be updated to match GCP API.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-dataproc-clusters-list' AND json.rule = status.state is member of ("SCHEDULED", "CREATING", "RUNNING") and ( environmentConfig.executionConfig.networkUri ends with "default" or environmentConfig.executionConfig.subnetworkUri ends with "default" or ( environmentConfig.executionConfig.networkUri does not exist and environmentConfig.executionConfig.subnetworkUri does not exist ) )
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-dataproc-clusters-list' AND json.rule = status.state is member of ("SCHEDULED", "CREATING", "RUNNING") and ( config.gceClusterConfig.networkUri ends with "default" or config.gceClusterConfig.subnetworkUri ends with "default" or ( config.gceClusterConfig.networkUri does not exist and config.gceClusterConfig.subnetworkUri does not exist ) )
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. New alerts will be generated as per the new RQL.
+
+|*GCP Dataproc Cluster on Compute Engine is using default network*
+//RLP-156961
+
+|*Changes–* The policy RQL will be updated to cover Dataproc clusters using zonal GKE clusters.
+
+*Current RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-dataproc-clusters-list' AND json.rule = status.state is member of ("SCHEDULED", "CREATING", "RUNNING") as X; config from cloud.resource where api.name = 'gcloud-container-describe-clusters' AND json.rule = status equals RUNNING and ['network'] ends with "default" as Y; filter ' $.Y.selfLink contains $.X.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget '; show X;
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where api.name = 'gcloud-dataproc-clusters-list' as X; config from cloud.resource where api.name = 'gcloud-container-describe-clusters' AND json.rule = status equals RUNNING and ['network'] ends with "default" as Y; filter ' $.X.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget contains $.Y.location and $.X.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget contains $.Y.name and $.Y.selfLink contains $.X.projectId '; show X;
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low. New alerts will be generated as per the new RQL.
+
+|*Azure VM OS disk is encrypted with the default encryption key instead of ADE/CMK*
+//RLP-157779
+
+|*Changes–* The policy RQL will be updated to remove the `encryptionSettings parameter` parameter.
+
+*Current RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk-list' and json.rule = 'osType exists and managedBy exists and (encryptionSettings does not exist or encryptionSettings.enabled == false) and encryption.type is not member of ("EncryptionAtRestWithCustomerKey", "EncryptionAtRestWithPlatformAndCustomerKeys")' 
+----
+
+*Proposed RQL–*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk-list' and json.rule = 'osType exists and managedBy exists and encryption.type is not member of ("EncryptionAtRestWithCustomerKey", "EncryptionAtRestWithPlatformAndCustomerKeys")'
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* Medium
+
+*Impact–* Low
 
 
 
-//2+|*Policy Updates—Metadata*
+
+// 2+|*Policy Updates—Metadata*
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+|*Service*
+|*API Details*
+
+
+|*AWS Service Quotas*
+//RLP-157762
+
+|*aws-servicequotas-service-quota*
+
+Additional permissions required:
+
+* `servicequotas:ListServiceQuotas`
+* `servicequotas:ListTagsForResource`
+
+The Security audit role includes the permissions.
+
+|*Amazon Cognito*
+//RLP-157834
+
+|*aws-cognito-identity-provider*
+
+Additional permissions required:
+
+* `aws-cognito-identity-provider`
+
+The Security audit role includes the permission.
+
+|*AWS Database Migration Service*
+//RLP-157837
+
+|*aws-servicequotas-service-quota*
+
+Additional permissions required:
+
+* `dms:DescribeInstanceProfiles`
+* `dms:ListTagsForResource`
+
+The Security audit role includes the permissions.
+
+|*AWS Database Migration Service*
+//RLP-157838
+
+|*aws-dms-replication-subnet-group*
+
+Additional permissions required:
+
+* `dms:DescribeReplicationSubnetGroups`
+* `dms:ListTagsForResource`
+
+The Security audit role includes the permissions.
+
+|*Google Network Security*
+//RLP-157648
+
+|*gcloud-network-security-project-address-group*
+
+Additional permission required:
+
+* `networksecurity.addressGroups.list`
+
+The Viewer role includes the permission.
+
+|*Google Network Security*
+//RLP-157647
+
+|*gcloud-network-security-organization-address-group*
+
+Additional permission required:
+
+* `networksecurity.addressGroups.list`
+
+The Viewer role includes the permission.
+
+|*Amazon Route53 Resolver*
+tt:[Update]
+//RLP-157836
+
+|*aws-route53resolver-resolver-endpoint*
+
+Updated the existing API to ingest additional attribute `IpAddresses`. The following permission is required for this attribute to be ingested.
+
+
+* `route53resolver:ListResolverEndpointIpAddresses`
 
 
 
-//|===
-
-
-
-
-//[#api-ingestions]
-//=== API Ingestions
-
-//[cols="50%a,50%a"]
-//|===
-//|*Service*
-//|*API Details*
-
-
-//|===
+|===
 
 [#policy-deletions]
 === Policy Deletions
@@ -192,33 +334,6 @@ The following Attack path policies are also impacted:
 |*Sunset*
 |*Replacement Endpoints*
 
-|tt:[*Asset Trendline and Compliance APIs*]
-//PCS-4515, PCS-4556
-
-It is recommended that you start using the Asset Inventory and Compliance Summary APIs once they're available since they provide the latest snapshot of data. The Asset Trendline and Compliance APIs listed have been deprecated. They will remain accessible until 25.9.1, ensuring you get ample time for a smooth transition to use the Asset Inventory and Compliance Summary APIs to get the latest state.
-
-//new apis - still lga? - https://docs.prismacloud.io/en/enterprise-edition/assets/pdf/asset-inventory-compliance-api-documentation.pdf
-
-*Asset Trendline*
-
-* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-3/
-* https://pan.dev/prisma-cloud/api/cspm/asset-inventory-trend-v-2/
-
-*Compliance*
-
-* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-v-2/
-* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-v-2/
-* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-standard-v-2/
-* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-standard-v-2/
-* https://pan.dev/prisma-cloud/api/cspm/get-compliance-posture-trend-for-requirement-v-2/
-* https://pan.dev/prisma-cloud/api/cspm/post-compliance-posture-trend-for-requirement-v-2/
-
-
-|25.4.1
-
-|25.9.1
-
-|Will be provided in an upcoming release.
 
 |tt:[*Prisma Cloud CSPM REST API for Compliance Posture*]
 
