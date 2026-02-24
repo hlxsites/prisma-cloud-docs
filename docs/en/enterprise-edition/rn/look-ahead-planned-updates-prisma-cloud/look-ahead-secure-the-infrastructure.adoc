@@ -138,44 +138,70 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk
 
 [cols="50%a,50%a"]
 |===
+
 |*Service*
 |*API Details*
 
+|*AWS Secrets Manager*
+//RLP-158050
 
-|*AWS Service Quotas*
-//RLP-157762
+|*aws-secretsmanager-describe-secret*
 
-|*aws-servicequotas-service-quota*
+The API now ingests additional attribute `replicationStatus`.
+
+Additional permission required:
+
+* `secretsmanager:DescribeSecret`
+
+The Security Audit role includes the permission.
+
+|*Amazon Route53*
+//RLP-158049
+
+|*aws-route53-profile*
 
 Additional permissions required:
 
-* `servicequotas:ListServiceQuotas`
-* `servicequotas:ListTagsForResource`
+* `route53profiles:ListProfiles`
+* `route53profiles:GetProfile`
+* `route53profiles:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security Audit role does not include the permissions. A custom role is required.
 
-|*Amazon Cognito*
-//RLP-157834
+|*Amazon Route53*
+//RLP-158044
 
-|*aws-cognito-identity-provider*
+|*aws-route53-domains-operation*
 
-Additional permissions required:
+Additional permission required:
 
-* `aws-cognito-identity-provider`
+* `route53domains:ListOperations`
 
-The Security audit role includes the permission.
+The Security Audit role includes the permission.
 
 |*AWS Database Migration Service*
-//RLP-157837
+//RLP-158043
 
-|*aws-servicequotas-service-quota*
+|*aws-dms-data-provider*
 
 Additional permissions required:
 
-* `dms:DescribeInstanceProfiles`
+* `dms:DescribeDataProviders`
 * `dms:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security Audit role includes the permissions.
+
+|*AWS Database Migration Service*
+//RLP-158042
+
+|*aws-dms-replication-config*
+
+Additional permissions required:
+
+* `dms:DescribeReplicationConfigs`
+* `dms:ListTagsForResource`
+
+The Security Audit role includes the permissions.
 
 |*AWS Database Migration Service*
 //RLP-157838
@@ -187,7 +213,70 @@ Additional permissions required:
 * `dms:DescribeReplicationSubnetGroups`
 * `dms:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security Audit role includes the permissions.
+
+|*AWS Database Migration Service*
+//RLP-157837
+
+|*aws-dms-instance-profile*
+
+Additional permissions required:
+
+* `dms:ListInstanceProfiles`
+* `dms:ListTagsForResource`
+
+`dms:ListTagsForResource` is included in the Security Audit role. `dms:ListInstanceProfiles` is not included in the Security Audit role.
+
+|*Amazon Route53 Resolver*
+//RLP-157836
+
+|*aws-route53resolver-resolver-endpoint*
+
+The API now ingests additional attribute `IpAddresses`.
+
+Additional permission required:
+
+* `route53resolver:ListResolverEndpointIpAddresses`
+
+The Security Audit role includes the permission.
+
+|*Amazon Cognito*
+//RLP-157834
+
+|*aws-cognito-identity-provider*
+
+Additional permissions required:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListIdentityProviders`
+* `cognito-idp:DescribeIdentityProvider`
+
+The Security Audit role includes the permissions.
+
+|*AWS Service Quotas*
+//RLP-157762
+
+|*aws-servicequotas-service-quota*
+
+Additional permissions required:
+
+* `servicequotas:ListServiceQuotas`
+* `servicequotas:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+NOTE: This API only supports AWS service 'VPC' Quota details.
+
+|*Google Cloud SQL*
+//RLP-157761
+
+|*gcloud-sql-instance-user*
+
+Additional permission required:
+
+* `cloudsql.users.list`
+
+The Viewer role includes the permission.
 
 |*Google Network Security*
 //RLP-157648
@@ -211,20 +300,9 @@ Additional permission required:
 
 The Viewer role includes the permission.
 
-|*Amazon Route53 Resolver*
-tt:[Update]
-//RLP-157836
-
-|*aws-route53resolver-resolver-endpoint*
-
-Updated the existing API to ingest additional attribute `IpAddresses`. The following permission is required for this attribute to be ingested.
-
-
-* `route53resolver:ListResolverEndpointIpAddresses`
-
-
-
 |===
+
+
 
 [#policy-deletions]
 === Policy Deletions
