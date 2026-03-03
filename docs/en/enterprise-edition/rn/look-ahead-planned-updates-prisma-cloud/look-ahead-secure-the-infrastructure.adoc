@@ -138,44 +138,70 @@ config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk
 
 [cols="50%a,50%a"]
 |===
+
 |*Service*
 |*API Details*
 
+|*AWS Secrets Manager*
+//RLP-158050
 
-|*AWS Service Quotas*
-//RLP-157762
+|*aws-secretsmanager-describe-secret*
 
-|*aws-servicequotas-service-quota*
+The API now ingests additional attribute `replicationStatus`.
+
+Additional permission required:
+
+* `secretsmanager:DescribeSecret`
+
+The Security Audit role includes the permission.
+
+|*Amazon Route53*
+//RLP-158049
+
+|*aws-route53-profile*
 
 Additional permissions required:
 
-* `servicequotas:ListServiceQuotas`
-* `servicequotas:ListTagsForResource`
+* `route53profiles:ListProfiles`
+* `route53profiles:GetProfile`
+* `route53profiles:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security Audit role does not include the permissions. A custom role is required.
 
-|*Amazon Cognito*
-//RLP-157834
+|*Amazon Route53*
+//RLP-158044
 
-|*aws-cognito-identity-provider*
+|*aws-route53-domains-operation*
 
-Additional permissions required:
+Additional permission required:
 
-* `aws-cognito-identity-provider`
+* `route53domains:ListOperations`
 
-The Security audit role includes the permission.
+The Security Audit role includes the permission.
 
 |*AWS Database Migration Service*
-//RLP-157837
+//RLP-158043
 
-|*aws-servicequotas-service-quota*
+|*aws-dms-data-provider*
 
 Additional permissions required:
 
-* `dms:DescribeInstanceProfiles`
+* `dms:DescribeDataProviders`
 * `dms:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security Audit role includes the permissions.
+
+|*AWS Database Migration Service*
+//RLP-158042
+
+|*aws-dms-replication-config*
+
+Additional permissions required:
+
+* `dms:DescribeReplicationConfigs`
+* `dms:ListTagsForResource`
+
+The Security Audit role includes the permissions.
 
 |*AWS Database Migration Service*
 //RLP-157838
@@ -187,7 +213,160 @@ Additional permissions required:
 * `dms:DescribeReplicationSubnetGroups`
 * `dms:ListTagsForResource`
 
-The Security audit role includes the permissions.
+The Security Audit role includes the permissions.
+
+|*AWS Database Migration Service*
+//RLP-157837
+
+|*aws-dms-instance-profile*
+
+Additional permissions required:
+
+* `dms:ListInstanceProfiles`
+* `dms:ListTagsForResource`
+
+`dms:ListTagsForResource` is included in the Security Audit role. `dms:ListInstanceProfiles` is not included in the Security Audit role.
+
+|*Amazon Route53 Resolver*
+//RLP-157836
+
+|*aws-route53resolver-resolver-endpoint*
+
+The API now ingests additional attribute `IpAddresses`.
+
+Additional permission required:
+
+* `route53resolver:ListResolverEndpointIpAddresses`
+
+The Security Audit role includes the permission.
+
+|*Amazon Cognito*
+//RLP-157834
+
+|*aws-cognito-identity-provider*
+
+Additional permissions required:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListIdentityProviders`
+* `cognito-idp:DescribeIdentityProvider`
+
+The Security Audit role includes the permissions.
+
+|*AWS Service Quotas*
+//RLP-157762
+
+|*aws-servicequotas-service-quota*
+
+Additional permissions required:
+
+* `servicequotas:ListServiceQuotas`
+* `servicequotas:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+NOTE: This API only supports AWS service 'VPC' Quota details.
+
+|*Amazon Elasticsearch Service*
+//RLP-157967
+
+|*aws-es-serverless-access-policy*
+
+Additional permissions required:
+
+* `aoss:ListAccessPolicies`
+* `aoss:GetAccessPolicy`
+
+You must manually add the permissions to a custom role.
+
+|*Amazon Elasticsearch Service*
+//RLP-157968
+
+|*aws-es-serverless-security-policy*
+
+Additional permissions required:
+
+* `aoss:ListSecurityPolicies`
+* `aoss:GetSecurityPolicy`
+
+You must manually add the permissions to a custom role.
+
+|*Amazon Q Business*
+//RLP-157995
+
+|*aws-qbusiness-index*
+
+Additional permissions required:
+
+* `qbusiness:ListIndices`
+* `qbusiness:GetIndex`
+* `qbusiness:ListApplications`
+* `qbusiness:GetApplication`
+* `qbusiness:ListDataSources`
+* `qbusiness:GetDataSource`
+
+The Security Audit role includes the permissions.
+
+|*Amazon Q Business*
+//RLP-157997
+
+|*aws-qbusiness-application*
+
+Additional permissions required:
+
+* `qbusiness:ListApplications`
+* `qbusiness:GetApplication`
+* `qbusiness:GetPolicy`
+* `qbusiness:GetChatControlsConfiguration`
+* `qbusiness:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+|*Google Private Service Connect*
+//RLP-157963
+
+|*gcloud-psc-connection-policy*
+
+Additional permission required:
+
+* `networkconnectivity.serviceConnectionPolicies.list`
+
+The Viewer role includes the permission.
+
+|*Google Backup For GKE*
+//RLP-157998
+
+|*gcloud-gke-backup-backup-plan*
+
+Additional permissions required:
+
+* `gkebackup.backupPlans.list`
+* `gkebackup.backupPlans.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Backup For GKE*
+//RLP-157999
+
+|*gcloud-gke-backup-restore-plan*
+
+Additional permissions required:
+
+* `gkebackup.restorePlans.list`
+* `gkebackup.restorePlans.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Cloud SQL*
+//RLP-157761
+
+|*gcloud-sql-instance-user*
+
+Additional permission required:
+
+* `cloudsql.users.list`
+
+The Viewer role includes the permission.
 
 |*Google Network Security*
 //RLP-157648
@@ -211,20 +390,33 @@ Additional permission required:
 
 The Viewer role includes the permission.
 
-|*Amazon Route53 Resolver*
-tt:[Update]
-//RLP-157836
+|*Google Private Service Connect*
+//RLP-157964
 
-|*aws-route53resolver-resolver-endpoint*
+|*gcloud-psc-network-attachment*
 
-Updated the existing API to ingest additional attribute `IpAddresses`. The following permission is required for this attribute to be ingested.
+Additional permission required:
 
+* `compute.networkAttachments.list`
+* `compute.networkAttachments.getIamPolicy`
 
-* `route53resolver:ListResolverEndpointIpAddresses`
+The Viewer role includes the permissions.
 
+|*Google Private Service Connect*
+//RLP-157962
 
+|*gcloud-psc-service-attachment*
+
+Additional permission required:
+
+* `compute.serviceAttachments.list`
+* `compute.serviceAttachments.getIamPolicy`
+
+The Viewer role includes the permissions.
 
 |===
+
+
 
 [#policy-deletions]
 === Policy Deletions
