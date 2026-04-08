@@ -1,0 +1,759 @@
+== Features Introduced in April 2026
+
+Learn what's new in the Prisma® Cloud April 2026 release.
+
+
+//* <<new-features>>
+* <<enhancements>>
+* <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+//* <<new-policies>>
+* <<policy-updates>>
+* <<policy-deletions>>
+//* <<iam-policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+//* <<rest-api-updates>>
+//* <<deprecation-notices>>
+
+
+[#enhancements]
+=== Enhancements
+[cols="30%a,70%a"]
+|===
+
+|*Feature*
+|*Description*
+
+|*AWS SDK for Java 2.x Support*
+//RLP-158328
+
+|Prisma Cloud now supports the AWS SDK for Java 2.x, replacing the older AWS SDK for Java 1.x.This upgrade ensures compatibility with the latest AWS services and features, providing improved performance and security.
+
+
+|===
+
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior 
+
+[cols="50%a,50%a"]
+
+|===
+
+|*Audit Log Retention Policy*
+//RLP=158209
+
+|The retention period for audit events stored in the Prisma Cloud database changed from 120 days to 30 days. This update is part of our ongoing efforts to optimize performance and resource usage. The new retention period ensures a more responsive experience and efficient resource utilization across all environments. 
+
+
+*Impact*: Features that rely on historical audit data will be impacted: +
+* Audit Trail & Investigation: Tracing user actions and general audit log investigations will now be limited to the last 30 days of data. +
+* Alert Details: For alerts triggered by audit events, the associated event details will no longer be available for investigation, when you select *Investigate* 30 + days after the event occurred. +
+* Policy Evaluation: Evaluation of audit-event-based policies will focus on events within a 30-day window. +
+* General Impact: Other platform features or custom workflows that rely on the retention of audit events beyond 30 days may be impacted. +
+
+The following functional areas will continue to operate without change, as they rely on real-time event processing: +
+* Event Assisted Ingestion (EAI): Real-time ingestion triggers remain unaffected. +
+* IAM Security: Real-time IAM analysis and monitoring remain unaffected. +
+* Real-time Alerting: The triggering of alerts based on immediate event matches is not impacted. +
+
+No additional action is required. If your compliance or operational requirements necessitate audit log retention beyond 30 days, we recommend ensuring your CSP (AWS, Azure, GCP) is configured to archive these logs in their respective native storage (e.g., S3, GCS, or Azure Blob Storage).
+
+|*VPC Resource Ingestion*
+//RLP-158311
+
+|Prisma Cloud will now ingest accepter side VPC connections in addition to requester side VPC connections. This will ensure better coverage of VPC peering endpoints irrespective of whether the given VPC functions as a requester or an accepter for a given connection.
+
+
+|===
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+
+|*Service*
+|*API Details*
+
+
+2+|*Amazon Web Services*
+
+
+|*Amazon AppStream 2.0*
+//RLP-158052
+
+|*aws-app-stream-app-block-builder*
+
+Additional permissions required:
+
+* `appstream:DescribeAppBlockBuilders`
+* `appstream:ListTagsForResource`
+
+The Security Audit role does not include the permissions. A custom role is required.
+
+
+|*Amazon Cognito*
+//RLP-157834
+
+|*aws-cognito-identity-provider*
+
+Additional permissions required:
+
+* `cognito-idp:ListUserPools`
+* `cognito-idp:ListIdentityProviders`
+* `cognito-idp:DescribeIdentityProvider`
+
+The Security Audit role includes the permissions.
+
+
+|*Amazon Elasticsearch Service*
+//RLP-157967
+
+|*aws-es-serverless-access-policy*
+
+Additional permissions required:
+
+* `aoss:ListAccessPolicies`
+* `aoss:GetAccessPolicy`
+
+The Security Audit role does not include the permissions. You must add a custom role that includes these permissions.
+
+
+|*Amazon Elasticsearch Service*
+//RLP-157968
+
+|*aws-es-serverless-security-policy*
+
+Additional permissions required:
+
+* `aoss:ListSecurityPolicies`
+* `aoss:GetSecurityPolicy`
+
+The Security Audit role does not include the permissions. You must add a custom role that includes these permissions.
+
+
+|*Amazon Neptune*
+//RLP-158055
+
+|*aws-neptune-analytics-graph*
+
+Additional permissions required:
+
+* `neptune-graph:ListGraphs`
+* `neptune-graph:GetGraph`
+* `neptune-graph:ListTagsForResource`
+
+The Security Audit role does not include the permissions. A custom role is required.
+
+
+|*Amazon Q Business*
+//RLP-157995
+
+|*aws-qbusiness-index*
+
+Additional permissions required:
+
+* `qbusiness:ListIndices`
+* `qbusiness:GetIndex`
+* `qbusiness:ListApplications`
+* `qbusiness:GetApplication`
+* `qbusiness:ListDataSources`
+* `qbusiness:GetDataSource`
+
+The Security Audit role includes the permissions.
+
+
+|*Amazon Q Business*
+//RLP-157997
+
+|*aws-qbusiness-application*
+
+Additional permissions required:
+
+* `qbusiness:ListApplications`
+* `qbusiness:GetApplication`
+* `qbusiness:GetPolicy`
+* `qbusiness:GetChatControlsConfiguration`
+* `qbusiness:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+
+|*Amazon Route53*
+//RLP-158049
+
+|*aws-route53-profile*
+
+Additional permissions required:
+
+* `route53profiles:ListProfiles`
+* `route53profiles:GetProfile`
+* `route53profiles:ListTagsForResource`
+
+The Security Audit role does not include the permissions. A custom role is required.
+
+
+|*Amazon Route53*
+//RLP-158044
+
+|*aws-route53-domains-operation*
+
+Additional permission required:
+
+* `route53domains:ListOperations`
+
+The Security Audit role includes the permission.
+
+
+|*AWS Database Migration Service*
+//RLP-158043
+
+|*aws-dms-data-provider*
+
+Additional permissions required:
+
+* `dms:DescribeDataProviders`
+* `dms:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+
+|*AWS Database Migration Service*
+//RLP-158042
+
+|*aws-dms-replication-config*
+
+Additional permissions required:
+
+* `dms:DescribeReplicationConfigs`
+* `dms:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+
+|*AWS Database Migration Service*
+//RLP-157838
+
+|*aws-dms-replication-subnet-group*
+
+Additional permissions required:
+
+* `dms:DescribeReplicationSubnetGroups`
+* `dms:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+
+|*AWS Database Migration Service*
+//RLP-157837
+
+|*aws-dms-instance-profile*
+
+Additional permissions required:
+
+* `dms:ListInstanceProfiles`
+* `dms:ListTagsForResource`
+
+`dms:ListTagsForResource` is included in the Security Audit role. `dms:ListInstanceProfiles` is not included in the Security Audit role.
+
+
+|*AWS Service Quotas*
+//RLP-157762
+
+|*aws-servicequotas-service-quota*
+
+Additional permissions required:
+
+* `servicequotas:ListServiceQuotas`
+* `servicequotas:ListTagsForResource`
+
+The Security Audit role includes the permissions.
+
+NOTE: This API only supports AWS service 'VPC' quota details.
+
+
+2+|*Microsoft Azure*
+
+
+|*Azure Power BI Embedded*
+//RLP-158037
+
+|*azure-powerbi-dedicated-capacities-diagnostic-settings*
+
+Additional permissions required:
+
+* `Microsoft.PowerBIDedicated/servers/read`
+* `Microsoft.PowerBIDedicated/capacities/read`
+
+The Reader role includes the permissions.
+
+
+2+|*Google Cloud Platform*
+
+
+|*Google Backup For GKE*
+//RLP-157998
+
+|*gcloud-gke-backup-backup-plan*
+
+Additional permissions required:
+
+* `gkebackup.backupPlans.list`
+* `gkebackup.backupPlans.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|*Google Backup For GKE*
+//RLP-157999
+
+|*gcloud-gke-backup-restore-plan*
+
+Additional permissions required:
+
+* `gkebackup.restorePlans.list`
+* `gkebackup.restorePlans.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|*Google Cloud SQL*
+//RLP-157761
+
+|*gcloud-sql-instance-user*
+
+Additional permission required:
+
+* `cloudsql.users.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Network Security*
+//RLP-157648
+
+|*gcloud-network-security-project-address-group*
+
+Additional permission required:
+
+* `networksecurity.addressGroups.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Network Security*
+//RLP-157647
+
+|*gcloud-network-security-organization-address-group*
+
+Additional permission required:
+
+* `networksecurity.addressGroups.list`
+
+The Viewer role includes the permission.
+
+
+|*Google Private Service Connect*
+//RLP-157962
+
+|*gcloud-psc-service-attachment*
+
+Additional permissions required:
+
+* `compute.serviceAttachments.list`
+* `compute.serviceAttachments.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+|*Google Private Service Connect*
+//RLP-157963
+
+|*gcloud-psc-connection-policy*
+
+Additional permissions required:
+
+* `networkconnectivity.serviceConnectionPolicies.list`
+
+The Viewer role includes the permissions.
+
+
+|*Google Private Service Connect*
+//RLP-157964
+
+|*gcloud-psc-network-attachment*
+
+Additional permissions required:
+
+* `compute.networkAttachments.list`
+* `compute.networkAttachments.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+
+2+|*Oracle Cloud Infrastructure*
+
+
+|*OCI Regions*
+//RLP-157782
+
+tt:[Update]
+
+|Prisma Cloud now supports the following four new Oracle Cloud Infrastructure (OCI) regions:
+
+* Indonesia North (Batam) - `ap-batam-1`
+* Serbia Central (Jovanovac) - `eu-jovanovac-1`
+* Spain Central (Madrid 3) - `eu-madrid-3`
+* Italy North (Turin) - `eu-turin-1`
+
+
+2+|*API Updates*
+
+
+|*Amazon EventBridge*
+//RLP-158228
+
+tt:[Update]
+
+|*aws-events-eventbus*
+
+Additional permission required:
+
+* `events:DescribeEventBus`
+
+The API now ingests additional fields related to the eventbus resource.
+
+
+|*Amazon Route 53*
+//RLP-157781
+
+tt:[Update]
+
+|*aws-route53-list-hosted-zones*
+
+The API now ingests additional fields related to the hosted zones resource:
+
+* `DelegationSet ->Id CallerReference NameServers`
+
+
+|*Amazon Route53 Resolver*
+//RLP-157836
+
+tt:[Update]
+
+|*aws-route53resolver-resolver-endpoint*
+
+The API now ingests additional attribute `IpAddresses`.
+
+Additional permission required:
+
+* `route53resolver:ListResolverEndpointIpAddresses`
+
+The Security Audit role includes the permission.
+
+
+|*Amazon S3*
+//RLP-157514
+
+tt:[Update]
+
+|*aws-s3api-get-bucket-acl*
+
+The API now ingests an additional field `BucketArn` related to the S3 bucket resource.
+
+
+|*AWS Secrets Manager*
+//RLP-158050
+
+tt:[Update]
+
+|*aws-secretsmanager-describe-secret*
+
+The API now ingests additional attribute `replicationStatus`.
+
+Additional permission required:
+
+* `secretsmanager:DescribeSecret`
+
+The Security Audit role includes the permission.
+
+
+|*Azure App Service*
+//RLP-157956
+
+tt:[Update]
+
+|*azure-app-service* and *azure-app-service-deployment-slots*
+
+The APIs have been updated with permission changes for App Service and App Service Deployment Slots ingestion.
+
+
+|*Azure Storage Account Access Key*
+//RLP-150750
+
+tt:[Update]
+
+|*azure-storage-account-access-key*
+
+The API now ingests additional parameter `allowSharedKeyAccess`.
+
+|*Azure App Service*
+//RLP-158309
+
+tt:[Update]
+
+|*azure-app-service-deployment-slots*
+
+The API now ingests Slot Configuration fields for Azure App Service Deployment Slots. The following additional JSON fields are now available:
+
+* `config.storageType`
+* `config.http20Enabled`
+* `config.loadBalancing`
+* `config.minTlsVersion`
+* `config.ftpsState`
+
+The List Slot Configuration response is now stitched into the API response.
+
+
+2+|*API Deprecations*
+
+
+|*Azure Orbital and Mixed Reality*
+//RLP-158124, RLP-158125
+
+tt:[Deprecation]
+
+|The following Azure APIs have been deprecated as the underlying Azure services were retired:
+
+* *azure-orbital-spacecrafts* - Azure Orbital Ground Station was retired by Microsoft.
+* *azure-mixed-reality-object-anchors-accounts* - Azure Object Anchors (AOA) was retired by Microsoft.
+
+These APIs will no longer ingest data.
+
+|*GCP Data Catalog*
+//RLP-158130
+
+tt:[Deprecation]
+
+|GCP Data Catalog is deprecated and will be discontinued. The following Data Catalog APIs are deprecated on Prisma Cloud:
+
+* `gcloud-data-catalog-taxonomy`
+* `gcloud-data-catalog-entry-group`
+* `gcloud-data-catalog-tag-template`
+
+|===
+
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+
+|*Policy Name*
+|*Details*
+
+|*Azure VM disk configured with overly permissive network access*
+//RLP-158224
+
+|*Severity:* Medium
+
+*Changes:* The policy RQL has been updated to exclude Azure VM disks created for Prisma Cloud Azure agentless scanning (tagged with 'prismacloud-agentless-scan').
+
+*Current RQL:*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk-list' AND json.rule = publicNetworkAccess equal ignore case Enabled and networkAccessPolicy equal ignore case AllowAll and managedBy contains virtualMachines
+----
+
+*Updated RQL:*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk-list' AND json.rule = publicNetworkAccess equal ignore case Enabled and networkAccessPolicy equal ignore case AllowAll and managedBy contains virtualMachines and tags.created-by does not equal ignore case "prismacloud-agentless-scan"
+----
+
+*Impact:* Medium - Previously reported disks tagged with 'prismacloud-agentless-scan' will be resolved as Policy Updated.
+
+|*Azure VM OS disk is encrypted with the default encryption key instead of ADE/CMK*
+//RLP-157779
+
+|*Severity:* Informational
+
+*Changes:* The policy RQL has been updated to remove the legacy `encryptionSettings` attribute check.
+
+*Current RQL:*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk-list' and json.rule = 'osType exists and managedBy exists and (encryptionSettings does not exist or encryptionSettings.enabled == false) and encryption.type is not member of ("EncryptionAtRestWithCustomerKey", "EncryptionAtRestWithPlatformAndCustomerKeys")'
+----
+
+*Updated RQL:*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-disk-list' and json.rule = 'osType exists and managedBy exists and encryption.type is not member of ("EncryptionAtRestWithCustomerKey", "EncryptionAtRestWithPlatformAndCustomerKeys")'
+----
+
+*Impact:* Low
+
+|*GCP Dataproc Cluster on GKE is using default network*
+//RLP-156961
+
+|*Severity:* Medium
+
+*Changes:* Policy RQL has been updated to cover Dataproc clusters using zonal GKE clusters.
+
+*Current RQL:*
+----
+config from cloud.resource where api.name = 'gcloud-dataproc-clusters-list' AND json.rule = status.state is member of ("SCHEDULED", "CREATING", "RUNNING") as X; config from cloud.resource where api.name = 'gcloud-container-describe-clusters' AND json.rule = status equals RUNNING and ['network'] ends with "default" as Y; filter ' $.Y.selfLink contains $.X.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget '; show X;
+----
+
+*Updated RQL:*
+----
+config from cloud.resource where api.name = 'gcloud-dataproc-clusters-list' as X; config from cloud.resource where api.name = 'gcloud-container-describe-clusters' AND json.rule = status equals RUNNING and ['network'] ends with "default" as Y; filter ' $.X.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget contains $.Y.location and $.X.virtualClusterConfig.kubernetesClusterConfig.gkeClusterConfig.gkeClusterTarget contains $.Y.name and $.Y.selfLink contains $.X.projectId '; show X;
+----
+
+*Impact:* Low - New alerts will be generated as per new RQL.
+
+|*GCP Dataproc Cluster on Compute Engine is using default network*
+//RLP-156954
+
+|*Severity:* Medium
+
+*Changes:* Policy RQL has been updated to match GCP API.
+
+*Current RQL:*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-dataproc-clusters-list' AND json.rule = status.state is member of ("SCHEDULED", "CREATING", "RUNNING") and ( environmentConfig.executionConfig.networkUri ends with "default" or environmentConfig.executionConfig.subnetworkUri ends with "default" or ( environmentConfig.executionConfig.networkUri does not exist and environmentConfig.executionConfig.subnetworkUri does not exist ) )
+----
+
+*Updated RQL:*
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-dataproc-clusters-list' AND json.rule = status.state is member of ("SCHEDULED", "CREATING", "RUNNING") and ['config'] exists and ( config.gceClusterConfig.networkUri ends with "default" or config.gceClusterConfig.subnetworkUri ends with "default" or ( config.gceClusterConfig.networkUri does not exist and config.gceClusterConfig.subnetworkUri does not exist ) )
+----
+
+*Impact:* Low - New alerts will be generated as per new RQL.
+
+|===
+
+[#policy-deletions]
+=== Policy Deletions
+
+[cols="50%a,50%a"]
+
+|===
+|*Policy Updates*
+|*Description*
+
+|*AutoFocus Policy Deletions*
+//RLP-157644
+
+|*Changes–* Palo Alto Networks' AutoFocus product has reached its End of Life (EOL) date. As a result, the following AutoFocus Anomaly policies will be removed from Prisma Cloud. Learn more about https://live.paloaltonetworks.com/t5/community-blogs/autofocus-end-of-sale-faq-and-alternatives/ba-p/516051[AutoFocus EOL].
+
+* Traffic to a suspicious IP address associated with Loader activity
+* Traffic from a suspicious IP address associated with File Infector activity
+* Traffic to a suspicious IP address associated with File Infector activity
+* Traffic from a suspicious IP address associated with Dropper activity
+* Traffic to a suspicious IP address associated with Ransomware activity
+* Traffic to a suspicious IP address associated with Backdoor activity
+* Traffic to a suspicious IP address associated with Cryptominer activity
+* Traffic from a suspicious IP address associated with Botnet activity
+* Traffic from a suspicious IP address associated with Cryptominer activity
+* Traffic from a suspicious IP address associated with Ransomware activity
+* Traffic to a suspicious IP address associated with Linux Malware activity
+* Traffic to a suspicious IP address associated with Botnet activity
+* Traffic from a suspicious IP address associated with Backdoor activity
+* Traffic from a suspicious IP address associated with Linux Malware activity
+* Traffic from a suspicious IP address associated with Remote Access Trojan activity
+* Traffic to a suspicious IP address associated with Remote Access Trojan activity
+* Traffic from a suspicious IP address associated with DDoS activity
+* Traffic from a suspicious IP address associated with InfoStealer activity
+* Traffic to a suspicious IP address associated with DDoS activity
+* Traffic to a suspicious IP address associated with InfoStealer activity
+* Traffic from a suspicious IP address associated with Wiper activity
+* Traffic to a suspicious IP address associated with Wiper activity
+* Traffic to a suspicious IP address associated with Dropper activity
+* Traffic from a suspicious IP address associated with Loader activity
+* Traffic from a suspicious IP address associated with Rootkit activity
+* Traffic to a suspicious IP address associated with Webshell activity
+* Traffic from a suspicious IP address associated with Webshell activity
+* Traffic to a suspicious IP address associated with Rootkit activity
+* Traffic to a suspicious IP address associated with Exploit Kit activity
+* Traffic from a suspicious IP address associated with Exploit Kit activity
+* Traffic to a suspicious IP address associated with Hacking Tool activity
+* Traffic from a suspicious IP address associated with Hacking Tool activity
+* Traffic from a suspicious IP address associated with Worm activity
+* Traffic to a suspicious IP address associated with Worm activity
+* Traffic from a suspicious IP address associated with Downloader activity
+* Traffic to a suspicious IP address associated with Downloader activity
+
+
+*Impact*– Keep in mind the following potential effects of this change: +
+* Existing alerts will be resolved as `Policy_Deleted`. +
+* All policies related to AutoFocus will be deprecated. +
+* Attack Path policies associated with AutoFocus will be deprecated. +
+* RQL support for AutoFocus suggestions will be removed. +
+* The ability to add trusted IP addresses to AutoFocus anomaly polices will be deprecated. +
+* Any custom policies that use AutoFocus attributes will also be impacted. 
+
+
+|===
+
+[#new-compliance-benchmarks-and-updates]
+=== Compliance Updates
+
+[cols="50%a,50%a"]
+|===
+
+|*Compliance Standard*
+|*Details*
+
+|*CIS Amazon Web Services Foundations Benchmark v6.0.0*
+//RLP-158111
+
+|Prisma Cloud now supports CIS Amazon Web Services Foundations Benchmark v6.0.0 Level 1 and Level 2.
+
+Level 1 defines a set of fundamental, broadly applicable security best practices that harden core AWS services while minimizing impact on usability and operations for most environments.
+
+Level 2 builds on this with more stringent, defense-in-depth requirements intended for organizations with elevated risk or regulatory needs.
+
+You can view this built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|*CIS Microsoft Azure Foundations Benchmark v5.0.0*
+//RLP-158110
+
+|Prisma Cloud now supports CIS Microsoft Azure Foundations Benchmark v5.0.0 Level 1 and Level 2.
+
+Level 1 provides baseline, broadly applicable security controls designed to strengthen an Azure environment without causing significant disruption to usability or operations.
+
+Level 2 introduces more stringent, defense-in-depth controls intended for organizations with heightened security or regulatory requirements.
+
+You can view this built-in standard and the associated policies on the *Compliance > Standards* page. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|===
+
+
+//[#new-policies]
+//=== New Policies
+//[cols="40%a,60%a"]
+//|===
+//|*Policies*
+//|*Description*
+
+
+//|===
+
+
+//[#rest-api-updates]
+//=== REST API Changes and New APIs
+
+//[cols="37%a,63%a"]
+//|===
+//|*REST API*
+//|*Description*
+//|===
+
+//[#deprecation-notices]
+//=== Deprecation Notices
+//[cols="50%a, 50%a"]
+//|===
+//|*Change*
+//|*Description*
+//|===
