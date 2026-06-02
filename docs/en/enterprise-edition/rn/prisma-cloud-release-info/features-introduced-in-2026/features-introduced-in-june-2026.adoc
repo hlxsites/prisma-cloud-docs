@@ -1,0 +1,325 @@
+== Features Introduced in June 2026
+
+Learn what's new in the Prisma® Cloud June 2026 release.
+
+
+//* <<new-features>>
+// * <<enhancements>>
+// * <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+//* <<new-policies>>
+* <<policy-updates>>
+// * <<policy-deletions>>
+//* <<iam-policy-updates>>
+// * <<new-compliance-benchmarks-and-updates>>
+//* <<rest-api-updates>>
+//* <<deprecation-notices>>
+
+
+//[#enhancements]
+//=== Enhancements
+//[cols="30%a,70%a"]
+//|===
+
+
+//|===
+
+
+//[#changes-in-existing-behavior]
+//=== Changes in Existing Behavior 
+
+//[cols="50%a,50%a"]
+
+//|===
+
+
+//|===
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="50%a,50%a"]
+|===
+
+|*Service*
+|*API Details*
+
+|*Amazon Bedrock AgentCore*
+//RLP-158329
+
+|`aws-bedrock-agentcore-agent-runtime-endpoint`
+
+Additional permissions required:
+
+* `bedrock-agentcore:ListAgentRuntimes`
+* `bedrock-agentcore:ListAgentRuntimeEndpoints`
+* `bedrock-agentcore:GetAgentRuntimeEndpoint`
+* `bedrock-agentcore:ListTagsForResource`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+|*Amazon Bedrock AgentCore*
+//RLP-158330
+
+|`aws-bedrock-agentcore-memory`
+
+Additional permissions required:
+
+* `bedrock-agentcore:ListMemories`
+* `bedrock-agentcore:GetMemory`
+* `bedrock-agentcore:ListTagsForResource`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+|*Amazon Bedrock AgentCore*
+//RLP-158331
+
+|`aws-bedrock-agentcore-policy`
+
+Additional permissions required:
+
+* `bedrock-agentcore:ListPolicyEngines`
+* `bedrock-agentcore:ListPolicies`
+* `bedrock-agentcore:GetPolicy`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+|*Amazon Bedrock AgentCore*
+//RLP-158332
+
+|`aws-bedrock-agentcore-gateway`
+
+Additional permissions required:
+
+* `bedrock-agentcore:ListGateways`
+* `bedrock-agentcore:GetGateway`
+* `bedrock-agentcore:ListTagsForResource`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+|*Amazon Bedrock AgentCore*
+//RLP-158460
+
+|`aws-bedrock-agentcore-agent-runtime`
+
+Additional permissions required:
+
+* `bedrock-agentcore:ListAgentRuntimes`
+* `bedrock-agentcore:GetAgentRuntime`
+* `bedrock-agentcore:ListTagsForResource`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+|*Amazon Athena*
+//RLP-158581
+
+|`aws-athena-prepared-statement`
+
+Additional permissions required:
+
+* `athena:ListWorkGroups`
+* `athena:ListPreparedStatements`
+* `athena:GetPreparedStatement`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+
+|*Amazon ECR (Elastic Container Registry)*
+//RLP-158582
+
+|`aws-ecr-repository-creation-template`
+
+Additional permissions required:
+
+* `ecr:DescribeRepositoryCreationTemplates`
+
+You must add this permission to a custom role. This permission is not included in the Security Audit policy.
+
+
+|*Amazon Elasticsearch Service*
+//RLP-158583
+
+|`aws-opensearch-vpc-endpoint`
+
+Additional permissions required:
+
+* `es:ListVpcEndpoints`
+* `es:DescribeVpcEndpoints`
+
+You must add these permissions to a custom role. These permissions are not included in the Security Audit policy.
+
+
+|*Google Cloud Network Connectivity Center*
+//RLP-158584
+
+|`gcloud-network-connectivity-policy-based-route`
+
+Additional permissions required:
+
+* `networkconnectivity.policyBasedRoutes.list`
+
+The Viewer role includes this permission.
+
+|*Google Backup For GKE*
+//RLP-158586
+
+|`gcloud-gke-backup-backup-channel`
+
+Additional permissions required:
+
+* `gkebackup.backupChannels.list`
+
+The Viewer role includes this permission.
+
+|*Google Backup For GKE*
+//RLP-158585
+
+|`gcloud-gke-backup-restore-channel`
+
+Additional permissions required:
+
+* `gkebackup.restoreChannels.list`
+
+The Viewer role includes this permission.
+
+|*Google Managed Kafka Clusters ACL*
+//RLP-158587
+
+|`gcloud-managed-kafka-clusters-acl`
+
+Additional permissions required:
+
+* `managedkafka.acls.list`
+* `managedkafka.clusters.list
+
+The Viewer role includes this permission.
+
+|*Google Managed Kafka Connect Cluster*
+//RLP-158588
+
+|`gcloud-gcp-managed-kafka-connect-cluster`
+
+Additional permissions required:
+
+* `managedkafka.connectClusters.list`
+
+The Viewer role includes this permission.
+
+|*Google Vertex AI AIPlatform*
+//RLP-158589
+
+|`gcloud-vertex-ai-aiplatform-reasoning-engine`
+
+Additional permissions required:
+
+* `aiplatform.reasoningEngines.list`
+
+The Viewer role includes this permission.
+
+|===
+
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+
+|*Policy Name*
+|*Details*
+
+|*Azure Cosmos DB allows traffic from public Azure datacenters*
+//RLP-158606
+
+|*Changes:* RQL update to fix false negatives when `0.0.0.0` appears in the middle of the `ipRangeFilter` list.
+
+*Current RQL:*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded and properties.ipRangeFilter is not empty and properties.ipRangeFilter startsWith 0.0.0.0 or properties.ipRangeFilter endsWith 0.0.0.0
+----
+
+*Updated RQL:*
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-cosmos-db' AND json.rule = properties.provisioningState equals Succeeded and properties.ipRangeFilter is not empty and (properties.ipRangeFilter equals "0.0.0.0" or properties.ipRangeFilter startsWith "0.0.0.0," or properties.ipRangeFilter endsWith ",0.0.0.0" or properties.ipRangeFilter contains ",0.0.0.0,")
+----
+
+*Updated Recommendation*:
+1. Log in to the Azure Portal.
+2. Navigate to the Azure Cosmos DB service.
+3. Select the reported Azure Cosmos DB account.
+4. Click on *Networking* under *Settings*.
+5. Under *Firewall* section in *IPs (Single IPv4 or CIDR range)* list, delete the entry exist for '0.0.0.0'.
+6. Click *Save*.
+
+*Impact:* Low-Medium. New alert may be generated for missed alerts where 0.0.0.0 is positioned in the middle of the comma-separated ipRangeFilter list. 
+
+|*AWS API gateway request authorisation is not set*
+//RLP-158532
+
+|*Changes:* RQL update to exclude `OPTIONS` HTTP methods from authorization checks. OPTIONS requests are standard for CORS preflights and typically do not require authorization.
+
+*Current RQL:*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-apigateway-method' AND json.rule = authorizationType contains NONE
+----
+
+*Updated RQL:*
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-apigateway-method' AND json.rule = authorizationType contains NONE AND httpMethod does not equal "OPTIONS"
+----
+
+*Impact:* Low. This update resolves the already-generated alert with the aws-apigateway-method configured with the OPTIONS method.
+
+|*AWS EBS volume region with encryption is disabled*
+//RLP-158648
+
+|*Changes:* Recommendation update to fix outdated AWS documentation link.
+
+*Updated Recommendation:* The remediation link now points to the current https://docs.aws.amazon.com/ebs/latest/userguide/encryption-by-default.html[AWS documentation].
+
+
+*Impact:* Users can now access valid remediation instructions directly from the policy recommendation.
+
+|===
+
+//[#new-compliance-benchmarks-and-updates]
+//=== Compliance Updates
+
+//[cols="50%a,50%a"]
+//|===
+
+//|*Compliance Standard*
+//|*Details*
+
+
+//|===
+
+
+//[#new-policies]
+//=== New Policies
+//[cols="40%a,60%a"]
+//|===
+//|*Policies*
+//|*Description*
+
+
+//|===
+
+
+//[#rest-api-updates]
+//=== REST API Changes and New APIs
+
+//[cols="37%a,63%a"]
+//|===
+//|*REST API*
+//|*Description*
+//|===
+
+//[#deprecation-notices]
+//=== Deprecation Notices
+//[cols="50%a, 50%a"]
+//|===
+//|*Change*
+//|*Description*
+//|===
