@@ -1,0 +1,49 @@
+
+== Azure Event Hub Namespace is not zone redundant
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 950ce5b8-656c-4e0f-9555-85110cc0cbbd
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/EventHubNamespaceZoneRedundant.py[CKV_AZURE_228]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that an Azure Event Hub Namespace is set to be zone redundant. Zone redundancy means that data is replicated in multiple availability zones for backup and recovery purposes. If the Event Hub Namespace is not set to be zone redundant, it means that any localized glitch or failure in one zone could result in data loss or application unavailability, therefore leading to potential disruption in service. This can be extremely problematic, especially for mission-critical applications where continuous availability and data integrity are of utmost importance. To prevent this risk, it's essential to ensure redundancy across multiple zones.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_eventhub_namespace
+* *Arguments:* zone_redundant
+
+Make the Azure Event Hub Namespace zone redundant. 
+
+[source,go]
+----
+resource "azurerm_eventhub_namespace" "example" {
+  name = "example-namespace"
+  location = "West US 2"
+  resource_group_name = azurerm_resource_group.example.name
+  sku = "Standard"
++ zone_redundant = true
+}
+----
+

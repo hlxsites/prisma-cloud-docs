@@ -1,0 +1,61 @@
+
+== OCI Network Security Group allows all traffic on RDP port (3389)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 7895af22-b552-4189-b151-0cc4626e2c1a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/oci/OCI_NSGNotAllowRDP.yaml[CKV2_OCI_2]
+
+|Severity
+|INFO
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that Network Security Group (NSG) does not allow unrestricted traffic on the Remote Desktop Protocol (RDP) port, which is 3389. Allowing unrestricted RDP traffic could leave the network open to potential brute force attacks, where attackers attempt to gain unauthorized access by trying different combinations of usernames and passwords. Additionally, if security vulnerabilities are discovered in RDP, the network could become an easy target for attackers. Therefore, it is a bad practice to allow all traffic on the RDP port due to these security risks.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* oci_core_network_security_group_security_rule
+* *Arguments:* TBD
+
+Source should either not be 0.0.0.0/0 or the destination port should not include 3389.
+
+[source,hcl]
+----
+resource "oci_core_network_security_group_security_rule" "pass_1" {
+  network_security_group_id = oci_core_network_security_group.fail_network_security_group.id
+  protocol                  = "1"
+  direction                 = "INGRESS"
++ source                    = "192.168.12.0/0"
+  stateless                 = true
+
+  tcp_options {
+    destination_port_range {
+      min = 3389
+      max = 3391
+    }
+
+    source_port_range {
+      min = 100
+      max = 100
+    }
+  }
+}
+----
+

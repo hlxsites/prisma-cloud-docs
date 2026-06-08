@@ -1,0 +1,266 @@
+[#id7923e9e1-612f-4a18-a030-f3470aec2fce]
+== Prisma CloudとServiceNowの統合
+
+ServiceNowのセキュリティインシデントに優先して対応するために、Prisma® CloudとServiceNowの統合方法を学習します。
+
+Prisma® CloudとServiceNowを統合して、ServiceNowチケット経由で自動的にPrisma Cloudアラート通知を受信し、それがビジネスに与える影響に基づいてインシデントや脆弱性の優先度を割り当てます。Prisma Cloudは、ServiceNowのITSMモジュール（インシデントテーブル）、セキュリティインシデント対応モジュール（sn_si_incidentテーブル）、およびイベント管理モジュール（em_eventテーブル）と統合して、ITSMインシデント、セキュリティインシデント、およびイベントチケットの形式でアラートを生成します。統合を有効にした後、Prisma Cloudがクラウドリソースをスキャンしてポリシー違反を検出すると、アラートが生成され、検出されたアラートはチケットとしてServiceNowにプッシュされます。Prisma Cloudでアラートを解除すると、ServiceNowのチケットステータスを更新するために、状態変更通知が送信されます。この統合は、組織内のインシデント管理（ITSM）、セキュリティ運用管理（セキュリティインシデント対応）、またはイベント管理のための既存のワークフローにシームレスに適合します。
+
+Prisma CloudとServiceNowの統合は、ServiceNowの最新のクラウドベースのGAバージョンで認定されています。オンプレミスバージョンはサポートされていません。
+
+[NOTE]
+====
+ServiceNow開発者インスタンスを使用している場合は、それが休止状態になっていないことを確認してください。
+====
+
+. xref:integrate-prisma-cloud-with-servicenow.adoc#idce37e68b-d094-4b6b-a5d4-ab21d092fd36[ServiceNowでの権限の設定]
+. xref:integrate-prisma-cloud-with-servicenow.adoc#idc4548ecb-5da3-4de2-8072-7f0c3df02de3[Prisma Cloudで、ServiceNow統合を有効にします。]
+//. xref:integrate-prisma-cloud-with-servicenow.adoc#id9e2276cf-c56c-4ea1-a70b-059707fe64b5[Set up Notification Templates]
+. xref:integrate-prisma-cloud-with-servicenow.adoc#id46a9b2b8-8b2a-4b68-b65e-d8c15dd574d2[アラートを表示]
+
+エラーが表示された場合は、 xref:#iddd0aaa90-d099-4a99-a3ed-bde105354340[エラー メッセージの解釈]方法を確認してください。
+
+[.task]
+[#idce37e68b-d094-4b6b-a5d4-ab21d092fd36]
+=== ServiceNowでの権限の設定
+
+Prisma CloudとServiceNowを統合するには、ServiceNowでユーザー、ロール、フィールドの設定を行う権限が必要になります。それにより、Prisma Cloudの通知テンプレートの、データマッピングを設定することができます。
+
+下に記載されている必要な権限を持っていない場合は、ServiceNow管理者に協力を仰ぐ必要があります。
+
+[.procedure]
+. *Prisma CloudとServiceNow統合の前提条件*
+
+.. ServiceNowでローカルユーザーアカウントを作成する権限が必要です。
++
+インスタンスにとってローカルな`ユーザー名`と`パスワード`を作成してください。ServiceNow WebサービスはLDAPまたはSSO　IDプロバイダに対して認証できず、ServiceNowがWebServiceNowを使ってサービスにアクセスする一般的な管理ユーザーに対応する認証フローとは異なっているために、ローカルユーザーアカウントが必要になります。詳細は、https://docs.servicenow.com/bundle/london-platform-administration/page/administer/roles/reference/r_BaseSystemRoles.html[ServiceNowのドキュメント]を参照してください。
++
+image::administration/servicenow-dev-instance.png[]
+
+.. 必要なServiceNowロールを確認します。
++
+Prisma Cloudでは、以下のロールが必要な権限を保有していることを確認しています。実装環境が別のロールおよびRBAC機構を使っている場合は、ServiceNow管理者と一緒に作業を行ってください。
++
+*ニューヨーク、オーランド、パリ*
++
+*** tt:[(任意)]  `パーソナライズ`してテーブルにアクセスします。
++
+パーソナライズロールは、Prisma Cloud上のServiceNowの通知テンプレートで、先行入力フィールドを利用するためにお勧めしています。この権限があると、先行入力フィールドに3文字以上入力すると、利用可能なオプションのリストが表示されます。パーソナライズ権限を有効にしない場合は、先行入力のためにテーブルに特定の読み取りアクセス権限を与える必要があります。
+
+***  `evt_mgmt_integration`の基本ロールは、外部イベントソースを統合するための、Event [em_event]およびRegistered Nodes [em_registered_nodes]テーブルへのアクセスを作成します。
+
+***  インシデントテーブルアクションには`itil`ロールが必要です。
+
+***  sn_si.incidentセキュリティインシデントテーブルアクションには、`sn_si.basic`ロールが必要です。
+
+.. 先ほど追加したユーザーに対して、上記の権限を持つカスタムロールを作成します。
++
+これらの権限は、ServiceNowでチケットの作成およびITSM、Events、およびSecurity Incident Responseテーブル/フィールド内のデータへのアクセスを行うために必要になります。
++
+Prisma Cloudは、ServiceNowフィールドからデータを取得するために、プラグイン（*(V_plugin*）、辞書（*sys_dictionary*）、および選択リスト（*sys_choices*）テーブルにアクセスする必要があります。この情報は、ServiceNowでPrisma Cloudアラートのカスタマイズを有効にする、ServiceNow通知テンプレートから参照できます。
++
+... 新しいロールを作成して、先ほど作成したローカル管理ユーザーに割り当てるには、*User Administration（ユーザー管理） > Roles（ロール）*を選択します。
+
+... *Plugins（プラグイン）*テーブルなどを選択して、テーブル列見出しの隣にあるメニュー（「ハンバーガー」）アイコンを選択し、*Configure（設定） > Table（テーブル）*を選択します。
+
+... アクセス制御リスト（ACL）を変更するために、security_adminにhttps://docs.servicenow.com/bundle/madrid-servicenow-platform/page/administer/security/task/t_ElevateToAPrivilegedRole.html[ロールを昇格]します。
++
+image::administration/servicenow-elevate-role.png[]
+
+... *Access Controls（アクセス制御） > New（新規）*を選択します。
+
+... *Operation（操作）*を*Read（読み取り）*に設定して、ロールにこの権限を割り当てます。
++
+image::administration/servicenow-assign-role.png[]
+
+... 残りのテーブルに対する権限を有効にして、同じロールを割り当てます。
++
+Plugins（*V_plugin*、Dictionary（*sys_dictionary*）、およびChoice Lists（*sys_choices*）の3つのテーブルがすべて、ロールと必要な権限を保有していることを確認します（特にServiceNow実装環境内のオブジェクトへのアクセスを制限するために、フィールドレベルのACLルールを定義している場合）。
+
+.. Prisma Cloudで通知テンプレートを設定するには、ServiceNow実装環境内のフィールドとフィールドタイプを理解している必要があります。この知識は、Prisma CloudアラートペイロードとServiceNow内の対応するフィールドのマッピングを設定するために必要不可欠です。この統合を正常に有効にするために、ServiceNow管理者と一緒に作業を行ってください。
+
+. *Security Incidentモジュールの前提条件*
++
+Security Incident Response（セキュリティインシデントレスポンス）プラグインの利用は任意ですが、セキュリティインシデントチケットを生成したい場合には必要になります。Security Incidentチケットを作成するには、ServiceNowインスタンスにSecurity Incident Responseプラグインもインストールしておく必要があります。
++
+Security Incident Responseプラグインがアクティブ化されていることを確認します。プラグインをアクティブ化するには、ServiceNow管理者でなければなりません。リストにプラグインが記載されていない場合は、サブスクリプションを購入していることを確認してください。
++
+//Removing the following url since it has been moved from SNow docs. RLP-123152. https://docs.servicenow.com/bundle/geneva-security-management/page/product/planning_and_policy/task/t_ActivateSecurityIncidentResponse.html[activated]
+
+. *Event Managementモジュールの前提条件*
++
+Event Managementプラグインの利用は任意ですが、ServiceNowでイベントチケットを生成する場合に必要になります。イベントチケットを作成するには、Event ManagementサブスクリプションとプラグインをServiceNowインストールしておく必要があります。
++
+Event Managementプラグインがhttps://docs.servicenow.com/bundle/newyork-it-operations-management/page/product/event-management/task/t_EMActivatePlugin.html[アクティブ化]されていることを確認します。プラグインをアクティブ化するには、ServiceNow管理者でなければなりません。リストにプラグインが記載されていない場合は、サブスクリプションを購入していることを確認してください。
+
+
+[.task]
+[#idc4548ecb-5da3-4de2-8072-7f0c3df02de3]
+=== Prisma Cloudで、ServiceNow統合を有効にします。
+
+Prisma CloudでServiceNowを外部統合としてセットアップします。
+
+[.procedure]
+. Prisma Cloudにログインします。
+
+. *Settings(設定) > Integrations & Notifications(統合と通知) > Integrations(統合)*を選択します。
+
+. リストから*Add Integration(統合の追加) > ServiceNow*を選択します。
+
+. 分かりやすい*Integration Name（統合名）*と*Description（説明）*を入力します。
+
+. ServiceNowにアクセスするための*FQDN*を指定します。
++
+ServiceNowのFQDNを指定していることを確認してください。SSOリダイレクトURLや、ServiceNowでローカル認証を行うためのsidedoorやlogin.doなどのプロバイダをバイパスするためのURLではありません。たとえば、`<yourservicenowinstance>.com`と入力ます。次のような値は入力しないようにしてください：
++
+----
+https://www.<yourservicenowinstance>.com
+----
++
+----
+<yourservicenowinstance>.com/
+----
++
+----
+<yourservicenowinstance>.com/sidedoor.do
+----
++
+----
+<yourservicenowinstance>.com/login.do
+----
++
+(tt:[注意]) 統合を保存した後は、FQDNを変更できません。ServiceNowインスタンスのFQDNを変更する場合は、新しい統合を追加します。
+
+. ServiceNow管理ユーザーアカウントの*Username（ユーザー名）*および*Password（パスワード）*を入力してください。
++
+ServiceNow Webサービスは、基本認証をサポートするSOAP APIを使用しています。この場合、管理者認証情報は、LDAPやSSO IDプロバイダではなく、それ自身のインスタンスに対して確認されます。そのため、ローカル管理ユーザーアカウントを作成して、管理者のSSO認証情報ではなく、そのローカルユーザーアカウント自体の認証情報をここに入力する必要があります。この方法は、SOAPリクエストとともに基本認証ヘッダーを渡すSOAP APIの標準となっています。
+
+. チケットを生成するService Type（サービスタイプ）として、*Incidents（インシデント）*、*Security（セキュリティ）*、または*Event（イベント）*を選択します。
++
+*Security（セキュリティ）*インシデントチケットまたは*Event（イベント）*チケットを作成するには、プラグインをインストールしておく必要があります。ServiceNow管理者と協力して、Security Incident ResponseモジュールまたはEvent Managementモジュールのインストールと設定を行ってください。*Security（セキュリティ）*のみを選択した場合、すべてのチケットがServiceNowのSecurity Incident Response（SIR）として生成されます。
+
+. *Next（次へ）*をクリックした後、*Test（テスト）*をクリックします。
++
+xref:#idce37e68b-d094-4b6b-a5d4-ab21d092fd36[ServiceNow で権限を設定]する に記載されている権限のいずれかを省略した場合、HTTP 403 エラーが表示されます。
++
+image::administration/servicenow-integration-in-prisma-cloud.png[]
+
+. 統合を*Test（テスト）*して、*Save（保存）*します。
++
+Integrations（統合）ページに統合が表示されます。
+
+. *次のステップ*
++
+xref:../configure-external-integrations-on-prisma-cloud/add-notification-template.adoc[通知テンプレート]の設定を続行して、次に*Settings（設定） > Integrations（統合）*で統合のステータスを検証してください。
+
+
+[#iddd0aaa90-d099-4a99-a3ed-bde105354340]
+=== エラーメッセージの解釈
+
+Prisma CloudでServiceNow統合を有効にする場合に、もっとも一般的に発生するエラーを次の表に示します。
+
+[cols="37%a,31%a,31%a"]
+|===
+|何が問題なの？
+2+|表示されるエラーメッセージ
+
+
+|入力されたServiceNow URLが誤っています。
+|You must provide an IP address or an FQDN without the protocol http or https（IPアドレスまたはプロトコル名httpまたはhttpsを付けないFQDNを指定する必要があります）
+|
+----
+invalid_snow_base_url
+----
+
+
+|入力されたServiceNow URLが無効です。
+|The FQDN is invalid it should be a valid host name or IP address.（FQDNが正しくありません。有効なホスト名またはIPアドレスでなければなりません。）
+|
+----
+invalid_snow_fqdn
+----
+
+
+|入力されたServiceNow URLに到達できません。
+|The FQDN provided is either not reachable or is an invalid ServiceNow instance.（指定されたFQDNは到達不可能か、または無効なServiceNowインスタンスです。）
+|
+----
+snow_network_error
+----
+
+
+|ServiceNow設定に必須フィールドがありません。
+|Missing Required Field - {\{param}}（存在しないフィールド - {\{param}}）
+|
+----
+missing_required_param, subject - {{param}}
+----
+
+|ServiceNowユーザー名またはパスワードが無効か、または誤っています。
+|Invalid Credentials（無効な認証情報）:
+|
+----
+invalid_credentials
+----
+
+
+|有効にしたServiceNow権限が十分ではありません。
+|Required roles or Plugins is/are missing for {\{table}}（{\{table}}に対して必要なロールまたはプラグインがありません）
+|
+----
+missing_role_or_plugin, subject - {{table}}
+----
+
+
+.2+|この統合の通知テンプレートに十分な権限がありません。
+|Insufficient permission to read the field from {\{table}} table（{\{table}}テーブルからのフィールドを読み取るための権限が不足しています。）
+|
+----
+insufficient_permission_to_read, subject - {{table}}
+----
+
+
+|{\{table}}の提案の取得エラー
+|
+----
+error_fetching_fields_for, subject - {{table}}
+----
+
+
+|ServiceNow統合が正常に設定されていません。
+|Failed Service Now Test - {\{reason}}（Service Nowテスト失敗 - {\{reason}}）
+|
+----
+failed_service_now_test, subject - {{reason}}
+----
+
+|===
+
+
+[.task]
+[#id46a9b2b8-8b2a-4b68-b65e-d8c15dd574d2]
+=== アラートを表示
+
+統合が適切に機能していることを検証します。両方の管理コンソールで手軽にアラートを相関付けられるように、ServiceNowのインシデントビューで、Prisma Cloud通知テンプレートで有効にしたのと同じ列に加えて、作成したタイムスタンプを追加します。
+
+[.procedure]
+. xref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラート通知をServiceNowに送信する]ために、既存のアラートルールを変更するか、または新しいアラートルールを作成します。
+
+. Prisma Cloudアラートを表示するには、ServiceNowにログインします。
++
+Prisma Cloudでアラート状態が更新されると、対応するServiceNowチケットの状態も更新されます。
+
+.. インシデント（incidentテーブル）を表示するには、*Incidents（インシデント）*を選択します。
++
+ServiceNowで、未解決のPrisma Cloudアラートはすべて、インシデントステータスが*New（新規）*になり、解決または解除されたインシデントのステータスは*Resolved（解決）*になります。
++
+image::administration/servicenow-alerts.png[]
+
+.. セキュリティインシデント（sn_si_incidentテーブル）を表示するには、*Security Incidents（セキュリティインシデント）*を選択します。
++
+ServiceNowで、未解決のPrisma Cloudアラートはすべてステータスが*Draft（ドラフト）*になり、解決または解除されたアラートのステータスは*Review（レビュー）*になります。
++
+image::administration/servicenow-security-incidents-alerts.png[]
+
+.. イベントインシデント（イベントテーブル）を表示するには、*Event Management（イベント管理） > All Events（すべてのイベント）*を選択します。
++
+image::administration/servicenow-event-incidents-alerts.png[]

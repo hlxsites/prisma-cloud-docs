@@ -1,0 +1,75 @@
+:topic_type: タスク
+[.task]
+[#id7e842e55-e720-42f6-8c56-8b66477d2730]
+== Prisma CloudとTenableの統合
+Prisma® CloudとTenableの統合方法を学習します。
+
+Prisma® Cloudは、Tenableから脆弱性データを取り込んで、クラウドのリスクに関する情報を提供します。この統合では、たとえば既知の脆弱性があるデータベースなどの、機密ワークロードへの不審なトラフィックを識別することができます。
+
+AWS、Azure、およびGCPクラウドは、TenableとのPrisma Cloud統合をサポートしています。
+
+
+
+
+[.procedure]
+. Tenable.ioは、アセットおよびその脆弱性情報へのAPIアクセスを提供しています。Tenable AWS、Azure、およびGCPコネクタを使うように、Tenableアカウントを設定します。これらのコネクタがないと、クラウド リソースを特定できません。
++
+Tenable API では、アクセスキーとシークレットキーをリクエストヘッダーに追加する必要があります。Tenable.io アプリの各ユーザーのアクセス キーとシークレット キーを生成します。(詳細はhttps://developer.tenable.com/docs/authorization[Tenableドキュメント]を参照してください。) また、この統合を有効にするために使用するTenableロールが、userinput:[vulns-request-export] およびuserinput:[assets-request-export]APIアクセスを含む、管理者権限を保有していることを確認してください。
+
+
+. Prisma CloudでTenable統合をセットアップします。
++
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定）> Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加）*を *Tenable* に設定します 。
+
+.. *Name（名前）*と *Description（説明）*を入力します。
+
+.. Tenable.ioで生成された、*Access Key（アクセスキー）*と*Secret Key（秘密鍵）*を入力します。
++
+詳細はhttps://developer.tenable.com/docs/authorization[Tenableドキュメント]を参照してください。
++
+image::administration/tenable-int-1.png[]
+
+.. *Next（次へ）*をクリックして、統合を*Test（テスト）*します。
++
+image::administration/tenable-int-2.png[]
+
+.. Summary（サマリー）を確認し、統合を*保存*します。
+
+
+. Tenableが検出した脆弱性をPrisma Cloudで表示します。
++
+Prisma CloudがTenableの検出情報にアクセスできるようになったら、次のRQLクエリを使用してTenableから収集されたホスト脆弱性に関する情報を把握することができます。
+
+.. *設定クエリ* 
++
+screen:[config from cloud.resource where finding.type = 'ホストの脆弱性' AND finding.source = 'Tenable' AND finding.severity = 'high' ]
++
+image::administration/tenable-hostfinding-config-query.png[]
++
+... リソースを選択すると、脆弱性に関する情報が表示されます。*Audit Trail（監査証跡）*を選択するとCVE番号が表示されます。
++
+image::administration/tenable-audit-trail.png[]
++
+... *検出結果（検出事項）*を選択して、脆弱性に関連する情報を表示します。
++
+image::administration/tenable-findings-trail.png[]
++
+.. *ネットワーククエリ*
++
+screen:[network from vpc.flow_record where dest.resource IN ( resource where finding.type = ホストの脆弱性' )]
++
+... ホストの脆弱性に関する情報を取得するリソースを選択します。
++
+... [*アラートの概要*] に進み、[*ホストの脆弱性*] を選択して 詳細を表示します。
++
+image::administration/tenable-host-findings-view.png[]
+
+
+
+
+
+

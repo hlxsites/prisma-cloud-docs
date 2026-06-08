@@ -1,0 +1,142 @@
+[#id92ce74af-d099-406b-af8d-d808c593f73a]
+== Prisma CloudとCortex XSOARの統合
+
+Prisma® CloudとCortex XSOAR（従来のDemisto^®^）を統合して、アラートを送信し、Cortex XSOARプレイブックを使ってマルチステップの自動修正機能を有効にする方法を学習します。
+
+Prisma® CloudとCortex XSOAR（従来のDemisto）の、アウトバウンドまたはプッシュベースの統合により、ポリシー違反で生成されたPrisma CloudアラートをCortex XSOARに送信することができます。この統合により、セキュリティ運用チームは独自定義したプレイブック、またはCortex XSOARに用意されているプレイブックを使用し、クラウド環境のインシデント管理用のマルチステップのワークフローを作成できます；これは、Cortex XSOARから設定できるhttps://xsoar.pan.dev/docs/reference/integrations/red-lock[プルベースの統合]の代替手段です。
+
+Cortex XSOARはアラートのポリシーIDを使用して、アラートを特定のインシデントタイプとして分類します。インシデントタイプに対して、Cortex XSOARのデータ分類とマッピング用のインシデントフィールドを指定する、Cortex XSOARレイアウトに、Prisma Cloudアラートペイロードがマップされます。インシデントタイプの現在のリストは次のとおりです。AWS CloudTrail の構成の誤り、AWS EC2 インスタンスの構成の誤り、AWS IAM ポリシーの構成の誤り、Azure AKS の構成の誤り、Azure ネットワークの構成の誤り、Azure SQL の構成の誤り、Azure ストレージの構成の誤り、GCP Compute Engine の構成の誤り、GCP Kubernetes Engine の構成の誤り、および Prisma Cloud。ポリシーIDが特定のインシデントタイプに分類されていない場合、自動的にインシデントタイプがPrisma Cloudにマッピングされます。Prisma Cloudインシデントタイプを除いて、違反しているリソースの自動修正を有効にするために、各インシデントタイプがCortex XSOARレイアウトにマッピングされ、プレイブックに関連付けられます。
+
+自動修正時、Prisma Cloudはスキャンを実行して、問題が解決されたことを確認し、アラートに解決済みのマークを設定します。
+
+現在のところ、この統合は通知テンプレートの使用をサポートしておらず、未解決のアラートが解決されても、Prisma CloudはCortex XSOARからの状態変更通知を受け取りません。
+
+* Prisma CloudでのCortex XSOAR統合の有効化
+* Cortex XSOARでの統合の設定
+
+
+[.task]
+[#id7b793439-6819-40b7-a8fc-dceceaaaa4fb]
+=== Prisma CloudでのCortex XSOAR統合の有効化
+
+Prisma CloudでCortex XSOARを外部統合としてセットアップします。インターネットとCortex XSOARの間にファイアウォールまたはクラウドネットワークセキュリティグループがある場合は、ネットワークの到達可能性を確認し、xref:../../get-started/access-prisma-cloud.adoc[Prisma Cloudコンソールへのアクセスを有効にする必要があります]。
+
+プッシュベースの統合では、Cortex XSOAR バージョン 5.0.0 と最新の Prisma Cloud コンテンツパックを使用する必要があります。
+
+[.procedure]
+. Prisma Cloudにログインして、*Settings（設定）> Integrations（統合）*の順に選択します。
+
+. *Add Integration（統合の追加）> Cortex XSOAR*を選択します。モーダルウィザードが開き、Cortex統合を追加できます。
++
+image::administration/cortex-xsoar-int-1.png[]
+
+. *Integration Name（統合の名前）*と*Description（説明）*を入力します。
+
+. *Cortex XSOAR インスタンスの FQDN/IP *アドレスを入力します。
++
+マルチテナントデプロイ環境の一部であるCortex XSOARインスタンスを追加する場合、プロトコル（httpまたはhttps）を付けずにテナントのURLを入力してください。
+
+. Cortex XSOAR管理ユーザーアカウントに関連する、*API Key（APIキー）*を入力します。
++
+指定するAPIキーは、読み取り/書き込みアクセス権限を持つCortex XSOAR管理ユーザーに所属している必要があります。これは、プッシュ配信ベースの統合を有効にするために必要になります。Cortex XSOARで、*Settings（設定） > Integrations（統合） > API Keys（APIキー）*に移動して、*Get Your Key（キーを取得）*を選択します。
+
+. *Next（次へ）*をクリックした後、*Test（テスト）*をクリックします。
+
+. *Save（保存）*を選択して、統合を保存します。
++
+統合を正常にセットアップした後、*Settings（設定）> Integrations（統合）* の Get Status（ステータスを取得） リンクを使用し,定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
++
+image::administration/cortex-xsoar-int-3.png[]
+
+. xref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラート通知]をCortex XSOARに送信するために、既存のアラートルールを変更するか、または新しいアラートルールを作成します。
+
+. Prisma Cloudアクセスキーを取得します。
++
+アクセスキーをお持ちでない場合は、「xref:../create-access-keys.adoc[アクセスキーの作成と管理]」を参照してください。Cortex XSOARで統合を完了するには、アクセスキーIDと秘密鍵IDが必要になります。
+
+. Cortex XSOARでの統合の設定。
+
+
+[.task]
+[#id0a507320-bf49-4523-81c0-5557cca623e6]
+=== Cortex XSOARでの統合の設定
+
+Prisma Cloud アラートを Cortex XSOAR でインシデントとして表示するには、*Marketplace*から *Palo Alto Networks の Prisma Cloud* コンテンツパックをインストールする必要があります。コンテンツパックには、このプッシュベースの統合に必要なインシデント フィールドが含まれています。コンテンツリリースがある場合、分類子、インシデントタイプ、およびレイアウトが自動的にご利用できます。
+
+Cortex XSOARは、AWS CloudTrail Misconfiguration、AWS EC2 Instance Misconfiguration、AWS IAM Policy Misconfiguration、Azure AKS Misconfiguration、Azure Network Misconfiguration、Azure SQL Misconfiguration、Azure Storage Misconfiguration、GCP Compute Engine Misconfiguration、GCP Kubernetes Engine Misconfiguration、そしてPrisma Cloudなどの既定のインシデントタイプに対してPrisma Cloudアラートをマッピングします。ポリシーIDが特定のインシデントタイプに分類されていない場合、デフォルトで汎用のPrisma Cloudインシデントタイプに自動的にマッピングされます。インシデントを正しいインシデントタイプに分類し、Prisma CloudアラートペイロードのフィールドをCortex XSOARインシデントフィールドにマッピングするためには、すぐに利用できる_Incident Classifier & Mapping（インシデント分類子とマッピング）_が必要となります。インシデントが作成されると、インシデントにアタッチされたプレイブックが自動的に実行されます。
+
+Prisma Cloudでの復旧活動をサポートするために利用可能なすべてのhttps://github.com/demisto/content/tree/master/Packs/PrismaCloud/Playbooks[Cortex XSOARプレイブック]を探します（例:Prisma Cloud Remediation - AWS EC2 Instance MisconfigurationおよびPrisma Cloud Remediation - GCP VPC Network Misconfiguration）。userinput:[playbook-PCR_]で検索してください。
+
+[NOTE]
+====
+Cortex XSOARからプルベースの統合を使用したい場合は、https://xsoar.pan.dev/docs/reference/integrations/red-lock[Cortexのドキュメント]を参照してください。プルベースの統合では、*Fetches incidents（インシデントの取得）*を行うためにインスタンスを有効にする必要があります。
+
+image::administration/demisto-integration-pull-based-prisma-cloud.png[]
+====
+
+[.procedure]
+. Cortex XSOAR にログインし、*Marketplace > Browse*を選択します。
+
+. *Prisma Cloud by Palo Alto Networks*コンテンツパックを検索して *インストール*します。
+
+. Cortex XSOARとPrisma Cloud間の接続を有効にします。
+
+.. *Settings（設定） > Objects Setup ( オブジェクト設定）> Classification & Mapping（分類マッピング）*へと移動します。
+
+.. 右上の三重ドット ボタンをクリックし、[*API エンドポイント マッピング*] を選択します。
++
+image::administration/demisto-api-end-mapping.png[]
+
+.. *Prisma Cloud*の行で、次を選択します。
++
+* 分類子— *Prisma Cloud アプリ - 分類子*
+* マッパー (受信) —*Prisma Cloud アプリ - 受信マッパー*
++
+image::administration/demisto-prisma-classifier.png[]
+
+.. *Save（保存）*を選択します。
+
+. (tt:[任意])インスタンスを追加して、Cortex XSOAR と Prisma Cloud 間の接続を有効にします。
+
+.. *Settings（設定） > Integrations（統合） > Instances（インスタンス）*の順に移動します。
+
+.. *Prisma Cloud (RedLock)* を検索し、 *インスタンスを追加*します。
+
+.. セットアップ作業を完了します。
+
+... 統合する Prisma Cloud インスタンスの *名前* を入力します (名前は、Cortex XSOAR 内の他の統合とは一意である必要があります)。
+
+... [ *取得しない*] を選択します。
+
+... Prisma Cloud インスタンスの API エンドポイントに対応する *サーバー URL*、およびユーザー名とパスワードとしてのアクセス キーと秘密キー。
++
+https://app2.eu.prismacloud.io,APIエンドポイントで https://api2.eu.prismacloud.io Prisma Cloudインスタンスにアクセスする場合
+
+... インスタンスを*テスト* します。
++
+image::administration/demisto-optional-add-integration.png[]
+
+... *保存して終了*します。
+
+. (tt:[任意]) インシデント タイプの分類マッピングを確認します。
++
+Prisma Cloud がアラートを Cortex XSOAR エンドポイントにプッシュすると、アラートは *Prisma Cloud App - Classifier* の *Settings>Objects Setup>Incidents>Classification & Mapping（分類マッピング）*で分類されます。
++
+image::administration/demisto-integration-path.png[]
++
+各インシデントタイプに関連付けられているプレイブック の名称は、*Settings（設定）> Objects Setup（オブジェクト設定） > Incidents（インシデント） > Types*で確認できます。[ *プレイブック* ] タブで実際のプレイブックを表示できます。 
++
+image::administration/demisto-integration-prisma-cloud-incident-playbooks.png[]
+
+. Cortex XSOARでインシデントを参照します。
++
+統合が期待どおりに機能していること、およびPrisma Cloudアラートがインシデントとして表示され、特定のインシデント タイプにマッピングされていることを確認します。
++++<draft-comment>Cortex XSOARでは、プレイブックが実行されてアクティブな問題が解決されると、Cortex XSOARはPrisma Cloudのアラート ステータスを*Open*から*Resolved*に自動的に更新します</draft-comment>+++
++
+image::administration/demisto-integration-prisma-cloud-alerts.png[]
+
+. (tt:[任意]) Cortex XSOARでインシデントタイプを区別するためにPrisma Cloudアラートを分類する、その他の分類およびマッピングルールやインシデントレイアウトを作成します。
++
+Cortex XSOARには、自動修正を行うためにいずれかのAWSプレイブック（前述）を関連付けられる、Prisma Cloud向けのインシデントタイプがいくつか含まれています。インシデントタイプのカスタマイズ、異なる分類の作成、Prisma Cloudアラート用のマッピングとレイアウト、および他のクラウドプラットフォームに対してアクションを実行してインシデント解決を有効にするための、プレイブックの関連付けに関する詳細は、https://xsoar.pan.dev/docs/incidents/incident-classification-mapping[Demistoのドキュメント]を参照してください。サンプルパックについては、https://github.com/demisto/content/tree/master/Packs/PrismaCloud/Playbooks[Cortex XSOAR GitHub]リポジトリを参照してください。

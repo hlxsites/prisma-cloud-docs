@@ -1,0 +1,339 @@
+== 権限クエリ属性
+
+権限クエリ属性について学習します。
+
+userinput:[config from iam where]を使用する場合のオプションを確認します。各属性を使って、検索基準を絞り込むことができます。これらの属性を使用する場合、自動提案機能が各属性に適した式や演算子を表示します。
+
+* *送信元* — 他のクラウドリソースでアクションを実行するID。ソースは、IAMユーザー、Azure Active Directoryユーザー、EC2インスタンス、Lambda関数、Azure仮想マシンなど、アクセス権限を有する任意のリソースでかまいません。
+
+* *送信先* — アクションが実行されたか、アクションのターゲットであるクラウドリソース。
+
+* *権限付与者* — 送信先とやり取りするためのアクセス権限をソースに付与するグループ、ロール、またはポリシー。
+
+たとえば、ユーザーが属するグループ （権限付与者エンティティ）のAWS管理ポリシーを使用して、DynamoDBテーブル（送信先）にエントリを追加できるIAM ユーザー（ソース）です。
+
+アクセス権限クエリでは、以下の属性を使用できます。
+
+* *source.cloud.account*
++
+有効な権限検索を、Prisma Cloud に接続した 1 つ以上のクラウドアカウントに絞り込みます。次の例では、あなたのAWSアカウント、Azureテナント、またはGCPアカウントのすべてのユーザーの有効なアクセス権限をすべて一覧表示します。screen:[config from iam where source.cloud.account = 'Production' AND source.cloud.resource.type = 'user']
++
+[NOTE]
+====
+次の構文でクロスアカウント接続を検索するために使用できます。screen:[config from iam where source.cloud.account != dest.cloud.account]
+====
+
+* *source.cloud.accountgroup*
++
+クラウドアカウントグループ内のクラウドアカウントに対する権限を絞り込みます。次の例では、いずれかの AWS アカウントのすべての EC2 インスタンスのアクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.accountgroup = 'All my AWS accounts' AND source.cloud.service.name = 'ec2' AND source.cloud.resource.type = 'instance']Lists permissions of all Azure virtual machine instances in any of your Azure subscriptions:
++
+screen:[config from iam where source.cloud.accountgroup = 'All my Azure accounts' AND source.cloud.service.name = 'Microsoft.Compute' AND source.cloud.resource.type = 'virtualMachines' ]
+
+* *source.cloud.type*
++
+検索オプションを特定のクラウドに絞り込みます。以下の例では、送信元がAWSクラウドアカウントにある有効なすべてのアクセス権限を一覧表示します。:screen:[config from iam where source.cloud.type = 'AWS']
++
+送信元がAzureサブスクリプションにあるすべての有効なアクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.type = 'AZURE']
+
+* *source.cloud.region*
++
+送信元が1つ以上のクラウドリージョンにある有効な権限検索を絞り込みます。以下の例では、バージニアリージョンのAWSアカウントに対するすべてのAWS Lambdaアクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.region = 'AWS Virginia' AND source.cloud.service.name = 'lambda' AND source.cloud.resource.type = 'function' ]
+
+* *source.cloud.resource.tag*
++
+特定のタグを持つクラウド リソースの有効なアクセス権限の許可を一覧表示します。
++
+screen:[config from iam where source.cloud.resource.tag ( 'string' ) exists]
+
+* *grantedby.cloud.condition*
++
+ポリシーステートメントに条件が含まれ、または条件が含まれていないアクセス権限を照会します。
++
+screen:[config from iam where grantedby.cloud.policy.condition ('aws:sourceIP', 'IpAddress') exists]
+
+* *source.cloud.service.name*
++
+以下に示す、特定のクラウドサービスのアクセス権限を照会します。IAM, S3, EC2, userinput:[Microsoft.Compute] , or userinput:[Microsoft.Storage] 。
++
+次の例では、AWSクラウドアカウントのすべての EC2 アクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.service.name = 'EC2']The following example lists all userinput:[Microsoft.Compute] permissions in your Azure cloud accounts:
++
+screen:[config from iam where source.cloud.service.name = 'Microsoft.Compute']
+
+* *source.cloud.resource.id*
++
+AWS Lambda関数ARN、AWS IAMユーザーARN、AWS EC2インスタンスARN、または任意のAzureリソースID、GCPユーザーアカウント、またはサービスなど、特定のクラウドリソースをそのIDごとに照会します。次の例では、すべてのAWS Lambda関数のアクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.resource.id = 'arn:aws:lambda:us-east-2:123456789012:function:my-function']The following lists permissions of a specific Azure virtual machine :
++
+screen:[config from iam where source.cloud.resource.id = '/subscriptions/aaaaa-bbb-ccc-ddd-eeeee/resourceGroups/resource-group/providers/Microsoft.Compute/virtualMachines/my-machine']
+
+* *source.cloud.resource.name*
++
+次のような特定のクラウド サービスのアクセス権限の許可を一覧表示します。IAM、S3、EC2、Microsoft.Compute、または Microsoft.Storage。
++
+AWS クラウド アカウントのすべての EC2 権限を一覧表示します。screen:[config from iam where source.cloud.service.name = 'EC2']
++
+Azure クラウド アカウントのすべての Microsoft.Compute アクセス権限の許可を一覧表示します。screen:[config from iam where source.cloud.service.name = 'Microsoft.Compute']
++
+GCPコンピュートインスタンスのアクセス権限を一覧表示します。:screen:[config from iam where source.cloud.service.name = 'compute' および dest.cloud.type = 'GCP']
+
+* *source.cloud.resource.type*
++
+IAMユーザー、S3バケット、EC2インスタンス、Azure ADユーザー、varname:[Microsoft.Storage]ストレージアカウント、varname:[Microsoft.compute]仮想マシン、GCPワークスペースユーザーなど、特定のクラウドタイプのアクセス権限を照会します。次の例では、すべてのAWS Lambda関数のアクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.service.name = 'lambda' AND source.cloud.resource.type = 'function']次の例では、すべてのAzure関数のアクセス権限を一覧表示します。
++
+screen:[config from iam where source.cloud.service.name = 'Microsoft.Compute' and source.cloud.resource.type = 'function']
+
+* *source.email*
++
+電子メールアドレスでユーザーの権限を照会します。次の例では、my@email.comのすべての有効なアクセス許可を一覧表示します。
++
+screen:[config from iam where source.email = 'my@email.com']
++
+[NOTE]
+====
+この機能にはIdP統合が必要です。
+====
+
+* *source.idp.service*
++
+送信元がOktaなどのIdPサービスにある有効なパーミッション検索を絞り込みます。次の例では、Oktaユーザーのすべての有効なアクセス許可を一覧表示します。
++
+screen:[config from iam where source.idp.service = 'Okta']
++
+[NOTE]
+====
+この機能にはIdP統合が必要です。
+====
++
+次の例では、Azure ADユーザーのすべての有効なアクセス権限を一覧表示します。
++
+screen:[config from iam where source.idp.service = 'Azure Active Directory' ]
+
+* *source.idp.email*
++
+送信元がIdPユーザーである有効な権限検索を電子メールアドレスで絞り込みます。次の例では、電子メールアドレスがmy@email.com:screen:[config from iam where source.idp.email = 'my@email.com']というOktaユーザーの有効なアクセス権限をすべて一覧表示します。
++
+[NOTE]
+====
+この機能にはIdP統合が必要です。
+====
+
+* *source.idp.group*
++
+送信元がIdP内で定義されたグループである有効なアクセス許可検索を絞り込みます。
++
+screen:[config from iam where source.idp.group = 'my-group' ]
++
+[NOTE]
+====
+この機能にはIdP統合が必要です。
+====
+
+* *source.idp.username*
++
+送信元IdP内の特定のユーザーの有効なアクセス許可を一覧表示します。
++
+screen:[config from iam where source.idp.username = 'my-username']
++
+[NOTE]
+====
+この機能にはIdP統合が必要です。
+====
+
+* *source.idp.domain*
++
+送信元が特定のドメイン（my-domain.okta.comなど）のIdPユーザーである有効なアクセス許可検索を絞り込みます。screen:[config from iam where source.idp.domain = 'my-domain.okta.com']
++
+[NOTE]
+====
+この機能にはIdP統合が必要です。
+====
+
+* *source.public*
++
+パブリックにアクセス可能なすべてのS3バケットを照会します。すべての GCP パブリック リソース – userinput:[allUsers] and/or userinput:[allAuthenticatedUsers] Principals.screen:[config from iam where source.public = true AND dest.cloud.service.name = 'S3' AND dest.cloud.resource.type = 'bucket']
+
+* *grantedby.cloud.type*
++
+検索オプションを特定のクラウドに絞り込みます。次の例では、グループ、ロール、ポリシーなどの権限付与者がAWSクラウドアカウントにある有効なアクセス権限を一覧表示します。screen:[config from iam where grantedby.cloud.type = 'AWS']
++
+以下に示したのは、Azureクラウドアカウントで有効なアクセス権限の一覧です。
++
+screen:[config from iam where grantedby.cloud.type = 'AZURE']
+
+* *grantedby.cloud.policy.id*
++
+AWS管理ポリシーARN、AWSカスタムポリシー、GCPロールIDなど、特定のポリシーによって与えられた、そのIDごとのアクセス権限を照会します。次の例では、AWS 管理ポリシーによって付与された有効なアクセス許可をリストします。 varname:[AdministratorAccess]: screen:[config from iam where grantedby.cloud.policy.id = 'arn:aws:iam::aws:policy/AdministratorAccess']
+
+* *grantedby.cloud.policy.name*
++
+AWS管理ポリシーやAWSインラインポリシー、GCPロール名などの特定のポリシーによって与えられたアクセス権限を照会します。次の例では、AWS 管理ポリシー AdministratorAccess によって付与されているすべての有効なアクセス許可をリストします。 screen:[config from iam where grantby.cloud.policy.name = 'AdministratorAccess']
+
+* *grantedby.cloud.policy.type*
++
+AWS管理ポリシー、AWSカスタマーポリシー、AWSインラインポリシー、Azure組み込みロール、Azureカスタムロールなど、特定のポリシータイプによって与えられたアクセス権限を照会します。
++
+次の例では、任意のAWSインラインポリシーによってユーザーに付与された有効なアクセス権限をすべて一覧表示します。
++
+screen:[ config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.policy.type = 'Inline Policy']
++
+次の例では、Azure組み込みロールによってユーザーに与えられた有効なアクセス権限をすべて一覧表示します。
++
+screen:[config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.policy.type = 'Built-in Role']
+
+* *grantedby.cloud.entity.id*
++
+AWS IAM グループARN、AWS IAMロールARN、GCPグループID、またはGCPサービスアカウントIDなど、特定のエンティティによって、そのIDごとに与えられたアクセス権限をクエリします。次の例では、AWS IAM グループによって付与されたすべての有効なパーミッションが一覧表示されます。varname:[my-group]: screen:[config from iam where grantedby.cloud.entity.id = 'arn:aws:iam::123456789012:group/my-group']
+
+* *grantedby.cloud.entity.name*
++
+AWS IAMグループ、AWS IAMロール、GCPグループ名、GCPサービスアカウント名など、特定のエンティティによって与えられた権限をクエリします。次の例では、AWS IAMグループmy-groupによって付与されたすべての有効なアクセス権限を一覧表示します。screen:[config from iam where grantedby.cloud.entity.name = 'my-group']
+
+* *grantedby.cloud.entity.type*
++
+AWS IAMグループや AWS IAMロールなど、特定のエンティティタイプによって与えられたアクセス権限を照会します。次の例では、任意の AWS IAMグループによってユーザーに与えられた有効なアクセス許可をすべて一覧表示します。screen:[config from iam where source.cloud.resource.type = 'user' AND grantedby.cloud.entity.type = 'group']
+
+* *grantedby.level.id*
++
+送信先とやり取りするためのアクセス権限をソースに付与するグループロールやポリシーをレベルIDごとに識別します。たとえば、GCP組織/フォルダー/プロジェクト/サービスIDへのアクセス権を持つロール。
+
+* *grantedby.level.name*
++
+有効なアクセス権限検索をグループロールやポリシーレベル名まで絞り込みます。たとえば、GCP組織/フォルダー/プロジェクト/サービス名に対するアクセス権限があるロール。
+
+* *grantedby.level.type*
++
+特定のポリシーレベルタイプによって付与された権限を照会します。たとえば、GCP組織/フォルダー/プロジェクト/サービスIDへのアクセス権を持つ役割です。
+
+* *grantby.cloud.policy.tag*
++
+AWS マネージド ポリシーやインライン ポリシーなどの特定のポリシー、または特定のタグが付いた GCP ロール名によって付与されたアクセス許可を照会します。次の例では、AWS ポリシーによって付与されたすべての有効なアクセス許可を一覧表示し、重大度が高に等しいタグが付けられています。
++
+screen:[config from iam where grantedby.cloud.policy.tag ( 'Severity' ) = 'High']
+
+* *grantby.cloud.entity.tag*
++
+AWS IAM グループまたはロール、GCP グループ、または特定のタグが付いたサービス アカウント名など、特定のエンティティによって付与されたアクセス許可を照会します。たとえば、次の例では、AWS エンティティによって付与されたすべての有効なアクセス許可が一覧表示され、重大度が高に等しいタグが付けられています。
++
+screen:[config from iam where grantedby.cloud.entity.tag ( 'Severity' ) = 'High']
+
+* *grantby.level.id*:
+特定のレベル ID によって付与される権限を識別します。以下に例を示します。
+
+** Azure：Azure 管理グループ/サブスクリプション/リソースへのアクセス権を持つグループ。
+** GCP:GCP 組織/フォルダ/プロジェクト/サービスへのアクセス権を持つユーザー。
+
+* *grantby.level.name*:
+特定のレベル名によって付与される権限を識別します。以下に例を示します。
+** Azure：Azure 管理グループ/サブスクリプション/リソースへのアクセス権を持つグループ。
+** GCP:GCP 組織/フォルダ/プロジェクト/サービスへのアクセス権を持つユーザー。
+
+* *grantby.level.type*:
+特定のレベル タイプに付与されたアクセス許可を照会します。以下に例を示します。
+
+** Azure：Azure 管理グループ/サブスクリプション/リソースへのアクセス権を持つグループ。
+** GCP:GCP 組織/フォルダ/プロジェクト/サービスへのアクセス権を持つユーザー。
+
+* *dest.cloud.account*
++
+有効なアクセス許可の検索を、Prisma Cloud に接続している 1 つ以上のクラウド アカウントに絞り込みます。次の例では、AWS Productionアカウントのすべてのバケットに対する有効なアクセス許可をすべて一覧表示します。
++
+screen:[config from iam where dest.cloud.account = 'Production' AND dest.cloud.resouce.type = 'bucket']
++
+[NOTE]
+====
+次の構文でクロスアカウント接続を検索するために使用できます。screen:[config from iam where dest.cloud.account != source.cloud.account]
+====
++
+次の例では、結果をuserinput:[LIKE]演算子で表示します。ここでは、クラウドサービスプロバイダーに与えられたIAM アクセス権限をワイルドカード（*）文字で承認しています。
++
+screen:[config from iam where dest.cloud.account LIKE 'account-dev-3']The LIKE operator finds permissions granted for all ( userinput:[*] ) cloud accounts and the cloud account named userinput:[account-dev-3].
++
+[NOTE]
+====
+上記のRQLクエリで、LIKE演算子の代わりに:userinput:[=] 演算子を使用すると、userinput:[account-dev-3]という名前のクラウドアカウントのみが表示されます。
+====
+
+* *dest.cloud.accountgroup*
++
+クラウドアカウントグループ内のクラウドアカウントに対する権限を絞り込みます。次の例では、任意のAWSアカウントのすべてのEC2インスタンスに対するアクセス権限を一覧表示します。
++
+screen:[config from iam where dest.cloud.accountgroup = 'All my AWS accounts' AND dest.cloud.service.name = 'ec2' AND dest.cloud.resource.type = 'instance' ]
+
+* *dest.cloud.type*
++
+検索オプションを特定のクラウドに絞り込みます。次の例では、送信先が AWSクラウドアカウントにある有効なすべてのアクセス許可を一覧表示します。
++
+screen:[config from iam where dest.cloud.type = 'AWS']
+
+* *dest.cloud.region*
++
+送信先が 1 つ以上のクラウドリージョンにある有効な権限検索を絞り込みます。次の例では、バージニアリージョンのAWSアカウントの AWS Lambdaに対する有効なすべてのアクセス権限を一覧表示します。 screen:[config from iam where dest.cloud.region = 'AWS Virginia' AND dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function'  ]
+
+* *dest.cloud.service.name*
++
+IAM、S3、EC2などの特定のクラウドサービスに対するアクセス許可を照会します。次の例では、任意のAWSアカウントのすべてのEC2インスタンスに対するアクセス権限を一覧表示します。screen:[config from iam where dest.cloud.service.name = 'EC2']
+
+* *dest.cloud.resource.name*
++
+AWS Lambda関数、AWS IAM ーザー、AWS EC2インスタンスなどの特定のクラウドサービスに対するアクセス許可をクエリします。次の例では、AWS Lambda関数に対する有効なすべてのアクセス権限を一覧表示します。
++
+screen:[config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function' AND dest.cloud.resource.name = 'my-function']
+
+* *dest.cloud.resource.id*
++
+AWS Lambda関数ARN、AWS IAMユーザーARN、AWS EC2インスタンスARNなどのIDによって特定のクラウドリソースへのアクセス許可を照会します。次の例では、AWS Lambda関数に対する有効なすべてのアクセス権限を一覧表示します。
++
+screen:[config from iam where dest.cloud.resource.id = 'arn:aws:lambda:us-east-2:123456789012:function:my-function']
+
+* *dest.cloud.resource.type*
++
+IAMユーザー、S3バケット、EC2インスタンスなど、特定のクラウドタイプに対するアクセス許可を照会します。次の例では、AWS Lambda関数に対する有効なすべてのアクセス権限を一覧表示します。
++
+screen:[config from iam where dest.cloud.service.name = 'lambda' AND dest.cloud.resource.type = 'function']
+
+* *dest.cloud.resource.tag*
++
+特定のリソースタグを持つクラウド リソース宛先の有効なアクセス権限の許可を一覧表示します。
++
+screen:[config from iam where dest.cloud.resource.tag ( 'string' ) exists]
+
+* *dest.cloud.wildcardscope*
++
+ワイルドカードを含むすべての非特定リソース、例えば "*"と等しいか含むリソースを検索する。
++
+----
+config from iam where action.name CONTAINS ALL ( 'ec2:RunInstances', 'ec2:DescribeInstances', 'lambda:InvokeFunction' ) and dest.cloud.wildcardscope = true
+----
+
+* *action.name*
++
+有効なアクセス権限の検索を1つ以上のアクション名に絞り込みます。次の例では、AWS S3バケットからオブジェクトを取得するための有効なアクセス許可をすべて一覧表示します。
++
+screen:[config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject']
+
+この属性では、CONTAINS ALL演算子のみがサポートされます。この演算子を使用すると、値の間に AND ロジックを使用してクエリを実行できます。たとえば、すべてのアクション X、Y、および Z を含むロールのみを取得する場合は、次のクエリを実行します。
+
+screen:[config from iam where action.name CONTAINS ALL ( 'Microsoft.AgFoodPlatform/farmBeats/seasons/write', 'Microsoft.AgFoodPlatform/fields/delete' )]
+
+* *action.lastaccess.days*
++
+特定の権限を前回、実際に使用した日時が表示されます。次の例では、90日以上使用されていないAWS S3バケットからオブジェクトを取得するための有効なアクセス許可をすべて一覧表示します。
++
+screen:[config from iam where dest.cloud.service.name = 's3' AND dest.cloud.resource.type = 'bucket' AND action.name = 'S3:GetObject' and action.lastaccess.days > 90]
++
+[NOTE]
+====
+* 最終アクセス情報は、成功したアクセスのみに記録されます。アクセス許可がないなどの理由で操作が失敗した場合、アクセス情報はログに記録されません。
+* 前回のアクセス宛先に表示される結果数は、アクセス権限の最新の結果数100件が上限です。
+====

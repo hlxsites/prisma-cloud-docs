@@ -1,0 +1,183 @@
+:toc: macro
+== 33.03 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|33.03.138
+
+|Code name
+|Pascal Update 3 
+
+|Release date
+|January 05, 2024
+
+|Type
+|Minor release
+
+|SHA-256
+|a071ad84ace670a9f4ee37fc3e2f44f270527d4671ebc8e3dc448a6d50282d3d
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtimes, tools, and orchestrators.
+
+You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+<URL available from the Support Portal>
+//https://cdn.twistlock.com/releases/RhRanogV/prisma_cloud_compute_edition_33_02_134.tar.gz[https://cdn.twistlock.com/releases/RhRanogV/prisma_cloud_compute_edition_33_02_134.tar.gz]
+
+toc::[]
+
+=== Lifecycle Support Update
+
+Prisma Cloud officially guarantees backward compatibility with up to two previous major versions (n-2).
+
+Although the support lifecycle remains unchanged, starting from version 33.xx, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from up to three major releases before the current version (upto n-3 major releases).
+
+For example, with the current version at 33.xx, API calls and Defenders from version 30.xx will be allowed. However, support and complete backward compatibility is guaranteed for the 32.xx and 31.xx releases.
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defenders
+
+Starting with the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/upgrade/support-lifecycle[Defender versions supported (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. In addition, starting from release 33.00, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 version. So the current release will allow Defenders and REST API calls from release 30.xx also. Failure to upgrade Defenders below version `v30.00`, such as `v22.12`, will result in disconnection of the Defenders from the Console.
+
+However, to maintain full support, you must upgrade your Defenders to `v31.xx` or a higher release.
+
+To summarize, the level of support for the different versions of Defenders is as follows:
+
+* Defender versions 33.xx, 32.xx, and 31.xx have full support
+* Defender versions 30.xx are functional (will be able to connect to version 33.xx Console) but support is not available for such Defenders
+* Defender versions previous to 30.xx, such as 22.12, are neither supported nor functional (cannot connect to version 33.xx Console)
+
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+Starting with the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/upgrade/support-lifecycle[supported Console versions (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. 
+
+NOTE: Defenders from the n-3 release will remain functional as described above.
+
+You can upgrade the Prisma Cloud console directly from any n-1 version to n. For example, with `v33.00` as n and `v32.00` as n-1, you can upgrade directly from `v32.05.124` to `v33.01.137`.
+
+NOTE: You have to upgrade any version of `v31.00` to `v32.00` before upgrading to `v33.00`. For example, you must upgrade from `v31.02.137` to `v32.07.123` before you upgrade to `v33.01.137`.
+
+
+
+
+
+//[#cve-coverage-update]
+//=== CVE Coverage Update
+
+//[#announcement]
+//=== Announcement
+
+
+[#enhancements]
+=== Enhancements
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|Enhancements to Vulnerability Reporting for Red Hat Enterprise Linux (RHEL) Versions 8 and 9
+//CWP-30827
+
+|To ensure accurate vulnerability reporting, Intelligence Stream will include RPM module and stream information for RHEL in the reports. This approach improves detection of vulnerabilities and ensures that all associated RPM packages installed by a module are examined during the scan.
+
+*What are RPM Modules and Streams?*
+
+In Red Hat Enterprise Linux (RHEL), an RPM module is a collection of related RPM packages that represent a software component, such as an application, its dependencies, and helper utilities. Starting with RHEL 6 and 7, modules replaced the Software Collections mechanism.
+
+Modules are structured in the following way:
+
+* *Module Streams*: Virtual repositories within the AppStream repository. Each stream corresponds to a specific version of the module and receives independent updates.
+
+* *Stream Activation*: At any time, only one stream of a module can be active, meaning only one version of a component can be installed on a system.
+
+For example, the notation `python39:3.9/python39` indicates the module `python39`, the stream `3.9`, and the source package `python39`.
+
+*Enhancements to Vulnerability Reporting*
+
+* *Module-Based Vulnerability Identification*: Scans will report vulnerabilities based on the module and stream configuration. This ensures accurate detection and avoids false positives or false negatives caused by discrepancies in versioning or backported fixes.
+
+* *Inclusion of RPM Module Metadata in Scan Results*: The enhanced implementation associates RPM packages with their respective modules and streams. The Prisma Cloud console will include this module information in vulnerability scan results.
+
+
+*Benefits of Module-Aware Vulnerability Reporting*
+
+* *Improved Accuracy*: Matches CVE fixes to the correct module stream.
+* *Reduced False Positives*: Avoids misreporting of vulnerabilities fixed in older streams.
+* *Comprehensive Coverage*: Links all RPM packages installed by a module to its vulnerabilities.
+
+*NOTE*: 
+
+* This enhancement requires upgrading Defenders to the latest version. 
+
+* The older versions of Defender will remain unaffected by this change, and their behavior remains unchanged.
+
+|Enhanced Vulnerability Reporting for NuGet Packages
+//CWP-49786
+
+|Previously, the scanning process included NuGet packages listed in the `.deps.json` files, which were essential for the runtime environment but not related to the application itself. These unrelated packages result in false positives in vulnerability reporting. 
+
+With this enhancement, the scanning process excludes runtime-specific dependencies that are not directly related to the application. This provides a more accurate view of vulnerabilities directly associated with the application, and reduces false positive alerts.
+
+*NOTE*: 
+
+* This enhancement requires upgrading Defenders to the latest version. 
+
+* The updated Defender accurately identifies package dependencies, which leads to fewer false positives.
+
+* The older versions of Defender will remain unaffected by this change, and their behavior remains unchanged.
+
+|Enhancement to Prevent Action with `fsmon_v2`
+//CWP-62711
+
+|To enhance the handling of file system events for the Prevent Action in the Runtime Policy, a new version, fsmon_v2, has been developed. This version improves stability by managing timeouts more promptly and in a robust manner, thereby reducing bottlenecks and enhancing overall stability.
+
+While `fsmon_v2` brings significant improvements, it is still under active development, and further enhancements are planned. Currently, `fsmon_v2` is being rolled out gradually. 
+
+This feature is disabled by default. Customers who want to activate this feature should submit a ticket requesting engineering to enable it.
+
+|"last-connected" Field Added to Defender Stats Logs
+//CWP-62666
+
+|A new field, last-connected, has been added to each Defender stats log. This field records the last confirmed connection time between the Defender and the Console, even when the Connected flag is set to false. The timestamp is represented in epoch seconds (UTC), providing customers with a reliable way to track connection history.
+|===
+
+//[#intelligence-stream-updates]
+//=== Intelligence Stream Updates
+//[cols="30%a,70%a"]
+//|===
+//|*Feature*
+//|*Description*
+//
+//|===
+
+
+//[#new-features-agentless-security]
+// === New Features in Agentless Security
+
+// [#new-features-core]
+// === New Features in Core
+
+// [#new-features-host-security]
+// === New Features in Host Security
+
+// [#new-features-serverless]
+// === New Features in Serverless
+
+// [#new-features-waas]
+// === New Features in WAAS
+
+// [#api-changes]
+// === API Changes and New APIs
+
+// [#deprecation-notices]
+// === Deprecation Notices
+

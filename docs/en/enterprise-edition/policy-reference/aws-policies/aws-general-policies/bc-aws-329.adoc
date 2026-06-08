@@ -1,0 +1,55 @@
+
+== EFS Access Points are not enforcing a root directory
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 131ed876-a8e2-4140-8da0-195e065a529e
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/EFSAccessPointRoot.py[CKV_AWS_329]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that Amazon Elastic File System (EFS) access points are configured to enforce a root directory. If an EFS access point doesn't enforce setting a root directory, it may allow unrestricted access to all directories in the file system, leading to potential unauthorized data access or threats to data security. Therefore, not enforcing a root directory in EFS access points could pose a significant security risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_efs_access_point
+* *Arguments:* root_directory.path
+
+To fix this issue, you should define a root directory for the EFS access point. The root directory will enforce the access point to only allow the NFS client to access data within this root directory and not above it. This limits the scope of access and provides an added layer of security.
+
+[source,go]
+----
+resource "aws_efs_access_point" "example" {
+  file_system_id = aws_efs_file_system.example.id
+
+  root_directory {
+    path = "/example"
+    
+    creation_info {
+      owner_gid = 1000
+      owner_uid = 1000
+      permissions = "755"
+    }
+  }
+}
+----
+

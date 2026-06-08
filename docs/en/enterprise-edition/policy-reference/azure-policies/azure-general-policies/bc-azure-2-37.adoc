@@ -1,0 +1,49 @@
+
+== Azure MariaDB database server not using latest TLS version
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| ba4d0c4a-e02b-4f89-a916-f5fdfeb83f7a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMariaDBserverUsingTLS_1_2.yaml[CKV2_AZURE_37]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the Azure MariaDB server is using the latest version of TLS (Transport Layer Security), which is version 1.2. This is important because using outdated versions can expose the server to known vulnerabilities and security threats. TLS is a protocol used for securing communication over a network by encrypting the data sent between two systems to prevent potential eavesdropping, tampering, or message forgery. If an older version of TLS is used, it could lead to compromised data and impact the privacy and integrity of data transmission. Therefore, it is vital to guarantee the usage of the most recent version.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mariadb_server
+* *Arguments:* ssl_enforcement_enabled, ssl_minimal_tls_version_enforced
+
+To fix this issue, you should ensure that the 'ssl_enforcement' option is set to "Enabled" and the 'ssl_minimal_tls_version_enforced' option is set to "TLS1_2" in the Azure MariaDB server block. 
+
+[source,hcl]
+----
+resource "azurerm_mariadb_server" "example" {
+  ...
+  ssl_enforcement_enabled          = true
+  ssl_minimal_tls_version_enforced = "TLS1_2"
+}
+----
+
+The above code is secure because it enforces SSL/TLS by making sure that all data flowing between the client and the server is encrypted. Furthermore, it enforces the server to use the latest and most secure version of TLS, the TLS 1.2. Using the latest version of TLS (1.2) or higher to encrypt data-in-transit is particularly crucial, because it offers enhanced security over older versions.
+

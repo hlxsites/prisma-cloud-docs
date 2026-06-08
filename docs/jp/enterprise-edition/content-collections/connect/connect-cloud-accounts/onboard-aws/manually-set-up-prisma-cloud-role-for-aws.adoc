@@ -1,0 +1,131 @@
+:topic_type: タスク
+[.task]
+== AWS アカウントの Prisma Cloud ロールを手動でセットアップする 
+
+AWSアカウントを監視するには、ロールを手動で作成して、Prisma Cloud用の権限を割り当てます。
+
+Prisma CloudがAWS上のアカウントを保護するために必要なロールの作成プロセスを自動化する、ガイド付きのオンボーディングフローを使用したくない場合は、ロールを手動で作成する必要があります。AWSアカウントを監視するためには、Prisma Cloudにフローログへのアクセス、および読み取り専用アクセス（トラフィックログデータを取得、表示するため）または限定されている読み取り/書き込みアクセス（トラフィックログデータを取得してインシデントを修正するため）を許可するロールを作成する必要があります。権限を許可するには、関連するテンプレートからポリシーをコピーして、それをロールに添付する必要があります。監視対象クラウドアカウントに関連したイベントログは、Prisma Cloudに自動的に取得されます。
+
+[.procedure]
+. Prisma Cloud から CFT テンプレートをダウンロードします。
++
+** xref:onboard-aws-account.adoc[AWS アカウントのオンボード] を参照し、手順に従って *IAM ロール CFT をダウンロード*します。
+
+** テンプレート内で *ExternalID* フィールドを検索します。
+
+** *ExternalID*の値をコピーし、次のStepで説明するようにAWSコンソールに貼り付ける必要があります。
+
+. Prisma Cloud用のロールを作成するには、AWS管理コンソールにログインします。
++
+詳細は、https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html[AWSのドキュメント]を参照してください。AWSアカウントと同じリージョン内にロールを作成して、ロールを作成する際には次の値とオプションを使用してください。
++
+** 信頼するエンティティのタイプ:*Another AWS Account（別のAWSアカウント）*、そして*アカウントID*を入力:*188619942792*
+
+** [ *外部 ID が必要*] を 選択し、上記の手順 1 でコピーした *ExternalID* 値を貼り付けます。
+
+** MFAは有効にしないでください。*Require MFA（MFAが必要）*が選択されていないことを確認します。
++
+image::connect/add-aws-manual-role-1.png[]
+
+** *Next（次へ）*をクリックして、AWS Managed Policy for *Security Audit（セキュリティ監査用AWS管理ポリシー）*を追加します。
++
+image::connect/add-aws-manual-policy-2-1.png[]
++
+ロール名を追加して、ロールを作成します。このワークフローの後半では、きめ細かいポリシーを作成し、ロールを編集して追加のポリシーを添付します。
+
+. AWS CFTからAWS環境の詳細なアクセス権限を取得します。
++
+Prisma Cloud S3バケットには、パブリックAWS、AWS GovCloudおよびAWS China環境向けの、読み取り専用テンプレートおよび読み取り/書き込みテンプレートが用意されています。
++
+.. 必要なテンプレートをダウンロードします。
+//+
+//[NOTE]
+//====
+//If you have onboarded your AWS accounts on Prisma Cloud after December 8, 2022, you do not need to download the static CFTs from the *Links to Legacy CFTs* below. 
+//For backward compatibility, Prisma Cloud will support onboarding using static CFTs until further notice. 
+//====
+
+.. コピーする必要がある権限を識別します。
++
+手動でポリシーを作成するには、JSONエディタを使って必要な権限を追加する必要があります。読み取り専用テンプレートから、*PrismaCloud-IAM-ReadOnly-Policy*用の細かく設定された権限を入手できます。読み取り/書き込みテンプレートには、*PrismaCloud-IAM-ReadOnly-Policy*および*PrismaCloud-IAM-Remediation-Policy*用のきめ細かく設定された権限が記載されています。
++
+[NOTE]
+====
+Prisma CloudにオンボードされたAWSアカウントの場合、Prisma Cloudランタイムセキュリティで有効になっているホスト、サーバーレス機能、コンテナ機能を使用しない場合は、これらのロールに関連付けられている権限は必要ありません。
+
+* *PrismaCloud-ReadOnly-Policy-Compute*ロール - 監視モードに使用されるCFTには、Prisma Cloudランタイムセキュリティ用にオンボードされたリソースの監視を有効にするために、この新しいロールに関連付けられた追加の権限が含まれています。
+* *PrismaCloud-Remediation-Policy-Compute*ロール - 監視&保護モードに使用されるCFTには、この新しいロールに関連付けられた追加の権限が含まれており、Prisma Cloud ランタイムセキュリティ用にオンボードされたリソースの監視および修復に対する読み取り/書き込みアクセスを有効にします。
+====
++
+* テキストエディタを使って、適切なテンプレートを開きます。
+
+* 必要なポリシーを検索して、それをクリップボードにコピーします。
++
+片方または両方の権限の詳細をコピーします。有効な構文になるように、以下のように左ブラケットと右ブラケットを使用していることを確認します。
++
+image::connect/add-aws-manual-policy-1.png[]
++
+image::connect/add-aws-manual-policy-2.png[]
+
+. Prisma Cloudロールの権限を定義するポリシーを作成します。
++
+読み取り専用ロールと読み取り/書き込みロールの両方に、AWS管理ポリシー*SecurityAudit Policy*が必要になります。また、読み取り専用ロールの*PrismaCloud-IAM-ReadOnly-Policy*に対して細かな権限設定を有効にする、または読み取り/書き込みロールに対して*PrismaCloud-IAM-ReadOnly-Policy*および*PrismaCloud-IAM-Remediation-Policy*用の限定された権限を追加する必要があります。
++
+.. AWS管理コンソールで、*IAM*を選択します。
+
+.. 左側のナビゲーションパネルで、*Access Management（アクセス管理）> Policies（ポリシー）> Create policy（ポリシーの作成）*を順に選択します。
+
+.. *JSON*タブを選択します。
++
+テンプレートからコピーしたJSONポリシーを、ステートメントの角括弧内に貼り付けます。
++
+image::connect/add-aws-manual-policy-3.png[]
++
+image::connect/add-aws-manual-policy-4.png[]
++
+[NOTE]
+====
+読み取り専用、および読み取り/書き込み権限を有効にする場合、同じActionステートメント内に読み取り/書き込み権限を忘れずに追加してください。
+
+image::connect/add-aws-manual-policy-5.png[]
+====
+
+.. ポリシーを確認の上、作成します。
+
+. 前に作成したロールを編集し、ポリシーをロールにアタッチします。
++
+image::connect/add-aws-manual-policy-roles.png[]
+
+. tt:[CloudWatchロググループにアクセスするために同じロールを使用する場合にのみ必要] CloudWatchロググループへのアクセスを許可するように信頼ポリシーを更新します。
++
+*Trust Relationships（信頼関係）*を編集して、以下の権限を追加します。これにより、フローログサービスがロールを担い、CloudWatchロググループにログを公開するための信頼関係がロールにあることを確認することができます。
++
+[userinput]
+----
+{
+      "効果":"許可",
+      "プリンシパル": {
+        "サービス": "vpc-flow-logs.amazonaws.com"
+      },
+      "アクション": "sts:AssumeRole"
+}
+----
+
+. *Role ARN（ロールARN）*をコピーします。
++
+image::connect/add-aws-manual-policy-role-arn.png[]
+
+. xref:onboard-aws-account.adoc[AWS アカウントのオンボーディング]のアカウントオンボーディングフローを再開します
+
+
+//[.task]
+//=== Links to Legacy CFTs
+//[NOTE]
+//====
+//If you have onboarded your AWS accounts on Prisma Cloud after December 8, 2022, you cannot download the static CloudFormation templates (CFTs) based on the list below. You must download the template from the Prisma Cloud console. 
+//For backward compatibility, Prisma Cloud provides these static CFTs until further notice. 
+//====
+//[.procedure]
+//. View the legacy templates.
+//+
+//include::../../fragments/idece1e97f-31e4-4862-bc93-da79383b0392__id5b4dc25b-4887-4032-a5a4-183158c74351.adoc[]

@@ -1,0 +1,935 @@
+[#id7077a2cd-ecf9-4e1e-8d08-e012d7c48041]
+== RQL演算子
+
+結果を変更するための、リソースクエリ言語（RQL）でサポートされている演算子のリスト。
+
+RQL内の演算子は、左側のフィールドの値と右側にある1つまたは複数の値を比較するための、1つ以上の記号または単語です。有効な結果のみが取得、表示されます。RQL演算子を使って、JSON構造内のオブジェクトまたは配列に値として含まれている特定の用語を検索することができます。
+
+結果を比較または検証するために使用できる演算子や条件を次に示します。
+
+* xref:#id26f56de7-623a-4850-808e-80c4476166d5[JSON配列内の演算子]
+* xref:#idd0bd13f8-7505-4290-ad05-163362024aec[設定およびイベント演算子]
+* xref:#id864e6358-0dae-48f6-bf3e-16d88f85a41b[結合]
+* xref:#idf1090750-00ce-4a0e-adb1-609033551ce5[関数]
+
+
+[#id26f56de7-623a-4850-808e-80c4476166d5]
+=== JSON配列内の演算子
+
+[cols="33%a,33%a,34%a"]
+|===
+|演算子
+|説明
+|RQLの例
+
+
+|?[any]
+|?anyは、配列をフィルタリングするために使用される式です。
+
+これは、配列要素の*いずれか*1つが条件を満たしたときに結果を返す条件を指定するために使用されます。
+|----
+config from cloud.resource where api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any(access equals Allow and direction equals Inbound and sourceAddressPrefix equals Internet and (protocol equals Udp or protocol equals *) and destinationPortRange contains _Port.inRange(137,137) )] exists
+----
+
+
+|?none
+|?noneは、配列のフィルタリングに使用される式です。
+
+これは、配列要素の*いずれも*満たされない場合に結果を返す条件を指定するために使用されます。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[?none(toPort is member of (10,220,250))] exists
+----
+
+
+|?all
+|?allは、配列をフィルタリングするために使用される式です。
+
+これは、*すべての*配列要素が条件を満たしたときに結果を返す条件を指定するために使用されます。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-network-acls' AND json.rule = entries[?all(egress is true and ruleAction contains deny)] exists
+----
+
+
+|@および?
+|@と?は、配列のフィルタリングに用いられる式です。
+
+* ?は配列を開きます。
+* @は現在処理中の項目を表しています。JSONオブジェクト内の特定のブロックに絞り込んで、そのブロックのみを照合する場合に使用します（他のブロックは対象外）。
+|----
+config from cloud.resource where api.name='aws-ec2-describe-security-groups' AND json.rule='ipPermissions[?(@.fromPort==0)].ipRanges[*] contains 0.0.0.0/0'
+----
+
+
+|`&&`と`\|\|`
+|`&&`と`\|\|`で、json.rule内の条件を組み合わせます。
+|----
+config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' and json.rule = "policy.Statement exists and policy.Statement[?(@.Action=='s3:GetObject' && @.Effect=='Allow' || @.Action=='s3:ListBucket' &&  @.Effect=='Allow')].Principal contains *"
+----
+
+|===
+
+
+[#idd0bd13f8-7505-4290-ad05-163362024aec]
+=== 設定およびイベント演算子
+
+[cols="33%a,33%a,34%a"]
+|===
+|演算子
+|説明
+|RQLの例
+
+
+|greater than
+|左側のパスを右側にある数値または別のパスと比較します。
+|----
+config from cloud.resource where api.name = 'aws-iam-get-account-password-policy' AND json.rule =  maxPasswordAge greater than 20
+----
+
+
+|less than
+|左側のパスを右側にある数値または別のパスと比較します。
+|----
+config from cloud.resource where api.name = 'aws-iam-get-account-password-policy' AND json.rule =  maxPasswordAge less than 100
+----
+
+
+|equals
+|左側のパスを右側にある数値または別のパスと比較します。
+|----
+config from cloud.resource where api.name = 'aws-iam-get-account-password-policy' AND json.rule =  maxPasswordAge equals 90
+----
+
+
+|does not equal
+|左側のパスを右側にある数値または別のパスと比較します。
+|----
+config from cloud.resource where api.name = 'aws-iam-get-account-password-policy' AND json.rule = maxPasswordAge does not equal 90
+----
+
+
+|equal ignore case
+|左側のパスを右側にある文字列、数値または別のパスと比較します。
+
+*equal ignore case*演算子は、*equals*とまったく同じように機能しますが、文字列の一致で大文字と小文字の区別を無視する点が異なります。
+|----
+config from cloud.resource where cloud.account = 'AWS_prod' AND api.name = 'aws-ec2-describe-security-groups' AND json.rule = groupName equal ignore case RQL-auto-SG1
+----
+
+
+|does not equal ignore case
+|左側のパスを右側にある文字列、数値または別のパスと比較します。
+|
+
+
+|starts with
+|左側は文字列値を持つパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-iam-list-users' and json.rule = userName starts with y
+----
+
+
+|does not start with
+|左側は文字列値を持つパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-iam-list-users' and json.rule = userName does not start with y
+----
+
+
+|ends with
+|左側は文字列値を持つパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-iam-list-users' and json.rule = userName ends with i
+----
+
+
+|does not end with
+|左側は文字列値を持つパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-iam-list-users' and json.rule = userName does not end with i
+----
+
+
+|contains
+|左側は、数値または文字列値を持つ単一または複数のパスです。
+|----
+config from cloud.resource where api.name = 'azure-network-nsg-list' AND json.rule = defaultSecurityRules[*].direction contains outbound
+----
+
+
+|does not contain
+|左側は、数値または文字列値を持つ単一または複数のパスです。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-vm-list' AND json.rule = powerState does not contain allocated
+----
+
+
+|is empty
+|左側は文字列値につながるパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' and json.rule = publicIpAddress is empty
+----
+
+
+|is not empty
+|左側は文字列値につながるパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' and json.rule = publicIpAddress is not empty
+----
+
+
+|exists
+|左側はパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-network-interfaces' AND json.rule = 'association.publicIp exists'
+----
+
+
+|does not exist
+|左側はパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Compute Engine' and api.name = 'gcloud-compute-instances-list' AND json.rule = metadata.kind does not exist
+----
+
+
+|any start with
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId any start with vpc-3
+----
+
+
+|none start with
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId none start with vpc-323cda
+----
+
+
+|all start with
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId all start with vpc-323cda
+----
+
+
+|any end with
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId any end with 49
+----
+
+
+|none end with
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId none end with 49
+----
+
+
+|all end with
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId all end with 49
+----
+
+
+|any equal
+|左側は文字列値または数値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId any equal vpc-323cda49
+----
+
+
+|none equal
+|左側は文字列値または数値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId none equal vpc-323cda49
+----
+
+
+|all equal
+|左側は文字列値または数値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId all equal vpc-323cda49
+----
+
+
+|any empty
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId any empty
+----
+
+
+|none empty
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId none empty
+----
+
+
+|all empty
+|左側は文字列値につながる一連のパスでなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = networkInterfaces[*].vpcId all empty
+----
+
+
+|IN (
+|左側は文字列でなければなりません。
+|----
+event from cloud.audit_logs where crud IN ( 'create' , 'update' ) AND has.anomaly
+----
+
+
+|NOT IN (
+|左側は文字列でなければなりません。
+|----
+config from cloud.resource where finding.severity NOT IN ( 'low', 'informational', 'medium' ) AND cloud.account IN ( 'account_name' )
+----
+
+
+|size equals
+|左側は1つの配列でなければなりません。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = tags[*] size equals 0
+----
+
+
+|size does not equal
+|左側は1つの配列でなければなりません。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = tags[*] size does not equal 0
+----
+
+
+|size greater than
+|左側は1つの配列でなければなりません。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = tags[*] size greater than 1
+----
+
+
+|size less than
+|左側は1つの配列でなければなりません。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = tags[*] size less than 1
+----
+
+
+|length equals
+|左側は文字列値を持つパスです。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-rds-describe-db-snapshots' AND json.rule = snapshot.storageType length equals 3
+----
+
+
+|length does not equal
+|左側は文字列値を持つパスです。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-rds-describe-db-snapshots' AND json.rule = snapshot.storageType length does not equal 3
+----
+
+
+|length greater than
+|左側は文字列値を持つパスです。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-rds-describe-db-snapshots' AND json.rule = snapshot.storageType length greater than 3
+----
+
+
+|length less than
+|左側は文字列値を持つパスです。
+
+右側は整数でなければなりません。
+|----
+config from cloud.resource where api.name = 'aws-rds-describe-db-snapshots' and json.rule = snapshot.storageType length less than 4
+----
+
+
+|number of words equals
+|左側は文字列値を持つパスです。
+|----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Compute Engine' and api.name = 'gcloud-compute-instances-list' AND json.rule = cpuPlatform number of words equals 3
+----
+
+
+|number of words does not equal
+|左側は文字列値を持つパスです。
+|----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Compute Engine' and api.name = 'gcloud-compute-instances-list' AND json.rule = cpuPlatform number of words does not equal 3
+----
+
+
+|number of words greater than
+|左側は文字列値を持つパスです。
+|----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Compute Engine' and api.name = 'gcloud-compute-instances-list' AND json.rule = cpuPlatform number of words greater than 2
+----
+
+
+|number of words less than
+|左側は文字列値を持つパスです。
+|----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Compute Engine' and api.name = 'gcloud-compute-instances-list' AND json.rule = cpuPlatform number of words less than 3
+----
+
+
+|any true
+|左側は論理値を持つ一連のパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nic-list' AND json.rule = " ['properties.ipConfigurations'][*].['properties.primary'] any true "
+----
+
+
+|none true
+|左側は論理値を持つ一連のパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nic-list' AND json.rule = " ['properties.ipConfigurations'][*].['properties.primary'] none true"
+----
+
+
+|all true
+|左側は論理値を持つ一連のパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nic-list' AND json.rule = " ['properties.ipConfigurations'][*].['properties.primary'] all true
+----
+
+
+|any false
+|左側は論理値を持つ一連のパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nic-list' AND json.rule = " ['properties.ipConfigurations'][*].['properties.primary'] any false"
+----
+
+
+|none false
+|左側は論理値を持つ一連のパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nic-list' AND json.rule = " ['properties.ipConfigurations'][*].['properties.primary'] none false"
+----
+
+
+|all false
+|左側は論理値を持つ一連のパスでなければなりません。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nic-list' AND json.rule = " ['properties.ipConfigurations'][*].['properties.primary'] all false"
+----
+
+
+|is true
+|左側はブール値を持つパスです。
+|----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = encryptionStatuses.Blob is true
+----
+
+
+|is false
+|左側はブール値を持つパスです。
+|----
+config from cloud.resource where api.name = 'azure-storage-account-list' AND json.rule = encryptionStatuses.Blob is false
+----
+
+
+|is not member of
+|左側は文字列値を持つパス、右側は括弧で囲んでカンマで区切った一連の値です。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].toPort exists and ipPermissions[*].fromPort is not member of (22)
+----
+
+
+|is member of
+|左側は文字列値を持つパス、右側は括弧で囲んでカンマで区切った一連の値です。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].toPort exists and ipPermissions[*].toPort is member of (3389,22,5432)
+----
+
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].ipProtocol exists and  ipPermissions[*].ipProtocol is member of (tcp)
+----
+
+
+|matches
+
+does not match
+|イベントクエリの場合、ブール演算子`matches`および`does not Match`を使って、完全な正規表現ではない単純なパターンに一致する、それを除外するフィールド値を探します。
+
+パターンにサブ文字列を使用、またはワイルドカード`*`を使用できます。
+
+`matches`または`does not match`演算子を`contains/does not contain`または`exists/does not exist`演算子の代わりに使用してください。
+|次の例では、値「c*login」では、`clogin`、`cloudlogin`、または`consolelogin`と一致するアクティビティを一覧表示できます。
+
+----
+event from cloud.audit_logs where cloud.type = 'aws' AND cloud.account = 'RedLock Sandbox' AND operation matches 'c*login'
+----
+
+
+|intersects
+
+does not intersect
+|2つのリストの間に共通の要素があるかどうかを確認します。
+
+左右どちらも、文字列または配列を含むパス、文字列またはIPアドレス/ CIDRブロック、括弧で囲まれ、コンマで区切られた値のセット、または`_Port.inRange()`のような関数です。
+|次の例は、*does not intersect*演算子を使用した`_IPAddress.inRange`関数を示しています。
+
+----
+config from cloud.resource where api.name = 'azure-sql-server-list' AND json.rule = firewallRules size > 0 and ((firewallRules[*].endIpAddress does not intersect _IPAddress.inRange("190.100.0.%d",100,130) and firewallRules[*].endIpAddress does not intersect (52.31.43.92, 56.75.42.16, 96.15.20.13))
+----
+
+
+|like
+|ワイルドカード文字（*）を使用して、クラウドサービスプロバイダーのアカウントレベルでアクセス権限が与えられているかどうかを確認します。たとえば、すべてのアカウントのすべてのEC2インスタンスを削除するために与えられたワイルドカードアクセス権限を確認できます。
+
+左側は文字列値のパスで、右側はクラウドアカウントの名前です。
+
+
+[NOTE]
+====
+`like`演算子をサポートしているのは現在、`iam`クエリのみです。xref:iam-query/iam-query-attributes.adoc#idd31fd7aa-bbe1-4353-b872-d89d688dfc45[IAMクエリ属性]を参照してください。
+====
+
+|----
+config from iam where dest.cloud.account LIKE 'account-dev-3'
+----
+
+|===
+
+
+[#id864e6358-0dae-48f6-bf3e-16d88f85a41b]
+=== 結合
+
+結合を利用して、異なる条件を組み合わせた2つの異なるAPI からデータを取得できます。Joinsは、`config from cloud.resource where`クエリでのみ使用できます。エイリアスがX、Y、およびZの、最高3つまでの設定リソースAPIを使用でき、必要に応じてjson.ruleを使用してAPIリソースエイリアス内を照合することができます。json.ruleを使用する場合、event、network、およびconfig間の結合はサポートされません。
+
+`?any`数量詞を使用するネストされたルールで、配列の要素に書き込む条件が制限されます。ネストされたルールを使用するRQLポリシーでは、ネストされたルール内の外部JSONパスを参照する条件を追加できます。これは、結合演算子をJSON標本の2つの異なるパス間で使用する場合に便利です。その場合、ネストされたルールで数量詞の範囲外の値をチェックする必要があります。さらに、JSON標本の2つの異なるパス間で結合演算子を使用する場合、ネストされたルールで数量詞の範囲外の値をチェックする必要があります。
+
+[NOTE]
+====
+エイリアスのjson.rule内ではリソース固有の条件を使用します。また、演算子==、!=、contains、does not contains、not（否定）を使った比較の場合にのみフィルタオプションを使用してください。
+====
+
+*基本的な結合構文：*
+
+----
+config from cloud.resource where api.name = 'a' and json.rule = 'r' as X; config from cloud.resource where api.name ='b' and json.rule ='r2' as Y; show (X;|Y;)
+----
+
+----
+config from cloud.resource where api.name=".." as X; config from cloud.resource where api.name="..." as Y; filter "$.X... <operator> $.Y"; show (X;|Y;)
+----
+
+起動時にパブリックIPアドレスが割り当てられたEC2インスタンスを使用するには、このクエリを使用します。
+
+ステップ：
+
+. パブリックIPアドレスを持つEC2インスタンスをXとして表示します:
++
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' and json.rule = publicIpAddress exists and publicIpAddress is not empty as X;
+----
+
+. 任意の送信元から制限の無いアクセスを許可するセキュリティグループを持つインスタンスをYとして表示します。
++
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' and json.rule = ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 or ipPermissions[*].ipv6Ranges[*].cidrIpv6 contains ::/0 as Y;
+----
+
+. フィルタを設定します。
++
+----
+filter '($.X.securityGroups[*].groupName==$.Y.groupName)'; show X;
+----
+
+. パブリックIPアドレスを持ち、送信元IPの制限なくアクセス可能なすべてのEC2インスタンスを表示するクエリを完成します:
++
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-subnets' as Y; filter '$.X.subnetId == $.Y.subnetId and $.Y.mapPublicIpOnLaunch is true'; show X;
+----
+
+*結合の例：*
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQLの例
+
+
+|インターネットゲートウェイに接続しているVPC。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-internet-gateways' as X; config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as Y; filter '$.X.attachments[*].vpcId == $.Y.vpcId and $.Y.tags[*].key contains IsConnected and $.Y.tags[*].value contains true'; show Y;
+----
+
+
+|すべての地域に対してCloudWatchに統合されているCloudTrailログ。
+|----
+config from cloud.resource where api.name = 'aws-cloudtrail-describe-trails' as X; config from cloud.resource where api.name = 'aws-cloudtrail-get-trail-status' as Y; filter '$.X.cloudWatchLogsLogGroupArn != null and ($.Y.status.latestCloudWatchLogsDeliveryTime != null and _DateTime.ageInDays($.Y.status.latestCloudWatchLogsDeliveryTime) > 1) and ($.X.rrn == $.Y.rrn)'; show X;
+----
+
+
+|RedlockReadOnly IAMロールでアクセスできる、すべてのAWS Lambda関数を表示します。
+|----
+config from cloud.resource where api.name = 'aws-lambda-list-functions' AND json.rule = handler contains "lambda" as X;config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.roleName contains "RedlockReadOnlyRole" as Y;filter '($.X.role.rolename equals $.Y.role.rolename)' ; show X;
+----
+
+
+|指定した名前、スナップショットID、およびイメージIDを持つ、すべてのEC2インスタンスを検索します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = tags[*].key contains "Name"  as X; config from cloud.resource where api.name = 'aws-ec2-describe-snapshots' AND json.rule = snapshot.snapshotId contains "snap-004b0221589e516d7" as Y; config from cloud.resource where api.name = 'aws-ec2-describe-images' AND json.rule = image.imageId contains "ami-03698559b1d406e89" as Z; show X
+----
+
+
+|監査ログの保持期間が90日未満の、Azure SQLデータベースを検索します。
+|----
+config from cloud.resource where api.name = 'azure-sql-db-list' as X; config from cloud.resource where api.name = 'azure-sql-server-list' AND json.rule = (serverBlobAuditingPolicy does not exist or serverBlobAuditingPolicy is empty or serverBlobAuditingPolicy.properties.retentionDays does not exist or (serverBlobAuditingPolicy.properties.state equals Enabled and serverBlobAuditingPolicy.properties.retentionDays does not equal 0 and serverBlobAuditingPolicy.properties.retentionDays less than 90)) as Y; filter '$.X.blobAuditPolicy.id contains $.Y.sqlServer.name'; show X;
+----
+
+
+|バケットACLの所有者IDと被付与者IDが一致せず、表示名にawslogsdeliveryが含まれていない箇所を見つけます
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = acl.grants[?any( grantee.displayName exists and grantee.displayName does not contain awslogsdelivery and grantee.identifier does not contain $.acl.owner.id)] exists
+----
+
+|===
+
+//RLP-116449
+//summary: recommend adding a cloud account for multi-join RQLs in order to emulate config scanner functionality.
+
+==== クロスアカウントへの結合
+
+Prisma Cloud *調査*は、クラウドアカウントに固有のRQLクエリを実行する際に*ポリシー*とは異なる動作をします。口座間の比較は[調査]ページから簡単に行えますが、[ポリシー]ページからはできません。クロスアカウントへの結合の場合、*アラート*数と調査ページの結果を関連付けようとするときは注意が必要です。
+
+調査からのクエリの実行中に_cloud.account_パラメータを指定しないと、結合のためにすべてのクラウドアカウントが開かれます。また、1つのクエリ内の1つのAPIからのリソースは、アカウントに関係なく別のAPIとマッチする可能性があるため、不正確な結果を得ることができます。ポリシー（アラートを生成）との一貫性を実現し、正確な結果を得るために、Prisma Cloudではクエリに_cloud.account_パラメータを追加することを推奨しています。ただし、結合RQLについては毎回_クラウドアカウント_条件を適用する必要はありません。通常、「調査」の結果は「アラート」の結果と一致する。
+
+以下に例を示します。
+
+* RQLの最初の部分のみに対応するリソースがあり、2番目の部分に対応するリソースがない場合、調査検索は最初の部分からの結果のみを表示します。これらは通常、誤検出です。Prisma Cloudはこれらのインスタンスに対してアラートを生成しません。
+
+* 特定のAPIに関連付けられた同じ名前のリソースが複数のクラウドアカウントにまたがって存在する場合、 も誤検出を生成する可能性があります。
+
+NOTE: Prisma Cloudでは、検証対象のクラウドアカウントを指定し、矛盾の検証を支援することをお勧めします。
+
+[#idf1090750-00ce-4a0e-adb1-609033551ce5]
+=== 関数
+
+関数は、それに含まれている句に一致する特定のデータに対して計算を行い、その結果を表示します。関数では、json.rule属性またはaddcolumn属性でプレフィックス`_`を入力する際、自動入力機能をサポートしています。
+
+Prisma Cloudは、次の関数をサポートしています。
+
+* xref:#id12237fdb-8312-4339-9c07-a86721f130c6[_DateTimeの例]
+* xref:#idbafe637e-96e0-42b3-a227-a51d6045fc72[_AWSCloudAccount.isRedLockMonitoredの例]
+* xref:#idef51bf6d-59e2-420d-9dd0-21b23191c227[_IPAddress.inRangeの例]
+* xref:#idb115efe2-c78f-450c-bae9-617de5668536[_Port.inRangeの例]
+* xref:#id71d92562-6649-4057-9fdf-3ffbf4804353[_IPAddress.inCIDRRangeの例]
+* xref:#id584a8722-44f3-422e-9374-2991b62fe2d8[_IPAddress.areAnyOutsideCIDRRange()の例]
+* xref:#ide11cc0b6-ecfd-49eb-ae44-63b626661f14[_Setの例]
+
+
+[#id12237fdb-8312-4339-9c07-a86721f130c6]
+==== _DateTimeの例
+
+クエリ期間はRQL文法の一部ではありません。クエリ期間は個別の引数としてクエリAPIに渡されます。カテゴリの属性または列の選択は、RQL文法の一部ではありません。関数は、タイムスタンプを以下のフォーマットでのみ受け付けます。
+
+Zulu:"2011-08-13T20:17:46.384Z"
+
+GSON/AWS:"Nov 7, 2016 9:34:21 AM"
+
+ISO:"2011-12-04T10:15:30+01:00"
+
+利用できるクエリ時間範囲は、` _DateTime.ageInDays`、`_DateTime.ageInMonths`、`_DateTime.ageInYears`、および`_DateTime.daysBetween`です。`_DateTime.daysBetween`関数は、2つの日付間に当てはまる情報を検索し、2つの日付を引数として使用します。
+
+たとえば、`_DateTime.ageInDays`を使用すると、日付までの日数が負の数字として返されます。
+
+[NOTE]
+====
+_DateTime関数を使用する場合、すべてのjsonパラメータが自動入力オプションとして表示されます。タイムスタンプを持つパラメータのみを選択する必要があります。また、関数の構文上スペースを入れることはできません。括弧の前後にあるスペースや、カンマ区切りパラメータ間のスペースは削除してください。
+====
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQLの例
+
+
+|期間が2日を超えるEC2インスタンスを表示します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = '_DateTime.ageInDays(launchTime) > 2'
+----
+
+
+|アクセス鍵のローテーションがが90日間行われていないリソース名を表示します。
+|----
+config from cloud.resource where api.name = 'aws-iam-get-credential-report' AND json.rule = '(access_key_1_active is true and access_key_1_last_rotated != N/A and _DateTime.ageInDays(access_key_1_last_rotated) > 90) or (access_key_2_active is true and access_key_2_last_rotated != N/A and _DateTime.ageInDays(access_key_2_last_rotated) > 90)'
+----
+
+
+|現在の日付を返すには、関数today()を使用します。
+|----
+config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-cloudtrail-get-trail-status' AND json.rule ="_DateTime.daysBetween($.latestDeliveryTime,today()) ! = 2"
+----
+
+|===
+
+
+[#idbafe637e-96e0-42b3-a227-a51d6045fc72]
+==== _AWSCloudAccount.isRedLockMonitoredの例
+
+この関数を使って、Prisma Cloudで監視されている、または監視されていないAWSアカウントを識別する場合、次のいずれかのフォーマットでAWSアカウントIDを指定することができます。
+
+* 標準のAWS 12桁アカウント番号。
++
+以下に例を示します。123456789012
+
+* カノニカルユーザーID。Amazon S3を使ってバケットとオブジェクトへのクロスアカウントアクセスを許可する場合、このIDを使ってAWSアカウントを識別することができます。
++
+例、英数字識別子:79a59df900b949e55d96a1e698fbacedfd6e09d98eacf8f8d5218e7cd47ef2be
+
+* 3.ARNフォーマットのAWSアカウントID。
++
+例: arn:aws:iam::123456789012:role/test-1240-47
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQLの例
+
+
+|パブリックに共有されており、Prisma Cloudが監視していないスナップショットを表示します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-snapshots' AND json.rule = 'createVolumePermissions[*] size != 0 and _AWSCloudAccount.isRedLockMonitored(createVolumePermissions[*].userId) is false'
+----
+
+|===
+
+
+
+[#idef51bf6d-59e2-420d-9dd0-21b23191c227]
+==== _IPAddress.inRangeの例
+
+特定のIPアドレスが1つのIPアドレス範囲の一部であるかどうかを確認するには、`_IPAddress.inRange`を使用して、引数内にオクテットと`<fromInteger>`、`<toInteger>`を指定します。たとえば、("172.%d.",16,31)または(”172.10.%d.”,10,255)のように指定します。
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQLの例
+
+
+|プライベートレコードを持つAWS Route53パブリックゾーンを表示します。
+|この例で、IPAddress.inRange("172.%d.",16,31) により、範囲が172.16.x.x～172.31.x.xのIPアドレスを検索することができます。
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-route53-list-hosted-zones' AND json.rule = resourceRecordSet[*].resourceRecords[*].value any start with _IPAddress.inRange("172.%d.",16,31)
+----
+
+|===
+
+
+[#idb115efe2-c78f-450c-bae9-617de5668536]
+==== _Port.inRangeの例
+
+特定のポート番号が1つの指定範囲の一部であるかどうかを確認するには、クラス`Port`とメソッド`inRange`を使用します。このメソッドでは`<fromInteger>`と`<toInteger>`、そして必要に応じて`<offset>`の、3つの引数を使用できます。
+
+[NOTE]
+====
+デフォルトで、<offset>は1になります。
+====
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQLの例
+
+
+|あるポート範囲の状況を確認するには、`inRange`関数と`contains`および`does not contain`演算子を使用します。
+
+指定範囲内のえべてのポートを検索するには、`<fromInteger>`および`<toInteger>`を指定します。
+|`contains`を使って22～33の範囲でオフセット1のポート番号をチェックする例を次に示しします：
+
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].toPort exists and ipPermissions[*].toPort contains _Port.inRange(22,33,1)
+----
+
+上記の例では、22～33の範囲のすべてのポートがチェックされます。
+
+
+|
+|`Does not Contain`の使用例：
+
+----
+config from cloud.resource where api.name = 'azure-network-nsg-list' AND json.rule = securityRules[*].sourcePortRanges[*] does not contain _Port.inRange(350,5400,5)
+----
+
+上記の例は、ポート350、355、360、.....5390、5395、5600をチェックします。
+
+
+|
+|オフセットなしで、指定範囲内のすべてのポートを検索する例：
+
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].toPort exists and ipPermissions[*].toPort contains _Port.inRange(400,500)
+----
+
+|===
+
+
+[#id71d92562-6649-4057-9fdf-3ffbf4804353]
+==== _IPAddress.inCIDRRangeの例
+
+特定のIPv4またはIPv6アドレス、またはサブネットが、特定のCIDRブロックまたはスーパーネットワークの一部であるかどうかを確認するには、`_IPAddress.inCIDRRange`関数を使用します。この関数は2つの引数を受け取ります。最初の引数はJSONペイロードから取得されたCIDRアドレスまたはCIDRアドレスの配列で、それが`ipv4Ranges`なのか、または`ipv6Ranges`なのかを指定する必要があります。2番目の引数はCIDRブロック（IPv4またはIPv6）`cidrIp`または`cidripv6`で、それに続けて照合するIPアドレスを指定します。指定したCIDR範囲に該当するJSONペイロードのIPアドレスを含むリソースが、結果として返されます（これはtrueの場合で、falseの場合は一致しないリソース）。
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQLの例
+
+
+|照合する複数のCIDRブロックを定義します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = '_IPAddress.inCIDRRange($.ipPermissions[*].ipv4Ranges[*].cidrIp,10.0.0.0/8) is false and _IPAddress.inCIDRRange($.ipPermissions[*].ipv4Ranges[*].cidrIp,172.31.0.0/12) is false and _IPAddress.inCIDRRange($.ipPermissions[*].ipv4Ranges[*].cidrIp,192.168.0.0/16) is true'
+----
+
+
+|CIDRブロック内のIPv6アドレスを検索します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = '_IPAddress.inCIDRRange($.ipPermissions[*].ipv6Ranges[*].cidrIpv6,2600:1f18:226b:62fa:ffff:ffff:ffff:ffff/24) is true'
+----
+
+
+|JSONメタデータ内のすべてのCIDRを検索する、複数の一致条件を指定します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = 'ipPermissions[*].ipv4Ranges[*].cidrIp does not contain "0.0.0.0/0" and ipPermissions[*].ipv4Ranges[*].cidrIp size does not equal 0 and _IPAddress.inCIDRRange(ipPermissions[*].ipv4Ranges[*].cidrIp,192.168.0.0/16) is true'
+----
+
+|===
+
+
+[#id0de207fb-bfe9-4382-9618-f599e7003bd7]
+==== _IPAddress.areAllInCIDRRange（）の例
+
+`_IPAddress.areAllInCIDRRange(Resource, CIDR)`関数は、リソースに割り当てられたすべてのIPアドレスが指定されたCIDRブロック内にあるかどうかを確認します。関数を実行した結果はブール値になります。たとえば、「データベースのすべてのIPアドレスが10.0.0.0./24 IPの範囲内にあるか」という質問の答えは「はい」または「いいえ」になります。この関数には、`Resource`と`CIDR`の2つの引数を指定できます。
+
+`リソース`は、IPアドレスを含む設定ファイル内のメタデータを記述し、`CIDR`は、定義したCIDRブロックの値を表します。
+
+[cols="50%a,50%a"]
+|===
+|説明
+|例
+
+
+|10.0.0.0/8の範囲内のCIDRアドレスを含むすべてのリソースを検索します。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].ipv4Ranges[*] size greater than 0 and _IPAddress.areAllInCIDRRange($.ipPermissions[*].ipv4Ranges[*].cidrIp,10.0.0.0/8) is true
+----
+
+
+|指定された範囲内にあるすべてのIPアドレスを検索します。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissions[*].ipv6Ranges[*] size greater than 0 and _IPAddress.areAllInCIDRRange($.ipPermissions[*].ipv6Ranges[*].cidrIp,fc00::/7) is true
+----
+
+
+|CIDRブロック内のすべてのIPv6アドレスを検索します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = _IPAddress.areAllInCIDRRange(ipPermissions[*].ipv6Ranges[*].cidrIpv6,2600:1f18:226b:6200::/1) is true
+----
+
+|===
+
+
+[#id584a8722-44f3-422e-9374-2991b62fe2d8]
+==== _IPAddress.areAnyOutsideCIDRRange()の例
+
+`_IPAddress.areAnyOutsideCIDRRange()`関数では、IP/CIDRアドレスが許可されたCIDRブロックの特定のリストの外にあるかどうかを確認する構成RQLクエリを記述できます。この関数では、RFC1918プライベートCIDRブロック外のIPアドレスにリソースが公開されているかどうかを確認できます。
+
+最初の引数は、1つ以上のIP/CIDRアドレスを評価するJSON式です。2番目以降の引数では、テストするIP/CIDRアドレスや範囲を一覧表示します。IPV4とIPV6のアドレス形式を使用できます。ただし、2つの関数の引数が両方ともIPV4にあるか、両方がIPV6のものであることとします。
+
+[cols="75%a,25%a"]
+|===
+|説明
+|例
+
+|有効なIPを無効な範囲と照合して、IPが範囲外であることを示します。アドレスが有効なIPやCIDRでない場合は、一致するとは見なされません。
+|----
+_IPAddress.areAnyOutsideCIDRRange(ipPermissions[*].ipv4Ranges[*].cidrIp,192.0.0.0/24,172.31.0.0/16)
+----
+
+|===
+
+
+
+[#ide11cc0b6-ecfd-49eb-ae44-63b626661f14]
+==== _Setの例
+
+`_Set`関数を利用して、Left Hand Side（左側）およびRight Hand Side（右側）リスト間で、unionまたはintersectionのプロパティを使って値を比較し、その結果セット内に特定の値または値のカンマ区切りリストが含まれているかどうかを判別することができます。サポートされているメソッドは `_Set.intersection`、`_Set.union`、および `Set_isSubset`です。
+サポートされているメソッドは_Set.intersectionおよび`_Set.union`です。また、論理演算子`intersects`および`contains`を使って、結果に目的の値が含まれているかどうか、または結果セットに特定の値が含まれているかどうかを確認することができます。
+
+`Set_isSubset`の場合、リソースの JSON パスによって返される特定の値またはコンマ区切りの値のリストが、ターゲット リスト内に完全に含まれているかどうかを識別できます。
+The syntax is: `Set.isSubset(<path>, <targelist>) is [ true | false `]
+where
+<path> = JSON path
+
+<target_list> = 空白を含まない一連の文字列。たとえば、2 番目の文字列内にスペースがある _Set.isSubset(<path>, (a, "b1 b2",c)) と _Set.isSubset(<path>, (a, b, c)) リスト内の文字列の間にスペースを入れます。
+
+[NOTE]
+====
+リソースデータ セットが巨大な場合は、クエリの最後に`limit search records to`を使用してください。
+====
+
+[cols="31%a,69%a"]
+|===
+|説明
+|例
+
+
+.2+|RHS [as X]のリストを、LHS [as Y]内の他のダイナミックリストの項目と比較して、交点（intersection）をサブセットリストに入れて、それを指定したカンマ区切り形式のスタティックリストと比較します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as Z; filter '_Set.intersection($.X.vpcId,$.Y.vpcId) intersects (vpc-5b9a3c33,vpc-b8ba2dd0,vpc-b8ba2dd01)'; show X;
+----
+
+
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as Z; filter 'not _Set.intersection($.X.vpcId,$.Y.vpcId) intersects (vpc-5b9a3c33,vpc-b8ba2dd0,vpc-b8ba2dd01)'; show X; limit search records to 100
+----
+
+
+|XおよびYのすべてのエレメントを含むように2つのリストを組み合わせて、それを指定したカンマ区切りリストと照合し、一致項目を検索します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as Z; filter '_Set.union($.X.vpcId,$.Y.vpcId) intersects (vpc-5b9a3c33,vpc-b8ba2dd0,vpc-b8ba2dd01)'; show Y; limit search records to 10
+----
+
+
+|結果セットに特定の値が含まれているかどうかを確認します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as Z; filter '_Set.union($.X.vpcId,$.Y.vpcId) contains vpc-b8ba2dd0'; show X;
+----
+
+
+|パブリックIPおよびファイアウォールルールに0.0.0.0/0を持ち、宛先が指定したターゲットタグである、インターネットに暴露されているインスタンスを検出します。
+|----
+config from cloud.resource where api.name = 'gcloud-compute-instances-list' as X; config from cloud.resource where api.name = 'gcloud-compute-firewall-rules-list' as Y; filter '$.X.networkInterfaces[*].network contains $.Y.network and $.X.networkInterfaces[*].accessConfigs[*].natIP size greater than 0 and $.Y.direction contains INGRESS and $.Y.sourceRanges[*] contains 0.0.0.0/0 and $.X.tags.items[*] intersects $.Y.targetTags[*] and $.Y.disabled contains false'; show X;
+----
+
+|指定された IP アドレスのリストが SQS ポリシーステートメントに含まれていないことを確認します
+|----
+config from cloud.resource where cloud.region = 'AWS Ohio' and api.name='aws-sqs-get-queue-attributes' and json.rule = QueueArn contains rql and _Set.isSubset(attributes.Policy.Statement[*].Condition.NotIpAddress.aws:SourceIp[*],(58.307.78.64/28,43.89.2.128/27,3.218.144.244,34.205.176.82,34.228.96.118,14.228.97.64/27)) is false
+----
+
+
+|指定された groupName について、パス ipPermissions[*].ipRanges[*] 内の IP アドレス範囲が文字列のターゲット リストに完全に含まれていることを確認します
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = groupName contains rql and _Set.isSubset(ipPermissions[*].ipRanges[*],(199.167.52.5/32,34.98.203.241/32,192.168.0.0/16,10.0.0.0/24,172.31.0.0/16)) is true
+----
+
+|===

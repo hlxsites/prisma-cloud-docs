@@ -1,0 +1,50 @@
+
+== Basic roles utilized at the organization level
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 21cd1d03-ecc6-4f64-b046-07a8d36d099a
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleOrgBasicRole.py[CKV_GCP_115]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that basic roles are not used at the organizational level within Google Cloud Platform. Basic roles such as Owner, Editor, and Viewer are broad and include a wide range of permissions, so assigning these roles at the organizational level could result in users having access to more resources or actions than they actually need. This is a potential security risk as it violates the principle of least privilege, where users should only have the minimum access necessary to perform their job functions. If these roles are used at the organization level, it could lead to unintentional data exposure or other damaging actions.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'google_organization_iam_member', 'google_organization_iam_binding'
+
+The policy states that you should not use basic roles at the organization level. Basic roles in Google Cloud are Owner, Editor, and Viewer and these roles include a multitude of permissions that cannot be restricted, which might pose a security risk. 
+
+To fix the issue, you should move towards using the pre-defined roles and custom roles in Google Cloud, as they offer finer grained access control. 
+
+[source,go]
+----
+resource "google_project_iam_member" "project" {
+  project = "your-project-id"
+  role    = "roles/editor"
+  member  = "user:jane@example.com"
+}
+----
+
+In the above code, instead of using basic roles such as `roles/owner`, `roles/editor`, or `roles/viewer`, a pre-defined role (`roles/editor`) is being given to the user. The pre-defined roles of Google Cloud IAM are granular and have the necessary permissions to perform a specific job, and nothing more. This follows the principle of least privilege (PoLP) and makes your infrastructure more secure.
+

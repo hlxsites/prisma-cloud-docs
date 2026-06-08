@@ -1,0 +1,149 @@
+[#idad685a69-e161-4474-a9ba-4172d58b7d8e]
+== RQLのFAQ
+RQLの使用時によくある質問を記載しています。
+
+よくある質問とその回答を次に示します。
+
+* *RQL クエリの Y 句と Z 句で使用できる属性は何ですか?*
++
+句とも呼ばれる RQL クエリを構築する場合、Y 句と Z 句では `api.name` および `json.rule` 属性のみを使用できることに注意することが重要です。`クラウド タイプ、クラウド サービス、リソース ステータス、クラウド アカウント、クラウド アカウント グループ、クラウド リージョン、Azure リソース グループ、タグ、検出の重大度/ソース/タイプ`などの他のすべての属性は、X 句でのみ使用できます。以下に例を示します。
+
+----
+config from cloud.resource where api.name = 'aws-lambda-list-functions' as X; config from cloud.resource where api.name = 'aws-iam-list-roles' as Y; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and document.Statement[?any(Effect equals Allow and (Action equals "*" or Action contains :* or Action[*] contains :*) and (Resource equals "*" or Resource[*] anyStartWith "*") and Condition does not exist)] exists as Z; filter '$.X.role equals $.Y.role.arn and $.Y.attachedPolicies[*].policyName equals $.Z.policyName'; show Z;config from cloud.resource where api.name = 'aws-lambda-list-functions' as X; config from cloud.resource where api.name = 'aws-iam-list-roles' as Y; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = isAttached is true and document.Statement[?any(Effect equals Allow and (Action equals "*" or Action contains :* or Action[*] contains :*) and (Resource equals "*" or Resource[*] anyStartWith "*") and Condition does not exist)] exists as Z; filter '$.X.role equals $.Y.role.arn and $.Y.attachedPolicies[*].policyName equals $.Z.policyName'; show Z;]
+----
+
+* *返される Config クエリの結果に列を追加するにはどうすればよいですか?*
++
+`addcolumn` 関数を使用して、*[調査]* ページの画面に表示される構成クエリ結果の列を動的に表示します。
+
+* *期間は文法の一部なのですか？*
++
+クエリの期間は文法の一部ではありません。クエリの期間は、個別の引数としてクエリAPIに渡されます。カテゴリのどの属性や列を返すかの選択は、RQL文法の一部ではありません。
+
+* *クエリ結果の集計はサポートされていますか？*
++
+クエリ結果の集計、制限、書式設定はサポートされていません。
+
+* *クロス結合はサポートされていますか？*
++
+Event、Network、Configにまたがった結合はサポートされてまいせん。Config（設定）クエリにまたがる結合のみがササポートされており、3つまでの結合を含めることができます。
+
+* *関数の使用時に自動入力の提案が表示されないのですが？*
++
+関数パラメータの自動入力提案はサポートされていません。一部の属性に対しても、自動入力提案はサポートされていません。
+
+* *json.rule内で無効な句を、グループ化または分割する正しい方法は？*
++
+json.rule内で無効化されている句をグループ化または分割するには、ド・モルガンの法則を使用します。
++
+たとえば、条件を分割するには、`(not ($.x is true and $.y is true))`ではなく、`(not ($.x is true)) or (not ($.y is true))`を使用します。
++
+同様に、句を分割する場合は、`(not（$.x is true or $.y is true))`ではなく、`(not（$.x is true)) and（not（$.y is true))`を使用します。
+
+* *JSONルールで引用符の使用方法は？*
++
+`json.rule`属性を使用する場合、式内で単一引用符または二重引用符を使用、または引用符を使用せずに、照合条件を指定できます。
++
+たとえば、次のように指定できます。
++
+json.rule = encrypted is true、または
++
+json.rule = ‘encrypted is true’、または
++
+json.rule = "encrypted is true"
++
+引用符で囲んでも囲まなくてもクエリ出力は同じになります。主な違いは、引用符を使わないクエリを作成した場合にのみ、式が検証されることにあります。
++
+関数を使用する、または配列内のデータを照合する場合は、単一引用符または二重引用符を使用する必要があります。配列条件で単一引用符を使用している場合は、式を囲むために二重引用符を使用してください。たとえば、`json.rule = "ipAddress[?(@.x=='a')`.port"]のように指定します。
+
+* *ドット演算子を含むパラメーター/キーのラッピングに関するガイドラインはありますか？*
++
+\`['properties.level'`] など*.*の付いているパラメータでは、JSONデータをルートレベルまで角かっこで囲みます。パラメータの後に続く子属性は、角かっこで囲む必要はありません。
+
+* *イベントRQLでの演算子MATCHESの使用方法は？*
++
+論理演算子`Matches`および`Does not Match`を使って、単純なパターンに一致する、または一致しないフィールド値を探します（そして、正規表現を使用していない）。パターンには、サブ文字列およびワイルドカード`*`を使用することができます。
++
+次の例では、演算子`matches 'c*login'`で、`clogin`、`cloudlogin`、または`consolelogin`に一致するすべてのアクティビティを表示できます：
++
+----
+event from cloud.audit_logs where cloud.type = 'aws' AND cloud.account = 'RedLock Sandbox' AND operation MATCHES 'c*login'
+----
+
+* *設定、ネットワーク、およびイベントクエリにまたがって使用されているコンストラクトは？*
++
+**  `bytes`または`packets`
++
+`bytes`は、伝送継続中のバイトまたはパケット量を集計して、ネットワーク関連情報を検索する場合に使用します。たとえば、パブリックインターネットまたは不審なIPアドレスから来る、IP アドレスが生成したネットワークトラフィックを検索するには：
++
+----
+network from vpc.flow_record where source.publicnetwork IN ( 'Internet IPs' , 'Suspicious IPs' ) and bytes > 0
+----
++
+内部ワークロードからパブリック IP アドレスへの、イーサリアムのマイニングで知られているポート8545、30303のトラフィックを識別するには：
++
+----
+network from vpc.flow_record where dest.port IN (8545,30303) and dest.publicnetwork IN ('Internet IPs' , 'Suspicious IPs' ) and packets> 0
+----
+
+**  `operation`
++
+`operation`は、クラウドアカウント内のリソースに対してユーザーが行った行動です。興味のある操作名を入力すると、自動提案機能が検索基準に一致するオプションを表示します。たとえば、VPC、VPCエンドポイント、およびVPCピア接続などの削除操作をすべて表示するには：
++
+----
+event from cloud.audit_logs where operation in ( 'DeleteVpc' , 'DeleteVpcEndpoints' 'DeleteVpcPeeringConnection' )
+----
+
+**  `protocol`
++
+プロトコルに基づいてネットワークトラフィックを検索できます。たとえば、TCPプロトコルを使用しており、宛先ポートが21のパブリックIPアドレスからのネットワークトラフィックを検索するには：
++
+----
+network from vpc.flow_record where source.ip=0.0.0.0 AND protocol='TCP' AND dest.port IN (21)
+----
+
+**  `role`
++
+`role`は、リソースのロールでネットワークトラフィックをフィルタリングする場合に使用します。
++
+たとえば、宛先リソースのロールがAWS NAT GatewayおよびAWS ELBではない、特定のクラウドアカウントの任意のパブリックIPアドレスからの、すべてのネットワークトラフィックを表示するには：
++
+----
+network from vpc.flow_record where cloud.account = 'Redlock' AND source.ip = 0.0.0.0 AND dest.resource IN ( resource where role NOT IN ( 'AWS NAT Gateway' , 'AWS ELB' ))
+----
++
+リソースロールAWS RDSおよびDatabaseにアクセスしている、不審なIPおよびインターネットIPSからのトラフィックを表示するには：
++
+----
+network from vpc.flow_record where source.publicnetwork IN ( 'Suspicious IPs' , 'Internet IPs' ) and dest.resource IN ( resource where role IN ( 'AWS RDS' , 'Database' ))
+----
+
+**  `tag`
++
+`tag`は、特定のタグを持つネットワークトラフィックのフィルタリングに使用します。たとえば、ネットワークトラフィックでNISPのタグが設定されているすべてのリソースを検索するには：
++
+----
+network from vpc.flow_record where dest.resource IN ( resource where tag ('name') = 'NISP')
+----
+
+**  `ユーザー`
++
+特定のユーザーが実行した操作を検索するには、`user`を使用します。たとえば、Benが行ったすべてのコンソールログイン操作を表示するには：
++
+----
+event from cloud.audit_logs where operation = 'ConsoleLogin' AND user = 'ben'
+----
+
+**  `addcolumn`
++
+`addcolumn`は、画面に表示された設定クエリ結果の列を動的に表示する場合に使用します。
++
+たとえば、EC2インスタンスのキー名とイメージIDに対する列を追加するには：
++
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' addcolumn keyName hypervisor imageId
+----
+
+
+
+

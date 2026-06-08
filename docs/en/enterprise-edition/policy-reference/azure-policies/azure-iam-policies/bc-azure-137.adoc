@@ -1,0 +1,47 @@
+== Azure ACR admin account is enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| bd5b9e38-6dbb-4a53-995f-999bbad09932
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/ACRAdminAccountDisabled.py[CKV_AZURE_137]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks to ensure that the admin account for Azure Container Registry (ACR) is disabled. The admin account is a legacy authentication method and it provides full permissions to the entire ACR. This is a potential security risk as if the admin account credentials are compromised, it can lead to unauthorized access and manipulation of the container images and repositories. Hence, it is recommended to disable the ACR admin account and use individual Azure AD identities for authentication for greater security control.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+To fix the policy violation, we need to explicitly disable the admin user in your Azure ACR settings like so:
+
+[source,go]
+----
+resource "azurerm_container_registry" "example" {
+  name                     = "example"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  sku                      = "standard"
+  admin_enabled            = false
+}
+----
+
+In the above code, the "admin_enabled" property is explicitly set to False. This is secure because it disables the creation of an admin account, which is a highly privileged role that's often subject to attacks. Disabling this ensures that the access is limited, improving the security of this resource.
+

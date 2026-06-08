@@ -1,0 +1,60 @@
+
+== CloudWatch alarm actions are not enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 9bb8259c-875a-4502-9b03-04682c312402
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CloudWatchAlarmsEnabled.py[CKV_AWS_319]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that alarm actions in AWS CloudWatch are enabled. AWS CloudWatch is a monitoring service that provides data and actionable insights for AWS applications, resources, and services. Alarm actions are essential functionalities that trigger specific automated responses based on predefined conditions, such as stopping an instance when CPU utilization is too high. If these are not enabled, AWS users may miss alerts on critical issues within their resources and services. Consequently, this could lead to performance degradation, service disruption, or even a security breach. Thus, it's considered a poor security practice not to have CloudWatch alarm actions enabled.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cloudwatch_metric_alarm
+* *Arguments:* actions_enabled
+
+To fix the issue indicated by this policy, you will need to ensure that all your CloudWatch alarms have `actions_enabled` not set to `false`.
+
+[source,go]
+----
+resource "aws_cloudwatch_metric_alarm" "pass2" {
+  alarm_name          = "alarmname"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "HealthyHostCount"
+  namespace           = "AWS/NetworkELB"
+  period              = 60
+  statistic           = "Average"
+  threshold           = var.logstash_servers_count
+  alarm_description   = "Number of healthy nodes in Target Group"
++ actions_enabled     = true
+  alarm_actions       = [aws_sns_topic.sns.arn]
+  ok_actions          = [aws_sns_topic.sns.arn]
+  dimensions = {
+    TargetGroup  = aws_lb_target_group.lb-tg.arn_suffix
+    LoadBalancer = aws_lb.lb.arn_suffix
+  }
+}
+----
+

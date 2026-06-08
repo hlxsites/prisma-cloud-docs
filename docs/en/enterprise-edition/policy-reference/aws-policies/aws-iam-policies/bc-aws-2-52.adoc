@@ -1,0 +1,51 @@
+== AWS OpenSearch Fine-grained access control is disabled
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 45987be9-259e-4940-ae03-351c68b8d3d8
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/OpenSearchDomainHasFineGrainedControl.yaml[CKV2_AWS_52]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy detects AWS ElasticSearch/OpenSearch domains that do not have fine-grained access control enabled. Fine-grained access control allows you to manage access to specific domain actions based on user roles and permissions.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_opensearch_domain, aws_elasticsearch_domain
+* *Arguments:* advanced_security_options.internal_user_database_enabled, advanced_security_options.enabled
+
+To fix the issue, set the `fine_grained_access_control_enabled` argument to `true` in the `aws_elasticsearch_domain` resource.
+
+Secure code example:
+
+[source,go]
+----
+resource "aws_elasticsearch_domain" "example" {
+  // other arguments
+  advanced_security_options {
++   enabled                        = true
++   internal_user_database_enabled = true
+  }
+}
+----
+
+Enabling `internal_user_database_enabled` ensures that AWS ElasticSearch/OpenSearch domains have fine-grained access control enabled, providing more granular control over user roles and permissions.

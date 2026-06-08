@@ -1,0 +1,174 @@
+:topic_type: タスク
+[.task]
+[#id8975c2b6-7c7d-471a-8a5c-19a909bc2b0a]
+== AWS Organizationアカウントのデータセキュリティの設定
+
+//Onboard AWS organization account and enable data security.
+
+AWS Organizationアカウントをオンボードしたら、データセキュリティを設定し、S3バケットのスキャンを開始できます。Prisma Cloudは、オンボードしたアカウントが個人アカウントか組織アカウントかに基づいて、2つの別々のAWSリソースセットを作成します。ルートの下のすべての組織単位（OU）とメンバーアカウントをオンボードするか、ルートの下のOUとメンバーアカウントを選択して選択してオンボードを選択できます。最初に AWS 組織をオンボードしてから、Prisma Cloudデータセキュリティを設定しなければなりません。
+
+[.procedure]
+. AWS Organizationアカウントを正常にhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-your-aws-account/add-aws-organization-to-prisma-cloud.html#idafad1015-aa36-473e-8d6a-a526c16d2c4f[オンボード]したら、*Settings（設定） > Cloud Accounts（クラウドアカウント） > Account Overview（アカウントの概要）*に移動し、*Configure（設定）*を選択してAWS Organizationアカウントのデータセキュリティを設定します。
++
+[NOTE]
+====
+すでにAWSメンバーアカウントを個人アカウントとしてオンボードし、そのアカウントのデータセキュリティを有効にしている場合は、そのメンバーアカウントのデータセキュリティをhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/prisma-cloud-data-security/disable-pcds-and-offboard-aws-account.html[無効]にして、AWS組織の一部として含まれるようにする必要があります。
+====
+
+. AWSマスター組織アカウントにスタックを作成します。
+
+.. *Create Stack（スタックの作成）*を選択します。
++
+Prisma Cloudコンソールでは、*AWS Management External ID（AWS管理外部ID）*と*SNS Endpoint URL（SNS エンドポイントURL）* の値が事前に入力されており、これらのフィールドを編集することはできません。
+
+.. AWSアカウントに別のタブでログインします。Prisma Cloudコンソールから*AWS管理外部ID*と*SNSエンドポイントのURL*の値をコピーして、対応するAWS管理コンソールのフィールドに貼り付けます。
++
+[NOTE]
+====
+CloudFormationテンプレートのデフォルトはバージニア北部です。スタックを作成する前に、AWSアカウントがあるリージョンに変更する必要があります。
+====
++
+image::administration/aws-org-1.png[]
+
+.. *I acknowledge that AWS CloudFormation might create IAM resources with custom names（AWS CloudFormationによってIAMリソースがカスタム名で作成される場合があることを承認します）*を選択して、*Create stack（スタックの作成）*をクリックします。
++
+CREATE_COMPLETEステータスになるまで待機します。
++
+image::administration/aws-org-pcds-2-2.png[]
+
+.. AWS管理コンソールの*Outputs（出力）*タブから*Prisma Cloudarn*と*Prisma CloudNSarn*の値をコピーします。
++
+image::administration/aws-org-pcds-2-3.png[]
+
+.. Prisma CloudのData Security設定画面で*PrismaCloudARN*と*PrismaCloudSNSARN*を貼り付けます。
+
+.. *次へ*をクリックします。
+
+. AWSメンバーアカウントを設定します。
+
+.. *CloudFormation*メンバーテンプレートをダウンロードします。
++
+画面の指示に従ってStackSetを作成します。
+
+.. StackSetデプロイメントは、マスターアカウントに関連付けられたすべてのメンバーアカウントにスタックをデプロイします。AWS管理コンソールで、*Services（サービス） > CloudFormation > StackSets（スタックセット） > Create StackSet（スタックセットの作成）*を順に選択します。
++
+image::administration/aws-org-4.png[]
+
+.. テンプレートファイルをアップロードし、*Next（次へ）*をクリックします。
++
+image::administration/aws-org-5.png[]
+
+.. StackSet名を入力します。Parameters（パラメータ）に、メンバーの*ExternalID*の値を入力します。
++
+image::administration/aws-org-6.png[]
++
+文字、数字、ハイフンを組み合わせて*ExternalId*を作成します。例えば、varname:[Test-number-123], varname:[05dd1aca-244a-447c-ab1e-aac935fd3348], and varname:[12345-test-abc]はすべて有効な*ExternalIds*です。*PrismaCloudRoleName*は自動入力されますが、文字列内にvarname:[Org]が含まれている限り、変更することができます。
+
+.. *Execution configuration（実行設定）*で、*Active（アクティブ）*または*Inactive（非アクティブ）*を選択し、*Next（次へ）*をクリックします。
++
+デプロイメントを高速化するには、*Active（アクティブ）*を選択することをお勧めします。
++
+image::administration/aws-org-7-1.png[]
+
+.. *Add stacks to stack set（スタックセットにスタックを追加）*で、*Deploy new stacks（新しいスタックをデプロイ）*オプションを選択します。
+
+.. *Account（アカウント）*で、データセキュリティを有効にするアカウントまたは組織単位を選択します。
++
+image::administration/aws-org-7-2.png[]
+
+.. Specify regions（リージョンの指定）で、1つのリージョンを選択します。
++
+選択したリージョンがAWS Organization内のすべてのアカウントで有効になっていることを確認します。無効になっているリージョンを選択すると、テンプレートはリージョン内にリソースをデプロイできず、エラーが発生して失敗します。
++
+image::administration/aws-org-8-1.png[]
+
+.. デプロイメントのオプション:
++
+* *Maximum concurrent accounts（最大同時アカウント数）*で、*Percentage（パーセンテージ）*を選択し、*100*に設定します。
+* *Failure tolerance（許容誤差）*で、*Percentage（パーセンテージ）*を選択し*100*に設定します。
+* *Region Concurrency（リージョン同時実行）*で、*Sequuential（シーケンシャル）*のデフォルトのオプションをそのまま使用します。
+
+.. *Next（次へ）*をクリックして、設定を確認します。
+
+.. *I acknowledge that AWS CloudFormation might create IAM resources with custom names（AWS CloudFormationによってIAMリソースがカスタム名で作成される場合があることを承認します）*を選択して、*Submit（送信）*をクリックします。
++
+image::administration/aws-org-pcds-3-3.png[]
++
+StackSetの作成が開始されます。SUCCEEDED（成功）ステータスになるのを待ちます。
++
+image::administration/aws-org-pcds-3-4.png[]
++
+プロセスが完了すると、このマスターアカウントに関連付けられたすべてのメンバーアカウントに対してスタックが作成され、AWS管理コンソールの*Stack Instances（スタックインスタンス）*に表示されます。
++
+image::administration/aws-org-pcds-3-5.png[]
+
+.. *Parmeters（パラメータ）*を選択し、*ExternalID*と*PrismaCloudRoleName*の値をコピーします。
++
+image::administration/aws-org-pcds-3-6.png[]
+
+. マスターAWSアカウントで組織CloudTrailをセットアップします。Prisma Cloud Data Securityでは、新しいバケットとオブジェクトの変更を取り込むためにCloudTrailイベントが必要です（イベントの*書き込み*）。新規または既存のCloudTrailを使用できます。
+
+.. マスターAWSアカウントで組織CloudTrailを*作成*または*編集*します。
+
+.. *Trail(トレイル)名*を入力します。
++
+image::administration/pcds-aws-org-cloudtrail-1.png[]
+
+.. *[組織内のすべてのアカウントに対して有効にする]*のチェックボックスをオンにします。
+
+.. [*新しいS3バケットを作成]*または[*既存のS3バケットの場所を使用*]を選択します。S3バケットは同じAWSアカウントにある必要があります。
++
+image::administration/pcds-aws-org-cloudtrail-2.png[]
+
+.. 追加設定で、*SNS通知配信*を有効にし、*PrismaCloudSNS*を選択します。SNSは、Prisma Cloud Data Security CloudFormationテンプレートの一部として作成されました。
++
+image::administration/pcds-aws-org-cloudtrail-3.png[]
++
+（オプション）[*既存*]を選択し、CloudTrailに関連付けられているトピックが既に存在する場合は、既存のトピックに新しいSNSサブスクリプションを作成します。サブスクリプションでは、Prisma Cloudの*クラウドアカウント*ページに記載されている https エンドポイント（コールバックURL）を必ず使用してください。
++
+image::administration/pcds-aws-org-cloudtrail-4.png[]
++
+選択したもの（新規または既存）に関係なく、Prisma CloudのコールバックURLがAWSのSNSサブスクリプションエンドポイントと一致することを確認してください。
++
+image::administration/pcds-aws-org-cloudtrail-5.png[]
+
+.. [*次へ]* をクリックし、[*ログイベントの選択*]で、[*管理イベント*]および[*データイベント*]のチェックボックスを選択します。
++
+image::administration/pcds-aws-org-cloudtrail-6.png[]
+
+.. [*管理イベント*]で、[*書き込み*]のチェックボックスを選択します。
++
+image::administration/pcds-aws-org-cloudtrail-7.png[]
+
+.. [*データイベント*]で、[*データイベントソース*]として*S3*を選択し、[*現在および将来のすべてのS3バケット*]の[*書き込み]*のチェックボックスを選択します。
++
+image::administration/pcds-aws-org-cloudtrail-8.png[]
+
+.. 変更を*保存*して確認します。
+
+. Prisma CloudでAWSメンバーアカウントを設定します。
+
+.. *ExternalID*と*Prisma CloudroleName*をPrisma Cloudに貼り付けます。
+
+.. *I confirm that the CFT StackSet has successfully created the Prisma Cloud member role in each member account（CFT StackSet が各メンバーアカウントで Prisma Cloud メンバーロールを正常に作成したことを確認します）*を選択し、*Next（次へ）*をクリックします。
++
+image::administration/aws-org-pcds-7.png[]
+
+. *Configure Scan（スキャンの設定）*オプションを選択して*Save（保存）*を選択します。
++
+image::administration/aws-org-pcds-8.png[]
+
+. AWS組織アカウントのデータセキュリティ設定が成功すると、成功ステータスメッセージが表示されます。*Done（完了）*をクリックして、WS Cloud Account Overview（AWS クラウドアカウントの概要）ページでData Securityが有効になっているのを確認します。
++
+[NOTE]
+====
+AWS 組織のデータセキュリティモジュールを正常に有効にすると、メンバーアカウントの S3 バケットが表示されます。Prisma Cloud はマスターアカウントからバケットを取り込みません。
+====
++
+image::administration/aws-org-pcds-9.png[]
++
+*Data Security unsuccessfully configured (データセキュリティの設定に失敗しました)*というエラーが表示された場合は、xref:../troubleshoot-data-security-errors.adoc#troubleshoot-data-security-errors[]を参照して問題を解決してください。
+
+. 設定は、*Settings（設定） > Data（データ）> Scan Settings（スキャンの設定）*ページで確認できます。
++
+image::administration/aws-org-pcds-4-1.png[]

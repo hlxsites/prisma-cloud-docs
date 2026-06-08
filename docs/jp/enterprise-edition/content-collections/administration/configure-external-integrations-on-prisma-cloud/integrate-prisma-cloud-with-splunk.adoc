@@ -1,0 +1,71 @@
+:topic_type: タスク
+[.task]
+[#idd1d6c8b5-073c-415a-8253-6714e5379dac]
+== Prisma CloudとSplunkの統合
+Prisma® CloudとSplunkの統合方法を学習します。
+
+Splunkは、マシンで生成されたデータを、Webサイト、アプリケーション、センサー、デバイスなどから収集して検索、分析、視覚化するソフトウェアプラットフォームです。
+
+Prisma® CloudをSplunkと統合して、アセットを監視し、リソースの設定誤り、コンプライアンス違反、ネットワークセキュリティ上のリスク、Splunkに対する不審なユーザー行動などに対してアラートを送信することができます。
+
+
+
+
+[.procedure]
+. SplunkでPrisma Cloudからのアラート通知を表示するには、Splunk HTTP Event Collector（HEC）をセットアップします。
++
+Splunk HECでは、HTTPおよびセキュアHTTP（HTTPS）プロトコルを使って、Splunkデプロイ環境にデータやアプリケーションイベントを送信できます。これは、Prisma Cloudからのアラート通知をSplunkにまとめ、運用チームがアラートを確認して対処するために役立ちます。
++
+インターネットとSplunkの間にファイアウォールまたはクラウドネットワークセキュリティグループがある場合は、ネットワークの到達可能性を確認し、xref:../../get-started/access-prisma-cloud.adoc[Prisma Cloudコンソールへのアクセスを有効にする]必要があります。
++
+.. HECをセットアップするには、https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector[Splunkドキュメント]の説明を参照してください。
++
+*source type（ソースタイプ）*のデフォルトは、*_json*になります。Prisma Cloudでカスタム文字列を指定した場合、ここで設定したすべての値がその値で上書きされます。
++
+[NOTE]
+====
+デフォルトでは、SplunkはJSONペイロードを10,000バイト (文字) に制限します。Prisma Cloudアラート通知のサイズがデフォルトの制限を超えると、この制限により不完全なペイロードを受信する可能性があります。
+====
+
+.. リストに追加されたHECが表示されていて、ステータスに*有効*と表示されていることを、*[設定] > [データ入力] > [HTTPイベントコレクター]*の順に選択して確認します。
+
+
+
+. Prisma CloudでSplunk統合をセットアップします。
++
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定）> Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加）* を *Splunk*に設定します。
+
+.. *Integration Name（統合名）*、および必要に応じて*Description（説明）*を入力します。
+
+.. 以前に設定した*Splunk HEC URL*を入力します。
++
+Splunk HEC URLは、Splunkデプロイにイベント通知を送信するSplunkエンドポイントです。この目的で、HTTPまたはHTTPSを使用できます。Prisma Cloudはアラートまたはエラーに関するデータをJSON形式で送信するため、Splunk HEC URLの一部としてuserinput:[/services/collector]エンドポイントを含めるようにしてください。
+
+.. *Auth Token（認証トークン）*を入力します。
++
+統合は、Prisma CloudとSplunk間でトークンベースの認証を使用し、Splunk HECへの接続を認証します。トークンは、Splunkに存在する32ビットの数字です。
++
+image::administration/splunk-add-integration-in-prisma-cloud.png[]
+
+.. (tt:[任意])すべてのPrisma Cloudアラートのアラートペイロードに、このカスタム名を含める場合は、 *Source Type（ソースタイプ）*を指定します。
+
+.. *Next（次へ）*をクリックした後、*Test（テスト）*をクリックします。
++
+image::administration/splunk-add-integration-in-pc-2.png[]
+
+.. *Save（保存）*を選択して、統合を保存します。
++
+統合を正常にセットアップした後、*Settings（設定）> Integrations（統合）* の Get Status（ステータスを取得） リンクを使用して定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
+
+
+
+. xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[ランタイムチェックのアラートルールを作成する]か、既存のルールを変更してSplunkでxref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラートを受信]します。
+
+
+

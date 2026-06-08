@@ -1,0 +1,182 @@
+== Azure アカウントを接続する
+
+Prisma® CloudでAzureクラウドアカウントをオンボード化することで、Azureクラウドリソースを効果的に監視し、コンプライアンスを確保することができます。
+
+Azure クラウドリソースを Prisma® Cloud に追加して脅威の検出、監視、コンプライアンスを実現する方法をご紹介します。Prisma Cloudの利用状況に応じて、以下に概説されているオプションのいずれかを選択してください。
+
+[cols="50%a,50%a"]
+|===
+
+|*操作*
+|*ここからスタート*
+
+|初期オンボーディング
+|* <<prerequisites>>
+*  <<choose-onboard-option>> 
+* xref:connect-azure-tenant.adoc[Azureテナントを追加する]
+* xref:connect-azure-subscription.adoc[Azureサブスクリプションを追加する]
+* xref:connect-azure-active-directory.adoc[Azure Active Directoryを追加する]
+
+|オンボーディング後
+|* xref:edit-onboarded-account.adoc[接続されている Azure アカウントの表示と編集]
+* xref:edit-onboarded-account.adoc#ds[データセキュリティの設定]
+
+|追加したアカウントを更新する
+|* xref:update-azure-application-permissions.adoc[Azureアプリケーションの権限の更新]
+
+|追加リソース 
+|* xref:troubleshoot-azure-account-onboarding.adoc[Azureアカウントオンボーディングのトラブルシューティング]
+* xref:microsoft-azure-apis-ingested-by-prisma-cloud.adoc#idc4e0a68d-4486-478b-9a1f-bbf8f6d8f905[Microsoft Azure API の取り込みと必要な権限]
+
+|===
+
+[#choose-onboard-option]
+=== オンボーディングオプション
+
+次の 3 つのオプションのいずれかを使用して、Azure クラウドアカウントを Prisma Cloud にオンボーディングします。
+
+* *Azure テナント* (すべての Azure リソース、管理グループのアカウント、サブスクリプション、Active Directory を Prisma Cloud に接続します) 
+** xref:connect-azure-tenant.adoc#commercial[商用]
+** xref:connect-azure-tenant.adoc#government[政府]
+** xref:connect-azure-tenant.adoc#china[中国]
+
+* *Azure サブスクリプション* (1 つのサブスクリプションを接続)
+** xref:connect-azure-subscription.adoc#commercial[商用]
+** xref:connect-azure-subscription.adoc#government[政府]
+** xref:connect-azure-subscription.adoc#china[中国]
+
+* *Azure Active Directory*(ルート テナント レベルで IAM モジュールに接続します)
+** xref:connect-azure-active-directory.adoc#commercial[商用] 
+** xref:connect-azure-active-directory.adoc#government[政府]
+** xref:connect-azure-active-directory.adoc#china[中国]
+
+
+Azure の API を使用して、Prisma Cloud はクラウド環境からデータを取り込んで処理し、リソースの監視を開始します。組み込みのオンボーディング プロセスでは、Prisma CloudがAzure APIにアクセスすることを承認するために必要なAzureリソースを作成するために、次の3つの方法のいずれかを使用するオプションがあります。
+
+* xref:authorize-prisma-cloud.adoc#terraform[Terraform] (推奨)
+このワークフローは、Azure Active Directory 上で Prisma Cloud アプリケーションをセットアップするプロセスを自動化し、Azure サブスクリプションへの読み取り専用アクセスまたは読み取り/書き込みアクセスを可能にします。
+
+[NOTE]
+====
+Azure China ワークフローは、Terraform テンプレートの使用をサポートしていません。手動ロールまたはカスタムロールの JSON メソッドを使用して Azure China をオンボーディングします。
+====
+* xref:authorize-prisma-cloud.adoc#json[カスタムロール JSONの使用]
+手動で作成したカスタムロールを使用すると、最小限のアクセス権でアクセスを制限するオプションもあります。これを実現するには、Active Directory で Prisma Cloud アプリケーションを手動でセットアップし、Azure API へのアクセスを承認するカスタム ロールを作成する必要があります。
+* xref:authorize-prisma-cloud.adoc#manual[Prisma Cloud の手動承認]
+組織でTerraformスクリプトの使用を制限している場合、Prisma CloudがAzure APIを呼び出すために必要なリソースを手動で作成することを選択できます。
+
+[NOTE]
+====
+Azure サブスクリプションのステータスは、アカウントの取り込みとオンボードを行う Prisma Cloud の機能に影響を与える可能性があります。サブスクリプション ステータスが取り込みに与える影響を確認するには、以下のリストを参照してください。
+
+* アクティブ/有効 - 取り込みと自動修復が可能です。
+* 期限切れ - 取り込みと自動修復が可能です。
+* 期限を過ぎた場合 - 取り込みと自動修復が可能です。
+* 削除- 取り込みはできません。
+* 無効 - 取り込みはできません。
+* 警告 - 取り込みは可能ですが、90 日の猶予期間内でいつでも非アクティブ化できるため、Azure portal ではサブスクリプションが無効として表示されます。
+====
+
+[.task]
+[#prerequisites]
+=== 前提条件
+
+Azure サブスクリプション内のリソースを正常にオンボーディングして監視するには、以下の前提条件を満たしていることを確認してください。
+
+[.procedure]
+. Azure ポータルから Azure サブスクリプション ID を取得します。
+.. Prisma Cloudで作成したアプリケーションをAzure Active Directoryに追加するためのアカウント所有者またはコントリビューター権限を持っていることを確認します。
+.. Prisma CloudでAzureサブスクリプションのオンボーディングを行うには、APIアクセスを有効にする、Active Directoryアプリケーションオブジェクト（アプリケーションクライアントID）およびエンタープライズアプリケーションオブジェクトIDを設定します。
+.. Azure Active Directory上にPrisma Cloudを設定するプロセスでは、サインインやAzureサブスクリプション内のリソースへのアクセスに必要なIDを確立するためのキーとIDが提供されます。
+.. エンタープライズアプリケーションオブジェクトIDは、Prisma Cloudが想定する権限と範囲を定義します。			 
+
+. Azureポータルを使用してhttps://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin#elevate-access-for-a-global-administrator[グローバル管理者]のアクセスを強化し、PrismaCloudがAzureサブスクリプションまたは管理グループにアクセスできるようにします。これは、Azureアカウントの最初のオンボーディング中にのみ、サブスクリプションと管理グループに関連付けられたリソースを取り込むために必要です。オンボーディングが完了した後、このオプションを無効にすることができます。
+
+. Prisma CloudがAzure Key Vaultリソースを取り込むことができるようにします。 このステップは、Azure テナントまたはサブスクリプションワークフローを使用している場合にのみ必要です。
++
+次のAzureリソースを取り込むには、Azure Portal for Prisma Cloudのキー管理操作で*取得*と*一覧表示*のアクセス権限を有効にする必要があります。
++
+** azure-key-vault-list
+
+** azure-key-vault-certificate
++
+*All services（すべてのサービス）> Key vaults（キーボールト）>（キーボールト名）> Access policies（アクセスポリシー）> + Add Access Policy（+アクセスポリシーの追加）*の順で選択します。*キーのアクセス権限*、*シークレットのアクセス権限*、および*証明書のアクセス権限*については、キー管理操作の*取得*と*一覧表示*を追加します。
++
+tt:[NOTE] Azure Key Vault に基づくポリシーをサポートするには、Get が必要です。Prisma Cloud では、Key Vault データを取り込むためにこれが必要です。キーやシークレットは取り込まれません。取り込みは ID とその他のメタデータに限定されます。RSA キーの強度、EC 曲線アルゴリズムなどに関するポリシーの作成を許可するには、Get が必要です。
++
+image::connect/add-access-policy-azure.png[]
+
+. Prisma Cloud にストレージ アカウントを取り込むことを許可します。Azure portal でアカウントにアクセスし、*構成*を選択します。*ストレージ アカウント キーを許可する* オプションを有効にして、アクセス キーのセットアップを完了します。詳しくはこちら https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal[ストレージ アカウント キーの管理]。
+
+. ネットワークセキュリティグループ（NSG）https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-nsg-flow-logging-portal[フローログ]からネットワークトラフィックデータを取得するには、Prisma Cloudを有効にします。
++
+NSG フローログは Network Watcher の機能であり、NSG を介してイングレスとエグレスの IP トラフィック情報を表示できます。このステップは、Azure Tenant または Subscription ワークフローを使用している場合、またはオプションでフローログを取り込みたい場合にのみ必要です。
+
+.. Azure portal でグループを持っていない場合、１つ以上のネットワーク セキュリティ グループを作成します。
+
+.. NSGフローログを収集するためのストレージアカウントを作成します。Prisma Cloudは次の場合にのみフローログを取り込むことができます。
++
+... サブスクリプションは、同じAzure ADまたはルート管理グループ（たとえば、Azure Org）に属しています。
+
+... Prisma Cloudでサブスクリプションをオンボードするために使用するサービス原則には、ストレージアカウントのコンテンツを読み取るためのアクセス権があります。
+.. Prisma Cloud インスタンスの xref:../get-started/access-prisma-cloud.adoc[NAT GatewayIP アドレスを、] 上記の手順で作成したストレージ アカウントに追加します。たとえば、インスタンスが`app.prismacloud.io`にある場合は、それに関連付けられているIPアドレスを使用します。
+
+.. NSGフローログを収集する各地域の仮想ネットワークに対して、Azure https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create[Network Watcherインスタンス]を作成します。Network Watcherにより、Azure仮想ネットワーク内のリソースの監視、診断、メトリックの表示、ログの有効化/無効化が可能になります。
+
+.. Network Watcher コンソールからフロー ログに移動し、次の手順を実行して NSG フローログの有効化を完了します。
++
+... ログを記録するネットワーク セキュリティ グループの Azure サブスクリプションを選択します。
+... 前の手順で作成したストレージ アカウントを選択し、フロー ログを作成します。
+.. オプションで、NSG フロー ログを表示およびダウンロードできます。NSG フローログを表示するには、Azure portal で次の手順を実行します。
++
+... 以前に作成したストレージ アカウントに移動し、ログを保存することを選択します。
+... *Data Storage（データ ストレージ） > Containers（コンテナ）*を選択します。
+... `Insights-logs-networksecuritygroupflowevent` コンテナーを選択します。
+... コンテナーで、`PT1H.json` フロー ログ ファイルに到達するまでフォルダー階層を移動します。
+
+[NOTE]
+====
+*パブリック ネットワーク アクセス* が *無効* に設定されている場合、Prisma Cloud は `publicContainersList` フィールドを取り込み、Azure Storage アカウントの `totalPublicContainers` を計算できません。
+
+オプションで、インターネットに公開されたパブリック コンテナーを識別するように Azure ストレージ アカウント設定を構成するには、次の手順を実行します。
+
+- オプション 1 (推奨):Azure portal で、*選択した仮想ネットワークと IP アドレスからのパブリック ネットワーク アクセスを有効*に設定します。リストされている IP アドレスと NAT ゲートウェイのソースおよびディレクトリ IP を追加します。 https://docs.prismacloud.io/en/classic/cspm-admin-guide/get-started-with-prisma-cloud/enable-access-prisma-cloud-console#idcb6d3cd4-d1bf-450a-b0ec-41c23a4d4280[ここ] でファイアウォールの設定を行います。
+- オプション2:Azure portal で、 パブリック ネットワーク アクセスを *[すべてのネットワークから有効]*に設定します。
+====
+//+ [commenting out per Madhu Jain - Novartis POC - 6/14 email thread]
+//On the Azure Portal, include the source and the DR Prisma Cloud IP addresses for your Prisma Cloud instance. Select *Azure > services[Storage accounts > (your storage account) > Networking > Selected networks*.
+//+
+//image::connect/azure-selected-networks.png
+//+
+//Replace userinput:[your storage account] with the name of your storage account in Azure portal.
+
+//** Enable Network Watcher and register Microsoft.InsightsResource Provider. Microsoft.Insights is the resource provider namespace for Azure Monitor, which provides features such as metrics, diagnostic logs, and activity logs.
+
+//** Enable NSG flow logs version 1 or 2, based on the regions where NSG flow logs version 2 is supported on Azure.
+
+//** Verify that you can view the flow logs.
+
+=== 必要な役割とアクセス権限
+
+アカウントをPrisma Cloudに正常に接続するには、Foundational(基本)とAdvanced(高度)の両方のセキュリティ機能に必要な権限を提供する必要があります。以下の情報を参照し、Prisma Cloudに適切な権限が割り当てられていることを確認してください。
+
+* xref:microsoft-azure-apis-ingested-by-prisma-cloud.adoc[セキュリティ機能とアクセス許可]
+
+詳細については、Azure のドキュメントを参照してください。 https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader[読者]、 https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader-and-data-access[リーダーとデータアクセス]、 https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#network-contributor[ネットワーク貢献者] と https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-account-contributor[ストレージ アカウントの共同作成者の] 役割。
+
+=== 次へ：Azure アカウントのオンボーディング 
+
+* Azure テナント (管理グループ、サブスクリプション、Active Directory のアカウントを含む、すべての Azure リソースを Prisma Cloud に接続します) 
+** xref:connect-azure-tenant.adoc#commercial[商用]
+** xref:connect-azure-tenant.adoc#government[政府]
+** xref:connect-azure-tenant.adoc#china[中国]
+* Azure サブスクリプション (1 つのサブスクリプションを接続)
+** xref:connect-azure-subscription.adoc#commercial[商用]
+** xref:connect-azure-subscription.adoc#government[政府]
+** xref:connect-azure-subscription.adoc#china[中国]
+* Azure Active Directory  (Azure Active Directory に接続)
+** xref:connect-azure-active-directory.adoc#commercial[商用] 
+** xref:connect-azure-active-directory.adoc#government[政府]
+** xref:connect-azure-active-directory.adoc#china[中国]
+
+

@@ -1,0 +1,77 @@
+:topic_type: タスク
+[.task]
+[#idb37367ae-f85a-4117-909d-8c9f6e70255a]
+== PrismaCloudとAzureServiceBusキューの統合
+
+Prisma® CloudとAzure Service Busキューを統合する方法を学習します。
+
+Prisma® Cloudは、Azure Service Busメッセージングサービスのキューにアラートを送信できます。アクセスを承認するには、共有アクセスシグネチャを使用してService Bus名前空間またはキューへのアクセス権限を制限するか、Prisma CloudにオンボードしたAzure Cloudアカウントに関連付けられたサービスプリンシパル認証情報を使用します。Azure Active Directoryを使用して要求を承認するサービスプリンシパルを使用する場合は、追加のロール（https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#azure-service-bus-data-sender[Azure Service Busデータ送信者]）を含め、Service Bus名前空間とキューへの送信アクセスを有効にする必要があります。
+
+設定すると、アラートが生成されるとすぐに、アラートペイロード全体がキューに送信されます。
+
+[.procedure]
+. Prisma Cloudアラートを受信するようにAzure Service Busを設定します。
+
+.. Azureポータルにログインし、https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal#create-a-namespace-in-the-azure-portal[Service Bus名前空間]を作成し、https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal#create-a-queue-in-the-azure-portal[キューを追加します]。
++
+キューのURLをコピーします。
++
+image::administration/azure-service-bus-queue-url.png[]
+
+.. 認証方法を選択してください。
++
+Azure Service Busリソースへのアクセスを認証および承認するには、Azure Activity Directory（Azure AD）または共有アクセスシグネチャ（SAS）のいずれかを使用できます。
++
+* tt:[Azure ADを使用する場合]AzureADテナントに登録されているPrisma Cloudアプリケーションに関連付けられているサービスプリンシパルに*Azure Service Bus Data Sender*ロールを追加します。
++
+https://docs.microsoft.com/en-us/azure/service-bus-messaging/authenticate-application#assign-rbac-roles-using-the-azure-portal[ロールの割り当て]については、Azureのドキュメントを参照してください。
++
+image::administration/azure-service-bus-queue-role-assignment-2.png[]
+
+* tt:[SASを使用する場合]接続文字列を取得し、Prisma CloudがAzure Service Bus名前空間またはキューに対し認証できるようにします。
++
+接続文字列のスコープを名前空間または特定のキューに定義できます。https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal#get-the-connection-string[接続文字列の取得]については、Azureのドキュメントを参照してください。
++
+Service Bus名前空間へのアクセスを有効にする*RootManageSharedAccessKey*ポリシーを使用でき、デフォルトで作成されます。このポリシーには、Prisma Cloudで使用できるプライマリキーとセカンダリキーのペアが関連付けられた共有アクセスシグネチャ（SAS）ルールが含まれています。
++
+または、特定のキューへのアクセスを制限し、Azure Service Busキューへのアクセスを送信するための最小限の権限でポリシーを作成することもできます。
++
+image::administration/azure-service-bus-queue-policy.png[]
++
+image::administration/azure-service-bus-queue-policy-2.png[]
+
+. Prisma CloudにAzure Service Busキューを追加します。
+
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定）>Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加）>Azure Service Bus Queue（Azure Service Busキュー）*を選択します。統合を追加できるモーダルウィザードが開きます。
+
+.. 統合の*Name（名前）*と*Description（説明）*を入力します。
+
+.. 以前にコピーした*キューのURL*を入力します。
+
+.. キューへのアクセスを許可する方法を選択します。
++
+* Azureサブスクリプションのオンボーディングに使用したPrisma Cloud認証情報を使用してキューにアクセスする場合は、*Azure Account（Azureアカウント）*を選択します。*Azure Service Bus Data Sender*ロールをサービスプリンシパルに追加しなかった場合、統合を保存するときにエラーメッセージが表示されます。ドロップダウンからAzureアカウントを選択します。
+
+* 権限が制限されたロールを使用する場合は、*Shared Access Signature（共有アクセスシグネチャ）*を選択し、スコープ選択用の接続文字列値を貼り付けます。
+
+.. *Next（次へ）*をクリックした後、*Test（テスト）*をクリックします。
++
+正常に処理が完了したことを知らせるメッセージが表示されます。
++
+image::administration/azure-service-bus-queue-int-1.png[]
++
+また、Azureポータルのキューでメッセージ数が増加することを確認できます。
++
+image::administration/azure-service-bus-integration-verify.png[]
+
+.. *Summary（サマリー）*を確認し、統合を*保存*します。
++
+統合を正常にセットアップした後、*Settings （設定）> Integrations（統合）*の Get Status（ステータスを取得） リンクを使用して定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
+
+. xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[ランタイムチェックのアラートルールを作成するか]、既存のルールを変更して Azure Service Bus Queue 統合を有効にします。

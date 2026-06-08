@@ -1,0 +1,134 @@
+[#anomaly-thresholds]
+=== Set Up Anomaly Policy Thresholds
+
+Prisma Cloud allows you to define different thresholds for anomaly detection for Unusual Entity Behavior Analysis (UEBA) that correspond to policies which analyze audit events, for unusual network activity that correspond to policies which analyze network flow logs, for DNS analytics, and for identity. You can also define your preference for when you want to alert notifications based on the severity assigned to the anomaly policy.
+
+If you want to exclude one or more IP addresses or a CIDR block from generating alerts against Anomaly policies, see xref:trusted-ip-addresses-on-prisma-cloud.adoc[Trusted IP Addresses on Prisma Cloud].
+
+
+. For UEBA policies:
+
+.. Select *Settings > Anomaly Settings > Alerts and Thresholds*.
++
+image::administration/anomaly-policies-ueba-settings-1.png[]
+
+.. Select a policy.
+
+.. Define the *Training Model Threshold*.
++
+The Training Model Threshold informs Prisma Cloud on the values to use for setting the baseline for the machine learning (ML) models.
++
+[NOTE]
+====
+For production environments, set the *Training Model Threshold* to *High* so that you allow for more time and have more data to analyze for determining the baseline.
+====
++
+*For account hijacking attempts:*
++
+... Low: The behavioral models are based on observing at least 10 events over 7 days.
+
+... Medium: The behavioral models are based on observing at least 25 events over 15 days.
+
+... High: The behavioral models are based on observing at least 50 events over 30 days.*For anomalous compute provisioning activity:* None.
++
+*For unusual user activity:*
++
+... Low: The behavioral models are based on observing at least 25 events over 7 days.
+
+... Medium: The behavioral models are based on observing at least 100 events over 30 days.
+
+... High: The behavioral models are based on observing at least 300 events over 90 days.
+
+.. Define your *Alert Disposition*.
++
+Alert Disposition is your preference on when you want to be notified of an alert, based on the severity of the issue —low, medium, high. The alert severity is based on the severity associated with the policy that triggers an alert.
++
+You can profile every activity by location or user activity. The activity-based anomalies identify any activities which have not been consistently performed in the past. The location based anomalies identify locations from which activities have not been performed in the past.
++
+Choose the disposition (in some cases you may only have two to choose from):
++
+... Conservative:
++
+For unusual user activity—Reports on unknown location and service to classify an anomaly.
++
+For account hijacking—Reports on location and activity to login under travel conditions that are not possible, such as logging in from India and US within 8 hours.
++
+For anomalous compute provisioning activity—Reports on high severity alerts only when an unusual number of instances are created within a short time interval, impossible time travel, and belonging to a TOR anonymity network.
+
+... Moderate:
++
+For unusual user activity—Report on unknown location, or both unknown location and service to classify an anomaly.
++
+For anomalous compute provisioning activity—Reports on medium and higher severity alerts.
+
+... Aggressive:
++
+For unusual user activity—Reports on either unknown location or service, or both to classify an anomaly.
++
+For account hijacking—Reports on unknown browser and Operating System, impossible time travel, or both.
++
+For anomalous compute provisioning activity—Reports on low and higher severity alerts.
++
+[NOTE]
+====
+Set the *Alert Disposition* to *Conservative* to reduce false positives.
+
+When a Prisma Cloud administrator modifies the *Alert Disposition* or *Training Model Thresholds* for detecting anomalies that relate to UEBA, existing alerts associated with UEBA policies will no longer be resolved, but instead, remain as-is. Additionally, an audit log is generated to record who made the configuration change and when, to help you track and monitor changes.
+====
+
+. For unusual network activity.
++
+For anomalies policies that help you detect network incidents, such as unusual protocols or port used to access a server on your network, you can customize the following for each policy.
++
+.. Select *Settings > Anomalies > Alerts and Thresholds*.
+
+.. Select a policy.
++
+image::administration/anomaly-policies-network-settings.png[]
+
+.. Define the *Training Model Threshold*.
++
+The Training Model Threshold informs Prisma Cloud on the values to use for various parameters such as number of days and packets for creating the ML models. These thresholds are available only for the policies that require model building such as Unusual server port activity and Spambot activity.
++
+... Low: The behavioral models are based on observing at least 10K packets over 7 days.
+
+... Medium: The behavioral models are based on observing at least 100k packets over 14 days.
+
+... High: The behavioral models are based on observing at least 1M packets over 28 days.
+
+.. Define your *Alert Disposition*.
++
+Alert Disposition is your preference on when you want to be notified of an alert, based on the severity of the issue —low, medium, high. The alert severity is based on the severity associated with the policy that triggers an alert. You can choose from three dispositions based on the number of ports, hosts or the volume of traffic generated to a port or host on a resource:
++
+... Aggressive: Reports High, Medium, and Low severity alerts.
++
+For example, a Spambot policy that sees 250MB traffic to a resource, or a port sweep policy that scans 10 hosts.
+
+... Moderate: Reports High and Medium severity alerts.
++
+For example, a Spambot policy that sees 500MB traffic to a resource, or a port sweep policy that scans 25 hosts.
+
+... Conservative: Reports on High severity alerts only.
++
+For example, a Spambot policy that sees 1GB traffic to a resource, or a port sweep policy that scans 40 hosts.
+
+
+. For unusual usage of workload credentials.
++
+For anomalies policies that help you detect when a credential that has been assigned to a compute resource, such as an EC2 instance, is used from inside the cloud service provider. 
++
+.. Select *Settings > Anomalies > Alerts and Thresholds* and scroll down to *Identity*.
+
+.. Select a policy.
++
+image::administration/anomaly-policies-identity-settings.png[]
+
+.. Define your *Alert Disposition*.
++
+Alert Disposition is your preference on when you want to be notified of an alert. For unusual usage of workload credentials policies, this only applies when the suspicious IPs are inside the cloud because the policy is more prone to false positives when the suspicious IPs are inside the cloud provider’s IP space. When the suspicious IPs are outside the cloud provider’s IP space, alerts are always generated irrespective of the alert disposition setting.
++
+... Aggressive: Alerts are generated only when the suspicious IP is inside the cloud and it resides within or outside the monitored cloud accounts.
+
+... Moderate: Alerts are generated only when the suspicious IP is inside the cloud and it is a private IPv4 or it is outside the monitored cloud accounts.
+
+... Conservative: Alerts are generated only when the suspicious IP is inside the cloud but outside of the monitored cloud accounts.

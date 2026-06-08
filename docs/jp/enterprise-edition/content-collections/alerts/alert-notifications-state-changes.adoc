@@ -1,0 +1,149 @@
+[#idb247adc1-9c3f-4e77-8aff-fca99428ce79]
+== 状態変更時のアラート通知
+アラートステータスが更新されたときに、外部統合へのアラート通知を有効にできるかどうかを確認します。
+
+Prisma Cloudでは、アラートステータスが変化したときに外部通知を設定できます。たとえば、アラートステータスがある状態から別の状態に移行する場合（*Open（未解決）*から*Dismissed（却下済み）*または*Resolved（解決済み）*など）、*Alert notifications for all states is enabled（すべての状態でアラート通知が有効なとき）*、アラート通知を有効にできます。xref:create-an-alert-rule-cloud-infrastructure.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[クラウドインフラストラクチャのアラートルールを作成]する際に、さまざまな状態の通知を有効にするオプションが表示されない場合は、Prisma Cloudカスタマーサポートに連絡して、Prisma Cloudテナントで通知を有効にしてください。
+
+以下の表は、状態に対するPrisma Cloudによるアラートの送信方法の概要です。デフォルトでは、アラート通知は*Open（未解決）*状態に対してのみ送信されます。
+
+[cols="28%a,18%a,18%a,18%a,18%a"]
+|===
+.2+|統合
+4+|アラートステータス
+
+
+|未解決
+|解除済
+|スヌーズ中
+|解決済
+
+
+|Amazon SQS
+|あり
+|あり
+|あり
+|あり
+
+
+|Amazon S3
+|あり
+|あり
+|あり
+|はい
+
+
+|電子メール
+|あり
+|あり
+|あり
+|あり
+
+
+|ServiceNow
+|あり
+|あり
+|あり
+|あり
+
+
+|スラック
+|あり
+|あり
+|あり
+|あり
+
+
+|Splunk
+|あり
+|あり
+|あり
+|あり
+
+
+|Cortex XSOAR
+|あり
+|なし
+|なし
+|なし
+
+
+|Jira
+|あり
+|なし
+|なし
+|あり
+
+
+|Microsoft Teams
+|あり
+|あり
+|あり
+|あり
+
+
+|AWSセキュリティハブ
+|あり
+|あり
+|あり
+|あり
+
+
+|Google Cloud SCC
+|あり
+|あり
+|あり
+|あり
+
+
+|PagerDuty
+|あり
+|あり
+|あり
+|あり
+
+
+|Azure Service Busキュー
+|あり
+|あり
+|あり
+|あり
+
+
+|Webhooks
+|あり
+|あり
+|あり
+|あり
+
+|===
+
+以下のアクションを実行すると、*Resolved（解決された）*問題のアラート通知が送信されます。
+
+* Policy is disabled—Yes（ポリシーが無効になる - はい）
+
+* Policy is deleted—Yes（ポリシーが削除される - はい）
+
+* Alert rule is disabled—Yes（アラートルールが無効になる - はい）
+
+* Alert rule is updated and the policy that triggered the alert is removed—Yes（アラートルールが更新され、そのアラートにトリガーをかけたポリシーは削除される - はい）
+
+* Alert rule is deleted—No（アラートルールが削除される - いいえ）
+
+* Resource is updated and the policy violation is addressed when the next scan occurs—Yes（次のスキャンが発生すると、リソースが更新され、ポリシー違反が処置される - はい）
+
+* Resource is deleted and the next scan discovers that this is no longer an issue—Yes（リソースが削除され、次のスキャンでこれが問題ではなくなったことが検出される - はい）
+
+
+[NOTE]
+====
+場合によっては、2つのアクションを短時間に連続して実行したために競合状態が発生した場合、状態の変化に関する通知が届かないことがあります。以下に例を示します。
+
+* 1つのアラートが複数のアラートルールに関連付けられていて、それらのアラートルールが順次、無効になると、すべてのアラートルールについて解決通知が届かないことがあります。解決通知は、アラートが解決された最後のアラートルールに送信されます。
+
+* アラートルールを更新してポリシーを削除し、さらにポリシーを無効化するか、削除すると、解決通知が届かない場合があります。
+
+
+====
+
+
+

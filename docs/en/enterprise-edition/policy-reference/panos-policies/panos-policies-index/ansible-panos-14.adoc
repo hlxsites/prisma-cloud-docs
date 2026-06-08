@@ -1,0 +1,51 @@
+== Security zone on Palo Alto Networks devices does not have an associated Zone Protection Profile
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 02fa23be-abce-4ebb-b1a7-ba420dfe43a4
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosZoneProtectionProfile.yaml[CKV_PAN_14]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether all security zones in Palo Alto Networks devices have an associated Zone Protection Profile. Zone Protection Profiles provide a set of countermeasures against various flood, reconnaissance, and packet-based attacks, enforcing essential protections at the zone level, bolstering the overall security posture.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_zone
+* *Attribute:* zone_profile
+
+To mitigate this risk, ensure that each panos_zone resource is configured with a non-empty zone_profile attribute. This configuration specifies that a Zone Protection Profile is actively associated with each security zone, providing critical security features.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Verify tests
+  ...
+  tasks:
+    - name: Zone
+      paloaltonetworks.panos.panos_zone:
+        ...
+        zone_profile: 'strict' # Zone Protection Profile specified, which is a pass
+----
+
+In this example, assigning a Zone Protection Profile to every security zone enforces essential protections at the zone level, bolstering the overall security posture.

@@ -1,0 +1,210 @@
+== 脆弱性ダッシュボード
+
+Prisma Cloud *脆弱性ダッシュボード* は、Code to Cloud環境全体のすべての脆弱性の全体像をグラフィカルに表示します。
+最も影響の大きいCVEの概要により、既存のリスクに基づいて脆弱性に優先順位を付け、ランタイムからソースまでさかのぼって追跡できます。
+このリスク評価機能は、結果に基づいて情報に基づいた意思決定を行い、コード内の脆弱なパッケージまたは基本イメージを修正して、根本原因を修復し、ビルドが次に実行されるときに問題を解決するのに役立ちます。
+
+ダッシュボードは、次の質問に答えるのに役立ちます。
+
+//* What is total count of vulnerable assets across my entire application lifecycle?
+* アプリケーションのライフサイクル全体にわたって脆弱な資産とは?
+//* Where should I focus to find and fix the vulnerabilities? I want to know what is urgent, patchable?
+* 脆弱性を見つけて修正するには、どこに焦点を当てるべきですか?重大かつ緊急なもの、およびパッチ適用可能なものは何ですか?
+* コードまたはクラウドの脆弱性を修復または軽減するために、どのようなアクションを実行できますか?
+
+// rewrite the section above as a paragraph. the main gist to convey is 
+//The Vulnerabilities Dashboard gives you a holistic graphical view of all the vulnerabilities cross your code to cloud environment. An overview of the top impacting CVEs enables you to priortize based on existing risks and trace it from runtime back to the source. This risk assessment capability helps you make informed decisions with finding and fixing the vulnerable package or base image in code so that you are remediating the root cause and resolving the issue when the build is next executed.
+
+image::dashboards/uve-dashboard-c2c.gif[]
+
+//This section helps you to:
+//
+//* Get an overview of the vulnerability trends across your workload.
+//** Get a report of all your compute assets' vulnerabilities.
+//** View the trend of vulnerabilities fixed and closed over a defined period of time (say, month, and year).
+//* Trace vulnerabilities in runtime to the code that introduced it.
+//* Narrow down your search to identify what are the important/critical vulnerabilities.
+//* View the vulnerabilities that are patchable and have a fix action item to remediate.
+//* Identify what assets are affected by a known vulnerability and where the vulnerable assets are used in your application lifecycle.
+//** Assess if your container images have vulnerabilities using a CI scan (Jenkins, Shell).
+//** Check if any of your container registries, Host VM images, deployed containers, or Serverless functions have vulnerabilities.
+//
+//* Access the impact of the vulnerability on the assets (Risk assessment).
+//** Pick the most impacted vulnerability with the highest CVE score and explore remediation options.
+//** Identify if one of the compute assets is vulnerable to CVE-XXXX-XXXX.
+//** Or find vulnerabilities equal to CVE-XXXX-XXXX.
+//* Review the CVE (or assets) for threat details and explore the remediation options.
+//** Remediate the vulnerabilities at runtime and create a PR to fix the vulnerability at the source.
+//** What vulnerabilities to fix and how to fix for container images or hosts?
+
+=== 脆弱性の詳細
+
+*[ダッシュボード] > [脆弱性]*では 、環境全体のすべての脆弱性を検出できます。
+たとえば、環境内に 25K の脆弱性があり、そのうち 20637 のみが重大で高、7470 が悪用可能、そのうち 7400 がパッチ適用可能であり、これらの脆弱性が修正できるとします。優先順位付けされた脆弱性のファネルは、ランタイムで使用されている脆弱なパッケージを 35 個に絞り込みます。
+
+**前提条件**
+
+* xref:../connect/connect-cloud-accounts/connect-cloud-accounts.adoc[クラウドアカウントをオンボード]。
+* xref:../application-security/get-started/connect-code-and-build-providers/code-repositories/code-repositories.adoc[コードオンボードリポジトリ]。
+//* Onboard registries <link> and workloads for vulnerability scanning.
+* xref:../runtime-security/vulnerability-management/registry-scanning/configure-registry-scanning.adoc[レジストリスキャンを設定する]。
+* xref:../governance/workload-protection-policies.adoc[*ワークロードインシデント* と*ワークロード脆弱性*ポリシー]を有効にします。
+
+次の視覚化は、脆弱性からのリスクをコンテキスト化するのに役立つように使用できます。
+
+- **脆弱性の概要** - 環境内の脆弱性の合計を、アセット別の脆弱性と修正済みの脆弱性にさらに分類して要約して表示し、環境のセキュリティ保護の進行状況を追跡および共有できるようにします。
+現在のスナップショットの *脆弱性アセットの総数*, とそのメタデータ、 *修正された脆弱性の総数*、*脆弱性の総数*の数で傾向を視覚化します。
+
+- **優先順位付けされた脆弱性** - ワークロード全体のすべての脆弱性を検出し、最優先の脆弱性(緊急、悪用可能、パッチ適用可能、および使用中の脆弱なパッケージの集約された脆弱性)を特定します。
++
+コンピュートとCAS（Cloud App Sec）から提供された脆弱性は、最も緊急性が高く、悪用可能で、パッチが適用可能で、使用中の脆弱なパッケージに基づいて優先順位付けされ、集約されます。この優先順位付けは、焦点を当てるべき最優先の脆弱性を特定するのに役立ちます。
+//The vulnerabilities data sources are:
+//Current Ph1:
+//- Compute
+//- CAS (Cloud App Sec)
+//Ph2: (Third parties)
+//- Qualys
+//- Tenable
+//- AWS Inspector
++
+集計は、次のような脆弱性に基づいています。
++
+- 緊急：重大、高
+- エクスプロイタブル：Exploit in the Wild と Exploit in POC
+- パッチ可能：実用的で、修正または軽減するためのパッチがある脆弱性。
+- 脆弱なパッケージが使用中
+
+- **最も大きな影響を与える脆弱性**ーリスクスコアに基づいて、環境内で最も重大な脆弱性のランク付けされたリストを提供します。ランク付けされたリストは、環境に影響を与えているCVEで構成されています。各CVEには、そのリスク要因、重大度、CVSS、リスク要因、および影響を受ける資産に関するデータが含まれています。
++
+CVEの重大度、CVSSスコア、リスク要因、CI/CDパイプライン全体で影響を受けるアセットに基づいて、最も影響の大きい脆弱性を確認します。
+
+- **段階別の脆弱性の影響**ー脆弱性の原因と、アプリケーション ライフサイクルのアプリ ステージ全体の脆弱性の影響を視覚化します。脆弱性をランタイムから発生元のリポジトリまでさかのぼって追跡します。
++
+各段階で、パッケージ、IaC ファイル内のイメージ、ホスト VM イメージ、レジストリイメージ、デプロイされたイメージ、サーバーレス関数、ホストなど、影響を受ける資産を選択して調査できます。
+これにより、デプロイステージまたはランタイムで脆弱になったワークロードの構築に使用されたパッケージとイメージを簡単に追跡できます。
+
+[#prioritize-assess-risk]
+=== リスクの優先順位付けと評価
+
+検出されたすべての脆弱性の概要が表示されたら、ダッシュボードを使用して、焦点を当てるべき最も重要で重大な脆弱性を絞り込むことができます。
+
+CBDRグラフ全体のリスクを調査および評価するためのパスを次に示します。
+
+[cols="30%a,30%a,40%a"]
+|===
+
+|*どうしたいですか*
+|*どこに行く*
+|*result*
+
+|上位の重大脆弱性と高脆弱性を表示
+|*優先順位付けされた脆弱性* から*[極めてかつ高]*を選択します。
+|*重大度致命的*および*重大**度高*の脆弱性は、*[調査]*にリストされます。
+
+|エクスプロイタブルな上位の脆弱性を表示
+|*優先順位付けされた脆弱性* から*[エクスプロイタブル]*を選択します。
+|*リスク要因の* *エクスプロイタブル*が高くて重要な脆弱性は、*[調査]*にリストされます。
+
+|パッチ適用可能な上位の脆弱性を表示
+|*優先順位付けされた脆弱性* から*[パッチ適用可能]*を選択します。
+|*リスク要因の* *解決*が高くて重要な脆弱性は、*[調査]*にリストされます。
+
+|使用中の脆弱性(パッケージ)の表示
+|*優先順位付けされた脆弱性* から*[In Use]*を選択します。
+|*リスク要因の* *使用中のパッケージ*が高くて重要な脆弱性は、*[調査]*にリストされます。
+
+NOTE: 実行時に使用されている脆弱なパッケージを検出するためのリアルタイム監視を取得するには、xref:../runtime-security/install/deploy-defender/deploy-defender.adoc[Defenderをデプロイ]する必要があります。
+
+|CVEに対して脆弱なアセットを特定する
+|*最も大きな影響を与える脆弱性* から `[CVE-XXXX-XXXX]`を選択します 。
+|cve.id=`CVE-XXXX-XXXXX` の脆弱性の影響を受けるアセットは、CBDRグラフの*[調査]*にリストされています。
+
+|ランタイムで脆弱なサーバーレス関数を表示
+|*段階別の脆弱性の影響* から* [サーバーレス関数]* を選択します。
+|脆弱性の高いサーバーレス関数は、 *[調査]*にリストされています。
+
+|ランタイムで脆弱なデプロイされたコンテナイメージを確認
+|*段階別の脆弱性の影響* から *[デプロイイメージ]* を選択します。
+|脆弱性の高いコンテナイメージは、 *[調査]*にリストされています。
+
+|ランタイムで脆弱なホストを表示
+|*段階別の脆弱性の影響* から* [ホスト]* を選択します。
+|脆弱性の高いホストは、 *[調査]*にリストされています。
+
+|Deployで脆弱なレジストリイメージを確認
+|*段階別の脆弱性の影響* から*[レジストリイメージ]* を選択します。
+|脆弱性の高いレジストリイメージは、 *[調査]*にリストされています。
+
+|脆弱性の高いホストVMイメージを表示
+|*段階別の脆弱性の影響* から *[ホストVMイメージ]* を選択します。
+|脆弱性の高いホストVMは、 *[調査]*にリストされています。
+
+|===
+
+各CBDR ステージで資産を展開し、詳細を表示できます。
+
+[.task]
+[#remediate-vulnerabilities]
+=== 脆弱性の修復または軽減
+
+//What can I do to fix the vulnerabilities in the code or fix them at runtime?
+脆弱性の 概要(Overview)、最も影響の大きい脆弱性(Top Impacting Vulnerabilities)、および [ステージ別の脆弱性の影響(Vulnerability Impact by Stage)] にアクセスすると、修復オプションを調べることができます。
+//<gif>
+
+[.procedure]
+[#remediate-cve]
+
+. *[Dashboard（ダッシュボード）] > [Vulnerabilities（脆弱性）]*を選択します 。
+.. ダッシュボードの任意のエントリパスから脆弱性を選択します。xref:prioritize-assess-risk[リスク優先順位付けと評価]で可能なエントリーパスを参照してください。
+. *[調査]* の [CBDR,] グラフから、脆弱*[CVE] > [View Details（詳細を表示）]*をクリックしてください。
++
+CVEサイドパネルには、CVSSスコア、影響を受けるステージ、重大度、リスク要因、パッケージ名、およびこのCVEの影響を受けるディストリビューションを含むCVEの概要が表示されます。
+//+
+//Let's say, you want to investigate a specific CVE that is critical, exploitable, has a patch, and is affecting the runtime instances.
++
+image::dashboards/uve-remediate-cve.gif[]
+
+. *CVEの修復または軽減*
++
+CVEサイドパネルでは、Jira チケットを修復または作成できます。
+
+.. *[修復] > [プル要求の送信] *を選択して、すべてのリポジトリでこの脆弱性の影響を受けるすべてのパッケージと IaC ファイルを取得します。
+//We need to call out expected behaviors (what happens when an user submits a PR for a group of packages or if no repository is onboarded?) from an UX/UI perspective.
+.. *[Send To] > [Jira]* をクリックして、デプロイされたイメージ、レジストリ イメージ、およびホストのすべての脆弱性の詳細を含む Jira チケットを作成します。
++
+利用可能なテンプレートから *[テンプレート]* を選択するか、*[設定] > [統合と通知]*で新しい統合テンプレートを追加します。
+//** Enter an *Assignee* for the Jira ticket.
++
+*[送信]* を選択します。
++
+//<add-note-for-RLP-110563?focusedCommentId=784561>
+注：*[Dashboard（ダッシュボード）] > [Vulnerabilities（脆弱性）]*には、ワークロード内のすべてのディストリビューションリリースのすべての脆弱性の合計数が表示され、*[Investigate（調査）] > [Search（検索）]*の下 に表示されるアセットに影響を与えるCVEのみの合計数よりも多くなります。
++
+たとえば、1つのCV に複数の脆弱性が付随している場合、脆弱性検索では、これらの脆弱性の影響を受ける CVE のみの合計数が表示されます。
+
+. *アセットへの影響を評価し、対策を講じる*
+.. CVE サイド パネルで *[アセット]*を選択しま 。
++
+これにより、コードとビルドのパッケージとIaCファイルから、ホスト、コンテナー、およびサーバーレス関数としてランタイムにデプロイされているレジストリ内のイメージまで、このCVEの影響を受けるすべてのアセットが一覧表示されます。
++
+*リスク要因*に基づいて 資産をフィルター処理したり、すべての資産構成をダウンロードしたり、資産の種類ごとに軽減アクションを実行したりできます。
+//.. Expand each asset in the CBDR stage and select *View Details*.
+//+
+//In assets' side panel review the assets for threat details, alerts, vulnerabilities, process info, package info, labels, and view assets' configuration.
+//For example, with attack path analysis, you can assess a weak host that is internet exposed, has vulnerabilities and has access to PII (credit card), and see the policies violated that generated these findings.
++
+以下は、各アセットタイプで使用可能なアクションです。
++
+- **アセットタイプ**:**どのように軽減できるか、またはどのようなアクションを実行できますか**
+- CVE:**修復 > プルリクエストの送信 > 送信 > Jira**
+- パッケージ：*アクション >プルリクエストを送信*と *アクション > 抑制*
+- IaC ファイル内の画像:*アクション >プルリクエストを送信*と *アクション > 抑制*
+- ホスト:*アクション > Jiraチケットの作成*
+- デプロイされたイメージ:*アクション > Jiraチケットの作成*
+- レジストリイメージ:*アクション > Jiraチケットの作成*
+- サーバーレス関数:*アクション > Jiraチケットの作成*
+
+=== 脆弱性クエリ (RQL)
+
+Prisma Cloudの脆弱アセットを、`脆弱性のwhere`RQL句で**調査**します。
+xref:../search-and-investigate/vulnerability-queries/vulnerability-queries.adoc[脆弱性クエリ]を参照してください。

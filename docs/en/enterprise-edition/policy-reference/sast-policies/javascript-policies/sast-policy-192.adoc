@@ -1,0 +1,80 @@
+== Untrusted data unsafely deserialized
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 63701fb1-00af-47d1-b127-0228553b1156
+
+|Checkov ID 
+|CKV3_SAST_192
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|JavaScript, TypeScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/502.html[CWE-502: Deserialization of Untrusted Data]
+
+|OWASP Categories
+|https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/[A08:2021-Software and Data Integrity Failures]
+
+|=== 
+
+=== Description
+
+This policy detects whether JavaScript and TypeScript applications perform unsafe deserialization of untrusted data. Deserialization of untrusted data can lead to security vulnerabilities, as malicious actors can exploit it to execute arbitrary code within an application.
+
+In this example, user input from req.body.data is directly deserialized using the node-serialize library without validation. This exposes the application to deserialization attacks. Attackers could exploit this by sending malicious serialized data, potentially allowing them to execute harmful instructions on the system.
+
+[source,JavaScript]
+----
+const serialize = require('node-serialize');
+
+// Example Express.js route handler
+function processUserInput(req, res) {
+    // Directly using data from the request's query parameters
+    const userData = req.query.userdata;
+
+    // Deserializing the data directly from user input
+    const deserializedData = serialize.unserialize(userData);
+
+    res.send("Data processed");
+}
+
+app.get('/user', processUserInput);
+----
+
+
+=== Fix - Buildtime
+
+Avoid using unsafe deserialization methods for processing untrusted data. Instead, consider using safe serialization methods such as `JSON.parse()` and `Buffer.from()` for handling untrusted data.
+
+In this example, user input is safely parsed using JSON.parse(), ensuring that only valid JSON data is processed. This mitigates the risk of deserialization attacks.
+
+[source,JavaScript]
+----
+// Example Express.js route handler
+function processUserInput(req, res) {
+    // Directly using data from the request's query parameters
+    const userData = req.query.userdata;
+
+    try {
+        // Safely parsing user data assuming it's in JSON format
+        const parsedData = JSON.parse(userData);
+        res.send("Data processed: " + JSON.stringify(parsedData));
+    } catch (e) {
+        res.status(400).send("Invalid JSON data");
+    }
+}
+
+app.get('/user', processUserInput);
+----
+

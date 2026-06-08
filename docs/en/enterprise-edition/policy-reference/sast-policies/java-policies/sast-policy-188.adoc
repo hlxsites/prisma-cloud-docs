@@ -1,0 +1,100 @@
+== Improper input validation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 169ec063-b738-4963-8e73-6009f4f32be2
+
+|Checkov ID 
+|CKV3_SAST_188
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|Java
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/20.html[CWE-20: Improper Input Validation]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021 - Injection]
+
+|=== 
+
+
+=== Description
+This policy detects whether improper input validation is present in Java applications, particularly in LDAP statements containing user-controlled values. Without proper input validation, executing LDAP statements with user-controlled values can allow an attacker to manipulate the LDAP context, leading to potential security vulnerabilities.
+
+In this example, user input from the username HTTP request parameter is directly incorporated into an LDAP search filter without adequate validation. This exposes the application to LDAP injection attacks, allowing attackers to potentially manipulate the LDAP query.
+
+[source,Java]
+----
+import javax.naming.directory.DirContext;
+
+public class LDAPExample {
+    public void searchUser(DirContext ctx, HttpServletRequest req) throws NamingException {
+        String filter = "(uid=" + req.getParameter("username") + ")";
+        ctx.search("ou=users,dc=example,dc=com", filter, new SearchControls());
+    }
+}
+----
+
+
+=== Fix - Buildtime
+
+Ensure that user input is properly validated and sanitized before incorporating it in LDAP queries. Avoid directly including user-controlled values into LDAP statements.
+
+In this example, user input is validated and sanitized before being used in the LDAP search filter. This ensures that only valid and safe input is included in the LDAP query, mitigating the risk of LDAP injection attacks.
+
+[source,Java]
+----
+import javax.naming.directory.DirContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.naming.NamingException;
+import javax.naming.directory.SearchControls;
+
+public class LDAPExample {
+    // This method now accepts a username that should be verified and processed before being passed here.
+    public void searchUser(DirContext ctx, String verifiedUsername) throws NamingException {
+        if (verifiedUsername == null || !verifiedUsername.matches("^[a-zA-Z0-9]+$")) {
+            throw new IllegalArgumentException("Invalid username");
+        }
+        String safeFilter = "(uid=" + escapeLDAPSearchFilter(verifiedUsername) + ")";
+        ctx.search("ou=users,dc=example,dc=com", safeFilter, new SearchControls());
+    }
+
+    private String escapeLDAPSearchFilter(String filter) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filter.length(); i++) {
+            char curChar = filter.charAt(i);
+            switch (curChar) {
+                case '\\':
+                    sb.append("\\5c");
+                    break;
+                case '*':
+                    sb.append("\\2a");
+                    break;
+                case '(':
+                    sb.append("\\28");
+                    break;
+                case ')':
+                    sb.append("\\29");
+                    break;
+                case '\u0000': 
+                    sb.append("\\00");
+                    break;
+                default:
+                    sb.append(curChar);
+            }
+        }
+        return sb.toString();
+    }
+}
+----

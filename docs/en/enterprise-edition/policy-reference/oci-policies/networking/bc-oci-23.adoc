@@ -1,0 +1,48 @@
+
+== OCI Data Catalog configured with overly permissive network access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 7e453ac3-32b3-4862-b720-8ca5d616b5a5
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/oci/DataCatalogWithPublicAccess.py[CKV_OCI_23]
+
+|Severity
+|HIGH
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This rule identifies Data Catalogs configured with overly permissive network access.
+
+The OCI Data Catalog service provides a centralized repository to manage and govern data assets, including their metadata. When network access settings are too permissive, it can expose sensitive metadata to unauthorized users or malicious actors, potentially leading to data breaches and compliance issues.
+
+As a best practice, it is recommended to configure the Data catalog with private endpoints; so that the Data catalog is accessible only to restricted entities.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+Ensure that your OCI Data Catalog is configured with a private endpoint to restrict network access. This will help prevent overly permissive access to the data catalog service. 
+
+In this example, you should configure a private endpoint for the `oci_data_catalog` resource using Terraform.
+
+[source,go]
+----
+resource "oci_datacatalog_catalog" "example" {
+  ...
++  attached_catalog_private_endpoints = [oci_datacatalog_catalog_private_endpoint.example_private_endpoint.id]
+}
+----

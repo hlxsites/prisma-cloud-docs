@@ -1,0 +1,133 @@
+:topic_type: タスク
+[.task]
+[#edit-an-existing-aws-account]
+== オンボードAWSアカウントの編集、及びデータセキュリティの設定
+
+Prisma Cloudで以前にオンボードしたAWSアカウントでData Securityを有効にする場合は、以下の手順に従ってPrisma Cloudスタックを更新し、データセキュリティを有効にするために必要な追加のアクセス許可を含めます。
+
+[.procedure]
+. AWSアカウントを選択し、*Data Security*を有効にします。
+
+.. *[設定] > [クラウド アカウント]* を選択します。
+
+.. データセキュリティを有効化したい AWSアカウント横の目アイコン (View Cloud Account) をクリックします。
+
+.. [データ セキュリティ]にある *[構成]* をクリックします。
+
+.. [*セキュリティ機能とアクセス許可*]の [*データセキュリティ*] を選択します。
+
+. [[id596f6d05-ab1c-4556-8274-9289f6ecdb1e]]+++<draft-comment>source file is edit-an-existing-aws-account.xml</draft-comment>+++ 既存のスタックを更新します。
+
+.. CFTをダウンロードし、AWSコンソールにログインし、画面に表示される手順1～ 8を完了してスタックを更新します。
++
+image::administration/aws-pcds-edit-ac-configure.png[]
+
+.. *AWS Management Console（AWS管理コンソール）>Stacks（スタック）*に移動します。
++
+* Prisma CloudApp スタック（以前にPrisma CloudAppスタックをデプロイするためにCFTを使用している場合）と*Update（更新）*を選択します。
+
+* ない場合は、Prisma Cloud用に手動で作成したスタックを選択します。
++
+image::administration/image60.png[]
+
+.. *Update（更新）*を選択します。
++
+image::administration/image35.png[]
+
+.. *現在のテンプレートを置き換え*、*テンプレートファイルをアップロード*します。次に、手順a)から先ほどダウンロードしたCFTをアップロードし、*Next（次へ）*をクリックします。
++
+image::administration/image29.png[]
+
+.. *Settings（設定）>Cloud Accounts（クラウドアカウント）>Configure Account（アカウントの設定）*から*コールバックURL*をコピーします。
+
+.. AWS管理コンソールのSpecify stack details（スタックの詳細の指定）ページで、*SNSEndpoint*フィールドに*コールバックURL*を貼り付けます。
++
+image::administration/image7.png[]
+
+.. *Next（次へ）*をクリックして、このページに移動して*Update stack（スタックの更新）*プロセスを完了するまで、次の画面を確認します。
++
+CFTの更新プロセスでは、PrismaCloudSNSトピックが作成され、CloudTrailデータイベントの監視に使用されます。
++
+image::administration/image2.png[]
+
+.. スタックのOutputs（出力）タブから*RoleARN*をコピーします。
++
+image::administration/image59.png[]
+
+.. Prisma Cloudで*Settings（設定）>Cloud Accounts（クラウドアカウント）>Configure Account（アカウントの設定）*にロールARNを貼り付け、既存のロールARNを置き換えます。
+
+.. スタックのOutputs（出力）タブからSNS ARNをコピーします。
++
+image::administration/image9.png[]
+
+.. *SNS Topic:*Settings（設定）>Cloud Accounts（クラウドアカウント）> Configure Account（アカウントの設定）*でARN*を選択し、*Next（次へ）*をクリックして続行します。
+
+//include::../../fragments/idee00fe2e-51d4-4d26-b010-69f3c261ad6f__id82a563a3-ea83-444d-a6ab-f1f8b5e116d8.adoc[]
+
+//include::../../fragments/idee00fe2e-51d4-4d26-b010-69f3c261ad6f__id50a63347-4291-4210-99fa-f51de04106be.adoc[]
+
+. (tt:[任意]) この手順は、S3バケット内のオブジェクトがCustomer Managed Keys（CMK、カスタマー管理キー）で暗号化されている場合にのみ実行してください。
++
+この手順は、CMKが同じAWSアカウント内にあるか、別のAWSアカウント内にあるかによって異なります。
++
+* オンボーディングしているのと同じAWSアカウントにCMKがある場合、Prisma Cloudロールにはキーにアクセスするための追加のアクセス権限が必要です。Prisma Cloudロールに以下のステートメントを追加して、すべてのCMK ARNでリソース配列を更新します。
++
+[userinput]
+----
+{
+            "Sid":"AllowPrismaCloudToAccessKeys",
+            "Effect":"許可",
+            "アクション": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "リソース": ["arn:aws:kms:ap-south-123456789101:key/3269f3d0-1820-407f-b67e-73acdd9243f4"]}
+----
+
+* オンボーディングしているアカウントとは異なるAWSアカウントにCMKがある場合、暗号化に使用するすべてのCMKに次のポリシーステートメントを最初に追加し、Prisma Cloud ARNで*Principal AWS*フィールドを更新する必要があります。
++
+[userinput]
+----
+{
+            "Sid":""Allow use of the key",
+            "Effect":""許可",
+            "原則": {
+                "AWS": "arn:aws:iam::726893731529:role/PrismaCloudReadOnlyRoleWithDLP"
+            },
+            "アクション": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "リソース": "*"
+}
+----
++
+PrismaCloudReadOnlyRoleWithDLP ロールは、Prisma Cloud Data Security ロールを指します。このロールには、キーにアクセスするために追加の権限が必要です。Prisma Cloudロールに以下のステートメントを追加して、すべてのCMK ARNでリソース配列を更新します。
++
+[userinput]
+----
+{
+            "Sid":"AllowPrismaCloudToAccessKeys",
+            "Effect":""許可",
+            "アクション": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "リソース": ["arn:aws:kms:ap-south-123456789101:key/3269f3d0-1820-407f-b67e-73acdd9243f4"]
+}
+----
+
+. *次へ* をクリックして、 *アカウント グループ*を割り当てます。
+
+. *Next（次へ）*をクリックして、クラウド アカウントの*Status（ステータス）*を確認します。
++
+AWSアカウントのData Securityを有効にした後、追加のバケットのスキャンを有効にしたり、スキャン設定を変更したりするには、xref:../monitor-data-security-scan/data-security-settings.adoc[データセキュリティスキャン設定の定義]を参照してください。

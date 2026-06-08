@@ -1,0 +1,48 @@
+
+== Firewall policy does not have IDPS mode set to deny
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2d070655-6259-448f-b52a-2cf91a40f443
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AzureFirewallPolicyIDPSDeny.py[CKV_AZURE_220]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is assessing whether a firewall policy in Azure has the Intrusion Detection and Prevention System (IDPS) mode set to 'deny'. The IDPS is crucial for network security as it actively monitors for suspicious activities or policy violations and takes steps to prevent them. If the IDPS mode is not set to 'deny', it could leave the network vulnerable to potential threats or attacks. Setting the IDPS mode to 'deny' thus enhances security by automatically blocking any detected intrusions, thereby minimizing potential damage.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_firewall_policy
+* *Arguments:* intrusion_detection.mode
+
+
+[source,go]
+----
+resource "azurerm_firewall_policy" "pass" {
+  name                = "pass"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  intrusion_detection {
++    mode = "Deny"
+  }
+}----
+

@@ -1,0 +1,32 @@
+:topic_type: タスク
+[.task]
+[#id9b156e21-1d95-4ee0-b007-10d5fcebf295]
+== SAML SSOを開始する 
+
+//To secure administrator access to Prisma Cloud, go to your identity provider's site to configure single sign-on and then configure Prisma Cloud for SSO.
+
+Okta、Microsoft Active Directory Federation Services（AD FS）、Azure Active Directory（AD）、Google、またはOneLoginなどのセキュリティアサーションマークアップ言語（SAML）をサポートするIDプロバイダ（IdP）を使用して、シングルサインオン（SSO）をPrisma Cloudで有効にできます。Prisma Cloudが監視しているすべてのクラウドアカウントに対して、1つのIdPのみを設定できます。
+
+SSOを使ってPrisma Cloudにアクセスするには、各管理ユーザーにPrisma Cloud上のローカルアカウントが必要になります。SSOを有効にする前に、xref:../../add-prisma-cloud-users.adoc[Prisma Cloudユーザーを追加]してローカルアカウントを作成するか、またはローカルアカウントを自動的に作成したい場合は、Prisma CloudのSSO設定でジャストインタイム（JIT）プロビジョニングを使用します。JITプロビジョニングを使用する場合、初めてログインを行ってSSO IdPから正常に認証されると、SAMLアサーションを使ってPrisma Cloudにローカルユーザーアカウントが作成されます。
+
+SSOを有効にするには、まずIdPでセットアップを行う必要があります。次にSystem Admin（システム管理者）権限を持つアカウントでPrisma Cloudにログインし、SSOを設定してログインリクエストをIdPのログインページにリダイレクトすることで、Prisma Cloud管理ユーザーがSSOを使ってログインできるようにします。SSOを有効にしたら、IdPのポータルからPrisma Cloudコンソールにアクセスする必要があります。Prisma CloudはIdPが開始するSSOをサポートしており、そのSAMLエンドポイントはPOSTメソッドのみをサポートしています。
+
+[CAUTION]
+====
+アカウントのロックアウトを防ぐには、数名の管理ユーザーがPrisma Cloudのローカル認証資格情報とSSOアクセスの両方を使用できるようにする必要があります。各管理者が、Welcome to Palo Alto Networks Support電子メールを使って各自のPalo Alto Networksカスタマーサポートポータル（CSP）アカウントをアクティブ化して、ポータルにアクセスするためのパスワードを設定していることを確認してください。
+====
+
+[.procedure]
+. まずxref:../../add-prisma-cloud-users.adoc[Prisma Cloudで管理ユーザーを追加]するか、またはPrisma CloudでのSSOの設定時にJITプロビジョニングを使ってユーザーをその場で追加することをお勧めします。
++
+ユーザーに対するJIT プロビジョニングを有効にする場合は、次の手順に進む前に xref:../../create-prisma-cloud-roles.adoc[Prisma Cloud ロールを作成] します。IdPでSSOを設定する場合、ユーザーが適切な権限を持ち、Prisma Cloud上で割り当てられたクラウドアカウントを監視できるように、このロールをユーザーのプロファイルに添付する必要があります。
+
+. ユーザーがIdPからアクセスする必要がある、Prisma Cloud用のAudience URIをコピーします。
++
+.. Prisma Cloudにログインし、*Settings（設定）> Access Control（アクセス制御）>SSO*を選択します。
+
+.. *Audience URI (SP Entity ID)*の値をコピーします。これは、https://app.prismacloud.io?customer=<文字列>のような形式の読み取り専用フィールドで、Prisma Cloudのインスタンスを一意に識別するものです。IdPでSAMLを設定する際に、この値が必要になります。
++
+image::administration/settings-sso-1.png[]
+
+. 次のセクションで説明するように、SSO用のIDプロバイダ（Okta、Microsoft AD FS、Azure AD、Google、またはOneLogin）をセットアップします。

@@ -1,0 +1,62 @@
+== Logging at session start enabled on Palo Alto Networks devices
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 1af4aab2-8250-4552-9792-90a641bd666b
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyLogSessionStart.yaml[CKV_PAN_16]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether logging at the start of a session is enabled on Palo Alto Networks devices. While logging at session start can provide detailed insights for troubleshooting or monitoring specific long-lived GRE tunnel connections, it typically generates a large volume of logs and can lead to resource consumption issues.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attribute:* log_start
+
+To mitigate this risk, ensure that the `log_start` attribute is either not set (defaulting to 'false') or explicitly set to 'false' in your panos_security_rule resources. This should be the standard practice unless there is a clear, documented need to enable start-of-session logging for troubleshooting or monitoring specific scenarios.
+
+Secure Code Example:
+
+[source,yaml]
+----
+---
+- name: Example
+  ...
+  tasks:
+    - name: Example
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['inside']
+        destination_zone: ['outside']
+        source_ip: ['10.10.10.1']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+        # log_start not specified, default is true which is a pass
+----
+
+In this example, by ensuring `log_start` is set to false or is absent, you ensure that ogging at the start of a session is disabled on Palo Alto Networks devices, optimizing log management while still allowing for exceptions in scenarios where start-of-session logging is necessary.

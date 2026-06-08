@@ -1,0 +1,864 @@
+== Features Introduced in October 2024
+
+Learn what's new on Prisma® Cloud in October 2024.
+
+* <<announcement>>
+* <<new-features>>
+* <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+* <<new-policies>>
+* <<iam-policy-updates>>
+* <<policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<rest-api-updates>>
+* <<deprecation-notice>>
+//* <<end-of-sale>>
+
+[#announcement]
+=== Announcement
+
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+
+|*Prisma Cloud Release Schedule Updated from a Bi-weekly to a Monthly Release*
+//RLP-148595
+
+|Prisma Cloud's release schedule will transition from a bi-weekly to a monthly cadence, starting with the current release, to ensure continuous deliver of high-quality features and enhancements.
+
+* Enhance Quality: A longer development cycle enables the Prisma Cloud team to focus on thorough testing and quality assurance, ensuring that each release meets the highest standards.
+
+* Incorporate Feedback: With more time between releases, we can better integrate your feedback and suggestions into our product roadmap, leading to features that truly meet your organization's security needs.
+
+* Optimize Resources: This change helps allocate resources more effectively, allowing the Prisma Cloud team to work on more feature improvements for you.
+
+*Impact—* Prisma Cloud will release new features, enhancements, and security updates on a monthly basis starting in October 2024 (no more .2 releases). Each release will be accompanied by detailed release notes to keep you informed of what's new.
+
+If you have any questions or feedback, contact your Prisma Cloud Customer Support representative.
+
+//Thank You for your support and we appreciate your understanding and support as we make this transition. Our goal is to provide you with the best possible product and experience. If you have any questions or feedback, please do not hesitate to reach out to our support team.
+//Improved Communication: We are committed to continue keeping you updated on our progress and any upcoming features. Expect regular updates and insights into our development process.
+
+
+|===
+
+[#new-features]
+=== New Features
+
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+
+| *Multiple Intelligence Stream (IS) Builders for Compatibility across Console and Defender Versions*
+// CWP-61917
+
+tt:[Secure the Runtime]
+
+tt:[33.01.137]
+
+|Starting from this release, Prisma Cloud will introduce versioning for the Intelligence Stream (IS) to ensure compatibility across different Console and Defender versions.
+
+*Purpose of Intelligence Stream (IS) versioning*
+
+* *Maintain functionality for older Consoles and Defenders:* IS versioning ensures that older Consoles and Defenders continue to operate properly, even if they're unable to support the latest Intelligence feeds (for example, due to changes in external data feed formats).
+
+* *Reduce disruptions:* Versioning helps minimize disruptions caused by updates, such as changes in downloaded JSON file fields that could impact CVE accuracy or result in duplicate CVEs.
+
+// * *Provide flexibility:* The new versioning system allows customers to upgrade their Console and Defender versions independently, without being forced to update both at the same time.
+
+*Impact on Prisma Cloud Customers*
+
+* *Enterprise Edition (SaaS) customers:* Aren't affected as they always have the latest Console version.
+
+* *Compute Edition (self-hosted) customers:* IS versions will be aligned with specific Console versions. For example, older 31.xx and 32.xx Consoles will be supported by the IS version released for Console 33.00. When customers upgrade to the latest Console version, they will receive the most recent IS updates.
+
+*Vulnerability Reporting Consistency*
+
+* *New Intelligence Stream (IS) logic updates:* These updates will only apply to the latest IS versions.
+
+* *Vulnerability data:* All IS versions will continue to provide up-to-date vulnerability information, and changes in IS logic or algorithms won't affect the vulnerability metrics and reporting in the Console.
+
+
+| *Support for Deploying Defenders on Podman Containers*
+// CWP-61840
+
+tt:[Secure the Runtime]
+
+tt:[33.01.137]
+
+|Previously, Prisma Cloud supported scanning Podman images in the CI pipeline using _twistcli_. With this release, Prisma Cloud now supports deploying Defenders on Podman containers, providing comprehensive visibility and protection for workloads running in Podman environments.
+
+This enhancement enables full protection for Podman containers, including continuous vulnerability scanning, compliance policy enforcement, and active runtime security monitoring.
+
+To deploy a Linux Container Defender on Podman, navigate to *Manage* > *Defenders* > *Manual Deploy* > *Single Defender*. Select *Container Defender - Linux* as Defender Type. In the *Container Runtime Type* field, select *Podman* (the default is Docker).
+
+If you select Podman, the installation script automatically includes the `--install-podman` argument.
+
+If your Podman environment uses a custom runtime socket path, you can specify it using the `--podman-socket` argument.
+
+For example, to use Podman with a custom runtime socket path, the installation command would be:
+
+`curl -sSL --header "#####<Bearer TOKEN>####" -X POST <TENANT URL>/api/v1/scripts/defender.sh \| sudo bash -s -- -c "stage-consoles-cwp.cloud.twistlock.com" -v --install-podman --podman-socket "<custom_runtime_socket_path>"`
+
+|*SHA-256 Checksum for Defender Image Downloads*
+// CWP-61241
+
+tt:[Secure the Runtime]
+
+tt:[33.01.137]
+
+|Prisma Cloud now enables users to validate the integrity of Defender images downloaded from the Console using a SHA-256 checksum, ensuring the downloaded image matches the server version.
+
+To access the feature, do the following:
+
+. In the Console, go to *Manage > System > Utilities*. 
++ 
+The SHA-256 checksum is available next to the downloadable Defender image. 
+
+. Click *Show Checksum* to view the checksum to verify the downloaded image.
+
+This feature ensures that Defender images are secure and protected from tampering.
+
+
+|*Prisma Cloud Copilot*
+//RLP-151264
+
+tt:[24.10.1]
+
+|Prisma Cloud Copilot provides you with an innovative way to interact with the Prisma Cloud platform through an AI chat interface. 
+The Copilot is available for Prisma Cloud Enterprise customers on all Prisma Cloud stacks (except app.gov and app.cn). It will be a phased rollout from October 7, 2024 to October 24, 2024. 
+
+Use https://docs.prismacloud.io/en/enterprise-edition/content-collections/prisma-cloud-copilot/prisma-cloud-copilot[Prisma Cloud Copilot] for:
+
+* Finding your top risks and easily prioritize and remediate the riskiest attack paths.
+
+* Vulnerability management for surfacing top vulnerabilities, contextualizing CVEs, and recommending optimal fixes.
+
+* Support case creation within the product.
+
+* Finding answers instantly with natural language questions.
+
+
+|*Satellite and Container Exposure*
+//CNS-10225
+
+tt:[24.10.1]
+
+|Prisma Cloud now supports https://docs.prismacloud.io/en/enterprise-edition/content-collections/administration/network-security/container-network-exposure/container-network-exposure[Kubernetes (K8s) Service Exposure], which detects containers directly exposed to the internet through a K8s Service and Network Load Balancer. Prisma Cloud correlates the K8s configuration with the VPC network information to determine which K8s components are internet exposed, the deployments and endpoints behind each service, based on which it builds a network graph to display the network path.
+
+A new Prisma Cloud Satellite operator automatically deploys the Discovery application, for analysis by Prisma Cloud Network Analyzer (CNA) and for https://docs.prismacloud.io/en/enterprise-edition/content-collections/cloud-and-software-inventory/applications-inventory[Application] Centric Security Insights. 
+
+
+|*Application Centric Security Insights*
+//RLP-119968
+
+tt:[24.10.1]
+
+|Prisma Cloud now allows you to review critical alerts and vulnerabilities from an application perspective. This provides visibility into all your impacted applications and their assets, helping you understand their relationships across your cloud environment and gain deeper insights into your security posture. 
+
+Use the https://docs.prismacloud.io/en/enterprise-edition/content-collections/cloud-and-software-inventory/applications-inventory[Applications Inventory] page to inspect and analyze your applications. You can also search and investigate applications using the https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/application-queries/application-query-attributes[Application query attributes] available on the *Investigate* page.
+
+
+
+|*AWS Role Chaining Detection*
+//IVG-16193
+
+tt:[24.10.1]
+
+|Enhancements to Cloud Identity and Entitlement Management (CIEM) alert you when role chaining is present in your environment. Role chaining occurs when you use a primary role to assume a secondary role. This results in the newly granted role assuming all the configured permissions granted for the first role. 
+
+Granting a new identity permissions that belong to a different role, may lead to a scenario where multiple roles and trust relationships lead to a privilege escalation. https://docs.prismacloud.io/en/enterprise-edition/content-collections/search-and-investigate/permissions-queries/permissions-query-attributes[Role chaining detection] allows you to better detect and manage complex permissions configurations.
+
+To detect role chaining, new permissions will be created where AWS roles as the source serves as the principal of another role. These new permissions could lead to new alerts being generated, where they did not exist before.
+
+
+|===
+
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Amazon Elastic Container Registry (ECR)*
+//RLP-150134; Added in LA in 9.1; updated text in 9.2
+
+tt:[24.10.1]
+
+|The format of `external_asset_id` for `aws-ecr-image` resources will change. As a result, all existing `aws-ecr-image` resources will be deleted in Prisma Cloud and the corresponding *Open* alerts will be resolved as *Closed*.
+
+Prisma Cloud will automatically fetch all the live ECR images from your cloud accounts and create them as new resources with the new `external_asset_id` format. New alerts will be generated for resources that match the active policies in your tenant.
+
+*Impact—* You may notice a temporary drop in `aws-ecr-image` resource count and open alert count. However, after the `aws-ecr-image` resources are automatically ingested, the corresponding live resource count and open alert count will return to the previous levels.
+
+
+|*VPC Peering Connections API Changes*
+//RLP-150898
+
+tt:[24.10.1]
+
+|*API*: aws-ec2-describe-vpc-peering-connections
+
+*Change*: Ingestion of VPC peering connections will now be performed only for the requester account. This update will remove all related resources from the connection accepter account.
+
+
+// |*Amazon Elastic Container Registry (ECR)*
+//RLP-150134
+// |Starting with the 24.10.1 release, the `external_asset_id` for `aws-ecr-image` in Prisma Cloud will be updated in the backend. As a result, all resources for `aws-ecr-image` API will be deleted and then regenerated on the management console.
+// Existing alerts corresponding to these resources will be resolved as Closed, and new alerts will be generated against policy violations.
+// *Impact—* You may notice a reduced count for the number of alerts. However, once the resources for the aws-ecr-image API resumes ingesting data, the alert count will return to the original numbers.
+
+
+|*Amazon EC2 Ingestion*
+//RLP-145171
+
+tt:[24.10.1]
+
+|Prisma Cloud will no longer ingest private Amazon Machine Images (AMIs) owned by other accounts unless they are actively used by EC2 instances within the current account.
+
+*Impact—* No impact on out-of-the-box (OOTB) policies. However, if you have custom policies, you must manually update them to check for private AMIs not owned by the same account and not currently deployed.
+
+If you have any questions, contact your Prisma Cloud Customer Success Representative.
+
+
+|*Addition of GCP Granular Permissions**
+//RLP-150820
+
+tt:[24.10.1]
+
+|A subset of *Viewer* role permissions needed for API ingestions will be added to the existing *Custom* role present in the Google Terraform template. Also, the original Viewer role containing necessary permissions will still be available in the template.
+
+With this change, you need not manually enter the necessary API permissions under custom roles in case you decide not to grant Prisma Cloud Viewer role permissions.
+
+*Impact—* This change will not affect the onboarding status of your accounts.
+
+|===
+
+
+[#api-ingestions]
+=== API Ingestions
+
+[cols="30%a,70%a"]
+|===
+|*Service*
+|*API Details*
+
+|*AWS Describe Mount Targets*
+
+tt:[24.10.1]
+//RLP-149526
+
+|Existing API *aws-describe-mount-targets* is updated with new CSP API `DescribeBackupPolicy`` to ingest `backupPolicy` information.
+
+Additional permission required:
+
+* `elasticfilesystem:DescribeBackupPolicy`
+
+The Security Audit role includes the above permission.
+
+|*Azure Postgresql Flexible Server*
+//RLP-150152
+tt:[Update]
+
+tt:[24.10.1]
+
+|Two new parameters have been added to the `postgresql-flexible-server` API:
+
+`authConfig`: Monitors authentication settings for the server, indicating whether EntraID or password-based authentication is enabled or disabled.
+
+`dataEncryption`: Provides details on the server’s encryption settings, including the encryption type and key management details.
+
+
+|===
+
+
+[#new-policies]
+=== New Policies
+
+[cols="50%a,50%a"]
+|===
+|*Policies*
+|*Description*
+
+|*AWS EMR Studio using the shadow resource bucket for workspace storage*
+
+tt:[24.10.1]
+//RLP-150584
+
+|This policy identifies that the AWS EMR Studio using the bucket for workspace storage is not managed from the current account. This could potentially be using the shadow resource bucket for workspace storage.
+
+AWS EMR enables data processing and analysis using big data frameworks like Hadoop, Spark, and Hive. To create an EMR Studio, the EMR service automatically generates an S3 bucket. This S3 bucket follows the naming pattern ‘aws-emr-studio-{Account-ID}-{Region}’. An attacker can create an unclaimed bucket with this predictable name and wait for the victim to deploy a new EMR Studio in a new region. This can result in multiple attacks, including cross-site scripting (XSS) when the user opens the compromised notebook in EMR Studio.
+
+It is recommended to verify the expected bucket owner and update the AWS EMR storage location and enforce the aws: ResourceAccount condition in the policy of the service role used by the AWS EMR to check that the AWS account ID of the S3 bucket used by AWS EMR Studio according to your business requirements.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'aws-emr-studio' AND json.rule = DefaultS3Location exists and DefaultS3Location contains "aws-emr-studio-" as X; config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' as Y; filter 'not ($.X.BucketName equals $.Y.bucketName)' ; show X;
+----
+
+|*AWS Glue Job using the shadow resource bucket for script location*
+
+tt:[24.10.1]
+//RLP-150584
+
+|This policy identifies that the AWS Glue Job using the bucket for script location is not managed from the current location. This could potentially be using the shadow resource bucket for script location.
+
+A shadow resource bucket is an unauthorized S3 bucket posing security risks. AWS Glue is a service utilized to automate the extraction, transformation, and loading (ETL) processes, streamlining data preparation for analytics and machine learning. When a job is created using the Visual ETL tool, Glue automatically creates an S3 bucket with a predictable name pattern ‘aws-glue-assets-accountid-region’. An attacker could create the S3 bucket in any region before the victim uses Glue ETL, causing the victims Glue service to write files to the attacker-controlled bucket. This vulnerability allows an attacker to inject any code into the Glue job of the victim, resulting in remote code execution (RCE).
+
+It is recommended to verify the expected bucket owner and update the AWS Glue jobs script location and enforce the aws:ResourceAccount condition in the policy of the AWS Glue Job to check that the AWS account ID of the S3 bucket used by AWS Glue Job according to your business requirements.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'aws-glue-job' AND json.rule = Command.BucketName exists and Command.BucketName contains "aws-glue-assets-" as X; config from cloud.resource where api.name = 'aws-s3api-get-bucket-acl' AND json.rule = bucketName contains "aws-glue-assets-" as Y; filter 'not ($.X.Command.BucketName equals $.Y.bucketName)' ; show X;
+----
+
+|*Azure Machine Learning compute instance not configured inside virtual network*
+
+tt:[24.10.1]
+//RLP-150351
+
+|This policy identifies Azure Machine Learning compute instances that are not configured within a virtual network.
+
+Azure Machine Learning compute instances outside a Virtual Network are exposed to external threats, as they may be publicly accessible. Placing the instance within a Virtual Network improves security by limiting access to trusted virtual machines and services within the same network. This ensures secure communication and blocks unauthorized public access.
+
+As a security best practice, it is recommended to deploy the Azure Machine Learning compute instances inside a virtual network.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-machine-learning-compute' AND json.rule = properties.provisioningState equal ignore case Succeeded and properties.properties.subnet.id does not exist
+----
+
+|*Azure Machine Learning compute instance with local authentication enabled*
+
+tt:[24.10.1]
+//RLP-150352
+
+|This policy identifies Azure Machine Learning compute instances that are using local authentication.
+
+Disabling local authentication improves security by mandating the use of Microsoft Entra ID for authentication. Local authentication can lead to security risks and unauthorized access. Using Microsoft Entra ID ensures a more secure and compliant authentication process.
+
+As a security best practice, it is recommended to disable local authentication and use Microsoft Entra ID for authentication.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-machine-learning-compute' AND json.rule = properties.properties.state equal ignore case running and (properties.computeType equal ignore case ComputeInstance or properties.computeType equal ignore case AmlCompute ) and properties.disableLocalAuth is false 
+----
+
+|*Azure Machine Learning workspace not encrypted with Customer Managed Key (CMK)*
+
+tt:[24.10.1]
+//RLP-150353
+
+|This policy identifies Azure Machine Learning workspaces that are not encrypted with a Customer Managed Key (CMK).
+
+Azure handles encryption using platform-managed keys by default, but customer-managed keys (CMKs) provide greater control and help meet specific security and compliance requirements. Without CMKs, organizations may not have full control over key management and rotation, increasing the risk of compliance issues and unauthorized data access. Configuring the workspace to use CMKs enhances security by allowing organizations to manage key access and rotation, ensuring stronger protection and compliance for sensitive data.
+
+As a security best practice, it is recommended to configure the workspace to use Customer Managed Keys (CMKs).
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.encryption.status does not exist or properties.encryption.status equal ignore case disabled) 
+----
+
+|*Azure Machine Learning workspace not enforced with Managed Virtual Network Isolation*
+
+tt:[24.10.1]
+//RLP-150354
+
+|This policy identifies Azure Machine Learning workspaces that are not enforced with Managed Virtual Network Isolation.
+
+Managed Virtual Network Isolation ensures that the workspace and its resources are accessible only within a secure virtual network. Without enforcing this isolation, the environment becomes vulnerable to security risks like external threats, data leaks, and non-compliance. If not properly isolated, the workspace may be exposed to public networks, increasing the chances of unauthorized access and data breaches.
+
+As a security best practice, it is recommended to configure Azure Machine Learning workspaces with Managed Virtual Network Isolation. This will restrict network access to the workspace and ensure that it can only be accessed from authorized networks.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' and api.name = 'azure-machine-learning-workspace' AND json.rule = properties.provisioningState equal ignore case Succeeded and (properties.managedNetwork.isolationMode equal ignore case Disabled OR properties.managedNetwork.isolationMode does not exist)
+----
+
+
+|*GCP public-facing (external) regional load balancer using HTTP protocol*
+
+tt:[24.10.1]
+//RLP-147860
+
+|This policy identifies GCP public-facing (external) regional load balancers using HTTP protocol.
+
+Using HTTP protocol with a GCP external load balancer transmits data in plaintext, making it vulnerable to eavesdropping, interception, and modification by malicious actors. This lack of encryption exposes sensitive information, increases the risk of man-in-the-middle attacks, and compromises the overall security and privacy of the data exchanged between clients and servers.
+
+It is recommended to use HTTPS protocol with external-facing load balancers.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+
+|*GCP public-facing (external) global load balancer using HTTP protocol*
+
+tt:[24.10.1]
+//RLP-147861
+
+|This policy identifies GCP public-facing (external) global load balancers using HTTP protocol.
+
+Using the HTTP protocol with a GCP external load balancer transmits data in plaintext, making it vulnerable to eavesdropping, interception, and modification by malicious actors. This lack of encryption exposes sensitive information, increases the risk of man-in-the-middle attacks, and compromises the overall security and privacy of the data exchanged between clients and servers.
+
+It is recommended to use HTTPS protocol with external-facing load balancers.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+
+|*GCP Vertex AI Workbench Instance is using default service account with the editor role*
+
+tt:[24.10.1]
+//RLP-150416
+
+|This policy identifies GCP Vertex AI Workbench Instances that are using the default service account with the Editor role.
+
+The Compute Engine default service account is automatically created with an autogenerated name and email address when you enable the Compute Engine API. By default, this service account is granted the IAM basic Editor role unless you explicitly disable this behavior. If this service account is assigned to a Vertex AI Workbench instance, it may lead to potential privilege escalation.
+
+In line with the principle of least privilege, it is recommended that Vertex AI Workbench Instances are not assigned the 'Compute Engine default service account', particularly when the Editor role is granted to the service account.
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*RQL—* 
+----
+config from cloud.resource where api.name = 'gcloud-vertex-ai-workbench-instance' AND json.rule = state equals "ACTIVE" and gceSetup.serviceAccounts[*].email contains "compute@developer.gserviceaccount.com" as X; config from cloud.resource where api.name = 'gcloud-projects-get-iam-user' AND json.rule = user contains "compute@developer.gserviceaccount.com" and roles[*] contains "roles/editor" as Y; filter ' $.X.gceSetup.serviceAccounts[*].email equals $.Y.user'; show X;
+----
+
+|*GCP Vertex AI Workbench Instance has vTPM disabled*
+
+tt:[24.10.1]
+//RLP-150417
+
+|This policy identifies GCP Vertex AI Workbench Instances that have the Virtual Trusted Platform Module (vTPM) feature disabled.
+
+The Virtual Trusted Platform Module (vTPM) validates the guest VM's pre-boot and boot integrity and provides key generation and protection. The root keys of the vTPM, as well as the keys it generates, cannot leave the vTPM, thereby offering enhanced protection against compromised operating systems or highly privileged project administrators.
+
+It is recommended to enable the virtual TPM device on GCP Vertex AI Workbench Instances to support measured boot and other OS security features that require a TPM.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+|*GCP Vertex AI Workbench Instance has Integrity monitoring disabled*
+
+tt:[24.10.1]
+//RLP-150420
+
+|This policy identifies GCP Vertex AI Workbench Instances that have Integrity monitoring disabled.
+
+Integrity Monitoring continuously monitors the boot integrity, kernel integrity, and persistent data integrity of the underlying VM of the shielded workbench instances. It detects unauthorized modifications or tampering, enhancing security by verifying the trusted state of VM components throughout their lifecycle. Integrity monitoring provides active alerts, enabling administrators to respond to integrity failures and prevent compromised nodes from being deployed into the cluster.
+
+It is recommended to enable Integrity Monitoring for Workbench instances to detect and mitigate advanced threat, such as rootkits and bootkit malware.
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+|===
+
+[#iam-policy-updates]
+=== IAM Policy Updates
+//RLP-149750
+
+The policy *Severity* levels for the following IAM policies will be adjusted to better align with the potential risks they pose.
+
+*Impact—* If your alert rules use the *Policy Severity* filter, you may notice a slight change in the number of alerts. However, this change will not affect custom policies or policies where you have manually set the severity levels. For policies included in alert rules that are not based on severity, the number of alerts will remain unchanged.
+
+If you have any questions, reach out to your Prisma Cloud Customer Success Representative.
+
+
+[cols="70%a,15%a,15%a"]
+|===
+|*Policy Name*
+|*Current Severity*
+|*Updated Severity*
+
+|AWS Administrators with IAM permissions are unused for 90 days
+|High
+|Medium
+
+|AWS Groups and IAM Roles with Administrative Permissions
+|High
+|Informational
+
+|AWS IAM Groups and Roles with Excessive Policies
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS IAM Groups and Roles with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with Administrative Permissions
+|High
+|Informational
+
+|AWS Users and Machine Identities with Excessive Policies
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|AWS Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with Administrative Permissions
+|High
+|Informational
+
+|Azure AD Groups, Service Principals and Managed Identities with Excessive Policies
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Data Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure AD Groups, Service Principals and Managed Identities with IAM Metadata Write permissions are unused for 90 days
+|High
+|Low
+
+|Azure Administrators with IAM permissions are unused for 90 days
+|High
+|Medium
+
+|Azure Users and Machine Identities with Administrative Permissions
+|High
+|Informational
+
+|Azure Users and Machine Identities with Excessive Policies
+|High
+|Low
+
+|Azure Users and Machine Identities with IAM Data Read permissions are unused for 90 days
+|High
+|Low
+
+|Azure Users and Machine Identities with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|Azure Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|Azure Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|Cloud Service account is inactive for 90 days  
+|Low  
+|Medium  
+
+|Cloud Service account with Data Read Permissions is inactive for 90 days  
+|Low  
+|Medium  
+
+|Cloud Service account with Metadata Write Permissions is inactive for 90 days  
+|Low  
+|Medium  
+
+|GCP Administrators with IAM permissions are unused for 90 days  
+|High  
+|Medium  
+
+|GCP Groups and Service Accounts with Administrative Permissions  
+|High  
+|Informational  
+
+|GCP Groups and Service Accounts with Excessive Policies  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Data Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Groups and Service Accounts with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with Administrative Permissions  
+|High  
+|Informational  
+
+|GCP Users and Machine Identities with Excessive Policies  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Data Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Data Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Metadata Read permissions are unused for 90 days  
+|High  
+|Low  
+
+|GCP Users and Machine Identities with IAM Metadata Write permissions are unused for 90 days  
+|High  
+|Low  
+
+|===
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*Azure Storage Account without Secure transfer enabled*
+//RLP-149572
+
+tt:[24.10.1]
+
+|*Changes—* The policy description and RQL will be updated to ignore storage accounts where the secure transfer property is not applicable for NFS Azure file shares to work.
+
+*Current Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. When 'secure transfer required' is enabled, REST APIs to access your storage accounts connect using HTTPs any requests using HTTP will be rejected. When you are using the Azure files service, connection without encryption will fail. It is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name.
+
+*Updated Description—* This policy identifies Storage accounts which have Secure transfer feature disabled. The secure transfer option enhances the security of your storage account by only allowing requests to the storage account by a secure connection. 
+
+When "secure transfer required" is disabled, REST APIs to access your storage accounts may connect over insecure HTTP which is not advised. Hence, it is highly recommended to enable secure transfer feature on your storage account.
+
+NOTE: Azure storage doesn't support HTTPs for custom domain names, this option is not applied when using a custom domain name. Additionally, this property is not applicable for NFS Azure file shares to work.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = properties.supportsHttpsTrafficOnly !exists or properties.supportsHttpsTrafficOnly is false
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' AND json.rule = (properties.supportsHttpsTrafficOnly does not exist or properties.supportsHttpsTrafficOnly is false) as X; config from cloud.resource where api.name = 'azure-storage-file-shares' as Y; filter '($.X.kind does not equal ignore case "FileStorage") or ($.X.kind equal ignore case "FileStorage" and $.Y.id contains $.X.name and $.Y.properties.enabledProtocols does not contain NFS)'; show X;
+----
+
+*Policy Severity—* Low
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts on the Storage account using the NFS Azure file will be resolved as *Policy_Updated*.
+
+|*GCP Cloud Function v1 is using unsecured HTTP trigger*
+//RLP-149695
+
+tt:[24.10.1]
+
+|*Changes—* The policy RQL will be updated to check only the appropriate GCP Cloud Function v1 that has an unsecured HTTP trigger.
+
+*Current RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals "ACTIVE" AND environment equals "GEN_1" AND serviceConfig.securityLevel does not equal "SECURE_ALWAYS"
+----
+
+*Updated RQL—* 
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-cloud-function-v2' AND json.rule = state equals ACTIVE AND environment equals GEN_1 AND serviceConfig.securityLevel exists AND serviceConfig.securityLevel does not equal SECURE_ALWAYS
+----
+
+*Policy Severity—* Medium
+
+*Policy Type—* Config
+
+*Impact—* Low. Existing alerts for the GCP Cloud Function v1 where the *Require HTTPS* configuration does not apply will be resolved as *Policy_Updated*.
+
+|===
+
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*CSA CCM v4.0.12*
+//RLP-150804
+
+tt:[24.10.1]
+
+|Prisma Cloud now supports CSA CCM v4.0.12, Cloud Controls Matrix by Cloud Security Alliance. The CSA Cloud Controls Matrix (CCM) is a cybersecurity control framework for cloud computing. It can be used as a tool for the systematic assessment of a cloud implementation, and provides guidance on which security controls should be implemented by which actor within the cloud supply chain.
+
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|*HITRUST CSF v.11.2.0*
+//RLP-150747
+
+tt:[24.10.1]
+
+|New mappings will be introduced to the *HITRUST CSF v.11.2.0* compliance standard across all clouds.
+
+*Impact—* Changes in compliance scoring may occur due to the updated mappings.
+
+|*IT Security Risk Management*
+//RLP-150414
+
+tt:[24.10.1]
+
+|Prisma Cloud now supports ITSG-33 (IT Security Risk Management: A Lifecycle Approach) compliance standard. It is a framework developed by the Communications Security Establishment Canada (CSEC) to guide Government of Canada departments in managing IT security risks. By following this framework, organisations can effectively safeguard sensitive information and adapt to evolving threats.
+
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance with ITSG-33 over time.
+
+|*Microsoft Cloud Security Benchmark*
+//RLP-150487
+
+tt:[24.10.1]
+
+|Prisma Cloud now supports Microsoft Cloud Security Benchmark (MCSB) v1. The Microsoft cloud security benchmark (MCSB) provides prescriptive best practices and recommendations to help improve the security of workloads, data, and services on the multi-cloud environment.
+
+You can now view this built-in standard and the associated policies on the *Compliance > Standards* page with this support. You can also generate reports for immediate viewing or download, or schedule recurring reports to track this compliance standard over time.
+
+|*CIS v2.1.0 (Azure) Level 2 and CIS v2.0.0 (Azure) Level 2*
+//RLP-150819
+
+tt:[24.10.1]
+
+|New mappings have been introduced to the CIS v2.1.0 (Azure) Level 2 and CIS v2.0.0 (Azure) Level 2 compliance standards.
+
+*Potential Impact*: Changes in compliance scoring may occur due to the updated mappings.
+
+|===
+
+
+[#rest-api-updates]
+=== REST API Updates
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|*Alerts*
+//RLP-150918
+
+|A new response property `dataSensitivityDatatypeDetails` is added to the https://pan.dev/prisma-cloud/api/cspm/get-alert-evidence-graph/[GET - /alert/v1/{id}/graph] endpoint. This property provides data sensitivity details (data type, number of occurrences , and sensitivity label) to returned evidence graph objects
+
+|*Application APIs*
+//RLP-149743
+
+|Prisma Cloud now contains an Application Inventory which provides an application centric of your security posture. Using the new https://pan.dev/prisma-cloud/api/cspm/applications/[Application APIs], you can retrieve key details from the application inventory, such as, critical alerts, vulnerabilities, assets associated with an application, and so on. 
+
+
+
+|===
+
+
+[#deprecation-notice]
+=== Deprecation Notice
+
+[cols="37%a,63%a"]
+|===
+|*Change*
+|*Description*
+
+|tt:[*End of support for Google Cloud Function v1 API*]
+//RLP-142340
+
+|`gcloud-cloud-function-v1` API is planned for deprecation. Due to this change, Prisma Cloud will no longer ingest metadata for `gcloud-cloud-function-v1 API`. 
+
+In RQL, the key will not be available in the api.name attribute auto-completion. As a replacement, it is recommended to use the `gcloud-cloud-function-v2` API.
+
+*Impact*—If you have a saved search or custom policies based on this API, you must delete those manually. The policy alerts will be resolved as Policy_Deleted.
+
+|tt:[*Resource Explorer API*]
+
+//RLP-131482, RLP-115752
+
+|The following API endpoints will be deprecated as of this release:
+
+* https://pan.dev/prisma-cloud/api/cspm/get-resource/[GET/resource]
+* https://pan.dev/prisma-cloud/api/cspm/get-timeline-for-resource/[POST /resource/timeline]
+* https://pan.dev/prisma-cloud/api/cspm/get-resource-raw/[POST /resource/raw]
+
+The API's above will be replaced by the following new endpoint:
+
+* https://pan.dev/prisma-cloud/api/cspm/get-asset-details-by-id/[POST /uai/v1/asset]
+
+
+|===

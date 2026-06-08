@@ -1,0 +1,56 @@
+
+== Clusters of Neptune DB do not replicate tags to snapshots
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 52cf3523-455a-4e5a-acc6-489381e876a3
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NeptuneDBClustersCopyTagsToSnapshots.py[CKV_AWS_362]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking if Neptune DB clusters within an AWS environment are configured to copy tags to snapshots. Tags are used for various purposes including cost tracking, operations, and security. They carry valuable metadata that explains the purpose, owner, or criticality of a snapshot.
+
+If Neptune DB clusters are not configured to copy tags to snapshots, these valuable metadata will be lost during the process. Any automated or manual processes depending on this information for decision making (such as disaster recovery action, cost allocation, etc.) could therefore be disrupted or incorrect. This is why maintaining tag information in snapshots is considered a good practice.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_neptune_cluster
+* *Arguments:* copy_tags_to_snapshot
+
+To fix this issue, add the `copy_tags_to_snapshot` parameter to your Neptune cluster configuration and set its value to `true`. This will ensure that all tags on the DB clusters are copied to any AWS-managed backup snapshots when they're created.
+
+[source,hcl]
+```
+resource "aws_neptune_cluster" "example" {
+  cluster_identifier  = "example"
+  engine              = "neptune"
+  backup_retention_period = 5
+  preferred_backup_window = "07:00-09:00"
+  skip_final_snapshot = true
+  apply_immediately   = true
+  iam_database_authentication_enabled = true 
+  copy_tags_to_snapshot = true 
+}
+```
+
+The above code sets `copy_tags_to_snapshot` to true, this means any AWS Managed backup snapshots will also include the tags present on the DB cluster, which is useful for cost tracking or access control purposes.
+

@@ -1,0 +1,54 @@
+== Security rules apply to all zones on Palo Alto Networks devices
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 82c67311-2725-4c38-8407-09096b6631f6
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosPolicyNoSrcZoneAnyNoDstZoneAny.yaml[CKV_PAN_17]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether security rules on Palo Alto Networks devices indiscriminately apply to all zones due to configuration of both 'source_zone' and 'destination_zone' to 'any'. This configuration can potentially lead to overly permissive rules and unintended access across network segments.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_security_rule
+* *Attributes:* source_zone, destination_zone
+
+To mitigate this issue, verify that each panos_security_rule specifies particular zones for both source_zone and destination_zone instead of using 'any'. This approach ensures targeted application of security rules, minimizing the risk of unintended traffic flow.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  ...
+  tasks:
+    - name: Example
+      paloaltonetworks.panos.panos_security_rule:
+        ...
+-        source_zone: ['any']
++        source_zone: ['outside']
+-        destination_zone: ['any']
++        destination_zone: ['inside']
+----
+
+In this example, specifying exact zones rather than using 'any' ensures that the security rules are not indiscriminately applied to all zones. This ensures that security rules are applied deliberately and securely, minimizing the risk of unintended traffic flow.

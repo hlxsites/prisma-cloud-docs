@@ -1,0 +1,47 @@
+
+== MemoryDB snapshot is not encrypted by KMS using a customer managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 1ebbda07-b7a0-4130-a1ae-b38f764930d4
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/MemoryDBSnapshotEncryptionWithCMK.py[CKV_AWS_278]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking if MemoryDB snapshots are encrypted by KMS using a Customer Managed Key (CMK). MemoryDB snapshots store data from your in-memory databases, which may contain sensitive information. If not encrypted, the data in the snapshots can become vulnerable to unauthorized access or breaches. The AWS Key Management Service (KMS) provides a way to encrypt this data, and specifically, it should use a Customer Managed Key (CMK) which gives users more flexibility and control over their data encryption.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_memorydb_snapshot
+* *Arguments:* kms_key_arn
+
+To fix this issue, you need to ensure that MemoryDB snapshots are encrypted using a KMS customer managed key. Here's how you can modify your Terraform code:
+
+[source,go]
+----
+resource "aws_memorydb_snapshot" "pass" {
+  cluster_name = "sato"
+  name                     = "pike"
++ kms_key_arn              = aws_kms_key.example.arn
+}
+----
+

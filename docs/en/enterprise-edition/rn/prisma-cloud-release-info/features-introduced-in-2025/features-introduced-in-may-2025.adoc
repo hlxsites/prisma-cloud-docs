@@ -1,0 +1,638 @@
+== Features Introduced in May 2025
+
+Learn what's new on Prisma® Cloud in May 2025.
+
+* <<announcements>>
+//* <<new-features>>
+* <<enhancements>>
+* <<changes-in-existing-behavior>>
+* <<api-ingestions>>
+//* <<new-policies>>
+* <<policy-updates>>
+//* <<iam-policy-updates>>
+* <<new-compliance-benchmarks-and-updates>>
+* <<rest-api-updates>>
+* <<deprecation-notices>>
+
+
+[#announcements]
+=== Announcements
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|*RedHat Enterprise Linux 10 incompatibility with  WAAS Defender Agent*
+//CWP-63673
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|RedHat https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/9.0_release_notes/deprecated_functionality#deprecated-functionality_networking[deprecated iptables in RHEL 9] and the upcoming RHEL 10 will not support iptables.
+
+The WAAS defender agent deployed directly on RHEL10 (as Host Defender), which relies on iptables, is incompatible with RHEL 10 due to this change.
+
+NOTE: Containerized varieties of the WAAS Defender will continue to work.
+
+|===
+
+
+//[#new-features]
+//=== New Features
+//[cols="30%a,70%a"]
+//|===
+//|*Feature*
+//|*Description*
+//|===
+
+
+[#enhancements]
+=== Enhancements
+[cols="50%a,50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Enhanced fsmon monitoring process*
+//CWP-63480
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|To enhance the handling of file system events in the runtime, a new version, fsmon_v2, has been developed. This version improves stability by managing timeouts more promptly and robustly, which reduces bottlenecks and enhances overall stability.
+
+Starting from this release (version 34.01), fsmon_v2 is the default file system monitoring process and runs by default when the defender launches.
+
+
+|*Support for Oracle Linux as Base Image*
+//CWP-63235
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|Prisma Cloud now provides runtime protection for containers that use Oracle Linux as the base layer.
+
+|*Support for mounted paths*
+//CWP-63332
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+
+|A new environment variable (`HOST_FIM_MOUNTS`) enables you to specify additional host mounted paths for runtime monitoring. By incorporating these specified paths into all applicable policies, this feature provides enhanced flexibility in monitoring critical mounted paths within your environment.
+
+The value of this new variable is a colon separated list of the additional mountpoints to track, for example: `/mnt/mountpoint1:/mnt/mountpoint2`.
+
+To update the environment variable:
+
+. Add or modify the new environment variable in the deployment file to include the desired mounted paths for monitoring.
+
+. Deploy the Defender with the new environment variables to activate monitoring of the new paths.
+
+
+|*New environment variable for configuring the number of image external labels*
+//CWP-63653
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|A new environment variable -- `IMAGE_EXTERNAL_LABELS_CAP`, enables configuration of the maximum number of external labels (indirect labels collected by Prisma Cloud) that are allowed for an image. The default value is 100, and the maximum configurable value is 1024. This variable is applicable to both Console and Defenders.
+
+*Important Considerations:*
+
+* External labels, such as Kubernetes Namespace and Deployment labels, as well as cloud tags, are collected and stored per container.
+
+* This limit is specific to external labels collect per image and doesn't impact existing container limitations.
+
+* External labels are not inherent image properties and are not be displayed if a container is not scanned (for example, short-lived containers).
+
+
+|*Vulnerabilities and Compliance data available as PDF files*
+//CWP-63654
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+
+|You can now download the data shown on the following pages as PDF files:
+
+* Monitor > Vulnerabilities > Images & Hosts
+
+* Monitor > Compliance > Containers, Images & Hosts
+
+
+|*Runtime protection for SUSE Linux Enterprise Server 15 SP6*
+//CWP-63655 
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|Prisma Cloud now supports runtime protection of SUSE Linux Enterprise Server 15 SP6 images.
+
+
+|*Ingestion of Azure VNet Flow Logs*
+//RLP-133585
+
+|Prisma Cloud now supports the ingestion of https://docs.prismacloud.io/en/enterprise-edition/content-collections/connect/connect-cloud-accounts/onboard-your-azure-account/connect-azure-account#:~:text=Virtual%20Network%20flow%20logs[VNet flow logs] in addition to the existing ingestion of NSG flow logs, for Microsoft Azure account onboarding. VNet flow logs will also be added as a data source to existing Azure policies. There will be no impact to existing tenants and no additional action is needed.
+
+|*Ingestion of AWS ca-west-1 Resources*
+//RLP-15602
+
+|Prisma Cloud AWS resource discovery is now extended to resources on AWS ca-west-1 (Canada/Calgary). With this added ingestion support, assets in this region are discoverable on the *Asset Inventory* page. No additional action is needed.   
+
+|===
+
+[#changes-in-existing-behavior]
+=== Changes in Existing Behavior
+[cols="30%a,70%a"]
+|===
+|*Feature*
+|*Description*
+
+|*System Requirements: Changes to supported systems and platforms* 
+//CWP-SEVERAL
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|The following changes have been made to the system requirements:
+
+*Support added for the following x86 Operating Systems*
+
+* SLES  15 SP6
+
+* Talos OS  1.10.1
+
+* Talos OS  1.9.5
+
+*Support removed for the following x86 Operating Systems*
+
+* CentOS  7
+
+* RedHat Enterprise Linux 7
+
+* VMWare Photon OS	3.0
+
+*Support added for the following ARM-based Orchestrators*
+
+* Google Kubernetes Engine (GKE) autopilot on ARM  v1.31.6-gke.1064001
+
+* Oracle Kubernetes Engine (OKE)  V.1.32.1
+
+*Support removed for the following ARM-based Orchestrators*
+
+* Elastic Container Service (ECS)  1.86.2
+
+* Elastic Container Service (ECS)  1.86.3
+
+*Support added for the following Auto-Defend platforms*
+
+* AWS  Node.js  22
+
+* AWS  Python  3.13
+
+|===
+
+[#api-ingestions]
+=== API Ingestions
+[cols="50%a,50%a"]
+|===
+|*Service*
+|*API Details*
+
+|*AWS HealthLake*
+//RLP-155698
+
+|*aws-healthlake-datastore*
+
+Additional permissions required:
+
+* `healthlake:ListFHIRDatastores`
+* `healthlake:DescribeFHIRDatastore`
+
+The Security audit role includes `healthlake:ListFHIRDatastores` permission but does not include `healthlake:DescribeFHIRDatastore` permission.
+
+|*Azure API Management Services*
+//RLP-155662
+
+|*azure-api-management-service-named-value*
+
+Additional permissions required:
+
+* `Microsoft.ApiManagement/service/read`
+* `Microsoft.ApiManagement/service/namedValues/read`
+
+The Reader role includes the permissions.
+
+|*Azure Healthcare Apis*
+//RLP-155671
+
+|*azure-healthcare-apis-workspace-fhir-service*
+
+Additional permissions required:
+
+* `Microsoft.HealthcareApis/workspaces/read 
+* `Microsoft.HealthcareApis/workspaces/fhirservices/read`
+
+The Reader role includes the permission.
+
+|*Azure Healthcare Apis*
+//RLP-155670
+
+|*azure-healthcare-apis-workspace-dicom-service*
+
+Additional permissions required:
+
+* `Microsoft.HealthcareApis/workspaces/read`
+* `Microsoft.HealthcareApis/workspaces/dicomservices/read`
+
+The Reader role includes the permissions.
+
+
+|*Azure IoT Central*
+//RLP-155708
+
+|*azure-iot-central-private-endpoint-connections*
+
+Additional permissions required:
+
+* `Microsoft.IoTCentral/IoTApps/read`
+* `Microsoft.IoTCentral/IoTApps/privateEndpointConnections/read`
+
+The Reader role includes the permissions.
+
+|*Azure IoT Hub*
+//RLP-155705
+
+|*azure-iot-hub-device-provisioning-service*
+
+Additional permission required:
+
+* `Microsoft.Devices/provisioningServices/Read`
+
+The Reader role includes the permission.
+
+|*Azure IoT Hub*
+//RLP-155700
+
+|*azure-devices-iot-hub-private-endpoint-connections*
+
+Additional permissions required:
+
+* `Microsoft.Devices/iotHubs/Read`
+* `Microsoft.Devices/iotHubs/PrivateEndpointConnections/Read`
+
+The Reader role includes the permissions.
+
+
+|*Azure Kusto*
+//RLP-155669
+
+|*azure-kusto-database-principal-assignment*
+
+Additional permissions required:
+
+* `Microsoft.Kusto/Clusters/read `
+* `Microsoft.Kusto/Clusters/Databases/read`
+* `Microsoft.Kusto/Clusters/Databases/PrincipalAssignments/read`
+
+The Reader role includes the permissions.
+
+|*Azure Kusto*
+//RLP-155668
+
+|*azure-kusto-cluster-private-link-resource*
+
+Additional permissions required:
+
+* `Microsoft.Kusto/Clusters/read`
+* `Microsoft.Kusto/Clusters/PrivateLinkResources/read`
+
+The Reader role includes the permissions.
+
+|*Azure Kusto*
+//RLP-155666
+
+|*azure-kusto-cluster-principal-assignment*
+
+Additional permissions required:
+
+* `Microsoft.Kusto/Clusters/read`
+* `Microsoft.Kusto/Clusters/PrincipalAssignments/read`
+
+The Reader role includes the permissions.
+
+|*Azure Kusto*
+//RLP-155664
+
+|*azure-kusto-cluster-managed-private-endpoint*
+
+Additional permissions required:
+
+* `Microsoft.Kusto/Clusters/read`
+* `Microsoft.Kusto/Clusters/ManagedPrivateEndpoints/read`
+
+The Reader role includes the permissions.
+
+|*Azure Recovery Services*
+//RLP-155923
+|*azure-recovery-service-private-link*
+
+Additional permissions required:
+
+* `Microsoft.RecoveryServices/Vaults/read`
+* `Microsoft.RecoveryServices/Vaults/privateLinkResources/read`
+
+The Reader role includes the permissions.
+
+|*Azure Storage*
+//RLP-155925
+|*azure-storage-account-blob-service-property*
+
+Additional permissions required:
+
+* `Microsoft.Storage/storageAccounts/read`
+* `Microsoft.Storage/storageAccounts/blobServices/read`
+
+The Reader role includes the permissions.
+
+|tt:[Update] *Azure Synapse Analytics*
+//RLP-155930
+|*azure-synapse-workspace*
+
+Additional permission required:
+
+* `Microsoft.Synapse/workspaces/dedicatedSQLminimalTlsSettings/read `
+
+The additional permission above is now required.
+
+|tt:[Update] *Azure Synapse Analytics*
+//RLP-155926
+|*azure-synapse-workspace-sql-pools*
+
+Additional permission required:
+
+* `Microsoft.Synapse/workspaces/sqlPools/transparentDataEncryption/read`
+
+The additional permission above is now required.
+
+|*Google Resource Manager*
+//RLP-131423
+|*gcloud-project-tag-key*
+
+Additional permissions required:
+
+* `resourcemanager.tagKeys.list`
+* `resourcemanager.tagKeys.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Resource Manager*
+//RLP-131424
+|*gcloud-organization-tag-key*
+
+Additional permissions required:
+
+* `resourcemanager.tagKeys.list`
+* `resourcemanager.tagKeys.getIamPolicy`
+
+The Viewer role includes the permissions.
+
+|*Google Cloud TPU*
+//RLP-155869
+|*gcloud-tpu-node*
+
+Additional permission required:
+
+* `tpu.nodes.list`
+
+The Viewer role includes the permission.
+
+
+|*OCI IAM*
+//RLP-155562
+|*oci-iam-password-policy*
+
+Additional permissions required:
+
+* `COMPARTMENT_INSPECT`
+* `DOMAIN_INSPECT`
+* `PASSWORD_POLICY_INSPECT`
+
+The Reader role includes the permissions.
+
+|===
+
+
+// [#new-policies]
+// === New Policies
+
+// [cols="40%a,60%a"]
+// |===
+// |*Policies*
+// |*Description*
+
+// |===
+
+
+[#policy-updates]
+=== Policy Updates
+
+[cols="50%a,50%a"]
+|===
+|*Policy Updates*
+|*Description*
+
+2+|*Policy Updates—RQL*
+
+|*Cognito service role with wide privileges does not validate authentication*
+//RLP-155781
+
+|*Changes—* Policy RQL has been updated with including the condition matching '*' in policy action
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and Action contains :* and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X;  
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and (Action contains :* or Action equals *) and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action equals * ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X;  
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* High
+
+*Impact–* Low. New alerts will be generated as per new RQL.
+
+
+|*AWS Cognito service role with wide privileges does not validate authentication*
+//RLP-155781
+
+|*Changes—* Policy RQL has been updated with including the condition matching '*' in policy action
+
+*Current RQL–* 
+----
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and Action contains :* and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X; 
+----
+
+*Updated RQL–*
+----
+config from cloud.resource where api.name = 'aws-iam-list-roles' AND json.rule = role.assumeRolePolicyDocument.Statement[*].Action contains "sts:AssumeRoleWithWebIdentity" and role.assumeRolePolicyDocument.Statement[*].Principal.Federated contains "cognito-identity.amazonaws.com" and role.assumeRolePolicyDocument.Statement[*].Effect contains "Allow" and role.assumeRolePolicyDocument.Statement[*].Condition contains "cognito-identity.amazonaws.com:amr" and role.assumeRolePolicyDocument.Statement[*].Condition contains "unauthenticated" as X; config from cloud.resource where api.name = 'aws-iam-get-policy-version' AND json.rule = document.Statement[?any(Effect equals Allow and (Action contains :* or Action equals *) and Resource equals * )] exists as Y; filter "($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action contains :* ) or ($.X.inlinePolicies[*].policyDocument.Statement[?(@.Effect=='Allow' && @.Resource=='*')].Action equals * ) or ($.X.attachedPolicies[*].policyArn intersects $.Y.policyArn)"; show X; 
+----
+
+*Policy Type–* Config 
+
+*Policy Severity–* High
+
+*Impact–* Low. New alerts will be generated as per new RQL.
+
+2+|*Policy Updates—Metadata*
+
+|*AWS S3 bucket not configured with secure data transport policy*
+//RLP-155761
+
+|*Changes—* Policy description updated to include the publicly accessible check.
+
+*Policy Type*: Config
+
+*Policy Severity*: Medium
+
+*Impact*: No impact on alerts
+
+*Updated Description*: 
+----
+AWS S3 buckets that are publicly accessible and lacking secure data transport are highly susceptible to data breaches during transit.
+AWS S3 buckets should enforce data encryption using Secure Sockets Layer (SSL) to protect data transmitted between clients and the S3 service. Failure to enforce HTTPS allows attackers to intercept sensitive data in transit, leading to data exposure and potential breaches. Additionally, because the bucket is publicly accessible, untrusted IPs can access sensitive data without encryption.
+The impact of this misconfiguration includes unauthorized access to sensitive data, data breaches, and potential regulatory fines. Enforcing HTTPS ensures all communication with publicly accessible S3 buckets is encrypted, protecting data confidentiality and integrity.
+To mitigate this, configure bucket policies to explicitly deny all access except via HTTPS ('aws:SecureTransport: true') and remove public access permissions. Regularly review and update bucket policies to reflect evolving security needs and ensure that public access is minimized or removed.
+----
+
+|*AWS S3 bucket not configured with secure data transport policy*
+//RLP-155761
+
+|*Changes—* Policy description updated to include the publicly accessible check.
+
+*Policy Type*: Config
+
+*Policy Severity*: Medium
+
+*Impact*: Low
+
+*Updated Description*: 
+----
+AWS S3 buckets that are publicly accessible and lacking secure data transport are highly susceptible to data breaches during transit.
+AWS S3 buckets should enforce data encryption using Secure Sockets Layer (SSL) to protect data transmitted between clients and the S3 service. Failure to enforce HTTPS allows attackers to intercept sensitive data in transit, leading to data exposure and potential breaches. Additionally, because the bucket is publicly accessible, untrusted IPs can access sensitive data without encryption.
+The impact of this misconfiguration includes unauthorized access to sensitive data, data breaches, and potential regulatory fines. Enforcing HTTPS ensures all communication with publicly accessible S3 buckets is encrypted, protecting data confidentiality and integrity.
+To mitigate this, configure bucket policies to explicitly deny all access except via HTTPS ('aws:SecureTransport: true') and remove public access permissions. Regularly review and update bucket policies to reflect evolving security needs and ensure that public access is minimized or removed.
+----
+
+|===
+
+
+[#new-compliance-benchmarks-and-updates]
+=== New Compliance Benchmarks and Updates
+
+[cols="50%a,50%a"]
+|===
+|*Compliance Benchmark*
+|*Description*
+
+|*[Update] Australian Cyber Security Centre (ACSC) Essential Eight*
+//RLP-156067
+
+|New Policy mappings are added to Australian Cyber Security Centre (ACSC) Essential Eight compliance standard across all the levels..
+
+*Impact*: As new mappings are introduced, compliance scoring might vary.
+
+
+|*FedRAMP (High)*
+//RLP-156047
+
+|FedRAMP High compliance is the highest level of security within the Federal Risk and Authorization Management Program (FedRAMP), designed to protect highly sensitive and classified government data stored in cloud environments.
+
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
+
+
+|*[Update] CIS v3.0.0 (OCI) - Level 1 & CIS v3.0.0 (OCI) - Level 2*
+//RLP-156044
+
+|Prisma Cloud now supports the latest version of CIS Oracle Cloud Infrastructure Foundations Benchmark . This compliance standard supports two levels - Level 1 and Level 2. CIS Oracle Cloud Infrastructure Foundations Benchmark, provides prescriptive guidance for establishing a secure baseline configuration for the Oracle Cloud Infrastructure environment.
+
+You can now access this built-in standard and related policies on the *Compliance > Standards* page. Additionally, you can generate reports to instantly view or download them, or set up scheduled reports to continuously monitor compliance.
+
+|===
+
+
+[#rest-api-updates]
+=== REST API Updates
+[cols="37%a,63%a"]
+|===
+|*REST API*
+|*Description*
+
+|*Download Image Scan Results API*
+// CWP-63246
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|​A new column, `Cloud Security Agent Hosts`, is added in the Download Image Scan Results API CSV file response. This new field lists the number of integrated XDR Agents in the Prisma Cloud and Cortex XDR integration.
+
+
+|*Support for new agentless APIs*
+// CWP-63650
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|The following new API endpoints enable you to set the maximum number of scanners for an agentless account and get the agentless scan statistics.
+
+* https://pan.dev/compute/api/post-agentless-max-scanners/[Agentless Max Scanners]
+
+* https://pan.dev/compute/api/get-agentless-scan-statistics/[Agentless Scan Statistics]
+
+
+|*Support for a new enum value*
+// CWP-63650
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|A new Enum value `gcp-cloud-run-service` has been added to the `shared.ScanResultType` schema.
+
+|===
+
+
+[#deprecation-notices]
+=== Deprecation Notices
+[cols="50%a, 50%a"]
+|===
+|*Feature*
+|*Description*
+
+|*Deprecation of the CNNS feature*
+// CWP-63175
+
+tt:[Secure the Runtime]
+
+tt:[34.01.126]
+
+|The ​Cloud Native Network Segmentation (CNNS) feature is deprecated for the enforcement of protection against network threats for both containers and hosts. However, in scenarios where alternative network monitoring modes are unavailable, it can be used only for monitoring, such as radar visibility. The current recommendation is to disable all CNNS-based network monitoring as well.
+
+//|*Deprecated Endpoints*
+//|*Replacement Endpoints*
+
+|===

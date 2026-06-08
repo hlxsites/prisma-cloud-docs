@@ -1,0 +1,974 @@
+== GCP 組織とプロジェクトをオンボーディングするための前提条件
+
+GCP組織またはプロジェクト内にデプロイされたアセットの、Prisma Cloudによる取り込み、分析、監視を有効にするための、サービスアカウントおよびAPIについて学びます。
+
+GCPアカウントを分析、監視するためには、Prisma Cloudに特定のAPIおよびサービスアカウント（Prisma CloudとGCP間の認証を有効にするための権威のあるアイデンティティ）へのアクセスが必要になります。カスタムロール、事前定義ロール、および初期ロールの組み合わせにより、GCP組織またはプロジェクト内のアセットに対して、特定のアクションを完了するために必要な権限を、サービスアカウントに与えることができます。
+
+GCP 組織またはプロジェクト内のアセットのオンボーディングと監視を正常に行うには、以下の前提条件を満たしていることを確認してください。
+
+* xref:#service-account-permissions[サービスアカウントの権限]
+* xref:#rate-limit-exception-for-gcp-apis[GCP API のレート制限の例外]
+* xref:#gcp-apis[GCP API]
+* xref:#gcp-cloud-asset-inventory[GCP Cloud Asset Inventory]
+
+[#service-account-permissions]
+=== サービスアカウントの権限
+
+Prisma CloudサービスアカウントがGCPアセットを監視するために必要な権限は、クラウド保護のニーズによって異なります。
+
+* GCP組織をオンボードする場合は、組織のIAMポリシーにロールを割り当てる必要があります。
+* GCPプロジェクトをオンボードする場合は、各プロジェクトのIAMポリシーにロールを割り当てる必要があります。
+* マスターサービスアカウント（MSA）を使用している場合、次の2つのオプションがあります。
+** （推奨）組織のIAMポリシーに権限を追加します。
+** 各プロジェクトのIAMポリシーに個別にロールを割り当てます。
+
+サービスアカウントに必要な読み取りまたは読み取り/書き込みアクセス許可のhttps://cloud.google.com/iam/docs/understanding-roles#role_types[ロール]は次のとおりです。
+
+* Viewer（ビューアー）—GCPの初期ロール。
+* Prisma Cloud Viewer— カスタムロール。Prisma Cloudには、クラウドストレージバケットに権限を与え、ストレージバケットのメタデータを読み取り、バケットのIAMポリシーを更新するために、このカスタムロールが必要になります。このロールには、ストレージバケットのリストを取得する_storage.buckets.get_、および指定したバケットのIAMポリシーを取得する_storage.buckets.getIampolicy_が必要です。
+* Compute Security Admin（コンピュータセキュリティ管理者）—GCPで事前定義されているロール。自動修正を有効にする場合にのみ必要なオプション権限です。
+* Organization Role Viewer（組織ロールビューアー）—GCPに事前定義されているロール。GCP組織のオンボーディングにこのロールが必要になります。
+* Dataflow Admin（データフロー管理者）—GCPで事前定義されているロール。Dataflowサービスを使ってデータフローログを圧縮するために必要な、オプション権限です。詳細については、「xref:flow-logs-compression.adoc[GCP でのフローログ圧縮]」を参照してください。
+* Folder Viewer（フォルダビューアー）—GCPで事前定義されているロール。GCPフォルダのメタデータをオンボードし、特定のフォルダを選択し（フォルダを含めるか除外するか）、フォルダ階層に基づいてアカウントグループを自動的に作成する場合にのみ必要なオプションの権限。
+
+
+[#rate-limit-exception-for-gcp-apis]
+=== GCP API のレート制限の例外
+//RLP-73146
+
+Prisma CloudからのAPI呼び出しは、オンボーディングしたGCPプロジェクトのクォータを使用します。これにより、Prisma CloudはGCP APIのレート制限を超えることなく、複数のプロジェクトにわたってアセットメタデータを取り込むことができます。
+
+すべてのGCPアセットを継続的に把握し、Prisma Cloudが承認したGCPへのAPI呼び出しでレート制限例外エラーが発生しないようにするには、次の点を確認してください。
+
+* Prisma Cloud が GCP API にアクセスするために使用するサービスアカウントに、_serviceusage.services.use_ という新しい権限を付与するか、*サービス利用コンシューマー* (_roles/serviceUsage.serviceUsageConsumer_) という新しいロールを追加します。
+
+* [オプション] GCP サービス (_appengine.googleapis.com、commender.googleapis.com、sqladmin.googleapis.com、apikeys.googleapis.com、iam.googleapis.com、cloudresourcemanager.googleapis.com、orgpolicy.googleapis.com、cloudasset.googleapis.com、accessapproval.googleapis.com is.com、_ essentialcontacts.googleapis.com):
++
+** サービスアカウントが作成されたソースプロジェクトでそれを無効にし、 
+** Prisma Cloudがアセットメタデータを取得するターゲットプロジェクトでそれを有効にします。
+
+
+[#gcp-apis]
+=== GCP API
+
+Prisma Cloudは、さまざまなxref:gcp-apis-ingested-by-prisma-cloud.adoc[GCP API]からデータを取り込むことができます。
+
+[NOTE]
+====
+GCP組織またはプロジェクト内のオンボーディングを自動化するために、Prisma Cloudに用意されているTerraformテンプレートを使用する場合、必要なアクセス許可は自動的に有効になります。
+====
+
+* サービスアカウントを作成したGCPプロジェクト内で、ログを監査するためにStackdriver Logging API（logging.googleapis.com）を、またPrisma Cloudにアセットを監視させるためのその他のGCP APIを有効にする必要があります。
+
+*  クラウドサービスAPIがGCPプロジェクトで有効になっていない場合、Prisma Cloudはそれぞれのサービスの取り込みをスキップします。ただし、GCP組織階層の下で、Prisma Cloudによって監視する各GCPプロジェクトで、*サービス使用状況*APIが有効になっていることを確認する必要があります。
++
+サイクルの取り込みをスキップするために、Prisma CloudはGCPプロジェクトで有効になっているクラウドサービスの詳細について、サービス使用状況APIからの応答を監視します。たとえば、GCP組織内の1つ以上のGCPプロジェクトでクラウド機能を有効にしていない場合、Prisma Cloudはそれについて学習し、このクラウドサービスの取り込みサイクルをスキップできます。
+
+* Prisma Cloudでは、専用のGCPプロジェクトでサービスアカウントを作成することを推奨しています。
++
+GCPでは、GCPプロジェクト/IAMサービスアカウントに許可されるAPI呼び出しに制限が適用されます。専用のGCPプロジェクトでサービスアカウントを作成すると、Prisma Cloudによって実行されるAPI呼び出しが、別のGCPプロジェクトでホストされる本番ワークロードおよびサービスに対するクォータ制限を妨げないようにすることができます。
+
+* Prisma Cloudサービスアカウントに必要なすべての権限が付与されていることを確認します。
++
+サービスアカウントにデータ取得に必要なIAM権限がない場合、Prisma Cloudはオンボードされたアカウントの各クウラウドサービスの取り込みをスキップします。Prisma Cloudが提供するTerraformテンプレートを使用してGCP組織やプロジェクトのオンボーディングを自動化する場合、必要なアクセス許可は自動的に有効化されます。
++
+[TIP]
+====
+Prisma CloudがGCPプロジェクトを監視できるようAPIを有効にするには、次の例のように使用してください（以下の表にリストされているAPIの一部を使用しています）。
+
+----
+gcloud services enable serviceusage.googleapis.com appengine.googleapis.com bigquery.googleapis.com cloudfunctions.googleapis.com dataflow.googleapis.com dns.googleapis.com dataproc.googleapis.com cloudresourcemanager.googleapis.com cloudkms.googleapis.com sqladmin.googleapis.com compute.googleapis.com storage-component.googleapis.com recommender.googleapis.com iam.googleapis.com container.googleapis.com monitoring.googleapis.com logging.googleapis.com
+----
+
+有効にしたAPIを確認するには、`gcloud services list`を使用します。
+====
+
+GCPアカウントをオンボーディングするためにxref:create-custom-role-on-gcp.adoc[カスタム ロールでサービス アカウントを作成]する場合の、APIと関連するアクセス許可を以下の表に示します。APIが有効になっており、サービスアカウントに適切なロールと関連する権限を設定している場合、Prisma CloudはGCPクラウドアカウントからリソースのデータを取得できます。xref:onboard-gcp-org.adoc[GCP組織]またはxref:onboard-gcp-project.adoc[GCPプロジェクトを]Prisma Cloudに追加する前に、必ずカスタム ロールを作成してください。
+
+[cols="15%a,19%a,10%a,12%a,28%a,16%a"]
+|===
+|*https://cloud.google.com/apis/docs/overview[API]*
+|*サービス名*
+|*状態の意味*
+|*ロール名*
+|*許可*
+|*このAPIを有効にする対象*
+
+|APIキー
+|`apikeys.googleapis.com`
+|使用および請求の目的で、プロジェクトに関連付けられた要求を認証します。
+|APIキー ビューア
+|`apikeys.keys.list`
+`apikeys.keys.get`
+|
+
+|App Engine API
+|`appengine.googleapis.com`
+|GCP上で完全管理されているサーバーレスプラットフォームである、App Engineにアクセスできます。
+|App Engine Viewer
+|`appengine.applications.get`
+|サービスアカウントを作成したプロジェクト
+
+|Access Context Manager API
+|`accesscontextmanager.googleapis.com`
+|ポリシー、アクセスレベル、およびアクセスゾーンへのアクセスを読み取ります。
+|Access Context Manager Reader
+|`accesscontextmanager.accessPolicies.list`
+`accesscontextmanager.policies.list`
+`accesscontextmanager.accessLevels.list`
+`accesscontextmanager.servicePerimeters.list`
+|サービスアカウントを作成したプロジェクト
+
+|アクセス承認
+|`accessapproval.googleapis.com`
+|プロジェクト、フォルダ、または組織に関連する設定にアクセスできます。
+|プロジェクトビューア
+|`accessapproval.settings.get`
+|サービスアカウントを作成したプロジェクト
+
+|APIゲートウェイ
+|`apigateway.googleapis.com`
+|Cloud Functions、Cloud Run、App Engineなど、Google CloudサーバーレスバックエンドのAPIを作成、保護、監視できます。
+|APIゲートウェイビューア
+|`apigateway.gateways.getIamPolicy`
+`apigateway.gateways.list`
+`apigateway.gateways.get`
+`apigateway.locations.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|BigQuery API
+|`cloudasset.googleapis.com`
+|データの作成、管理、共有、クエリを可能にします。
+|クラウドアセットビューア
+|`bigquery.tables.get`
+`cloudasset.assets.searchAllResources`
+`cloudasset.assets.searchAllIamPolicies`
+|サービスアカウントを作成したプロジェクト
+
+|バイナリ認証API
+|`binaryauthorization.googleapis.com`
+|サポートされているコンテナベースのプラットフォームの1つにコンテナイメージをデプロイしようとしたときに、サービスが適用するポリシーを設定できます。
+|プロジェクトビューア
+|`binaryauthorization.policy.get`
+`binaryauthorization.policy.getIamPolicy`
+|サービスアカウントを作成したプロジェクト
+
+|Cloud Data Fusion
+|`datafusion.googleapis.com`
+|Cloud Data Fusionは、データパイプラインを迅速に構築および管理するための、完全に管理されたクラウドネイティブのエンタープライズデータ統合サービスです。
+|プロジェクトビューア
+|`datafusion.instances.list`
+`datafusion.instances.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Cloud Functions
+|`cloudfunctions.googleapis.com`
+|Cloud Functionsは、Google Cloudのイベント駆動型サーバーレス演算プラットフォームです。
+|プロジェクトビューア
+|`cloudfunctions.functions.getIamPolicy`
+`cloudfunctions.functions.list`
+`cloudfunctions.functions.get`
+`cloudfunctions.locations.list`
+|サービスアカウントを作成したプロジェクト
+
+|Cloud DataFlow API
+|`dataflow.googleapis.com`
+|Google Cloud Dataflowプロジェクトを管理します。
+|Dataflow Admin
+|`iam.serviceAccounts.actAs`
+`resourcemanager.projects.get`
+`storage.buckets.get`
+`storage.objects.create`
+`storage.objects.get`
+`storage.objects.list`
+See xref:flow-logs-compression.adoc[Flow Logs Compression]
+|データフローを実行するプロジェクト
+
+|Cloud DNS API
+|`dns.googleapis.com`
+|Cloud DNSは、ドメイン名のリクエストをIPアドレスに変換し、DNSゾーンとレコードを管理、公開します。
+|DNS Reader
+|`dns.dnsKeys.list`
+`dns.managedZones.list`
+`dns.projects.get`
+`dns.policies.list`
+`dns.managedZones.list`
+`dns.resourceRecordSets.list`
+`dns.responsePolicyRules.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Cloud Pub/Sub
+|`pubsub.googleapis.com`
+|独立したアプリケーション間でメッセージを送受信できるようにするリアルタイムメッセージングサービス。
+|プロジェクト閲覧者、および詳細な権限を持つカスタムロール。
+|`pubsub.topics.list`
+`pubsub.topics.get`
+`pubsub.topics.getIamPolicy`
+`pubsub.subscriptions.list`
+`pubsub.subscriptions.get`
+`pubsub.subscriptions.getIamPolicy`
+`pubsub.snapshots.list`
+`pubsub.snapshots.getIamPolicy`
+`cloudasset.assets.searchAllIamPolicies`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|コンテナ分析
+|`containeranalysis.googleapis.com`
+|コンテナ分析は、コンテナ分析を通じてコンテナの脆弱性スキャンとメタデータストレージを提供します。
+|プロジェクトビューア
+|`containeranalysis.occurrences.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Dataplex
+|`dataplex.googleapis.com`
+|分散データを統合し、そのデータ全体でデータ管理とガバナンスを自動化して、大規模な分析を強化します。
+|プロジェクトビューア
+|`dataplex.assets.list`
+`dataplex.assets.getIamPolicy`
+`dataplex.assetActions.list`
+`dataplex.content.list`
+`dataplex.content.getIamPolicy`
+`dataplex.entities.list`
+`dataplex.locations.list`
+`dataplex.lakes.list`
+`dataplex.lakes.getIamPolicy`
+`dataplex.tasks.list`
+`dataplex.tasks.getIamPolicy`
+`dataplex.zones.list`
+`dataplex.lakeActions.list`
+`dataplex.zoneActions.list`
+|サービスアカウントを作成したプロジェクト
+
+.2+|Google Cloud Resource Manager API
+.2+|`cloudresourcemanager.googleapis.com`
+.2+|Google Cloud Platformリソースコンテナのメタデータを作成、読み取り、更新します。
+.2+|プロジェクトビューア
+|`resourcemanager.projects.getIamPolicy`
+|サービスアカウントを作成したプロジェクト
+
+|`resourcemanager.folders.getIamPolicy`
+|tt:[GCP組織にのみ必要] サービスアカウントを作成したプロジェクト
+
+および
+
+サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google クラウドデータ損失防止
+|`dlp.googleapis.com`
+|Cloud Data Loss Prevention （クラウドデータ損失防止）は、最も機密性の高いデータを検出、分類、保護するために設計されたフルマネージド サービスです。
+|プロジェクトビューア
+|`dlp.inspectTemplates.list`
+`dlp.deidentifyTemplates.list`
+`dlp.jobTriggers.list`
+`dlp.deidentifyTemplates.list`
+`dlp.inspectTemplates.list`
+`dlp.storedInfoTypes.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google Cloud Deploy
+|`clouddeploy.googleapis.com`
+|Google Cloud Deployは、GKEのための、サーバーレスでセキュアな継続的デリバリーサービスであり、開発版からステージング版、そして製品版へのリリースの進行を管理します。
+|プロジェクトビューア
+|`clouddeploy.config.get`
+`clouddeploy.locations.list`
+`clouddeploy.deliveryPipelines.list`
+`clouddeploy.deliveryPipelines.getIamPolicy`
+`clouddeploy.targets.list`
+`clouddeploy.targets.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Firebaseアプリケーション配布
+|`firebaseappdistribution.googleapis.com`
+`cloudresourcemanager.googleapis.com`
+|Firebaseアプリケーション配布は、信頼できるテスターにアプリケーションを配布する手間を省き、テスターのデバイスにアプリケーションを素早く取り込み、フィードバックを早期に頻繁に得ることができます。
+|プロジェクトビューア
+|`resourcemanager.projects.get`
+`firebaseappdistro.testers.list`
+|サービスアカウントを作成したプロジェクト
+
+
+|Google Firebase リモート設定
+|`firebaseremoteconfig.googleapis.com`
+|Firebase Remote Configは、 アプリの設定を更新するだけで、アプリの動作や外観を可視化し、きめ細かく制御することが可能です。
+|プロジェクトビューア
+|`cloudconfig.configs.get`
+|サービスアカウントを作成したプロジェクト
+
+|Cloud Key Management Service (KMS) API
+|`cloudasset.googleapis.com`
+|Google Cloud KMSにより、暗号鍵を管理して、それらの鍵を使った暗号操作を行えます。
+|クラウドアセットビューア
+|`cloudasset.assets.searchAllResources`
+`cloudasset.assets.searchAllIamPolicies`
+`cloudkms.keyRings.get`
+`cloudkms.keyRings.getIamPolicy`
+`cloudkms.cryptoKeys.get`
+`cloudkms.cryptoKeys.getIamPolicy`
+|サービスアカウントを作成したプロジェクト
+
+|Cloud Service Usage API
+|`serviceusage.googleapis.com`
+|利用可能なサービスまたは有効なサービスを一覧表示するAPI、またはサービス利用者がGCPで使用しなくなったサービスを無効にするAPI。
+|プロジェクトビューア
+|`serviceusage.services.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google Binary Authorization
+|`binaryauthorization.googleapis.com`
+|Google Kubernetes Engine（GKE）、Anthosサービスメッシュ、Anthosクラスタ、Cloud Run にデプロイされたイメージについて、ポリシーベースのデプロイ検証と制御を可能にするサービスです。
+|プロジェクトビューア
+|`binaryauthorization.policy.get`
+`binaryauthorization.policy.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Armor
+|`compute.googleapis.com`
+|DDoS攻撃やアプリケーション攻撃に対する防御を提供し、WAFルールを提供するネットワークセキュリティサービス。
+|プロジェクトビューア
+|`compute.securityPolicies.list`
+`compute.securityPolicies.get`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloudの請求
+|`cloudbilling.googleapis.com`
+|Cloudの請求は、Googleクラウドの支出を追跡し、理解し、請求書を支払い、コストを最適化するためのツールのコレクションです。
+|プロジェクトビューア
+|`resourcemanager.projects.get`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+
+|Google Cloud Task
+|`cloudtasks.googleapis.com`
+|タスクとキューの情報を取得するAPI。
+|プロジェクトビューア
+|`cloudtasks.locations.list`
+`cloudtasks.tasks.list`
+`cloudtasks.queues.list`
+`run.locations.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google AI プラットフォーム
+|`ml.googleapis.com`
+|クラウドでの機械学習モデルの構築、デプロイ、管理を特に対象とした Google Cloudの一連のサービス。
+|
+|`ml.models.list`
+`ml.models.getIamPolicy`
+`ml.jobs.getIamPolicy`
+`ml.jobs.list`
+`ml.jobs.get`
+|
+
+|Google 分析ハブ
+|`analyticshub.googleapis.com`
+|Analytics Hubは、データの信頼性とコストという課題に対処するため、組織間でデータ資産を効率的かつ安全に交換できるデータ交換ツールです。
+|プロジェクトビューア
+|`analyticshub.dataExchanges.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Anthos GKE フリート管理
+|`gkehub.googleapis.com`
+|Anthos は、フリートの概念に基づいて構築された機能を提供します。フリートとは、一緒に管理できる Kubernetes クラスタとその他のリソースの論理グループです。
+|プロジェクトビューア
+|`gkehub.locations.list`
+`gkehub.memberships.list`
+`gkehub.memberships.getIamPolicy`
+`gkehub.features.list`
+`gkehub.features.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Apigee X
+|`apigee.googleapis.com`
+|Apigee Xは、企業のデジタル プラットフォームへの移行を支援する、Google CloudのAPI管理プラットフォームの新バージョンです。
+|プロジェクトビューア
+|`apigee.apiproducts.get`
+`apigee.apiproducts.list`
+`apigee.organizations.get`
+`apigee.organizations.list`
+`apigee.sharedflows.list`
+`apigee.sharedflows.get`
+`apigee.deployments.list`
+`apigee.datacollectors.list`
+`apigee.datastores.list`
+`apigee.instances.list`
+`apigee.instanceattachments.list`
+`apigee.envgroups.list`
+`apigee.environments.get`
+`apigee.environments.getIamPolicy`
+`apigee.hostsecurityreports.list`
+`apigee.proxies.get`
+`apigee.proxies.list`
+`apigee.reports.list`
+`apigee.securityProfiles.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Artifact レジストリ
+|`artifactregistry.googleapis.com`
+|Artifact Registryは、ビルドアーティファクトを保存および管理するための拡張性が高く、統合されたサービスです。
+|プロジェクトビューア
+|`artifactregistry.locations.list`
+`artifactregistry.repositories.list`
+`artifactregistry.repositories.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Essential Contacts
+|`essentialcontacts.googleapis.com`
+|連絡先のリストを提供することで、Cloud Billing などの Google Cloud サービスから通知を受け取るユーザーをカスタマイズできます。
+|プロジェクトビューア
+|`essentialcontacts.contacts.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google Firebase Rules
+|`firebaserules.googleapis.com`
+|開発者がiOS、Android、およびWebアプリを開発できるようにするアプリケーション開発ソフトウェア。
+|
+|`firebaserules.rulesets.get`
+`firebaserules.rulesets.list`
+`firebaserules.releases.list`
+|
+
+|Google Cloud Composer
+|`composer.googleapis.com`
+|
+|プロジェクトビューア
+|`composer.environments.list`
+`composer.environments.get`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Source Repositories API
+|`sourcerepo.googleapis.com`
+|コードを設計、開発、安全に管理するためのプライベートGitリポジトリ。
+|Source Repository Reader
+|`source.repos.list`
+`source.repos.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Spanner API
+|`spanner.googleapis.com`
+|グローバルなオンライントランザクション処理の展開をサポートするように設計された、グローバルに分散されたNewSQLデータベースサービスおよびストレージソリューション。
+|Cloud Spanner Viewer
+|`spanner.databases.list`
+`spanner.databases.getIamPolicy`
+`spanner.instances.list`
+`spanner.instanceConfigs.list`
+`spanner.instances.getIamPolicy`
+`spanner.backups.list`
+`spanner.backups.getIamPolicy`
+|サービスアカウントを作成したプロジェクト
+
+および
+
+サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Cloud SQL Admin API
+|`sqladmin.googleapis.com`
+|Cloud SQLデータベースインスタンス管理用API。
+|Custom Role(カスタムロール）
+|`cloudsql.instances.list`
+|サービスアカウントを作成したプロジェクト
+
+|Compute Engine API
+|`compute.googleapis.com`
+|Google Cloud Platform上で仮想マシンを作成、実行します。
+|プロジェクトビューア
+|`cloudasset.assets.searchAllIamPolicies`
+`compute.addresses.list`
+`compute.backendServices.list`
+`compute.backendBuckets.list`
+`compute.sslCertificates.list`
+`compute.disks.get`
+`compute.disks.list`
+`compute.firewalls.list`
+`compute.forwardingRules.list`
+`compute.globalForwardingRules.list`
+`compute.images.get`
+`compute.images.list`
+`compute.images.getIamPolicy`
+`compute.instances.getIamPolicy`
+`compute.instances.list`
+`compute.instanceGroups.list`
+`compute.instanceTemplates.list`
+`compute.instanceTemplates.getIamPolicy`
+`compute.targetSslProxies.list`
+`compute.networks.get`
+`compute.networks.list`
+`compute.subnetworks.get`
+`compute.projects.get`
+`compute.regionBackendServices.list`
+`compute.routers.get`
+`compute.routers.list`
+`compute.routes.list`
+`compute.snapshots.list`
+`compute.snapshots.getIamPolicy`
+`compute.sslPolicies.get`
+`compute.sslPolicies.list`
+`compute.subnetworks.list`
+`compute.targetHttpProxies.list`
+`compute.targetHttpsProxies.list`
+`compute.targetPools.list`
+`compute.urlMaps.list`
+`compute.vpnTunnels.list`
+`compute.externalVpnGateways.list`
+|サービスアカウントを作成したプロジェクト
+
+|Cloud Bigtable API
+|`bigtableadmin.googleapis.com`
+|Google Cloud Bigtableは、NoSQLビッグデータデータベースサービスです。
+|Custom Role(カスタムロール）
+|`bigtable.appProfiles.get`
+`bigtable.appProfiles.list`
+`bigtable.clusters.get`
+`bigtable.clusters.list`
+`bigtable.instances.get`
+`bigtable.instances.list`
+`bigtable.instances.getIamPolicy`
+`bigtable.tables.get`
+`bigtable.tables.list`
+`bigtable.tables.getIamPolicy`
+`bigtable.backups.list`
+`bigtable.backups.getIamPolicy`
+|サービスアカウントを作成したプロジェクト
+
+|Google Cloud Storage API
+|`storage-component.googleapis.com`
+|Cloud Storageは、Googleインフラにデータを保管、アクセスするためのRESTfulサービスです。
+|Custom Role(カスタムロール）
+|`storage.buckets.get`
+`storage.buckets.getIamPolicy`
+`storage.buckets.list`
+|Prisma Cloudに特定の要件はありません
+
+|Google Organization Policy
+|`orgpolicy.googleapis.com`
+|組織ポリシーサービスは、リソース階層全体にわたる構成可能な制約を通じて、組織のクラウドリソースを一元的かつプログラム的に制御します。
+|プロジェクトビューア
+|`orgpolicy.constraints.list`
+`orgpolicy.policy.get`
+|サービスアカウントを作成したプロジェクト
+
+|Google Dataproc Clusters API
+|`dataproc.googleapis.com`
+|Dataprocは、HadoopおよびSparkアプリケーションの実行に使用できるコンピューティングのクラスターを作成するためのマネージドサービスです。
+|プロジェクトビューア
+|`dataproc.clusters.list`
+`dataproc.clusters.get`
+`dataproc.clusters.getIamPolicy`
+`cloudasset.assets.searchAllIamPolicies`
+`dataproc.workflowTemplates.list`
+`dataproc.workflowTemplates.getIamPolicy`
+`dataproc.autoscalingPolicies.list`
+`dataproc.autoscalingPolicies.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Dataproc Metastore
+|`metastore.googleapis.com`
+|Dataprocは、HadoopおよびSparkアプリケーションの実行に使用できるコンピューティングのクラスターを作成するためのマネージドサービスです。
+|プロジェクトビューア
+|`metastore.locations.list`
+`metastore.services.list`
+`metastore.services.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Data Catalog
+|`datacatalog.googleapis.com`
+|Data Catalogは、データエントリの検索とタグ付けに役立つ、完全に管理された拡張性が高いメタデータ管理サービスです。
+|プロジェクトビューア
+|`datacatalog.taxonomies.list`
+`datacatalog.taxonomies.getIamPolicy`
+`datacatalog.taxonomies.get`
+`datacatalog.entryGroups.list`
+`datacatalog.entryGroups.getIamPolicy`
+`datacatalog.entryGroups.get`
+|サービスアカウントを作成したプロジェクト
+
+|Google Datastore
+|`datastore.googleapis.com`
+|DatastoreはスキーマレスのNoSQLデータベースであり、あらゆるアプリケーションに完全に管理された堅牢で拡張性の高いストレージを提供します。
+|プロジェクトビューア
+|`datastore.indexes.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google Datastream
+|`datastream.googleapis.com`
+|Datastreamは、異種データベースやアプリケーション間でデータを同期するためのサーバーレスの変更データキャプチャ（CDC）とレプリケーションサービスです。
+|プロジェクトビューア
+|`datastream.locations.list`
+`datastream.privateConnections.list`
+`datastream.connectionProfiles.list`
+`datastream.streams.list`
+|
+
+|PostgreSQL用Google AlloyDB
+|`alloydb.googleapis.com`
+|PostgreSQL用AlloyDBは、ハイブリッドトランザクション処理と分析処理を含む、最も負荷の高いワークロードのために設計された、PostgreSQL互換のフルマネージドデータベースサービスです。
+|プロジェクトビューア
+|`alloydb.locations.list`
+`alloydb.backups.list`
+`alloydb.clusters.list`
+`alloydb.instances.list`
+`alloydb.users.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google Recommendation API
+|「recommender.googleapis.com」GCP IAM推薦者
+
+`gcloud-recommender-organization-iam-policy-lateral-movement-insight`
+|Google Recommenderは、Google Cloudリソース使用の推奨事項を提供しています。推奨事項は、単一のGoogle Cloud製品およびリソースタイプ固有のものです。
+|IAM Recommender Viewer
+|`recommender.iamPolicyRecommendations.list`
+`recommender.iamPolicyInsights.list`
+`recommender.iamServiceAccountInsights.list`
+`recommender.iamPolicyLateralMovementInsights.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google HealthCare
+|`healthcare.googleapis.com`
+|Google Cloud で医療データを保存およびアクセスするためのソリューションを管理します。
+|プロジェクトビューア
+|`healthcare.locations.list`
+`healthcare.datasets.get`
+`healthcare.datasets.list`
+`healthcare.datasets.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google ハイブリッド接続
+|`networkconnectivity.googleapis.com`
+|ネットワークコネクティビティは、オンプレミスのネットワークや他のクラウドプロバイダーからVirtual Private Cloud (バーチャル プライベート クラウド - VPC)ネットワークへのエンタープライズ接続を提供するGoogleの製品群です。
+|プロジェクトビューア
+|`networkconnectivity.hubs.list`
+`networkconnectivity.hubs.getIamPolicy`
+`networkconnectivity.locations.list`
+`networkconnectivity.spokes.list`
+`networkconnectivity.spokes.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Run API
+|`run.googleapis.com`
+|ユーザー提供のコンテナイメージをデプロイして管理します。
+|プロジェクトビューア
+|`run.locations.list`
+`run.services.list`
+`cloudasset.assets.searchAllIamPolicies`
+`run.jobs.list`
+`run.jobs.getIamPolicy`
+
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Secrets Manager
+|`secretmanager.googleapis.com`
+|API キー、パスワード、証明書などの機密データを格納します。
+|シークレットマネージャビューア
+|`secretmanager.secrets.list`
+`secretmanager.secrets.getIamPolicy`
+`secretmanager.versions.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Security Command Center
+|`securitycenter.googleapis.com`
+|Security Command Centerは、セキュリティ リスクの軽減と修復に役立つ、一元化された脆弱性および脅威レポートサービスです。
+|プロジェクトビューア
+|`securitycenter.sources.list`
+`securitycenter.sources.getIamPolicy`
+`securitycenter.organizationsettings.get`
+`securitycenter.notificationconfig.list`
+`securitycenter.muteconfigs.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google サーバーレス VPC アクセス
+|`vpcaccess.googleapis.com`
+|サーバーレスVPCアクセスにより、Cloud Functionsとアプリエンジンのアプリケーションは、リソースのプライベートIPを使用してVPCネットワーク内のリソースにアクセスできます。
+|プロジェクトビューア
+|`vpcaccess.locations.list`
+`vpcaccess.connectors.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Filestore
+|`file.instances.list`
+|クラウドファイルサーバーを作成および管理します。
+|クラウドファイルストアビューア
+|`file.instances.list`
+`file.snapshots.list`
+`file.backups.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Firestore
+|`firestore.googleapis.com`
+|Cloud Firestoreは、クライアントやサーバー側の開発用にデータを保存および同期するための、柔軟でスケーラブルなNoSQLクラウドデータベースです。
+|プロジェクトビューア
+|`datastore.databases.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Cloud Identity Platform
+|`identitytoolkit.googleapis.com`
+|Identity Platformはカスタマイズ可能な認証サービスで、バックエンドサービス、SDK、UIライブラリを提供することで、ユーザーのサインアップやサインインを容易にします。
+|プロジェクトビューア
+|`firebaseauth.configs.get`
+`identitytoolkit.tenants.list`
+`firebaseauth.users.get`
+`identitytoolkit.tenants.list`
+`identitytoolkit.tenants.get`
+`identitytoolkit.tenants.getIamPolicy`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+
+|Google Certificate Authority Service
+|`privateca.googleapis.com`
+|プライベート認証局 (CA) の展開、管理、セキュリティを簡略化、自動化、カスタマイズできます。
+|CAサービス監査人
+|`privateca.caPools.getIamPolicy`
+`privateca.caPools.list`
+`privateca.certificateAuthorities.list`
+`privateca.certificates.list`
+`privateca.certificateRevocationLists.list`
+`privateca.certificateRevocationLists.getIamPolicy`
+`privateca.locations.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Certificate Manager
+|`certificatemanager.googleapis.com`
+|Certificate Managerは、TLS/SSL証明書のプロビジョニングと管理を行うためのフルマネージド サービスで、証明書発行プロセスに対する複雑な制御を必要としないアプリケーションを対象としています。
+|プロジェクトビューア
+|`certificatemanager.locations.list`
+`certificatemanager.dnsauthorizations.list`
+`certificatemanager.certissuanceconfigs.list`
+`certificatemanager.certmaps.list`
+`certificatemanager.locations.list`
+`certificatemanager.certs.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+
+|Google Deployment Manager
+|`deploymentmanager.googleapis.com`
+|Google Cloud Deployment Managerは、Google Cloudリソースの作成と管理を自動化するインフラストラクチャ デプロイメント サービスです。
+|プロジェクトビューア
+
+注:`deploymentmanager.deployments.getIamPolicy`を有効にするには、権限を手動で追加するか、Terraformテンプレートを更新する必要があります。
+
+|`deploymentmanager.deployments.list`
+`deploymentmanager.deployments.getIamPolicy`
+`deploymentmanager.deployments.list`
+`deploymentmanager.manifests.list`
+
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+
+|Google Identity Aware Proxy
+|`iap.googleapis.com`
+|アプリケーションの中央認証レイヤーを確立することにより、ネットワークレベルのファイアウォールに依存する代わりに、アプリケーションレベルのアクセス制御モデルを提供します。
+|Custom Role(カスタムロール）
+|`clientauthconfig.brands.list`
+`clientauthconfig.clients.listWithSecrets`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Traffic Director
+|`networksecurity.googleapis.com`
+|Traffic Directorは、Google Cloudのフルマネージド アプリケーション ネットワーキング プラットフォームおよびサービス メッシュです。
+|プロジェクトビューア
+|`networksecurity.authorizationPolicies.list`
+`networksecurity.authorizationPolicies.getIamPolicy`
+`networksecurity.clientTlsPolicies.list`
+`networksecurity.clientTlsPolicies.getIamPolicy`
+`networksecurity.serverTlsPolicies.list`
+`networksecurity.serverTlsPolicies.getIamPolicy`
+`networkservices.locations.list`
+`networkservices.gateways.list`
+`networkservices.meshes.list`
+`networkservices.meshes.getIamPolicy`
+|サービスアカウントを作成したプロジェクト
+
+|Google Traffic Directorネットワーク サービス
+|`networkservices.googleapis.com`
+|Traffic Directorは、Google Cloudのフルマネージド アプリケーション ネットワーキング プラットフォームおよびサービス メッシュです。
+|プロジェクトビューア
+|`networkservices.httpRoutes.list`
+`networkservices.grpcRoutes.list`
+`networkservices.tcpRoutes.list`
+`networkservices.tlsRoutes.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google VPC
+|`compute.googleapis.com`
+|組織全体で一貫したファイアウォールポリシーを作成して適用できます。これにより、組織全体の管理者が重要なファイアウォールルールを1か所で管理できます。
+|プロジェクトビューア
+|`compute.firewallPolicies.list`
+`compute.regionfirewallPolicies.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google Vertex AI
+|`notebooks.googleapis.com`
+|Vertex AIは、MLモデルを構築、デプロイ、スケーリングするための事前トレーニング済みのカスタムツールを備えた人工知能プラットフォームです。
+|プロジェクトビューア
+|`notebooks.locations.list`
+`notebooks.instances.list`
+`notebooks.instances.checkUpgradability`
+`notebooks.instances.getHealth`
+`notebooks.instances.getIamPolicy`
+`notebooks.runtimes.list`
+`notebooks.schedules.list`
+|サービスアカウントを作成したプロジェクト
+
+|IDおよびAccess Management (IAM) API
+|`iam.googleapis.com`
+|Googleへの認証に使用してAPIコールを行うための、サービスアカウントの作成を含め、GCPリソースのIDとアクセス制御を管理します。
+|プロジェクトビューア
+|`iam.roles.get`
+`iam.roles.list`
+`iam.serviceAccountKeys.list`
+`iam.serviceAccounts.list`
+`iam.workloadIdentityPools.list`
+`iam.workloadIdentityPoolProviders.list`
+`iam.denypolicies.get`
+`iam.denypolicies.list`
+|サービスアカウントを作成したプロジェクト
+
+|Memorystore(メモリーストア）
+|`redis.googleapis.com`
+|Memorystore(メモリーストア）は、次の2つの一般的なオープンソースキャッシュソリューションのマネージドバージョンを提供する、完全マネージド型のデータベースサービスです。RedisとMemcached。
+|プロジェクトビューア
+|`redis.instances.get`
+`redis.instances.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Memorystore for Memcached
+|`memcache.googleapis.com`
+|Memorystore for Memcachedは、Google Cloud向けの総合管理型Memcachedサービスであり、複雑なMemcachedデプロイの管理負担を軽減します。
+|プロジェクトビューア
+|`memcache.locations.list`
+`memcache.instances.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Managed Microsoft AD
+|`managedidentities.googleapis.com`
+|Managed Service for Microsoft Active Directoryは、Google Cloudによってホストされる高可用性の強化されたMicrosoft Active Directoryドメインを提供します。
+|プロジェクトビューア
+|`managedidentities.domains.list`
+`managedidentities.domains.get`
+`managedidentities.domains.getIamPolicy`
+`managedidentities.sqlintegrations.list`
+|Prisma Cloudに特定の要件はありません
+
+|Google Network Intelligence Center
+|`recommender.googleapis.com`
+|Network Intelligence Centerは、Google Cloudネットワークの可視性、監視、トラブルシューティングを管理するための単一のコンソールを提供します。
+|プロジェクトビューア
+|`recommender.computeFirewallInsights.list`
+|サービスアカウントを作成したプロジェクト。
+
+|Kubernetes Engine API
+|`container.googleapis.com`
+|オープンソースのKubernetesテクノロジーを利用して、コンテナベースのアプリケーションを作成、管理します。
+|Kubernetes Engine Cluster Viewer
+|`container.clusters.get`
+`container.clusters.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Googleクラウド翻訳
+|`translate.googleapis.com`
+|Googleの事前トレーニング済みまたはカスタムの機械学習モデルを使用して、Webサイトやアプリケーションがプログラムでテキストを動的に翻訳できるようにします。
+|プロジェクトビューア
+|`cloudtranslate.locations.list`
+`cloudtranslate.glossaries.list`
+`cloudtranslate.customModels.list`
+`cloudtranslate.datasets.list`
+|サービスアカウントを作成したプロジェクト
+
+
+|Services Usage API
+|`serviceusage.googleapis.com`
+|利用可能なサービスまたは有効なサービスを一覧表示するAPI、またはサービス利用者がGCPで使用しなくなったサービスを無効にするAPI。.*注*:ベストプラクティスとして、Prisma CloudにオンボードされているすべてのGCPプロジェクトでこのAPIを有効にする必要があります。
+|プロジェクトビューア
+|`serviceusage.services.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Stackdriver Monitoring API
+|`monitoring.googleapis.com`
+|https://cloud.google.com/stackdriver/[Stackdriver]Monitoringデータと設定を管理します。
+
+アプリケーションとインフラストラクチャのパフォーマンス、可用性、正常性を可視化するのに役立ちます。
+|Monitoring Viewer(モニタリングビューアー）
+|`monitoring.alertPolicies.list`
+`monitoring.metricDescriptors.get`
+`redis.instances.list`
+`monitoring.notificationChannels.list`
+`resourcemanager.folders.getIamPolicy`
+`monitoring.groups.list`
+`monitoring.snoozes.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+および
+
+Prisma Cloudを使用した監視と保護を可能にするためにサービスアカウントが作成されるソースプロジェクト
+
+|Stackdriver Logging API
+|`logging.googleapis.com`
+|ログエントリを書き込み、ログ設定を管理します。
+|Logging Admin
+|`logging.buckets.list`
+`logging.logEntries.list`
+`logging.logMetrics.get`
+`logging.logMetrics.list`
+`logging.sinks.get`
+`logging.sinks.list`
+`logging.exclusions.list`
+`logging.cmekSettings.get`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Google Web Security Scanner API
+|`websecurityscanner.googleapis.com`
+|App Engine、Google Kubernetes Engine（GKE）、およびCompute Engine Webアプリケーションのセキュリティの脆弱性を特定します。
+|Web Security Scanner Viewer
+|`cloudsecurityscanner.scans.list`
+|サービスアカウントを作成したプロジェクト
+
+|Google ワークフロー
+|`workflows.googleapis.com`
+|ワークフローは、定義された順序でサービスを実行するための、完全に管理されたオーケストレーションプラットフォームです。
+|プロジェクトビューア
+|`workflows.locations.list`
+`workflows.workflows.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+|Cloud Spannerバックアップ
+|`spanner.googleapis.com`
+|Cloud Spannerデータベースのバックアップ。
+|プロジェクトビューア
+|`spanner.backups.list`
+`spanner.backups.getIamPolicy`
+|送信元プロジェクトと宛先。
+
+|Google Service Directory
+|`servicedirectory.googleapis.com`
+|サービスを公開、検出、接続するための単一の場所を提供することにより、大規模なサービスインベントリ管理を強化し、管理と運用の複雑さを軽減するマネージドサービス。
+|プロジェクトビューア
+|`servicedirectory.namespaces.list`
+`servicedirectory.namespaces.getIamPolicy`
+`servicedirectory.services.list`
+`servicedirectory.services.getIamPolicy`
+`servicedirectory.endpoints.list`
+|サービスアカウントがアクセス可能なすべてのプロジェクト
+
+3+|GCP Organization - オンボーディングするには、他のアクセス許可が必要です
+|Organization Role Viewer(組織ロールビューアー）
+|GCP組織のオンボーディングには、Organization Role Viewer(組織ロールビューアー）が必要になります。以下に記載されている個別のアクセス許可のみを指定した場合、そのアクセス許可セットは十分ではありません。
+
+`resourcemanager.organizations.get`
+`resourcemanager.projects.list`
+`resourcemanager.organizations.getIamPolicy`
+|該当なし
+
+|===
+
+
+[#gcp-cloud-asset-inventory]
+=== GCP Cloud Asset Inventory
+
+GCPのCloud Asset Inventory (CAI)サービスを使用すると、メタデータを取得するための個別のAPI呼び出しではなく、単一のAPIを使用して、プロジェクト、フォルダー、または組織内のアセットメタデータを検索できます。Prisma Cloudは、いくつかのGCPサービスにCAIサービスを採用しています。CAIサービスは、GCPへのAPI呼び出しの数を減らし、Prisma Cloud上のアセットについてレポートする時間を短縮するのに役立ちます。Prisma Cloudでは、CAIはデフォルトで有効になっています。
+
+次のGCPサービス（API）は、Prisma CloudでCAIをサポートしています。
+
+* KMS（IAMポリシー、リストキーリング、および暗号化キーの取得）
+* Pub-Sub（IAMポリシーを取得）
+* Dataproc（IAMポリシーを取得）
+* クラウド機能（IAMポリシーを取得）
+* クラウド実行（IAMポリシーを取得）
+* BigQuery（IAMポリシーの取得、BigQueryデータセット、テーブルの一覧表示）
+* インスタンスの計算（GET IAMポリシー）

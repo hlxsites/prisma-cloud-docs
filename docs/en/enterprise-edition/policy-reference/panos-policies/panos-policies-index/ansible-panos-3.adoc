@@ -1,0 +1,52 @@
+== Plain-text management Telnet enabled for Interface Management Profile in Palo Alto Networks devices
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 0f6c6e8c-e5bb-44a2-9be8-971e9f9b2616
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosInterfaceMgmtProfileNoTelnet.yaml[CKV_PAN_3]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether plain-text management Telnet is enabled for Interface Management Profiles in Palo Alto Networks devices. Enabling Telnet for management interfaces, which involves unencrypted communication, can significantly increase the risk of eavesdropping and man-in-the-middle attacks.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_management_profile
+* *Attribute:* telnet
+
+To mitigate this risk, ensure that the telnet attribute in your panos_management_profile resource is disabled (either set to 'false' or omitted entirely). It is recommended to disable Telnet by explicitly setting this attribute to 'false' or omitting it entirely, thereby encouraging the use of secure communication protocols.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  tasks:
+    - name: Example
+      paloaltonetworks.panos.panos_management_profile:
+        provider: '{{ provider }}'
+        name: 'Test profile'
+-        telnet: true # telnet defined as true, which is a fail
++        telnet: false # telnet defined as true, which is a fail
+----
+
+In this example, setting the `telnet` attribute to false or ensuring it is not configured in the management profile reinforces this policy's requirement, thus securing the Palo Alto Networks device management interface.

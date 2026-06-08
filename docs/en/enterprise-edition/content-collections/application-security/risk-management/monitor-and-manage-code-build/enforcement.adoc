@@ -1,0 +1,219 @@
+== Enforcement
+
+Prisma Cloud provides default parameters for each code category scanned in your repositories, based on best practices. Through Enforcement, you can efficiently manage enforcement strategies across your code reviews by customizing how violations, failures and comments are handled before repositories are scanned or integrated. This capability helps reduce unnecessary noise, allowing you to focus on the most critical issues.
+
+////
+Enforcement configurations scan every commit into your repository and suggest fix remedies, if any violation is detected, this is in addition to the scan that Prisma Cloud periodically performs on your repositories, the results for which are accessible on Projects.
+////
+The scans are applied across code categories, leading to the enforcement of three run rules:
+
+* *Hard fail*: A repository scan result fails when Prisma Cloud detects a violation or a vulnerability.
+
+* *Soft fail*: A repository scan result passes, but a notification is displayed on the console when Prisma Cloud detects a violation or a vulnerability.
+
+* *Comment bot*: A repository scan result displays issues with suggested fixes as comments within Pull Requests on the VCS (Version Control System). 
+
+Prisma Cloud scans the following code categories to detect vulnerabilities and violations unique to each category. 
+
+[cols="1,2", options="header"]
+|===
+|Code Category | Description
+
+|*Vulnerabilities*
+|SCA vulnerabilities found in open source packages
+
+|*Infrastructure as Code (IaC)*
+|Misconfiguration issues found in IaC files
+
+// |*CI/CD Risks*
+// |Identifies vulnerabilities in CI/CD pipelines.
+
+|*Licenses*
+|License compliance issues found in open source packages and container images
+
+|*Secrets*
+|Secret leaks across code files that might hinder access to information, services or assets
+
+|===
+
+=== Default Enforcement Rules
+
+The following table displays the default enforcement rules associated with each code category, determined by severity level. These rules apply to all repositories by default.
+
+In the table, 'Vulnerability' scans result in a hard fail when detecting critical issues, a soft fail for low severity issues, and trigger a comment bot for medium severity issues. 
+
+[cols="1,1,1,1,1,1", options="header"]
+|===
+|Code Category
+5+| Severity
+
+| | Info| Low | Medium | High | Critical
+
+.3+|*Vulnerabilities*
+| Not Supported|  |  |  | Hard Fail
+| Not Supported |Soft Fail  |  |  |
+| Not Supported | |Comments Bot  |  |
+
+.3+|*Licenses*
+| Not Supported |Hard Fail  |  |  |
+| Not Supported |Soft Fail   |  |  |
+| Not Supported |Comments Bot   |  |  |
+
+.3+|*IaC*
+| |Hard Fail  |  |  |
+| |Soft Fail  |  |  |
+| |Comments Bot  |  |  |
+
+.3+|Secrets
+| |Hard Fail  |  |  |
+| |Soft Fail  |  |  |
+| |Comments Bot  |  |  |
+
+|===
+
+=== Manage Enforcement 
+
+You can modify the default Enforcement configurations, add an exception, and disable run rules or review pull request scans and suggested vulnerability fixes on your VCS (Version Control System). You can modify the default parameters for any code category.  However, each time a default configuration is modified, the modified parameters will be applied across all integrated repositories.
+
+NOTE: The severity configurations for a code category in *Soft Fail* must be lower than the configurations in *Hard Fail*. For example, if a code category has a critical severity, it cannot be configured for a soft fail if a hard fail is configured for a medium severity.
+
+==== Permissions Required to Configure Enforcement
+
+Refer to xref:../../../administration/prisma-cloud-admin-permissions.adoc[Prisma Cloud Administrator Permissions] for information about the user roles and permissions allowed to configure Enforcement rules.
+
+// * <<modify-default-enforcement, Modify the default parameters.>>
+
+
+
+////
+* <<turn-off-run-rule-scan-for-a-code-category, Turn off run rule scan for a code category.>>
++
+You can choose to prevent an enforcement configuration from running a scan for one or more run rules for a code category. The parameter to turn off a scan for a code category can be an addition to either a default configuration or to an exception configuration. Turning the scan off for a run rule in a code category results in no code review scan.
+
++
+For every failed scan result you can view the latest Pull Request (PR) of your repository within the Prisma Cloud console. Currently the ability to review violation fix suggestions and view the Pull Request (PR) scans that failed is supported only for Github repositories. From the Prisma Cloud console you can directly access your repositories in Github and remediate solutions through a Pull Request (PR).
+////* <<review-fail-scans-and-suggestions-on-vcs, Review fail scans and suggestions on VCS (Version Control System).>>
+
+////
+[.task]
+
+[#access-enforcement]
+=== Access Enforcement
+
+[.procedure]
+
+. In *Application Security*, select *Settings* > *Application Security* under 'Configure' in the left side menu > *Enforcement Rules*.
++
+image::application-security/enforce-config1.1.png[]
++
+Optionally, you can access Enforcement through *Projects*: In *Application Security* select *Projects* > *Action* menu >  *Enforcement*.
++
+image::application-security/enfor-1.png[]
+
+[.task]
+
+[#modify-default-enforcement]
+=== Modify Default Enforcement Configurations
+
+Default enforcement configurations can be modified for any code category. These changes will be applies universally to all integrated repositories.
+
+NOTE: Default enforcement configurations cannot be deleted.
+
+[.procedure]
+
+// . <<access-enforcement,Access>> default enforcement configuration.
+
+. <<access-enforcement,Access Enforcement>> settings.
+
+. In a code category, drag the threshold rule arrow (Hard fail, Soft fail, Comments bot) to your required severity.
++
+In this example for the 'Vulnerabilities' code category, a Hard fail has been downgraded from 'Critical' to' High' vulnerability detection. 
++
+image::application-security/enforcement2.0.gif[]
+
+. Optional: Add a label. see <<add-label,Add Labels>> below for more information about labels. 
+
+. Select *Save*.
+
+[.task]
+
+[#add-label]
+=== Add Labels
+
+You can add labels to both default and custom policies. After applying labels, you can create enforcement rules that target specific policy labels and severity thresholds. When PR scans run, only policies matching these criteria will trigger PR comments or cause PR failures. The Projects Enforcement Level filter allows you to focus on relevant findings. Removing these filters will display all findings, regardless of enforcement rule criteria.
+
+NOTES: 
+
+* To view labels assigned to Application Security policies: On the Prisma Cloud console, select *Governance*, policy type: *config*, policy subtype *Build*. View the label associated to a policy under the Labels column in a row corresponding to the policy
+
+* To add labels while creating policies, refer to xref:../../../governance/custom-build-policies/custom-build-policies.adoc[Custom Build Policies] 
+
+[.procedure]
+
+. <<access-enforcement,Access Enforcement>> settings.
+. Click on the *Label* field > select a label from the drop-down menu > *Save*.
+
+[.task]
+
+[#add-an-exception-to-enforcement]
+=== Add an Exception
+
+To ensure focus on critical issues and receive violation notifications for important repositories, add exceptions to Enforcement rules. You can add an exception for each code category that is applicable. The exception configuration runs in addition to the default enforcement configurations.
+
+Configuring an exception includes defining the scope of the exception, and specifying the repositories code categories and run rules that the exception will apply to.
+
+[.procedure]
+
+. <<access-enforcement,Access Enforcement>> settings.
+
+. Before you begin, ensure that you have the relevant permissions on the repository to add exceptions.
+
+. Select *Add Exception*.
++
+image::application-security/enfor-6.png[]
+
+. Add a *Description* for the new exception.
+. Select the repositories you want to add the exception for.
++
+NOTE: You will only view repositories that you own.
+
+. Modify the severity threshold corresponding to the required code category/ categories.
+
+. Select *Save*.
++
+EXAMPLE
++
+image::application-security/enfor-21.png[]
++
+NOTE: All exceptions are listed on the *Enforcement* configuration pop-up.
++
+image::application-security/enfor-22.png[]
+
+==== Editing or Deleting an Exception
+
+* To edit an exception, hover over an exception > select *Edit* to edit configure the parameters > *Save*.
+
+* To delete an exception, select *Edit* > select an exception> *Delete this exception*.
+
+=== Disable Enforcement Rules
+
+[.task]
+* Global disable: You can disable enforcement rules globally: Uncheck the *Enable default thresholds for soft-fail, hard-fail and comments bot in your code reviews* setting
+
+* Specific disable: You can <<turn-off-run-rule-scan-for-a-code-category,disable >> the severity threshold for a specific code category
+
+[.task]
+
+[#turn-off-run-rule-scan-for-a-code-category]
+=== Disable a run rule for a code category
+
+You can disable one or more run rules (Hard-fail, Soft-fail, Comment-bot) for code categories. This applies to both a default configuration or to an exception.
+
+NOTE: Disabling a run rule in a code category prevents running a scan for the selected rule.
+
+[.procedure]
+
+. Select a code category.
+
+. Select *Off* corresponding to the category rule > *Save*.
+

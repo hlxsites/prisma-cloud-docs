@@ -1,0 +1,84 @@
+== Server-side request forgery with Python web frameworks
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 18458871-6cdd-4272-a139-58df4156a090
+
+|Checkov ID 
+|CKV3_SAST_189
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Language
+|Python
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/918.html[CWE-918: Server-Side Request Forgery (SSRF)]
+
+|OWASP Categories
+|https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/[A10:2021-Server-Side Request Forgery]
+
+|=== 
+
+
+
+=== Description 
+
+This policy detects whether applications make HTTP requests using untrusted user-controlled input. This practice can introduce Server-Side Request Forgery (SSRF) vulnerabilities. In SSRF attacks, attackers exploit the application to make the server request unintended locations, potentially accessing internal services, unauthorized data, or performing other malicious actions.
+
+In this example, user input from `request.args.get('url')` is used directly in an HTTP request with `requests.get(url)`, bypassing validation. This exposes the application to SSRF attacks, where an attacker could craft malicious input to manipulate the URL, potentially accessing internal services or sensitive information.
+
+[source,Python]
+----
+import requests
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/fetch', methods=['GET'])
+def fetch_data():
+    url = request.args.get('url')
+    response = requests.get(url)
+    return response.content
+----
+
+
+=== Fix - Buildtime
+
+Validate and sanitize user input before using it to make HTTP requests. Implement an allow list of acceptable URL schemes and hosts, and ensure proper authentication and transport-layer security for proxied requests.
+
+In this example, the URL is validated to ensure that the scheme and hostname are in the allow list before making the request. This restricts requests to trusted domains, reducing the risk of SSRF vulnerabilities.
+
+[source,Python]
+----
+import requests
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/fetch', methods=['GET'])
+def fetch_data():
+    # Retrieve parameter from query string indirectly
+    url_param = 'url'
+    url = request.args.get(url_param)
+    
+    # Validation or modification of the URL
+    # This example assumes a predefined list of URLs or patterns validated against.
+    # Here we directly assign a safe URL for demonstration.
+    # In a real scenario, there should be a validation function that verifies and sanitizes the input URL.
+    safe_url = "https://api.example.com/data"  # Assuming this is a validated and safe URL
+    
+    # Make a request to a known safe URL instead of directly using user input
+    response = requests.get(safe_url)
+    return response.content
+----
+

@@ -1,0 +1,242 @@
+== 通知テンプレートの追加
+
+クラウドセキュリティを既存の運用手順に統合できるように、Prisma Cloudアラート通知を既存のツールに送信する方法について学びます。
+
+アラートルールは、選択した一連のクラウドアカウントで、どのポリシー違反がアラートを生成するのかを定義しています。ランタイムチェックのアラート ルールを作成する場合、ルールがトリガーする アラート ペイロードを1つ以上のサードパーティ ツールに送信するようにルールを構成することもできます。メール以外のすべてのチャネルで、クラウド環境内のポリシー違反の通知を、既存の運用ワークフローと統合するには、xref:configure-external-integrations-on-prisma-cloud.adoc[Prisma Cloudで外部統合を構成する]必要があります。アラートルールを作成する前に統合をセットアップする、またはアラートルール作成プロセス内のインラインリンクを使って、必要な時に統合をセットアップすることができます。
+
+//On some integrations, such as Google CSCC, AWS Security Hub, PagerDuty, and ServiceNow, Prisma Cloud can send a state-change notification to resolve an incident when the issue that generated the alert is resolved manually or if the resource was updated in the cloud environment and the service learns that the violation is fixed.
+
+サードパーティツールを使ったアラート通知チャネルの有効化については、次のトピックを参照してください。
+
+//* xref:#id84f16f30-a2d0-44b7-85b2-4beaaef2f5bc[Send Alert Notifications to Amazon SQS]
+//* xref:#id2fae8293-c6fa-4a83-90e6-ec4c92bb2afd[Send Alert Notifications to Azure Service Bus Queue]
+* xref:#add-email-notification-template[メール経由でのアラート通知の送信]
+//* xref:#id5813ca2f-759a-4464-a561-c995e99779ed[Send Alert Notifications to a Slack Channel]
+//* xref:#iddf5e64a0-630d-4dbd-8cbb-0c9d785f3c25[Send Alert Notifications to Splunk]
+* xref:#add-jira-notification-template[Jiraへのアラート通知の送信]
+//* xref:#idd57f95ff-7246-48c9-85d0-4eae0185b827[Send Alert Notifications to Google Cloud SCC]
+* xref:#add-servicenow-notification-template[ServiceNowへのアラート通知の送信]
+//* xref:#id408f7a0a-fcb6-4847-81a1-eca436daa986[Send Alert Notifications to Webhooks]
+//* xref:#idecf7e98c-435e-44ae-a97d-21bd047ff372[Send Alert Notifications to PagerDuty]
+//* xref:#idc8014659-a348-4cf7-b655-5f864c3962b4[Send Alert Notifications to AWS Security Hub]
+//* xref:#id09effce5-3030-43da-aecc-86e86ff88e78[Send Alert Notifications to Microsoft Teams]
+//* xref:#id90a4c3cd-b459-4946-b041-a6b864064797[Send Alert Notifications to Cortex XSOAR]
+
+
+[.task]
+[#add-email-notification-template]
+=== メール経由でのアラート通知の送信
+
+アラートルールでトリガーされたアラートの電子メール通知を送信するために、Prisma Cloudにはデフォルトの電子メールテンプレートが用意されています。アプリ内のリッチテキストエディタを使用してテンプレート内のメッセージをカスタマイズし、そのテンプレートをアラートルールに添付できます。アラート通知では、アラートの詳細を非圧縮CSVファイル、または圧縮したzipファイルとして送信するようにPrisma Cloudを設定できます。最大添付ファイルサイズは9MBになります。
+
+Prisma Cloudからの電子メール通知には、DMARC（Domain-based Message Authentication, Reporting & Conformance）をサポートするドメイン名が含まれており、使用される電子メール アドレスはnoreply@prismacloud.paloaltonetworks.comになります。
+
+[.procedure]
+. (tt:[任意]) 電子メール通知テンプレートにカスタムメッセージをセットアップします。
++
+Prisma Cloudでは、便利なデフォルトのメールテンプレートが提供され、リッチテキストエディタを使用してメール本文内のリードインメッセージをカスタマイズできます。
+
+.. *Settings（設定）> Integrations & Notifications （統合と通知）> Notification Templates（通知テンプレート）*を選択します。
+
+.. リストから *Add Notification Template（通知テンプレートの追加）> 電子メール* 通知テンプレートを選択します。
+
+.. *Template Name（テンプレート名）*を入力します。
++
+テンプレート名の全長は最大99文字で、特殊なASCII文字（ '<'、 '>'、 '！'、 '='、 '\ n'、 '\ r'）を含めることはできません。
++
+サポートされていない文字を含むテンプレートを以前に作成したことがあり、テンプレートを更新しようとすると、テンプレート名が無効であることを示すエラー メッセージが表示されます。
+
+.. *Custom Note（カスタムノート）*を入力し、*Next（次）*を選択します。
++
+右側のプレビューでは、コンテンツがどのように表示されるかを確認できます。
+//+
+//image::administration/alert-rules-custom-email-notification.png[]
++
+image::administration/add-email-notification-template-1.png[]
+
+.. *ステータスを確認*そして*テンプレートを保存します*。
+//+
+//image::administration/alert-rules-custom-email-review-status.png[]
++
+image::administration/add-email-notification-template-2.png[]
+
+. *Alerts（アラート）> Alert Rules（アラートルール）* を選択し、Create Alert Rule for Run-Time Checks(ランタイムチェックのアラートルールの作成)を選択するか、既存のルールを選択して編集します。
+
+. *Configure Notifications(通知の設定)> 電子メール*を選択します。
+
+. アラート通知の送信先*Emails（電子メール）*を入力または選択します。
++
+複数のメールアドレスを指定して、ドメイン内のメールアドレスや組織外のゲストにメール通知を送信することができます。
+
+. トグルを [*有効*] に設定してアラート通知を送信し、[*次へ*] にをクリックします。
+
+. (tt:[任意])カスタム電子メール*Template（テンプレート）*を選択します（存在する場合）。
+
+. 電子メール通知を送信する*Frequency（頻度）*を設定します。
++
+* *Instantly（即時）*—アラートルールがアラートを生成した時に、受信者リストにメールを送信します。
+* *Recurring（定期）*—時間間隔として、Daily（日次）、Weekly（週次）、またはMonthly（月次）を選択することができます。Prisma Cloudは受信者リスト宛てに、その日、その週、またはその月に生成されたすべてのアラートを記載した、単一のメールを送信します。
+
+. メールに添付ファイルを含めるかどうかを指定します。
++
+ファイルを添付することで、生成されたアラートに関する情報や、違反しているリソースの修正に必要な、対処手順を含めることができます。*Attach detailed report（詳細レポートを添付）*を選択する場合、各アラート生成の契機となったポリシーの主原因を修正するために、*Include remediation instructions（修正手順を含める）*を指定して修正手順を含めるかどうかを選択できます。また、必要に応じてそれをzipファイル（*Compress attachment(s)（添付ファイルを圧縮）*）として送信することができます。
++
+各メールには、最大10件までのファイルを添付することができます。zip形式ファイル内の添付ファイルは60000行まで保持できます。CSVファイルの場合は900行です。アラート数が最大添付ファイル数を超えた場合、古いタイムスタンプを持つアラートから除外されていきます。
++
+image::administration/alerts-alert-rules-set-alert-notification.png[]
+
+. [*概要*] を確認し、 新しいアラート ルールまたは既存のアラート ルールへの変更を*保存*します。
+
+. アラート通知メールを確認します。
++
+メールアラート通知には、アラートルール、アカウント名、クラウドタイプ、違反したポリシー、各ポリシーに違反したアラート数、および影響を受けたリソースが記載されています。アラートの*<数字>*をクリックすると、Prisma Cloudの*Alerts（アラート）Overview（概要）*ページが表示されます。
++
+image::alerts/alerts-email-notification.png[]
+
+[.task]
+[#add-jira-notification-template]
+=== Jiraへのアラート通知の送信
+
+Jiraチケットを作成するように、アラートルールが生成するアラート通知を設定することができます。
+
+[.procedure]
+. xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-jira.adoc[Prisma CloudとJiraの統合]
+
+. *Settings（設定）> Integrations & Notifications （統合と通知）> Notification Templates（通知テンプレート）*を選択します。
+
+. リストから *Add Notification Template（通知テンプレートの追加）> Jira* 通知テンプレートを選択します。
+
+. *Template Name（テンプレート名）*を入力して、*Integration（統合）*を選択します。
++
+通知テンプレートを手軽に識別するための、分かりやすい名前を使用してください。
++
+テンプレート名の全長は最大99文字で、特殊なASCII文字（ '<'、 '>'、 '！'、 '='、 '\ n'、 '\ r'）を含めることはできません。
+
+. *Project（プロジェクト）*を選択します。
++
+* (tt:[NOTE]) Prisma Cloudアラートを表示したい場合は、プロジェクトを選択します。各アラートはJiraチケットに変換されるため、Prisma Cloudチケット発行と問題管理のために専用のプロジェクトを、作成することをお勧めします。
+
+* Prisma Cloudで*未解決*アラート通知状態と*解決済み*アラート通知状態の両方を有効にする場合は、設定したプロジェクトの Jira ワークフローが *Open （未解決）>Resolved（解決済み） >Open (再度開く) 状態*の移行を処理するように設定されていることを確認してください。そうでない場合、次のエラーが発生します。
+----
+Jira state transition is not possible for configured state
+----
+
+. *問題の種類*を選択します。
+
+. オプションで、トグルを使用して*解決済み*アラートの状態を [*有効*] に設定し、[*次へ*] をクリックすることもできます。
++
+image::administration/add-jira-notification-template-1.png[]
+
+. Jira *でアラートの未解決状態を設定するには*:
+
+.. 記入する*Jira Fields（Jiraフィールド）*を選択します。
++
+(tt:[NOTE]) プロジェクト内で必須項目として定義されているJiraフィールドは、すでに選択されておりアラート内に含まれています。
++
+image::administration/add-jira-notification-template-2.png[]
+
+.. Jira *ステート*を選択します。
+
+.. アラートペイロードから、*Summary（サマリー）*および*Description（説明）*に入る情報を選択します。
+
+.. Jiraプロジェクトに記載されているユーザーから、アラートの*Reporter（報告者）*を選択します。
++
+(tt:[NOTE]) このオプションは、この統合をセットアップした管理者が、Jiraでレポート設定を変更するために必要な権限を持っている場合にのみ利用できます。
+
+. *解決済み*アラートの状態を*有効*にしている場合、上記手順を繰り返し、Jira のアラートを*解決済み状態*に設定します。
+
+. *Next（次へ）*を選択します。
+
+. *レビューステータス*の概要を確認し、*テンプレートをテストする*をクリックします。
+
+. 「通知テンプレートが正常にテストされました」というメッセージが表示されたら、「*テンプレートを保存*」をクリックします。
++
+image::administration/add-jira-notification-template-3.png[]
++
+*アクション*から通知を複製、編集、または削除できます。
++
+統合を正常にセットアップした後、*Settings （設定）> Integrations& Notifications （統合と通知）> Integrations（統合）* の Get Status（ステータス取得） リンクを使用して定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
+
+
+//. xref:../manage-prisma-cloud-alerts/create-an-alert-rule.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Run-Time Checks] or modify an existing rule to send alerts to Jira.
+//. Select *Alerts > Alert Rules* and either xref:create-an-alert-rule.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Run-Time Checks] or select an existing rule to edit.
+//. Navigate to *Configure Notifications > Jira*.
+//. Select the Jira *Templates* to use for creating tickets based on the alert payload data for alerts that are triggered by this alert rule.
+//. Set the toggle to *Enabled* to send notifications and *Next*.//+
+//image::administration/alert-rule-jira.png[]
+//. Review the *Summary* and *Save* the new alert rule or your changes to an existing alert rule.
+
+[.task]
+[#add-servicenow-notification-template]
+=== ServiceNowへのアラート通知の送信
+
+ServiceNowにアラート通知を送信することができます。通知テンプレートにより、Prisma CloudアラートペイロードとServiceNow上のインシデントフィールド（画像のPrisma Cloudインターフェイスでは「_ServiceNow fields_」と表示）をマップします。インシデント、セキュリティ、およびイベントテーブルはServiceNowとは独立しているため、対応するテーブルのアラートを参照するには、Prisma Cloudで*Incidents（インシデント）*、*Events（イベント）*の、または*Security Incidents（セキュリティインシデント）*の各サービスタイプに対して通知テンプレートを設定する必要があります。
+
+エラーが表示された場合は、 xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow.adoc#iddd0aaa90-d099-4a99-a3ed-bde105354340[エラー メッセージの解釈]方法を確認してください。
+
+[.procedure]
+. xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow.adoc[Prisma CloudとServiceNowの統合]
+
+. *Settings（設定）> Integrations & Notifications （統合と通知）> Notification Templates（通知テンプレート）*を選択します。
+
+. リストから [*Add Notification Template（通知テンプレートの追加）> ServiceNow* 通知テンプレートを選択します。
++
+image::administration/add-servicenow-notification-template-1.png[]
+
+. *Template Name（テンプレート名）*を入力して、*Integration（統合）*を選択します。
++
+通知テンプレートを手軽に識別するための、分かりやすい名前を使用してください。
++
+テンプレート名の全長は最大99文字で、特殊なASCII文字（ '<'、 '>'、 '！'、 '='、 '\ n'、 '\ r'）を含めることはできません。
+
+. *Service Type（サービスタイプ）*に*Incident（インシデント）*、*Security（セキュリティ）*、または*Event（イベント）*のいずれかを設定します。
++
+このドロップダウン内のオプションは、Prisma CloudでServiceNow統合を有効にした時に選択したオプションと一致しています。
+
+. ServiceNowフィールドをセットアップするアラートステータスを選択します。
++
+Open（未解決）、Dismissed（解除）、またはResolved（解決済み）状態に対して、それぞれ異なるフィールドを選択することができます。Snoozed（一時停止）状態用のフィールドは、Dismissed（解除）状態のフィールドと同じになります。
+
+. アラートの状態が*Resolved（解決済み） > Open（オープン）*（再オープン）状態に変更され、新たにServiceNowインシデントを作成する場合は、このチェックボックスを有効にします。
++
+image::administration/servicenow-notification-template.png[]
+
+. *次へ*をクリックします。
+
+
+. アラートに含める*ServiceNow Fields（ServiceNowフィールド）*を選択します。
++
+Prisma Cloudは、これらのフィールドをServiceNowインスタンスから動的に取得します。データが保管されることはありません。IT管理者によるServiceNowインスタンスの設定内容に応じて、設定可能フィールドばドロップダウンリスト、長文入力テキストフィールド、または先行入力を利用できる場合があります。先行入力フィールドの場合、利用可能なオプションを表示するには3文字以上入力する必要があります。通知テンプレート内で設定可能フィールドを選択する場合、最低でもServiceNow実装環境で必須項目として定義されているフィールドを含める必要があります。
++
+この例で、*Description（説明）*は長文入力テキストフィールドなので、それを選択してPrisma Cloudアラートペイロードフィールドに含めて、ServiceNowアラートで利用することができます。アラート通知に含まれるように、選択した各フィールドの値を含める必要があります。アラートに含めることができるコンテキストの詳細は、xref:../../alerts/alert-payload.adoc[アラートペイロード]を参照してください。
++
+このフィールドのテキストが特定の文字数を超える場合（上限はServiceNowのデフォルトのフィールドサイズによって異なる場合があります）、Prisma Cloudから送信されたときに詳細が切り捨てられないように、ServiceNow実装のフィールドの最大長を調整する必要があります。
++
+(tt:[任意]) ServiceNowイベントを生成するには、Message Key（メッセージキー）とSeverity（重大度）が必須となります。メッセージキーにより、新しいアラートを作成するのか、または既存のアラートを更新するのかが決まります。Prisma Cloudアラートを、ServiceNow上の単一のアラートまたは複数のアラートとしてログに記録するための基本設定に基づいて、メッセージキーをアカウント名またはアラートIDとマップすることができます。ServiceNowでイベントを作成し、エラーなしで処理できるようにするには、重大度が必要です。重大度がない場合、ServiceNowでイベントはエラー状態になります。
++
+*Number（番号）*に対しては、ServiceNowのインシデントを手軽にスキャンし、読み取りやすくするために、Prisma CloudアラートペイロードからのAlertIDを使用してください。
++
+image::administration/servicenow-notification-template-alert-id.png[]
++
+image::administration/servicenow-notification-template-fields.png[]
+
+. *概要*ステータスを確認し、*テンプレートのテスト*及び*テンプレートの保存*をします。
++
+image::administration/snow-notification-review-status.png[]
++
+*アクション*から通知を複製、編集、または削除できます。
++
+統合のセットアップと通知テンプレートの設定を行った後、Prisma Cloudはそのテンプレートを使ってServiceNowインスタンスにテストアラートを送信します。テストワークフローは、テンプレートで設定したさまざまなアラート状態を遷移するチケットを作成します。通信が成功すると、成功メッセージが表示されます。
++
+オンデマンドのステータスチェックを行うには、*Settings（設定）>Integrations（統合）*の*Get Status（ステータスを取得）*アイコンを使用します。これらのチェックは、ServiceNow インスタンスのURLに到達可能であり、認証情報が有効であることを検証するのに役立ちます。
++
+image::administration/get-status.png[]
+
+. *次のステップ*
++
+統合が適切に機能していることを確認し、xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow.adoc#id46a9b2b8-8b2a-4b68-b65e-d8c15dd574d2[アラート表示]させます。
+
+
+

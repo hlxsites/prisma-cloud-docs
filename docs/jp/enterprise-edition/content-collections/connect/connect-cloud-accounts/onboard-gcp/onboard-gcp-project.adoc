@@ -1,0 +1,103 @@
+:topic_type: タスク
+[.task]
+== GCP プロジェクトのオンボーディング
+
+Prisma Cloudで、単一のGCPプロジェクトまたは複数のGCPプロジェクトを追加します。
+
+Prisma CloudにGCPプロジェクトを追加するには、ここから作業を開始してください。複数のプロジェクトを追加する場合、オンボーディングする各プロジェクトに対してこの手順を繰り返すか、または現在および将来に渡って、すべてのGCPプロジェクトの自動監視をPrisma Cloudに許可します。後者の場合、Prisma Cloudに追加するプロジェクトに添付されているサービスアカウントが使用されます。Prisma Cloudは、このサービスアカウントを_マスターサービスアカウント_とみなします。
+
+[NOTE]
+====
+Prisma Cloudを使ってプロジェクトの監視を開始した後、GCPでプロジェクトを削除すると、Prisma Cloudは*Settings（設定）> Cloud Accounts（クラウドアカウント）*の監視対象アカウントのリストからアカウントを自動的に削除します。プロジェクトの自動削除を追跡するために、監査ログが生成され、削除されたアカウント名とそのアクションが実行された日付が記録されます。
+====
+
+[.procedure]
+. Settings（設定）> Providers（プロバイダー）> Cloud Account（クラウドアカウント）を順に選択します。
+
+. 次に、[プロバイダーの接続(プロバイダーに接続)] > [Cloud Account(クラウドアカウント)]を選択します。
+
+. オンボーディングするクラウドアカウントとして*Google Cloud Platform*を選択し、*開始*をクリックします。
++
+image::connect/gcp-add-proj-1.png[]
+
+.. [*対象範囲*]で *[プロジェクト]* を選択します。
+
+.. GCPプロジェクトで有効にしたい [*セキュリティ機能とアクセス許可*] を選択します。
++
+機能は*Foundational （基礎）*と*詳細*にグループ分けされています。選択内容に基づいて、Prisma Cloud は、サービス アカウントに関連付けられた権限を含むTerraformスクリプトを動的に生成します。
++
+* 組織のクラウド導入の開始時に *Foundational （基礎）* (推奨) 機能を使用して、クラウドとオンプレミスの資産を効果的に管理します。
++
+*Foundational （基礎）* 機能はデフォルトで有効になっています。
++
+** *設定誤り*は、クラウドリソースのスキャンとメタデータの取り込みに必要な権限を付与します。
+** *Identity Security*は、IDの正味有効権限の計算とアクセスの管理に必要な権限を付与します。
+** https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/agentless-scanning[エージェントレスワークロードスキャン]（デフォルトで選択されている）を有効にして追加すると、Defenderをインストールしなくてもホストとコンテナの脆弱性とコンプライアンスリスクをスキャンできます。エージェントレスワークロードスキャン機能を使いたくない場合は、このチェックボックスを選択解除できます。組織をオンボードすると、スキャンが自動的に開始されます。エージェントレススキャンのスキャンhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/22-12/prisma-cloud-compute-edition-admin/agentless-scanning/onboard-accounts[設定]を更新することもできます。
++
+* *詳細*（追加）機能により、クラウド運用をプロアクティブに制御し、ランタイム環境内で問題が顕在化する前に特定し修正することができます。
++
+有効にするように選択できる *詳細* 機能は次のとおりです。
++
+** *脅威検知* (デフォルトで有効) は、ネットワーク、ID の脅威を検出するために必要な権限を付与します。
+** AWS Lambda、Azure、Googleなどのクラウドプロバイダの関数のhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/vulnerability_management/serverless_functions[脆弱性]とhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/compliance/serverless[コンプライアンス]をスキャンするための*サーバーレスファンクションスキャン*を有効化し、権限を追加します。組織をオンボードすると、スキャンが自動的に開始されます。サーバーレススキャンのスキャンhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/22-12/prisma-cloud-compute-edition-admin/agentless-scanning/onboard-accounts[設定]を更新することもできます
+** *Agent-Based Workload Protection*に権限を追加し、安全なクラウドhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/install/deploy-defender/host/auto-defend-host[VM]、https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/install/deploy-defender/container/container[コンテナ]、およびhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/install/deploy-defender/orchestrator/orchestrator[Kubernetesオーケストレーター]に保護するためのhttps://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin-compute/install/deploy-defender/defender_types[Defenderの自動デプロイ]を可能にします。防御側が必要とするレジストリ スキャン、Kubernetes 監査、およびその他の機能も有効になっています。
+
+.. *次へ*をクリックします。
+
+. *アカウントを設定します*。
++
+image::connect/gcp-add-proj-2.png[]
+
+.. *プロジェクト ID* と *アカウント名*を入力します。クラウドアカウント名が自動的に記入されます。Prisma Cloud上でGCPプロジェクトを一意に識別するためのアカウント名に置き換えることができます。
++
+プロジェクト番号ではなく、プロジェクトIDを必ず入力してください。
++
+image::connect/gcp-projects-id.png[]
+
+.. (tt:[任意])[*修正*]を有効にすると、Prisma Cloudの修正可能な構成ポリシーについて報告されたポリシー違反に対処できます。この機能は、デフォルトでは有効になっていません。有効にすると、Prisma Cloud ロールは Google クラウド アカウントへの読み取り/書き込みアクセス許可を取得し、修復コマンドを正常に実行できるようになります。
+
+.. (tt:[任意]) *フロー ログ*を有効にして、*フロー ログ ストレージ バケット*の名前を入力します。オプションで、[*Dataflow を使用して圧縮ログを生成する* ] チェックボックスをオンにします。
++
+Terraformのテンプレートではフローログが有効になっていないため、フローログを取得するにはxref:enable-flow-logs-for-gcp-project.adoc[GCP 組織の フローログを有効にする]のワークフローを完了する必要があります。また、Prisma Cloudでxref:flow-logs-compression.adoc[フローログ圧縮]を有効にして、GCPで設定されている、フローログシンクにネイティブ圧縮機能が用意されていない問題に対処する場合も、同様に手動で作業を行う必要があります。[*データフローを使用して圧縮されたログを生成する*] を選択すると、Prisma Cloud はフロー ログの圧縮に必要なネットワークとコンピューティング リソースをセットアップします。このプロセスが完了するまでに最大 5 分かかる場合があります。
++
+[NOTE]
+====
+フローログを有効にすると、過去7日間のフローログデータが取り込まれます。その後、手動でフローログの無効化、API権限の変更、内部エラーの発生など、何らかの理由でフローログが利用できなくなった場合、アクセスが回復した時点で、過去7日間のログのみが取り込まれます。
+====
+
+.. (tt:[任意]) サービスアカウントに関連する現在と将来のGCPプロジェクトのすべてをPrisma Cloudで監視します。これはマスター サービス アカウントにのみ適用されます。
++
+複数のプロジェクトを保有している場合、*Automatically onboard projects that are accessible by this service account（このサービスアカウントからアクセス可能なプロジェクトを自動的にオンボーディングする）*を有効にして、サービスアカウントに関連する現在と将来のGCPプロジェクトをPrisma Cloudで監視します。オンボードするプロジェクトごとに、サービスアカウントに同じ権限を提供する必要があります。
++
+オンボーディングするプロジェクト、またはオンボーディングしたプロジェクトがvarname:[<sys-26-digit number>]の形式の場合、そのプロジェクトは削除されます。
+
+.. Prisma Cloud向けの*サービスアカウント*を設定します。
+
+.. *Terraform Script をダウンロード*し、*手順*に従って*サービスアカウントキー (JSON)* ファイルをアップロードします。
++
+ダウンロードしたTerraformテンプレートを保管するディレクトリを作成することをお勧めします。そうすることにより、Prisma Cloudに別のGoogleプロジェクトを追加する際に、テンプレートを管理することができます。ディレクトリには、使用するプロジェクトを一意に識別できる名前を付けてください（例えば、onboard-<project-name>）。
+
+.. プロジェクトに関連付けるxref:../../../administration/create-manage-account-groups.adoc[アカウントグループ]をクリックします。
++
+[NOTE]
+====
+ポリシー違反発生時にアラートを生成するには、各クラウドアカウントをアカウントグループに割り当て、xref:../../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[Create an Alert Rule for Run-Time Checks（ランタイムチェックにアラートルールを作成）]して、そのアカウントグループに関連付けるようにします。
+====
+
+.. *次へ*をクリックします。
+
+. *レビューステータス*。
++
+image::connect/gcp-add-proj-3.png[]
++
+GCPプロジェクトアカウントの*詳細*と、Prisma Cloudのアカウントオンボーディング時に選択した*セキュリティ機能*のステータスチェックを確認します。
+
+* 選択したすべてのセキュリティ機能に緑色の *有効*アイコンが表示されていることを確認します。
+
+* 赤色の「*Checks Failed（チェック失敗）*」アイコンが表示されているセキュリティ機能については、対応するドロップダウンをクリックして、失敗の原因を確認します。
++
+フローデータのエクスポートと分析には約4～24時間ほどかかり、それ以降でないとPrisma Cloudでレビューすることはできません。GCPプロジェクトからのフローログデータが分析されたかどうかを確認するために、*Investigate（調査）*ページでネットワーククエリを実行することができます。
++
+Prisma Cloud GCP IAMロールにプロジェクト内のモニタリング対象リソースのデータを取り込むための適切な権限がない場合、ステータスアイコンは赤またはオレンジで表示され、不足している権限が一覧表示されます。
+
+. [*保存して閉じる*] をクリックしてオンボーディングを完了するか、[*保存して別のアカウントを登録*] をクリックします。

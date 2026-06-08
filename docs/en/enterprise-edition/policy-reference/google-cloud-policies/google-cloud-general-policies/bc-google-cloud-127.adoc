@@ -1,0 +1,49 @@
+
+== GCP Vertex AI Workbench user-managed notebook has Integrity monitoring disabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 32863163-9440-4b46-9c61-613cb2a2da5e
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/VertexAINotebookEnsureIntegrityMonitoring.py[CKV_GCP_127]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy identifies GCP Vertex AI Workbench user-managed notebooks that have Integrity monitoring disabled.
+
+Integrity Monitoring continuously monitors the boot integrity, kernel integrity, and persistent data integrity of the underlying VM of the shielded user-managed notebooks. It detects unauthorized modifications or tampering, enhancing security by verifying the trusted state of VM components throughout their lifecycle. It provides active alerting allowing administrators to respond to integrity failures and prevent compromised nodes from being deployed into the cluster.
+
+It is recommended to enable integrity monitoring for user-managed notebooks to detect and mitigate advanced threats like rootkits and bootkit malware.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+Ensure that integrity monitoring is enabled for your Shielded Vertex AI Notebook Instances by setting the `enable_integrity_monitoring` argument to `true` in your Terraform configuration. This setting helps improve the security posture of your Notebook Instances by ensuring that the integrity of the instance is monitored.
+
+[source,go]
+----
+resource "google_notebooks_instance" "example" {
+   ...
+   shielded_instance_config {
+-      enable_integrity_monitoring = false
+   }
+}
+----
+

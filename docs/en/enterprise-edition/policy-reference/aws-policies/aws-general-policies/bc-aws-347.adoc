@@ -1,0 +1,53 @@
+
+== Neptune is not encrypted with KMS using a customer managed Key (CMK)
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| b3287f82-37f2-42f6-93aa-2943d0b77500
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/NeptuneClusterEncryptedWithCMK.py[CKV_AWS_347]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that the Amazon Neptune database is encrypted using a Customer Managed Key (CMK) from AWS Key Management Services (KMS). Neptune is a fast, reliable graph database service by AWS which makes it simple and efficient to build and run applications that operate with highly connected datasets. The main function of the policy is to ensure that the aforementioned database is encrypted for enhanced security.
+
+Not implementing this policy is considered bad because it can expose sensitive data stored in the Neptune database. By using a CMK, the user has full control over the key access and usage, providing an additional layer of security and a greater control than the default Amazon-managed keys. Unencrypted data or data encrypted with less controlled keys can put data at risk from malicious attacks, and could potentially lead to legal or reputational damage if the data is confidential or personal.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_neptune_cluster
+* *Arguments:* kms_key_arn
+
+To fix this issue, you need to encrypt your Neptune database with a KMS Key by setting the `kms_key_arn` parameter in the `aws_neptune_cluster` resource block.
+
+[source,go]
+----
+resource "aws_neptune_cluster" "default" {
+  cluster_identifier  = "neptune-cluster-demo"
+  engine              = "neptune"
+  backup_retention_period = 5
+  preferred_backup_window = "07:00-09:00"
+  skip_final_snapshot = true
+  iam_database_authentication_enabled = true 
+  kms_key_arn = "arn:aws:kms:us-west-2:123456789012:key/abcd1234a1234deaa1234fgha12345678"
+}
+----
+

@@ -1,0 +1,54 @@
+
+== S3 lifecycle configuration does not set a period for aborting failed uploads
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 91986a59-e939-4831-b1d5-f06086df5336
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/S3AbortIncompleteUploads.py[CKV_AWS_300]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that there is a specified time period set for aborting failed uploads in the Amazon S3 lifecycle configuration. This is critical for preventing incomplete multipart uploads from consuming unnecessary storage, which could increase costs and potentially slow down system performance. If a multipart upload event fails, without a specified abort period, the partially uploaded data will continue to occupy space and accumulate associated charges.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_s3_bucket_lifecycle_configuration
+* *Arguments:* abort_incomplete_multipart_upload
+
+To achieve this, you need to add the `abort_incomplete_multipart_upload` attribute.
+
+[source,go]
+----
+resource "aws_s3_bucket_lifecycle_configuration" "pass" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
++   abort_incomplete_multipart_upload {
++     days_after_initiation = 7
++   }
+    filter {}
+    id = "log"
+    status = "Enabled"
+  }
+}
+----
+

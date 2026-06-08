@@ -1,0 +1,59 @@
+
+== The Connect Instance S3 Storage Configuration utilizes Customer Managed Key.
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| cf6967e2-c450-4d5a-aa84-86d68ca68930
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ConnectInstanceS3StorageConfigUsesCMK.py[CKV_AWS_270]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether an Amazon Connect instance uses a Customer Master Key (CMK) for its S3 storage configuration. It underscores the importance of encrypting data at rest to prevent unauthorized access to sensitive information. The use of a CMK allows more granular control over the cryptographic keys, including the ability to create, rotate, disable, and define access permissions and usage. Thus, it significantly enhances the data security posture. If the policy check fails, it indicates that the Amazon Connect instance's S3 storage is either not encrypted or using default encryption, which presents a potential security risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_connect_instance_storage_config
+* *Arguments:* storage_config.s3_config.encryption_config.key_id
+
+You should configure the 'key_id' service to use AWS Key Management Service (AWS KMS), this will allow control over who can use the master key and decrypt messages. 
+
+[source, go]
+----
+resource "aws_connect_instance_storage_config" "pass" {
+  instance_id   = aws_connect_instance.pass.id
+  resource_type = "CHAT_TRANSCRIPTS"
+
+  storage_config {
+    s3_config {
+      bucket_name   = aws_s3_bucket.pass.id
+      bucket_prefix = "pass"
+
+      encryption_config {
+        encryption_type = "KMS"
++       key_id          = aws_kms_key.example.arn
+      }
+    }
+    storage_type = "S3"
+  }
+}
+----
+

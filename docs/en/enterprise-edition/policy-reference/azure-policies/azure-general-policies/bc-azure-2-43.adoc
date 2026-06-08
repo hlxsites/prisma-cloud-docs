@@ -1,0 +1,57 @@
+
+== Azure Database for MariaDB not configured with private endpoint
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 4c9e653c-2110-4719-b333-be3d8d078b71
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/azure/AzureMariaDBserverConfigPrivEndpt.yaml[CKV2_AZURE_43]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy checks whether Azure MariaDB database servers are configured with private endpoints. Private endpoint connections are essential for ensuring secure communication, establishing exclusive, private connectivity to Azure Database for MariaDB. Configuring a private endpoint ensures access only from recognized networks, preventing entry from potentially malicious or unknown IP addresses, including those within Azure. It is recommended to establish a private endpoint to enhance the security of communication for your Azure MariaDB database.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_mariadb_server, azurerm_private_endpoint
+* *Arguments:* private_connection_resource_id
+
+To fix this issue and establish secure communication with your network, configure your Azure MariaDB server with a private endpoint, by adding a private_connection_resource_id connection to the azurerm_mariadb_server service.
+
+[source,go]
+----
+resource "azurerm_mariadb_server" "example" {
+  ...
+}
+
+resource "azurerm_private_endpoint" "example" {
+  ...
+
+  private_service_connection {
+    ...
+    private_connection_resource_id = azurerm_mariadb_server.pass.id
+    ...
+  }
+}
+----
+
+This code enhances Azure MariaDB server security by enabling a private endpoint connection. The private endpoint allows secure connections from clients in the same Azure virtual network or peered virtual networks. This control over access to the MariaDB server prevents exposure to the public internet, helping to reduce the threat of data leakage and external threats.
+

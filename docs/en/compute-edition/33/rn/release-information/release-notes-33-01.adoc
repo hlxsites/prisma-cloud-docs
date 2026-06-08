@@ -1,0 +1,156 @@
+:toc: macro
+== 33.01 Release Notes
+
+The following table outlines the release particulars:
+
+[cols="1,4"]
+|===
+|Build
+|33.01.137
+
+|Code name
+|Pascal Update 1
+
+|Release date
+|October 06, 2024
+
+|Type
+|Minor release
+
+|SHA-256
+|e7f9fd298a4d84ec9247509e584db0ad55b34dd669953e017e01b9a4e79450ec
+|===
+
+Review the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/install/system-requirements[system requirements] to learn about the supported operating systems, hypervisors, runtimes, tools, and orchestrators.
+
+// You can download the release image from the Palo Alto Networks Customer Support Portal, or use a program or script (such as curl, wget) to download the release image directly from our CDN:
+
+// https://cdn.twistlock.com/releases/orvGojie/prisma_cloud_compute_edition_33_00_169.tar.gz[https://cdn.twistlock.com/releases/orvGojie/prisma_cloud_compute_edition_33_00_169.tar.gz]
+
+toc::[]
+
+=== Lifecycle Support Update
+
+Prisma Cloud officially guarantees backward compatibility with up to two previous major versions (n-2).
+
+Although the support lifecycle remains unchanged, starting from version 33.xx, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from up to three major releases before the current version (upto n-3 major releases).
+
+For example, with the current version at 33.xx, API calls and Defenders from version 30.xx will be allowed. However, support and complete backward compatibility is guaranteed for the 32.xx and 31.xx releases.
+
+[#upgrade]
+=== Upgrade from Previous Releases
+
+[#upgrade-defender]
+==== Upgrade Defenders
+
+Starting with the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/upgrade/support-lifecycle[Defender versions supported (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. In addition, starting from release 33.00, Prisma Cloud will not restrict the usage of Defender versions or REST API calls from the n-3 version. So the current release will allow Defenders and REST API calls from release 30.xx also. Failure to upgrade Defenders below version `v30.00`, such as `v22.12`, will result in disconnection of the Defenders from the Console.
+
+However, to maintain full support, you must upgrade your Defenders to `v31.xx` or a higher release.
+
+To summarize, the level of support for the different versions of Defenders is as follows:
+
+* Defender versions 33.xx, 32.xx, and 31.xx have full support
+* Defender versions 30.xx are functional (will be able to connect to version 33.xx Console) but support is not available for such Defenders
+* Defender versions previous to 30.xx, such as 22.12, are neither supported nor functional (cannot connect to version 33.xx Console)
+
+
+[#upgrade-console]
+==== Upgrade the Prisma Cloud Console
+
+Starting with the `v33.00` release, the https://docs.prismacloud.io/en/compute-edition/33/admin-guide/upgrade/support-lifecycle[supported Console versions (n, n-1, and n-2)] are `v33.00`, `v32.00`, and `v31.00` respectively. 
+
+NOTE: Defenders from the n-3 release will remain functional as described above.
+
+You can upgrade the Prisma Cloud console directly from any n-1 version to n. For example, with `v33.00` as n and `v32.00` as n-1, you can upgrade directly from `v32.05.124` to `v33.01.137`.
+
+NOTE: You have to upgrade any version of `v31.00` to `v32.00` before upgrading to `v33.00`. For example, you must upgrade from `v31.02.137` to `v32.07.123` before you upgrade to `v33.01.137`.
+
+
+//[#cve-coverage-update]
+//=== CVE Coverage Update
+
+[#enhancements]
+=== Enhancements
+
+// CWP-61917
+
+==== Multiple Intelligence Stream (IS) Builders for Compatibility across Console and Defender Versions
+
+Starting from this release, Prisma Cloud will introduce versioning for the Intelligence Stream (IS) to ensure compatibility across different Console and Defender versions.
+
+*Purpose of Intelligence Stream (IS) Versioning*
+
+* *Maintain functionality for older Consoles and Defenders:* IS versioning ensures that older Consoles and Defenders continue to operate properly, even if they are unable to support the latest Intelligence feeds (for example, due to changes in external data feed formats).
+* *Reduce disruptions:* Versioning helps minimize disruptions caused by updates, such as changes in downloaded JSON file fields that could impact CVE accuracy or result in duplicate CVEs.
+
+*Impact on Prisma Cloud Customers*
+
+* *Enterprise Edition (SaaS) customers:* These customers always have the latest Console version, so they will not be affected by this change.
+* *Compute Edition (self-hosted) customers:* IS versions will be aligned with specific Console versions. For example, older 31.xx and 32.xx Consoles will be supported by the IS version released for Console 33.00. When customers upgrade to the latest Console version, they will receive the most recent IS updates.
+
+*Vulnerability Reporting Consistency*
+
+* *New Intelligence Stream (IS) logic updates:* These updates will only apply to the latest IS versions.
+* *Vulnerability data:* All IS versions will continue to provide up-to-date vulnerability information, and changes in IS logic or algorithms will not affect the vulnerability metrics and reporting in the Console.
+
+// CWP-61840
+
+==== Support for Deploying Defenders on Podman Containers
+
+Previously, Prisma Cloud supported scanning Podman images in the CI pipeline using _twistcli_. With this release, Prisma Cloud now supports deploying Defenders on Podman containers, providing comprehensive visibility and protection for workloads running in Podman environments.
+
+This enhancement enables full protection for Podman containers, including continuous vulnerability scanning, compliance policy enforcement, and active runtime security monitoring.
+
+To deploy a Linux Container Defender on Podman, navigate to *Manage* > *Defenders* > *Manual Deploy* > *Single Defender*. Select *Container Defender - Linux* as Defender Type. In the *Container Runtime Type* field, select *Podman* (the default is Docker).
+
+If you select Podman, the installation script automatically includes the `--install-podman` argument.
+
+If your Podman environment uses a custom runtime socket path, you can specify it using the `--podman-socket` argument.
+
+For example, to use Podman with a custom runtime socket path, the installation command would be:
+
+`curl -sSL --header "#####<Bearer TOKEN>####" -X POST <TENANT URL>/api/v1/scripts/defender.sh \| sudo bash -s -- -c "stage-consoles-cwp.cloud.twistlock.com" -v --install-podman --podman-socket "<custom_runtime_socket_path>"`
+
+// CWP-61241
+
+==== SHA-256 Checksum for Defender Image Downloads
+
+Prisma Cloud now enables users to validate the integrity of Defender images downloaded from the Console using a SHA-256 checksum, ensuring the downloaded image matches the server version.
+
+To access the feature, do the following:
+
+. In the Console, go to *Manage > System > Utilities*. 
++ 
+The SHA-256 checksum is available next to the downloadable Defender image. 
+
+. Click *Show Checksum* to view the checksum to verify the downloaded image.
+
+This feature ensures that Defender images are secure and protected from tampering.
+
+
+//[#new-features-agentless-security]
+// === New Features in Agentless Security
+
+// [#new-features-core]
+// === New Features in Core
+
+// [#new-features-host-security]
+// === New Features in Host Security
+
+// [#new-features-serverless]
+// === New Features in Serverless
+
+// [#new-features-waas]
+// === New Features in WAAS
+
+// [#api-changes]
+// === API Changes and New APIs
+
+
+// [#addressed-issues]
+// === Addressed Issues
+
+
+// [#deprecation-notices]
+// === Deprecation Notices
+

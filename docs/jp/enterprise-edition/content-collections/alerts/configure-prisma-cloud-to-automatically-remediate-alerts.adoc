@@ -1,0 +1,88 @@
+:topic_type: タスク
+[.task]
+[#id77ff61ca-a7ae-4830-9c47-516c79be3f9a]
+== アラートを自動修正するためのPrisma Cloudの設定
+
+//To facilitate rapid incident response, configure Prisma® Cloud to automatically remediate cloud Security policy violations in your cloud environments using multi-step CLI commands in one-click.
+
+セキュリティグループの設定ミスなどのポリシー違反をPrisma Cloud®に自動的に解決させたい場合、サポートされているCloud Service Providerにデプロイされたアセットに対して、Prisma Cloudに自動修復機能を設定できます。ポリシー違反を自動的に解決するために、Prisma Cloudは、違反が発見されたクラウド環境内のポリシーに関連するCLIコマンドを実行します。
+修正可能と指定された（Remediable（修正可能）列にimage:remediable-icon.png[]が表示されている）デフォルトポリシー（設定ポリシーのみ）、および追加した複製ポリシーまたはxref:../governance/create-a-policy.adoc#idb236291f-7137-46c9-8452-4d94b3ae5ba8[カスタムポリシー]に対して、自動修正機能を有効にすることができます。
+
+自動修正を有効にするには、自動修正を行う一連のポリシーを判別して、関連するクラウド環境内でPrisma Cloudが必要な権限を持っていることを確認する必要があります。次に、特定した一連のポリシーの自動修復を可能にする xref:create-an-alert-rule-cloud-infrastructure.adoc[クラウドインフラストラクチャのアラートルールを作成]します 。
+
+[CAUTION]
+====
+自動修復を有効にすると、次のようになります。
+
+* 自動修復を有効にすると、Prisma Cloudはクラウド環境のリソース設定を変更して、セキュリティの設定ミスに対処します。これらの変更はCLIコマンドを使用して実行され、アプリケーションへのアクセスが中断される可能性があります。
+
+* 生成された日時に関係なく、適用可能なすべての未処理のアラートが修正され、アラートの状態が*[解決済み]*として更新されます。
+====
+
+//If you want to use automated remediation using serverless functions for your cloud resources on AWS, use the runbooks on https://github.com/PaloAltoNetworks/Prisma-Enhanced-Remediation[GitHub]. The Prisma Cloud platform sends alert messages to an AWS SQS Queue, which in turn invokes a lambda function _index_prisma.py_. The function then calls the appropriate runbook script to remediate the alert(s). To use AWS Lambda for automatic remediation, you do not need to give Prisma Cloud read-write access to your AWS accounts, and is an alternative way for you to try remediation for violating resources.
+
+[.procedure]
+. 目的のポリシーを修正するために必要な権限を、Prisma Cloudが保有していることを確認してください。
++
+各クラウドサービスプロバイダー上で誤った設定のクラウド アセットを修正するCLIコマンドを実行するためにPrisma Cloudロールに必要な読み取り/書き込み権限は、クラウドアカウントのオンボード時に付与する必要があります。
+
+.. 修復可能なポリシーを表示するには、*Governance （ガバナンス）> Overview（概要）* を選択し、*Remediable(修復可能)[はい]* のフィルタを追加します。
++
+[TIP]
+====
+ページにRemediable（修正可能）列が表示されない場合、*Column Picker*（列ピッカー）（image:alerts/column-picker.png[]）を使ってそれを表示してください。
+====
++
+image::alerts/remediable-policies-1.png[]
+
+.. 修復を有効にするポリシーを選択します。
+
+.. Alerts Overview（アラート概要）ページで、*Alerts（アラート）*をクリックします。
+
+
+.. アラートをトリガーしたポリシーを編集し、リソースの詳細とポリシーの推奨事項を別々のタブで表示できます。*Alert ID（アラートID）*を選択すると、スライドアウトパネルにアラートの詳細が見やすくなります。
+
+
+.. *Violating Resources（違反しているリソース）*の下に、アラートをトリガーしたリソースのリストが表示されます。
++
+「CLIコマンドの概要」で必要な権限を確認し、クラウド環境でPrisma Cloudがポリシー違反を修正するために必要なアクセス許可を判断してください。
++
+[NOTE]
+====
+マルチステップ自動修正ワークフローでは、シーケンス内に最高で5つのコマンドを定義できます。実行するコマンドを目的のシーケンスに追加してください。各コマンドは、セミコロンで区切ります。シーケンス内に含まれているいずれかのCLIコマンドが失敗した場合、その時点で実行が中止されます。xref:../governance/create-a-policy.adoc#idfdf75841-94de-45dc-b1f0-526efe91a9d6/id7a3a1f02-2f66-433a-94e1-aedf50203a64[]を参照してください。
+====
+
+
+.. *Edit Policy（ポリシーを編集）*をクリックして、アラートから直接ポリシーにアクセスします。
+
+.. *Recommendations（推奨事項）*タブをクリックして、アラートをトリガーしたポリシーを表示します。
+
+
+. xref:create-an-alert-rule-cloud-infrastructure.adoc[クラウドインフラストラクチャのアラートルールを作成する]か、既存のアラートルールを変更します。
+
+. userinput:[Select Policies]（ポリシーの選択）ページで、*Automated Remediation（自動修正）*を有効にした後、*Continue（続行）*をクリックして自動修正がアプリケーションに与える影響について承諾します。
++
+利用可能なポリシーのリストが更新され、修正可能なポリシーのみが表示されます（Remediable（修正可能）列にimage:remediable-icon.png[]が表示されている）。
++
+[NOTE]
+====
+修正可能ではないポリシーを含む既存のアラートルールを変更している場合、それらのポリシーはルールに含まれなくなります。ルールを変更した場合、そのルールにアクセスできるすべてのアカウント管理者にその旨が通知されます。
+====
+
+. xref:create-an-alert-rule-cloud-infrastructure.adoc[設定を完了]して新しいアラートルールを*Save（保存）*するか、または既存のアラートルールへの変更を*Confirm（確認）*します。
++
+アラートルールを保存すると、Prisma Cloudは自動的に修復CLIを実行し、いつ生成されたかに関係なく、すべての未解決アラートのポリシー違反を解決し、アラートのステータスを*Resolved（解決済み）*に更新します。
+
+. *アラートに対処します。*
+
+.. アラートのフィルタリングを行って、*Open（未解決）*で*Remediable（修正可能）*なアラートのみを表示します。
+
+.. アラートを修正するポリシーを選択します。
++
+表で、*Alert（アラート）*列のリンクを選択して、ポリシー ルール違反に対処するための推奨事項を確認します。ポリシー名をクリックして、直接ポリシーに移動することもできます。
+
+.. Prisma Cloudで解決するアラートを選択し、*Remediate（修復）*をクリックします。
++
+問題を修正するために、Prisma　Cloudではクラウドアカウントへの読み取り/書き込みアクセスを制限する必要があります。適切な権限があれば、Prisma Cloudはポリシー違反をクラウドプラットフォームで直接修復するために必要なCLIコマンドを自動的に実行できます。修復するアクションでは、各アラートを個別に評価し、それが適切なアクションであることを確認する必要があるため、複数のアラートの自動修復を一括アクションとして有効にすることはできません。
++
+AWSやGCPなどのクラウドサービスプロバイダで問題を修正すると、問題は自動的に解決され、解決理由がPrisma Cloudに表示されます。さまざまな理由のリストについては、xref:prisma-cloud-alert-resolution-reasons.adoc#id97d61277-e387-43b1-8a54-ec644bc02fdc[Prisma Cloud アラート解決の理由]を参照してください。

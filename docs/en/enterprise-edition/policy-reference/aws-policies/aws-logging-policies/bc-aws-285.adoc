@@ -1,0 +1,54 @@
+
+== Execution history logging is not enabled on the State Machine
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2e6b0e13-c0f2-4a33-a3bc-57bb8b2ea6f4
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/StateMachineLoggingExecutionHistory.py[CKV_AWS_285]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying whether execution history logging is activated for the State Machine in an AWS environment. If not activated, it could lead to critical issues. Logging provides extensive visibility into the behavior of a state machine, allowing one to view execution history, debug errors, and understand which states were traversed in the course of an execution. In the absence of logging, debugging could become very difficult due to lack of information on the application's activities. It is a best practice in security and compliance to enable logging and continuously monitor these logs.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sfn_state_machine
+* *Arguments:* logging_configuration.include_execution_data
+
+To fix this issue, you need to enable execution history logging for the AWS ATM state machine. This can be achieved by adding the `logging_configuration` block to the AWS step function resource, and setting `level` to `ALL`.
+
+[source,hcl]
+----
+resource "aws_sfn_state_machine" "sfn_state_machine" {
+  name     = "sfn_state_machine"
+ 
+  // ...
+
+  logging_configuration {
+    level              = "ALL"
+    include_execution_data = true
+  }
+}
+----
+
+The above code ensures that execution history logging is enabled for the State Machine. Enabling logging at `ALL` level will log everything, including execution started, step succeeded, step failed, etc. This doesn't just help in auditing and debugging, but also improves the overall security of your application. Having `include_execution_data` set to true will include input and output details for each execution step, which could be crucial for debugging purposes.
+

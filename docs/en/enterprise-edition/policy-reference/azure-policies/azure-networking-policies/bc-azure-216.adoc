@@ -1,0 +1,48 @@
+
+== DenyIntelMode for Azure Firewalls is not set to Deny
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 04bdfe76-d7ba-499b-8fb8-950128fe0882
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AzureFirewallDenyThreatIntelMode.py[CKV_AZURE_216]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan, ARM
+
+|===
+
+=== Description
+
+This policy is checking whether the 'DenyIntelMode' is set to 'Deny' for Azure Firewalls. In an Azure environment, network security is paramount to protect against unauthorized access or security breaches. The 'DenyIntelMode' is a setting in Azure Firewalls which controls network traffic by filtering it against known threat intelligence-based filtering rules. If this setting is not set to 'Deny', it means that the firewall would not block network traffic from malicious IP addresses and domains, potentially introducing serious security risks such as data breaches, DDoS attacks, etc. Therefore, not having 'DenyIntelMode' set to 'Deny' is considered bad and non-compliant with best security practices.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_firewall
+* *Arguments:* threat_intel_mode
+
+To fix the issue, you should set the `threat_intel_mode` attribute to `Deny` for Azure Firewalls.
+
+[source,go]
+----
+resource "azurerm_firewall_policy" "example" {
+  name                = "example"
+  ...
+  threat_intel_mode = "Deny"
+}
+----
+
+

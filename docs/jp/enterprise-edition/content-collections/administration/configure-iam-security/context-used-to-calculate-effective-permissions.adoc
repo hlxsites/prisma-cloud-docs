@@ -1,0 +1,549 @@
+[#id9a49416f-ea8e-4374-b297-a2b029ac1640]
+== 有効な権限の計算に使用されるコンテキスト
+
+// Details the resource types that are used in the net effective permissions calculation and the write events that are supported.
+
+
+Prisma Cloud IAMセキュリティモジュールは、2つの独自アルゴリズムによって成り立っています。まず、複数のクラウド エンティティからのサービスを組み合わせて、各クラウド リソースの正味の有効利用率を計算します。正味有効権限データには次のものが含まれます。
+
+* xref:#id143dfc86-2c88-40f9-81ab-7cf9fbad9e09[AWSの実際に有効な権限の計算]:AWS IAM ロール、ポリシー、グループ、およびサービスコントロールポリシー (SCP)。
+* xref:#id5104998a-a619-4b2d-b7bf-5980647df3cf[AWSの実際に有効な権限の計算]:Azureマネージドグループ、Azureサブスクリプション、Azureリソース、およびActive Directory(アクティブディレクトリ - AD)。
+* xref:#idd30a7b13-b8e6-4f2c-af77-ffb9d821f15f[GCPの実際に有効な権限の計算]:GCP ユーザー、サービス アカウント、グループ、およびロール。
+
+この情報は最終アクセス データと照合され、アクセス許可が最後に使用された日時を特定します。大量の利用状況データを効率的に処理するため、最終アクセス先は100に制限されています。各アクセス許可には、各日の最新のイベントを含む最大 100 の最終アクセス行が含まれます。
+
+[#id143dfc86-2c88-40f9-81ab-7cf9fbad9e09]
+=== AWSの実際に有効な権限の計算
+
+以下のAWS ポリシータイプと ID は、正味有効なアクセス許可の計算に用いられます。
+
+* AWS IAM ロール
+* AWS IAM ポリシー
+* AWS IAM グループ
+* AWSサービスコントロールポリシー（SCP）
+* ロールの信頼関係
+* アクセス許可の境界
+* NotAction
+* ワイルドカードをサポートするポリシー
+
+AWS 展開にある他のリソースタイプは、正味有効なアクセス許可の計算に考慮されません。
+
+さらに、リソースベースのポリシーによって権限を設定することもできます。以下のAWS*リソースベースのポリシー*は、正味の有効な権限の計算でサポートされています。
+
+* Lambda関数
+* S3バケット
+* SQSキュー
+* SNSトピック
+* ECSタスク定義
+* シークレット マネージャー
+* KMSキー
+* Lambda層バージョン
+
+アクセス権限を定義する場合、指定できるIAM概念がいくつかあります。IAM セキュリティモジュールは現在、これらの概念の一部を使用し、以下の概念を無視しています。
+
+* IAM変数
+* サービスにリンクされたロール
+* NotResource
+
+次の AWS コンセプトを使用して、Prisma Cloud で結果をクエリすることもできます。
+
+* タグ
+* 条件
+
+xref:../../search-and-investigate/permissions-queries/permissions-query-attributes.adoc[IAM クエリ] 属性を参照して、AWS タグ属性を表示し、AWS タグの IAM クエリの実行に関する詳細を確認します。 
+
+[IMPORTANT]
+====
+AWS とは異なり、Prisma Cloud のタグでは大文字と小文字が区別されません。
+====
+
+正味の有効な権限が計算された後、実際の使用状況（最終アクセス）が照合され、書き込みイベントが実際に使用された時期が決定されます。最終アクセスはアカウントごとに24時間を基準に計算されるため、アカウントに新しいアクションがあった場合、更新された最終アクセス値を確認するには少なくとも24時間以上待つ必要があります。最終アクセスは、ほとんどの書き込みイベントでサポートされています。次の AWS サービスとイベントが検証されます。
+
+[cols="50%a,50%a"]
+|===
+|サービス
+|イベント名
+
+
+|Cloud9
+|* CreateEnvironmentEC2
+
+
+|Elastic Compute Cloud
+|* CreateImage
+
+* CreateNetworkAcl
+
+* CreateRoute
+
+* CreateSecurityGroup
+
+* CreateSubnet
+
+* CreateVpcEndpoint
+
+* DeleteFlowLogs
+
+* DeletePlacementGroup
+
+* DeleteVolume
+
+* DeleteVpnGateway
+
+* ImportKeyPair
+
+* MonitorInstances
+
+* AssociateIamInstanceProfile
+
+* ModifyVpcEndpointServicePermissions
+
+
+|Elastic Container Registry
+|* PutImage
+
+* DeleteLifecyclePolicy
+
+* DeleteRepositoryPolicy
+
+* PutLifecyclePolicy
+
+* SetRepositoryPolicy
+
+
+|Elastic Container Service
+|* DeregisterTaskDefinition
+
+
+|ElastiCache
+|* CreateCacheCluster
+
+* CreateCacheSecurityGroup
+
+
+|Elastic File System
+|* CreateFileSystem
+
+
+|Elastic Load Balancing
+|* CreateListener
+
+* DeleteLoadBalancerListeners
+
+* SetLoadBalancerPoliciesOfListener
+
+* CreateLoadBalancerPolicy
+
+* DeleteLoadBalancerPolicy
+
+
+|Elastic MapReduce
+|* RunJobFlow
+
+
+|Elasticsearch
+|* CreateElasticsearchServiceRole
+
+
+|Identity and Access Management
+|* AddUserToGroup
+
+* CreatePolicy
+
+* CreateUser
+
+* DeleteRole
+
+* DeleteUserPolicy
+
+* UpdateAccessKey
+
+* UpdateUser
+
+* PutGroupPolicy
+
+* PutRolePolicy
+
+* PutUserPolicy
+
+* AttachGroupPolicy
+
+* AttachUserPolicy
+
+* CreatePolicyVersion
+
+* AddUserToGroup
+
+* UpdateLoginProfile
+
+* CreateAccessKey
+
+* AttachRolePolicy
+
+* SetDefaultPolicyVersion
+
+* CreateLoginProfile
+
+
+|Key Management Service
+|* CreateKey
+
+
+|Lambda
+|* UpdateFunctionCode20150331v2
+
+* AddPermission20150331v2
+
+* RemovePermission20150331v2
+
+
+|Relational Database Service
+|* CreateDBClusterSnapshot
+
+* DeleteDBSubnetGroup
+
+
+|Amazon Redshift
+|* CreateCluster
+
+* DeleteClusterParameterGroup
+
+* ModifyClusterIamRoles
+
+
+|S3
+|* PutBucketAcl
+
+
+|Simple Notification Service
+|* CreateTopic
+
+
+|Simple Queue Service
+|* DeleteQueue
+
+
+|AWS Certificate Manager
+|* AddTagsToCertificate
+
+
+|Managed Message Broker Service
+|* CreateBroker
+
+
+|AWS Batch
+|* DeleteComputeEnvironment
+
+
+|Amazon Cognito Identity Pools
+|* CreateIdentityPool
+
+
+|AWS Config
+|* DeleteDeliveryChannel
+
+
+|AWS Database Migration Service
+|* CreateReplicationInstance
+
+
+|Amazon DynamoDB
+|* CreateTable
+
+
+|AWS Backup
+|* PutBackupVaultAccessPolicy
+
+* DeleteBackupVaultAccessPolicy
+
+
+|AWS Organizations
+|* UpdatePolicy
+
+
+|AWS IoT
+|* AttachPolicy
+
+* AttachPrincipalPolicy
+
+* DetachPrincipalPolicy
+
+* DetachPolicy
+
+* CreateSecurityProfile
+
+* UpdateSecurityProfile
+
+* DeleteSecurityProfile
+
+|===
+
+
+[#id5104998a-a619-4b2d-b7bf-5980647df3cf]
+=== AWSの実際に有効な権限の計算
+
+Azure Active Directory (AD) グループを処理する場合、最大 1000 人のグループ メンバーが許可されます。ユーザー、グループ、マネージド ID、サービス プリンシパルなど、すべてのエンティティがサポートされています。
+
+IAM Securityモジュールの仕組みについては、xref:what-is-prisma-cloud-iam-security.adoc[Prisma Cloud IAM Securityについて]をご参照ください。
+
+次の Azure アクセス許可レベルがサポートされています。
+
+* 管理グループ
+* サブスクリプション
+* リソース
+
+アクセス権限を定義する場合、指定できるIAM概念がいくつかあります。IAM セキュリティモジュールは現在、これらの概念の一部を使用し、以下の概念を無視しています。
+
+* リソースグループ
+* マルチテナントアクセス
+* 条件
+* タグ
+
+Prisma Cloudには、上記のアクセス許可レベルを表示するための追加のアクセス許可が必要です。Prisma Cloud を初めて使用し、xref:../connect/connect-cloud-accounts/connect-azure-account.adoc[Azure アカウントのオンボーディング] に Terraform テンプレートを使用した場合、テンプレートにはこれらのアクセス許可が含まれているため、追加の操作は必要ありません。Prisma CloudとAzureアカウントの関連付けが済んでいる場合は、Terraformテンプレートを再実行するか、必要なアクセス許可を手動で追加するオプションがあります。 
+
+==== Azure 管理グループのアクセス許可を手動で追加する
+
+Azureデプロイメントが管理グループを使用している場合は、以下の手順に従って画面を手動で追加してください:[Microsoft.Management/ManagementGroups/descendants/read] 権限:
+
+. Azure アカウント ポータルで、管理グループに移動します。
+. *[テナント/ルート管理グループ] > [アクセス制御 (IAM)]*を選択します。
+. 上記のアクセス許可を Prisma アカウントに割り当てます。
+
+==== Azure 管理グループのアクセス許可を手動で追加する
+
+Azureデプロイメントがサブスクリプションを使用している場合は、以下の手順に従って画面を手動で追加してください:[Microsoft.resources/subscriptions/read] 権限:
+
+. Azure アカウント ポータルで、サブスクリプション グループに移動します。
+. タグを取り込みたいサブスクリプションを選択します。
+. [アクセス制御 (IAM)] タブをクリックします。
+. 上記のアクセス許可を Prisma アカウントに割り当てます。
+
+IAM クエリを実行して、アクセス許可レベルが追加されたことを検証できます。Azure アクセス許可レベルの属性をすべて表示するには、xref:../../search-and-investigate/permissions-queries/permissions-query-attributes.adoc[IAM クエリ属性]を 参照してください。
+
+
+[#idd30a7b13-b8e6-4f2c-af77-ffb9d821f15f]
+=== GCPの実際に有効な権限の計算
+
+Prisma Cloud は、GCP エンティティ、サービスベースのポリシー、および IAM の概念を使用して、正味の有効なアクセス権限を計算します。クラウド環境に追加のリソースタイプがある場合、Prisma Cloudでは、それらを実際に有効な権限に組み込むわけではありません。
+
+正しい有効な権限の計算に使用されるGCPエンティティの一覧は以下のとおりです。:
+
+[cols="50%a,50%a"]
+|===
+|エンティティ
+|
+
+
+|GCP プリンシパル
+|* ユーザー アカウント
+
+* サービス アカウント
+
+* グループアカウント
+
+
+|GCP ロール
+|* Basic（基本）
+
+* 事前定義済み
+
+* カスタム
+
+
+|GCP レベル
+|* 組織
+
+* フォルダ
+
+* プロジェクト
+
+* サービス (サポートされている場合)
+
+
+|GCP パブリック
+|* すべてのユーザー
+
+* すべての認証済みユーザー
+
+|===
+
+[NOTE]
+====
+Prisma Cloud は、GCP *拒否ポリシー* 機能を利用して、正味の有効なアクセス権限を計算します。*拒否ポリシー* はGCPのパブリックベータリリースであるため *、拒否されたアクセス権限の正味の有効なアクセス許可* の計算もPrisma Cloudのベータリリースになります。
+====
+さらに、アクセス許可は、サービス ベースのポリシーによって設定することもできます。次の GCP *サービス ベースのポリシー* は、正味の有効アクセス権限の計算でサポートされています。
+
+[cols="50%a,50%a"]
+|===
+|サービスベースのポリシー
+|
+
+
+|アプリエンジン
+|gcloud-app-engine-application
+
+
+|ビッグクエリ
+|* gcloud-bigquery-dataset-list
+
+* gcloud-bigquery-table
+
+
+|Cloud Bigtable
+|* gcloud-bigtable-instance-list
+
+* gcloud-bigtable-table
+
+
+|クラウドコンピュート
+|* gcloud-compute-instances-list
+
+* gcloud-compute-image
+
+* gcloud-compute-instance-disk-snapshot
+
+
+|Cloud Functions
+|gcloud-cloud-function
+
+
+|Cloud Key Management Service
+|gcloud-kms-keyring-list
+
+
+|クラウド実行
+|gcloud-cloud-run-services-list
+
+
+|クラウドスパナ
+|* gcloud-cloud-spanner-database
+
+* gcloud-cloud-spanner-instance
+
+* gcloud-cloud-spanner-instance-backup
+
+
+|クラウドストレージ
+|gcloud-storage-buckets-list
+
+
+|クラウドSQL
+|gcloud-sql-instances-list
+
+
+|データプロセス
+|gcloud-dataproc-clusters-list
+
+
+|Pub/Sub
+|* gcloud-pubsub-topic
+
+* gcloud-pubsub-snapshot
+
+
+|シークレットマネージャー
+|gcloud-secretsmanager-secret
+
+|===
+アクセス権限を定義する場合、指定できるIAM概念がいくつかあります。IAM セキュリティモジュールは現在、これらの概念の一部を使用し、以下の概念を無視しています。
+
+* 条件
+
+* GCP プロジェクトの境界
+
+* 動的グループ
+
+* カスタムロールの権限のレベル
+
+* 権限の依存関係
+
+* Google マネージド サービス アカウント
+
+* Google ワークスペースドメイン
+
+* クラウドアイデンティティドメイン
+
+* プロジェクトビューア
+
+* プロジェクトオーナー
+
+* サービスアカウントによるクロスアカウントサポート
+
+
+[NOTE]
+====
+* グループの処理では、最大1000名のメンバーが許可されます。
+
+* グループ権限は、次の場合にのみ表示されます。
++
+** Prisma Cloud で GCP 組織をオンボードしました。プロジェクトでは、グループの権限を確認することはできません。
+
+** フォルダー レベルで拒否ポリシーを追加しました。
+
+** Google ワークスペースの Prisma クラウド サービス アカウントの group.read アクセス権限を含めました。
+
+
+====
+正味の有効な権限が計算された後、実際の使用状況（最終アクセス）が照合され、書き込みイベントが実際に使用された時期が決定されます。最終アクセスは、ほとんどの書き込みイベントでサポートされています。最終アクセスはアカウントごとに24時間を基準に計算されるため、アカウントに新しいアクションがあった場合、更新された最終アクセス値を確認するには少なくとも24時間以上待つ必要があります。次の GCP サービスとイベントが検証されます。
+
+[cols="50%a,50%a"]
+|===
+|サービス
+|イベント名
+
+
+|IAM
+|* iam.roles.create
+
+* iam.roles.create
+
+* iam.roles.delete
+
+* iam.roles.undelete
+
+* iam.roles.update
+
+* iam.serviceAccountKeys.create
+
+* iam.serviceAccountKeys.delete
+
+* iam.serviceAccounts.create
+
+* iam.serviceAccounts.delete
+
+* iam.serviceAccounts.disable
+
+* iam.serviceAccounts.enable
+
+* iam.serviceAccounts.setIamPolicy
+
+* iam.serviceAccounts.undelete
+
+* iam.serviceAccounts.update
+
+
+|Compute（コンピュート）
+|* compute.backendServices.setIamPolicy
+
+* compute.disks.removeResourcePolicies
+
+* compute.disks.setIamPolicy
+
+* compute.images.setIamPolicy
+
+* compute.instanceTemplates.setIamPolicy
+
+* compute.instances.removeResourcePolicies
+
+* compute.instances.setIamPolicy
+
+* compute.instances.setServiceAccount
+
+* compute.machineImages.setIamPolicy
+
+* compute.snapshots.setIamPolicy
+
+|===
+
+
+

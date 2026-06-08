@@ -1,0 +1,57 @@
+
+== State machine does not have X-ray tracing enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 116667a3-152d-405a-8560-77d50c784109
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/StateMachineXray.py[CKV_AWS_284]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to make sure that X-Ray tracing is enabled for the State Machine in Amazon Web Services (AWS). X-Ray tracing provides insight into the behavior of your applications. By enabling this feature, you can analyze your applications' performance and troubleshoot issues that could potentially affect the user experience. If X-Ray tracing is not enabled, you may lack the necessary visibility into your applications' operations, which could make it difficult to identify and resolve issues quickly and effectively. This could potentially lead to prolonged downtimes and may negatively impact your service's reliability and your users' satisfaction.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_sfn_state_machine
+* *Arguments:* tracing_configuration.enabled
+
+To fix the issue, you need to enable X-Ray tracing for your State Machine. You can do this by setting the `tracing_configuration` block in your AWS Step Function (State Machine) resource to `enabled = true`.
+
+The fixed code would look like this:
+
+[source,go]
+----
+resource "aws_sfn_state_machine" "sfn_state_machine" {
+  name     = "sfn_state_machine"
+  role_arn = aws_iam_role.role.arn
+
+  definition = <<EOF
+  { /* Step Function definition */ }
+EOF
+  tracing_configuration {
+    enabled = true
+  }
+}
+----
+
+The above code is secure because it enables X-Ray tracing for the State Machine. This allows you to trace the execution of the State Machine, which is important for debugging and latency analysis. It also helps in identifying performance bottlenecks, which can be critical in optimizing your application.
+

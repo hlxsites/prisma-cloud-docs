@@ -1,0 +1,162 @@
+:topic_type: task
+[.task]
+[#id7ea08e7b-5ceb-47b4-ba4e-2f164aca8f4a]
+== IAM Investigations on Prisma Cloud
+
+//Use the IAM query to investigate entities in your cloud environment for excess permissions and review the data in a graph or tabular view.
+
+Prisma Cloud ingests various services and associated user data from AWS, Azure, and GCP that you can leverage to investigate the relationships between the entities in your cloud environments and the permissions that allow access to your cloud assets. *Investigate* view enables you to use xref:../../search-and-investigate/permissions-queries/permissions-queries.adoc[permissions queries] to trace the interconnections, visualize how the permissions are granted, know what actions are allowed and when the permissions were used, so that you can discover over-privileged accounts and assess the access risk across multi-cloud deployments. You can view results of the query in a graph view or a table view.
+
+The graphical view provides a high-level overview of the different permissions or scope of access granted to cloud identities, and see the relationship between the Source, Granter, and Destination. You can use this view to modify your RQL query and find answers to who has access, to what, and how it is granted or inherited.
+
+When you have narrowed the permissions (IAM) query, the tabular view provides more granular details to help you track and resolve identity and access challenges.
+
+[.procedure]
+. Select *Investigate > Search*.
+
+. Select *Permissions* from *Query Type* dropdown and enter a permissions query.
++
+For example, query `config from iam where source.public = true AND dest.cloud.service.name = 'S3' AND dest.cloud.resource.type = 'bucket'` checks for S3 buckets in your account that are accessible from the Internet.
+
+. Select the *Table* (default) view.
++
+image::administration/investigate-iam.png[]
++
+** *Source*—Asset with permissions such as IAM user, IDP user, EC2 instance, Microsoft Compute Virtual Machine, and Lambda function.
+
+** *Granted By*—Group, role, or policy that grants permissions to the source to interact with the destination.
+
+** *Cloud Account(s)*—The cloud account and region associated with the IAM entity.
+
+** *Action*—The operations that the entity can perform, based on the permissions granted.
+
+** *Destination*—Cloud assets that had an action occur on it, or is the target of the action.
+//+
+//When you click the link for the resource, you can see the actions and access information for the same resource —*Permission as Source* or the *Permission as Destination*.
+//+
+//image::iam-security-permissions-as-destination.png[]
+
+** *Last Access*—This is a proprietary algorithm that is calculated in two steps. It step one, it combines services from various cloud entities such as users, service accounts, groups, roles, and binding to compute the net effective permissions of cloud types. In step two, it then matches the actual usage (last access) to show when the permission was actually used.
+
+** *Actions*—JSON associated with the query. The JSON displays the list of permissions available for the IAM user; this is the snippet of the asset configuration as defined in the cloud service.
++
+For each result, select the icon under the *Actions* column to *View Permission Details* as a JSON snippet from the asset configuration.
++
+image::administration/iam-security-raw-permission.png[]
++
+To analyze your permissions offline, download the permissions details in a CSV format by clicking *Download*.
+
+. You can also view as *Graph*.
+//+
+//For example, the query is `config from iam where dest.cloud.type = 'AWS' AND grantedby.cloud.type = 'AWS' AND grantedby.cloud.policy.type = 'Resource-based Policy'` .
+//+
+//The default view is the table view. 
+//+
+//mage::iam-graph-view-basic-rql.png[]
+
+. *Save* your query.
++
+You can choose to save the searches that you have created for investigating incidents in *My Saved Searches* and use the queries to create a custom policy.
+
+=== Graph View Components
+
+Graph View includes three columns—Sources, Granters, and Destination as shown in the image below.
+
+image::administration/iam-graph-view.png[]
+
+Each column includes a container that nests the services or entities that belong to the specific container. You can drill down a logical container to see the list of identities included within. Containers are comprised of the following categories:
+
+* *Sources*—Groups the Service Type logical containers.
++
+The following table lists the standard service types for each Cloud Service Provider. The list is dynamic and varies according to the data available and ingested for your environment.
+
+
+[cols="30%a,70%a"]
+|===
+|*CSP*
+|*Service Types*
+
+
+|*AWS*
+|Lambda +
+ECS +
+Elasticbeanstalk +
+IAM - includes AWS users +
+STS +
+EC2 +
+Azure AD (IDP) +
+Okta (IDP) 
+
+
+|*Azure*
+|Azure Active Directory - Azure users (also includes Okta) +
+
+tt:[NOTE:] The Okta service replicates Okta users into Azure AD, as a resultyou cannot view Okta users separately on Prisma Cloud IAM Security. +
+
+Microsoft.Compute +
+Microsoft.ApiManagement +
+Microsoft.Web +
+Microsoft.Logic +
+
+
+|*GCP*
+|Compute +
+Workspace - GCP users +
+
+tt:[NOTE:] Okta and Azure AD are integrated into Google Workspace, as a result you cannot view those users separately on Prisma Cloud IAM Security. +
+ 
+App Engine +
+BigQuery +
+Cloud BigQuery +
+Cloud Function +
+Cloud SQL +
+Pub/Sub +
+Cloud Spanner +
+Secret Manager
+
+|===
+
+
+* *Granters*—Groups the Entity Type logical containers.
++
+The following table lists the standard entity types for each cloud service provider. The list is dynamic and varies according to the data available and ingested for your environment.
+
+
+[cols="35%a,65%a"]
+|===
+|*CSP*
+|*Entity Types*
+
+
+|*AWS*
+|Role +
+Group +
+Direct— User +
+Resource—Resource-based permissions (granted by resource-based policies) +
+
+
+|*Azure*
+|Direct— User +
+User Assigned +
+System Assigned +
+Group
+
+
+|*GCP*
+|Direct— User +
+Service Account +
+Group
+
+|===
+
+
+* *Destination*—Groups the Service Type logical containers. Similar to the source, the list of destinations vary based on your environment.
+
+[NOTE]
+====
+Graph View includes the following limitations:
+
+* The RQL attribute *action.lastaccess.days*.
+* The Destinations column is limited to 300 entries. If your query returns more than 300 results for the Destination, filter your results to 300.
+* Queries time out after 1 minute.
+====

@@ -1,0 +1,54 @@
+
+== RDS Performance Insights are not encrypted using KMS CMKs
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 88823b2a-3bf2-4ecc-9a7a-0cd96f24abd4
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSInstancePerfInsightsEncryptionWithCMK.py[CKV_AWS_354]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that RDS Performance Insights, a feature that monitors database performance, are encrypted using Key Management Service Customer Master Keys (KMS CMKs) provided by AWS. If not properly encrypted, sensitive data related to database performance could potentially be accessed by unauthorized individuals. Inadequate encryption of this data could lead to a breach of security and the exposure of confidential information. Therefore, it's critical to use KMS CMKs for enhanced encryption and protection of such data.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* 'aws_rds_cluster_instance', 'aws_db_instance'
+* *Arguments:* performance_insights_kms_key_id
+
+To fix the issue, you need to enable encryption on RDS Performance Insights using KMS CMKs. This can be done by adding the `performance_insights_kms_key_id` attribute in your aws_db_instance block, where the value should be the ARN of your KMS key.
+
+[source,hcl]
+----
+resource "aws_db_instance" "default" {
+  allocated_storage           = 10
+  engine                      = "mysql"
+  engine_version              = "5.7"
+  instance_class              = "db.t2.micro"
+  name                        = "mydb"
+  username                    = "foo"
+  password                    = "foobarbaz"
+  parameter_group_name        = "default.mysql5.7"
+  performance_insights_enabled = true
+  performance_insights_kms_key_id = "<KMS_KEY_ARN>"
+}
+----
+

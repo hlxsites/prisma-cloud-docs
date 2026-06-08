@@ -1,0 +1,54 @@
+== AWS Elastic Load Balancer v2 with deletion protection feature disabled
+
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| TBD
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LBDeletionProtection.py[CKV_AWS_150]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the Load Balancer on an AWS cloud network has enabled deletion protection. The absence of this protection can be harmful because it puts the system at the risk of accidental or unintended deletion, leading to disruption of network services and possibly loss of data.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+To fix the issue highlighted by the mentioned policy, you should enable the deletion protection for your load balancer in AWS.
+
+[source,go]
+----
+resource "aws_elb" "example" {
+  name               = "example"
+  availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+  listener {
+    instance_port     = 80
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+  enable_deletion_protection = true
+}
+----
+
+With the given secure code, the `enable_deletion_protection = true` ensures that the deletion protection is enabled for the load balancer. Thus, AWS prevents the load balancer from being deleted accidentally, which makes the infrastructure secure.
+

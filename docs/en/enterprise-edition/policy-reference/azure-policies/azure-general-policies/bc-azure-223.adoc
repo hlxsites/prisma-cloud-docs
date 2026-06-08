@@ -1,0 +1,55 @@
+
+== Event Hub Namespace not using TLS 1.2 or greater
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 1f23b527-2f62-4ebb-bb71-129dc07c07d8
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/EventHubNamespaceMinTLS12.py[CKV_AZURE_223]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that the Event Hub Namespace in Azure is utilizing at least TLS 1.2. TLS 1.2 is a security protocol for encrypting the transmission of data. Using older versions of TLS or other outdated security protocols can make a system more vulnerable to attacks. As such, systems that do not use at least TLS 1.2 are considered to be at a higher security risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_eventhub_namespace
+* *Arguments:* minimum_tls_version
+
+To fix this issue, you should ensure that you use at least TLS 1.2 for Event Hub Namespace. Update the `minimum_tls_version` property in your Terraform code to "1.2".
+
+[source,go]
+----
+resource "azurerm_eventhub_namespace" "example" {
+  name                = "example-namespace"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  sku                 = "Standard"
+  capacity            = "2"
+  dedicated_cluster_id   = azurerm_eventhub_cluster.example.id
+  auto_inflate_enabled   = true
+  maximum_throughput_units = 1
+
++ minimum_tls_version   = "1.2"
+}
+----
+
+

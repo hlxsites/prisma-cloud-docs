@@ -1,0 +1,69 @@
+
+== EC2 Auto Scaling groups are not utilizing EC2 launch templates
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2ec76f1c-a3cc-4d17-a304-dd71a22c8fb8
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/AutoScalingLaunchTemplate.py[CKV_AWS_315]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to verify that EC2 Auto Scaling groups in AWS are utilizing EC2 launch templates. EC2 launch templates define instance configuration for compute resources. They provide a way for you to save a launch configuration that you can reuse, which helps in maintaining the consistency of configurations and also speeds up the deployment process. 
+
+Not using EC2 launch templates can lead to several issues:
+1. Inconsistency: Manual configuration for every instance may lead to inconsistencies and errors, which can in turn lead to security vulnerabilities.
+2. Slow Deployment: Not using launch templates can result in a slower deployment process. Every time you need to launch a new instance, you would have to manually configure all the settings.
+3. Troubleshooting Difficulty: If instances are manually configured, troubleshooting can become complex as you need to identify the configuration for each instance separately.
+4. Scaling inefficiencies: Since auto-scaling groups adjust the number of instances on the fly according to load, not using a standard launch template would make this scaling inefficient and error-prone. 
+
+Therefore, it is important for the best practice and efficient deployments to use EC2 launch templates in AWS auto-scaling groups.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_autoscaling_group
+* *Arguments:* launch_template
+
+To fix this issue, you need to refactor the EC2 AutoScaling group resource to use EC2 launch templates, rather than launch configurations.
+
+[source,hcl]
+```
+resource "aws_launch_template" "example" {
+  image_id      = "ami-0c94855ba95c574c8"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "example"
+  }
+}
+
+resource "aws_autoscaling_group" "example" {
+  desired_capacity = 1
+  max_size         = 1
+  min_size         = 1
+
++ launch_template {
++   id      = aws_launch_template.example.id
++   version = aws_launch_template.example.latest_version
++ }
+}
+```
+

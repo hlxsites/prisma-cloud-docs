@@ -1,0 +1,98 @@
+:topic_type: タスク
+[.task]
+[#id01b3074f-c0bf-4b25-ba8c-49ef0fec940c]
+== Prisma CloudとGoogle Cloud Security Command Center（SCC）の統合
+Prisma® CloudとGoogle Cloud Security Command Center（SCC）の統合方法について学習します。
+
+Prisma® CloudとGoogle Cloud Security Command Center（SCC）を統合することで、Google Cloud Platform（GCP）上のクラウド資産に関連するセキュリティおよびコンプライアンスリスクを一元的に可視化できます。
+
+Prisma Cloudで監視しているGCP Organizationに対して、この統合を設定できます。アラートルールに基づいて、GCPアカウントに対してPrisma Cloudが生成したアラートは、Cloud SCCに投稿されます。Google Could SCC内の、その他のクラウドタイプ（AWSやAzureなど）のクラウドアカウントに対するPrisma Cloudアラートを表示するには、https://live.paloaltonetworks.com/t5/Prisma-Cloud/ct-p/PrismaCloud[Palo Alto Networks LIVE Community]のPrisma Cloudサポートまでご連絡ください。
+
+
+
+
+[.procedure]
+. Prisma CloudでGCP Organizationをオンボードするために使用するサービスアカウントの権限を確認します。
++
+閲覧者、組織閲覧者、およびセキュリティセンターの調査結果エディタのロールが必要です。
+
+. Cloud SCCコンソールでアセットと結果を表示するために必要なAPIを有効にします。
++
+.. https://console.cloud.google.com/apis/library[GCPコンソールAPIライブラリ]に移動し、GCPプロジェクトを選択します。
++
+サービスアカウントを所有するプロジェクトでこれらのAPIを有効にしてください。サービスアカウントは、Prisma CloudでGCP Organizationをオンボードするために使用します。
+
+.. *Enable APIs and Services（APIとサービスの有効化）*を選択します。
+
+.. *Cloud Security Command Center API*を有効にします。
+
+.. *Identity and Access Management (IAM) API*を有効にします。
++
+サービスアカウントには、統合のためのiam.serviceAccounts.signJWT権限も含める必要があります。
+
+
+
+. Googleコンソールで、Prisma Cloud SCCソリューションにサインアップします。
++
+セキュリティセンター管理者が、Googleコンソールでこの統合を設定できます。
++
+.. https://console.cloud.google.com/[Googleコンソール]に移動し、*Prisma Cloud CSCC*を検索します。
+
+.. *Visit Palo Alto Networks site to Signup（サインアップのためにPalo Alto Networksサイトに移動する）*をクリックします。
++
+image::administration/cscc-signup-prisma-cloud.png[]
+
+.. Prisma Cloudにオンボーディングした組織を選択します。
+
+.. 組織のオンボーディングに使用した、*Service account（サービスアカウント）*を選択します。
++
+image::administration/cscc-select-service-account.png[]
+
+.. *Source ID（ソースID）*をコピーします。Prisma Cloudで統合を設定する際に、*ソースID*が必要になります。。
+
+.. *Done (完了)*をクリックします。
+
+
+
+. Google Cloud SCCをPrisma Cloudの統合チャネルの1つとして設定します。
++
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定）> Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加）> Google CSCCの順に選択します*。モーダルウィザードが開き、CSCC統合を追加できます。
+
+.. *Integration Name（統合名）*と*Description（説明）*を入力します。
+
+.. Googleからコピーした*Source ID（ソースID）*を入力します。
++
+image::administration/google-cscc-int-1.png[]
+
+.. *GCP Organization*を選択します。
+
+.. *Next（次へ）*をクリックし、*Test（テスト）*をクリックします。サマリーを確認して*OK*をクリックします。
++
+正常に統合を行うために、サービスアカウントには十分な権限を設定する必要があります（前述）。統合を正常にセットアップした後、*Settings（設定）> Integrations（統合)* の Get Status（ステータス取得）リンクを使用して定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
+
+. xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[ランタイム チェックのアラート ルールを作成する] か、Google Cloud SCC にxref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラートを送信]するよう既存ルールを変更します。
+
+. Cloud SCCでアラートを表示します。
++
+.. https://console.cloud.google.com/[Googleコンソール]に移動し、*Security（セキュリティ）> Security Command Center（セキュリティコマンドセンター）*の順に選択します。
++
+image::administration/cscc-security-command-center.png[]
+
+.. *Findings（検出事項）*をクリックして、アラートを表示します。
++
+image::administration/cscc-findings.png[]
+
+.. アラートの詳細を表示するには、ルールを選択します。
++
+image::administration/cscc-alerts.png[]
+
+
+
+
+

@@ -1,0 +1,77 @@
+== CodeBuild S3 logs are not encrypted
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2f2a5214-eafd-42aa-b2bd-5a84155316d3
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/CodebuildS3LogsEncrypted.py[CKV_AWS_311]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy verifies that AWS CodeBuild S3 logs are encrypted. If not properly encrypted, these logs, which might contain sensitive information, can be exploited by attackers for malicious activities, posing a significant security risk.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_codebuild_project
+* *Arguments:* logs_config.s3_logs.encryption_disabled
+
+You need to ensure that the CodeBuild project is using an S3 bucket for logging that is configured with server-side encryption. In the below code sample, the `encryption_disabled` argument in the `s3_logs` block is set to `false`.
+
+[source,hcl]
+----
+resource "aws_codebuild_project" "example" {
+  name = "test-project"
+
+  artifacts {
+    type = "NO_ARTIFACTS"
+  }
+
+  environment {
+    compute_type = "BUILD_GENERAL1_SMALL"
+    image = "aws/codebuild/standard:4.0"
+    type = "LINUX_CONTAINER"
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "log-group"
+      stream_name = "log-stream"
+    }
+
+    s3_logs {
+      status   = "ENABLED"
+      location = "aws_s3_bucket.default.id/codebuild-logs"
++     encryption_disabled = false
+    }
+  }
+
+  source {
+    type = "GITHUB"
+    location = "https://github.com/my-account/my-repo.git"
+  }
+
+  tags = {
+    Environment = "Test"
+  }
+}
+----
+
+

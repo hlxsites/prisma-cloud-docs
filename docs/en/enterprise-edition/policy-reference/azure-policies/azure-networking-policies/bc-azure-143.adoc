@@ -1,0 +1,55 @@
+== Azure AKS cluster nodes have public IP addresses
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| fc72e718-8ead-474a-af29-11353df921f3
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/AKSNodePublicIpDisabled.py[CKV_AZURE_143]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is verifying that Azure Kubernetes Service (AKS) cluster nodes are not assigned public IP addresses. Having a public IP address can be problematic as it exposes the nodes to the internet, which could potentially lead to unauthorized access or malicious attacks. It's a recommended best practice to limit exposure to the web in order to reduce the surface area for these potential threats.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+
+To fix this issue, add the Service annotation "service.beta.kubernetes.io/azure-load-balancer-internal" and set it to "true" in the Kubernetes service configuration. This will ensure AKS cluster nodes do not have public IP addresses.
+
+[source,go]
+----
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+  name: internal-app
+  labels:
+    app: internal-app
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: internal-app
+----
+
+By setting the "service.beta.kubernetes.io/azure-load-balancer-internal" annotation to "true", it ensures that the Azure load balancer that is automatically created will be internal, which means the IPs of the nodes will not be exposed publicly. This improves the security of your application by reducing the exposure to attack vectors.
+

@@ -1,0 +1,85 @@
+
+== ECS task definitions have their own unique process namespace or share the host's process namespace
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| aceb38e8-5863-41c9-9552-5afff4ccde08
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ECSContainerHostProcess.py[CKV_AWS_335]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking for Amazon Elastic Container Service (ECS) task definitions that are configured to share the host's process namespace. This is considered a bad or risky configuration because it could potentially allow a process within a container to gain unrestricted access to all processes running on the host system. This would breach the isolation barriers of containers, paving way for potential security threats such as unauthorized access and data leakages. Therefore, ECS task definitions should be configured with their own isolated process namespaces to uphold the security and integrity of the host system and other containers.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_ecs_task_definition
+* *Arguments:* container_definitions.pidMode
+
+To fix this issue, you need to declare `pid_mode` in the `aws_ecs_task_definition` resource, and do not set it to `host`.
+
+[source,hcl]
+----
+resource "aws_ecs_task_definition" "fail" {
+  family = "service"
+  container_definitions = jsonencode([
+    {
+      name      = "first"
+      image     = "service-first"
+      cpu       = 10
+      memory    = 512
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+    },
+    {
+      name      = "second"
+      image     = "service-second"
+      cpu       = 10
+      memory    = 256
+      essential = true
+      privilege = true
+-     pidMode = "host"
+      portMappings = [
+        {
+          containerPort = 443
+          hostPort      = 443
+        }
+      ]
+    }
+  ])
+
+  volume {
+    name      = "service-storage"
+    host_path = "/ecs/service-storage"
+  }
+
+  placement_constraints {
+    type       = "memberOf"
+    expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
+  }
+}
+----
+

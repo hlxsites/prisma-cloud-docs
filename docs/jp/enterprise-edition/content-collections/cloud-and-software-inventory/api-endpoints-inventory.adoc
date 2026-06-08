@@ -1,0 +1,82 @@
+== APIエンドポイントインベントリ
+
+xref:../connect/connect-cloud-accounts/connect-cloud-accounts.adoc[クラウド アカウントを接続する]と、Prisma Cloud は展開内のすべての API エンドポイントを継続的に検出します。この発見は、リスクに優先順位を付け、セキュリティ体制と攻撃ベクトルを理解するのに役立ちます。
+
+**API ディスカバリのソース**
+
+Prisma Cloud は、既存の WAAS ランタイム ルール（エージェントベースおよびエージェントレス）を使用して、展開内のトラフィックと AWS API Gateway 設定をスキャンし、*[インベントリ] > [API エンドポイント]*に API エンドポイントをリストします。
+//P2 (early Nov)- Automatic Agentless WAAS discovery without any configurations. Enable *Web & API Security*
+
+//P2 - *Collections > Cloud Security > Settings > Providers > Cloud Accounts > WAAS API Scanning
+
+このセクションは次のことに役立ちます。
+
+* ワークロード内のすべての API エンドポイントを検出し、リスク評価を実施します。
+** デプロイメント内でリスクの高い API エンドポイントを特定し、それらに関連付けられているクラウド アカウント、リージョン、サービスを特定します。
+** リスクのある API エンドポイントを含むクラウド アカウント内のサービスを評価します。
+** 機密情報を処理し、適切な認証手段が欠如しているシャドウ API を検出します。
+
+=== API エンドポイントの検出と監視
+
+//P2 (early Nov)* Enable *Web & API Security* at the time you xref:../connect/connect-cloud-accounts/connect-cloud-accounts.adoc[Connect Cloud Accounts]. This is for automated Agentless Discovery - only for AWS
+//<TBD> - update the toggle in cloud account platform page.
+
+image::cloud-and-software-inventory/inventory-api-endpoints.png[]
+
+*[インベントリ] > [API エンドポイント]* では、URL パス、HTTP メソッド、アセットの関係、サービス、クラウド アカウント、リスク要因、API エンドポイントが関連付けられているワークロード、および検出方法の詳細を含む、検出されたエンドポイントに関する洞察が得られます。
+カード ビューまたはテーブル ビューで、検出されたエンドポイントをクラウド タイプ、サービス名、リージョン、ワークロード、サーバーごとにグループ化できます。
+Prisma Cloud は、エンドポイントごとに、以下に関する包括的な概要を提供します。
+
+* インターネット露出
+* 機密データの漏洩
+* 認証
+* 悪意のある活動 
+* 使用状況の統計
+* メッセージ構造
+
+検出されたすべてのエンドポイントの中から、さまざまなパラメーターで検索およびフィルター処理することができます。たとえば、インターネットに公開されているすべてのエンドポイント、機密データを含むエンドポイント、HTTP メソッド、および最近変更/監視された API エンドポイントを表示できます。
+
+[#api-risk-profiling]
+=== API リスクのプロファイリングと調査結果
+
+*[インベントリ] > [API エンドポイント] で API エンドポイント* を選択し、リスク評価の結果を理解します。
+//<gif-env-not-ready>
+
+API リスク プロファイリングでは、ポリシー違反、調査結果、リスク要因指標、エンドポイントがホストされている関連ワークロードに関する洞察が得られます。
+リスク要因は、インターネットに公開されている API エンドポイント、観察された悪意のあるアクティビティでフラグが立てられたエンドポイント、認証なしでアクセスできるエンドポイント、および機密データが交換されるエンドポイントを検出するのに役立ちます。
+
+//Show and explain the attack paths with an example?
+//Today we show the attack path on the host and not on the API endpoint.
+詳細については xref:../runtime-security/waas/waas-api-discovery.adoc[「API 検出 - パス リスク プロファイリング」] を参照してください。
+
+[.task]
+=== APIエンドポイントの調査
+
+*Investigate*で WAAS アセットを検索および調査できます。
+たとえば、検出結果の名前にいくつかのインジェクションが含まれる API エンドポイントのすべてのアセット タイプを表示するとします。
+
+[.procedure]
+
+. *Investigate（調査） > Search（検索）*を順に選びます。
+. 次のクエリ属性と値を使用してクエリを実行します。
++
+検索：アセット
++
+資産の種類API エンドポイント
++
+ここで:「インジェクション」で名前を見つける
+
+. *[検索]*を選択します。
++
+image::cloud-and-software-inventory/api-endpoints-rql-query.gif[]
++
+エンドポイントと関連する調査結果を確認できます。たとえば、SQL インジェクション Web 攻撃の上にマウスを置くと、この攻撃の影響を受けるエンドポイントのみが表示されます。
++
+または、エンドポイントの上にマウスを移動すると、このエンドポイントに影響を与える SQL インジェクションが表示されます。
++
+さらにエンドポイントをクリックすると、攻撃結果の *詳細を表示できます* 。
+
+=== 次のステップは何ですか？
+
+クラウド アカウントをオンボーディングして攻撃ベクトルを評価すると、これらの検出されたエンドポイントにポリシーを適用する WAAS ルールを設定したり、ルール違反時にアラートを生成する WAAS イベントをトリガーしたり、情報に基づいてアプリケーションを保護するための決定を下したりできるようになります。
+xref:../runtime-security/waas/deploy-waas/deploy-waas.adoc[WAASを展開]するには?

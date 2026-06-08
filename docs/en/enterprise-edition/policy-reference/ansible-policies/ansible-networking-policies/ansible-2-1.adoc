@@ -1,0 +1,57 @@
+== HTTPS url not used with Ansible uri
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| e946dd4f-a599-40c6-a2d0-65f5075cd300
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/UriHttpsOnly.yaml[CKV2_ANSIBLE_1]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether HTTPS URLs are used in the Ansible uri module to ensure secure communication. Using HTTPS instead of HTTP encrypts the data transmitted, providing confidentiality and integrity. It verifies that the tasks interact with URLs over a secure channel.
+
+
+=== Fix - Buildtime
+
+*Ansible*
+
+* *Module:* uri
+* *Attribute:* url
+
+To mitigate this risk, ensure that all Ansible tasks using the uri module specify URLs that begin with "https://". This guarantees that the data transmitted in these tasks is encrypted and secure.
+
+
+Source Code Example:
+
+
+[source,yaml]
+----
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: https
+      uri:
+-        url: http://www.example.com
++        url: https://www.example.com
+       ...
+----
+
+In this example, specifying URLs that start with "https://", ensures that the data transmitted in your Ansible tasks is encrypted and secure, enhancing the security of your automation processes.
+

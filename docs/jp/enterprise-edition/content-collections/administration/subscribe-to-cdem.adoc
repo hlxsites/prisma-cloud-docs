@@ -1,0 +1,133 @@
+:topic_type: タスク
+[.task]
+== 検出とエクスポージャ管理に登録
+
+Prisma Cloudでxref:#enable-cdem-subscription[CDEMサブスクリプションを有効にする前に]、公開されているAWSアセットを保護するためのxref:#pre-req-for-cdem-aws[前提条件となるタスク]を実行する必要があります。
+
+[NOTE]
+====
+前提条件となるタスクはAWSにのみ適用されます。AzureとGCPの場合は、スキップしてPrisma Cloudでxref:#enable-cdem-subscription[CDEMサブスクリプションを有効]にすることができます。
+====
+
+[#pre-req-for-cdem-aws]
+=== 公開されているAWSアセットを保護するための前提条件
+
+クラウド検出とエクスポージャ管理（CDEM）を有効にして、アンマネージド（シャドーIT）をマネージド（セキュア）AWSアセットに変換するには、AWS組織アカウントを次のように設定する必要があります。
+
+[.procedure]
+
+. *インラインポリシーの作成*
++
+.. AWS管理コンソールで、*IAM > Roles（ロール）*を選択します。
+
+.. AWS OrganizationアカウントをPrisma Cloudにオンボーディングする際に作成した目的のIAMロールを見つけて選択し、カスタムインラインポリシーをアタッチします。ロールの名前をクリックして詳細にアクセスします。
+
+.. ロールの詳細ページから、*権限*タブに移動します。
+
+.. *Add permissions（権限の追加）> Create Inline policy（インラインポリシーの作成）*を選択します。
++
+image::administration/cdem-pre-req-create-policy-1.png[]
+
+.. *JSON*タブを選択し、次のコードスニペットを貼り付けてから*Next（次へ）*を選択します。
++
+----
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CrossAccountRoleForAWSNetworkQueryTool",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::*:role/CrossAccountRoleForAWSNetworkQueryTool"
+        }
+    ]
+}
+----
+
+..  *Policy name（ポリシー名）を入力し*、*Create Policy（ポリシーの作成）*を選択します。
++
+image::administration/cdem-pre-req-create-policy-2.png[]
+
+. *メンバーアカウント用のスタックセットの作成*
++
+.. https://redlock-public.s3.amazonaws.com/cft/rl-cloudlens-read-only-member.template[CloudFormationメンバーテンプレート]をダウンロードします。
+
+.. AWS管理コンソールで、*Services（サービス） > CloudFormation > StackSets（スタックセット） > Create StackSet（スタックセットの作成）*を順に選択します。
+
+.. テンプレートファイルをアップロードし、*Next（次へ）*を選択します。
++
+image::administration/cdem-pre-req-create-stack-1.png[]
+
+.. *StackSet Name（スタックセット名）* と任意で*StackSet Description（スタックセットの説明）*を入力します。
+
+.. *パラメータ*の下:
++
+... *クロスアカウントロールネーム*の値は自動的に入力されます。自動的に入力された値は編集しないでください。
+... *ManagementAccountNumber（管理アカウント番号）*に組織アカウントID値を入力します。
++
+image::administration/cdem-pre-req-create-stack-2.png[]
+
+.. 実行設定から、*Active（アクティブ）* または *Inactive（非アクティブ）*を選択します。より迅速にデプロイするには、*Active（アクティブ）*を選択します。
+
+.. *Add stacks to stack set（スタックセットにスタックを追加）*で、*Deploy new stacks（新しいスタックをデプロイ）*オプションを選択します。
+
+.. *Deployment targets（デプロイターゲット）*から、*Deploy to organization（組織にデプロイ）*オプションを選択します。
+
+.. *自動デプロイのオプション*:
++
+... *Automatic deployment（自動デプロイ）*の場合は *Activated（アクティベート）* を選択します。
+
+... *アカウント削除動作*の場合は*[スタックの削除]*を選択します。
++
+image::administration/cdem-pre-req-create-stack-3.png[]
+
+.. *Specify regions（リージョンの指定）*で、リストから一つの地域を選択する。AWS組織内のすべてのアカウントでリージョンが有効になっていることを確認します。無効なリージョンを選択すると、そのリージョン内にリソースを配置できないため、テンプレートはエラーが発生して失敗します。
+
+.. *デプロイメント*のオプション:
++
+... 最大同時アカウント数を 1 に設定します。
+... 障害許容値を 0 に設定します。
+... Region Concurrency（リージョン同時実行）で、*Sequuential（シーケンシャル）*のデフォルトのオプションをそのまま使用します。
++
+image::administration/cdem-pre-req-create-stack-4.png[]
+
+.. *Next（次へ）*を選択して、設定を確認します。
+
+.. *I acknowledge that AWS CloudFormation might create IAM resources with custom names（AWS CloudFormationによってIAMリソースがカスタム名で作成される場合があることを承認します）*を選択して、*Submit（送信）*をクリックします。
+
+.. StackSetの作成プロセスが開始されます。ステータスが「SUCCEEDED」と表示されるまでお待ちください。
++
+完了すると、*マスターアカウントにリンクされたすべてのメンバーアカウントのスタックが作成され、AWS管理コンソールのStack instances(スタックインスタンス)*の下に一覧表示されます。
++
+image::administration/cdem-pre-req-create-stack-5.png[]
+
+[#enable-cdem-subscription]
+=== [検出とエクスポージャ管理サブスクリプション] を有効にする
+
+. 検出とエクスポージャ管理サブスクリプションは、次のように有効化できます。
++
+* オプション1:プロファイルに移動し、*[サブスクリプションを表示[*を選択し、*[検出とエクスポージャー管理]*を有効にします。
++
+image::administration/cdem-subscription-enable.png[]
+
+* オプション2:*導入アドバイザーに移動し*、*指示に従ってクラウド検出とエクスポージャ管理*（CDEM）を有効にします。
++
+image::administration/cdem-aa-enable.png[]
+
+. サブスクリプションが有効になると、30日間の試用版が提供されます。試用期間中に、間近のトライアルの有効期限とサブスクリプションの継続方法を示す 3 通の電子メール通知が届きます。試用期間が終了した後も、サブスクリプションを継続し、クレジットを活用してサービスへのアクセスを維持したり、CDEMのサブスクリプションを解除したりできます。または、CDEMの有料版を直接購読することもできます。
+
+. サブスクリプションが完了すると、Prisma Cloudはインターネット経由でスキャンを開始し、デジタルフットプリントを特定します。
++
+[NOTE] 
+====
+最初のスキャン処理は、クラウドの設定によっては完了するまでに数時間、最長で24時間かかる場合があります。この後、2 時間ごとに自動的にスキャンが実行され、情報が最新の状態に保たれます。
+====
+
+. インターネットに公開されているアンマネージド（シャドーIT）アセットの初期データがPrisma Cloudで利用可能になると、受信ボックスにメール通知が届きます。メール内の [ダッシュボードを表示] を選択してPrisma Cloudにログインし、xref:../dashboards/dashboards-discovery-exposure-management.adoc[検出とエクスポージャ管理（CDEM）ダッシュボードにアクセスして]、アタックサーフェスに関する詳細情報を表示します。
++
+image::administration/cdem-email.png[]
+
+//Will need latest image updates for all the steps and xref link for the CDEM dashboard in step 4.
+
+
+

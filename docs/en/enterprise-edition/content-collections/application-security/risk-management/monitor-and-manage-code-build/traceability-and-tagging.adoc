@@ -1,0 +1,141 @@
+== Traceability and Tagging
+
+IaC resource tags allow you to manage and organize resources in cloud environments. They are a flexible and efficient way to provide cost allocation, streamline resource management, enhance security, provide access control, and improve root cause analysis. Tags added to IaC resources are carried through to their corresponding cloud assets, enabling traceability and efficient management. Prisma Cloud's tagging bot and https://github.com/bridgecrewio/yor[Yor], an open source tool, automatically tag Terraform, CloudFormation, and Serverless resources with the following groups of tags to address the following use cases:
+
+* Git organization, repository, and the exact file containing the IaC template used to create the cloud resource
+* Timestamp of Git commits for supported cloud resources, including a list of all editors and contributors who modified the file
+* <<custom-tag,Custom Tags>> that you create for your resources 
+
+=== Auto-Tagging with Prisma Cloud Bot
+
+Prisma Cloud automatically scans resources and applies tags based on predefined rules. Predefined tags include `git_org` and `git_repo`. If a resource is not compliant with a tag rule, Prisma Cloud automatically creates a pull request (PR) to add the necessary tags to the non-compliant resource. This ensures tag consistency and compliance across the environment. To complete the tagging process, access your version control system and merge the tag PR.
+
+NOTE: Only one tag PR can be open per repository at a time. If there is already an open tag PR, Prisma Cloud will not create a new one.
+
+=== Yor Trace Tag
+
+In addition to auto-tags and custom tags, each runtime resource is uniquely identified by a `yor_trace` tag, enabling you to manually identify the IaC resource that is the source of the cloud asset. 
+//Each runtime resource is uniquely identified by a yor_trace tag, linking it back to its IaC origin. 
+For Terraform, Prisma Cloud uses this tag to trace alerts, xref:drift-detection.adoc[detect drift] in code, and locate the specific resource within a commit. CloudFormation uses methods that do not require tags to automatically trace resources.
+
+By combining auto-tagging, custom tagging, and the yor_trace tag, you can achieve comprehensive visibility and control over your cloud infrastructure.
+
+[#custom-tag]
+=== Custom Tags
+
+Custom tags are tags that you create for your resources. Custom tags can be simple key-value pairs or a complex combination of values. For even more complex tagging capabilities, you can directly leverage Yor CLI/GitHub Action (GHA).  
+
+NOTE: To create a custom tag see <<#create-tag,Create Custom Tags>> below.
+
+==== Custom Tag Rule Logic
+
+* *Basic*: Assign a tag and value to all resources in selected repositories
+
+* *Conditional*: Assign a tag and value to all resources in the selected repositories that meet a certain condition
+
+* *Conditional with Multiple Conditions*: Define multiple conditions per rule with different key-value pairs per condition
+
+==== Custom Tag Rule Examples 
+
+*Example #1*: Define all resources of a given repository as relevant to the production environment: 'Key': 'environment', Value: 'production'. 
+
+*Example #2*: Assign 'team': 'dev' to all resources that include the tag 'group:rd'.
+
+*Example #3*: Tag specific GitHub users to a devops team. All other users will be tagged by default as 'platform' users. 
+----
+'Key': 'team'. 
+'Value': 'platform' (default) All GitHub users that are not assigned to devops.
+'Value': 'devops' Assign the following GitHub users to the devops team GitHub by selecting the following tags under the 'if has tags (optional)' field: 'git_modifier: jhonf', 'git_modifier: janed'. 
+---- 
+
+*Example #4*: Define tags for internal teams (“devops” and “platform”) based on specific GitHub users on each team. 
+----
+
+'Key': 'team'. 
+'Value': 'devops' if resource has certain tag name-value pairs: 'git_modifier: jhonf', 'git_modifier: janed'.  
+'Value':'platform' if resource has tag name-value pair: 'git_modifier: jamesd', 'git_modifier: juliem'. 
+----
+
+[#manage-tag]
+=== Manage Custom Tags
+
+You can manage tags and tag rules for all resources associated with integrated repositories. This includes custom tags, but excludes auto-generated Yor trace tags (yor_trace). Managing tags includes enabling/disabling and adding conditional values to tags. In addition, you can create, clone or delete custom tag rules. 
+
+*Permissions*: If you do not have permissions for all of the resources associated with a Tag Rule, you will only be able to clone the rule.
+
+To access resource tag management:  
+
+. Select *Application Security* > *Projects*.
+. Select the *Actions* menu > *Manage IaC Tags*.
++
+image::application-security/tags2.1.png[]
++
+The *Tag Rules* popup opens, displaying a list og tags if Yor has processed your repositories. This includes yor_trace tags, out-of-the-box and custom tags.
++
+image::application-security/tag-rule1.1.png[]
+
+[#create-tag]
+==== Create Custom Tags
+
+. Access tag management - see <<#manage-tag,Manage Custom Tags>> above.
+. Click *Add Tag Rule* in the 'Tag Rules' popup.
+. Assign the tag to selected repositories or all repositories.
++
+NOTE: Assigning a repository affects the number of resources. This number is displayed in the popup. You can monitor the affected resources on the Prisma Cloud console.
+. (Optional): Add a *Description* for the tag rule.
+. Add a key/value. The key represents the tag name.
+. (Optional): Click *Add Conditional Value* to add an additional condition to the tag. 
+. Select *Save*.
++
+The created custom tag rule is added to and displayed in the tag list on the Tag Rule popup.
+
+
+==== Enable/Disable Tags
+
+You can enable or disable all types of tags. Enabling a tag triggers a scan across all resources in the repositories you have assigned to it. Disabling a tag prevents future scans from being triggered by the disabled tag. Past actions, such as automated pull requests, will not be reverted. The status of each tag is shown in the Status column.
+
+. Access tag management - see <<#manage-tag,Manage Custom Tags>> above.
+. Under the *Actions* menu, select *Play* to enable or *Pause* to disable a tag.
+
+image::application-security/tag-enable2.1.png[]
+
+==== Edit Custom Tags
+
+. Access tag management - see <<#manage-tag,Manage Custom Tags>> above.
+. Locate the desired tag in the tags table and click *Edit* under the 'Actions' column.
+. Modify the required values in the *Edit a Tag Rule* popup > *Save*.
+
+==== Clone Custom Tags
+
+Example usage: A large-scale project with multiple teams and environments (development, staging, production). You have a base tag rule that applies to all environments. However, the production environment requires additional specific tags for compliance or security reasons. In this case, cloning the base rule and adding the necessary tags for the production environment might be a viable approach, provided it's carefully managed.
+
+. Access tag management - see <<#manage-tag,Manage Custom Tags>> above.
+. Locate the desired tag in the tags table and click > *Clone* under the 'Actions' column.
+. Fill in required values in the *Edit a Tag Rule* popup > *Save*.
+
+==== Delete Custom Tags
+
+. Access tag management - see <<#manage-tag,Manage Custom Tags>> above.
+. Locate the desired tag in the tags table and click > *Delete* under the 'Actions' column.
+
+NOTE: Deleting a tag rule will not affect existing actions triggered by the rule. This includes automated pull requests (PRs) generated for non-compliant resources or any resources that were previously cloned using the deleted tag.
+
+=== View Tags associated with Resources
+
+To view tags associated with a resource:
+
+. In *Application Security*, select *Projects* > *Group by: Resource*.
+. Select a resource > View the tags associated with the resource in the *Details* tab of the sidecar.  
+
+=== View Resources associated with Tags
+
+To view resources associated with tags:
+
+. In *Application Security*, select the *Inventory* tab > *IaC Resources* tab.
+. Select *Add Filter* > *IaC ResourceTag*. 
++
+A list of frameworks which include assets that have tags associated with IaC resources are displayed.
+
+. Click on an asset to view the tags in the *Overview* tab of the sidecar. 
+
+For more information, refer to xref:../../../cloud-and-software-inventory/iac-resources.adoc[IaC Resources].

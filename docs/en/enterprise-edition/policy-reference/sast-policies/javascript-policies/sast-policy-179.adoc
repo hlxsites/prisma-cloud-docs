@@ -1,0 +1,61 @@
+
+== Sensitive information exposure in error messages
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 099e685d-8ef7-4fa5-80b8-feba25be153b
+
+|Checkov ID 
+|CKV3_SAST_179
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|JavaScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/209.html[CWE-209: Generation of Error Message Containing Sensitive Information]
+
+|OWASP Categories
+|https://owasp.org/Top10/A04_2021-Insecure_Design/[A04:2021 - Insecure Design]
+
+|=== 
+
+
+=== Description
+
+This policy detects instances where sensitive information may be disclosed in error messages in JavaScript. It specifically scans for error handling patterns where the error message is directly transmitted in the server's response. 
+
+Vulnerable code example:
+
+[source,JavaScript]
+----
+function errorHandler(err, req, res, next) {
+  res.status(500).send(err.message);
+}
+----
+
+In this code snippet, if an error occurs, the server responds with the error message. This can pose a vulnerability, as it may potentially expose sensitive information about the application.
+
+=== Fix - Buildtime
+
+To fix this vulnerability, return a generic error message instead of passing the raw error message to the client.
+
+Secure code example:
+
+[source,JavaScript]
+----
+function errorHandler(err, req, res, next) {
+  res.status(500).send('An error occurred. Please try again later.');
+}
+----
+
+The fixed code sends a generic error message to the client whenever an error occurs. This prevents the exposure of potentially sensitive information in error messages.

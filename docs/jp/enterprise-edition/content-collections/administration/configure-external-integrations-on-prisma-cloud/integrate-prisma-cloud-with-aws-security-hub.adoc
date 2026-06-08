@@ -1,0 +1,101 @@
+:topic_type: タスク
+[.task]
+[#id910768c2-7e77-4c6b-af53-56ff7327fec1]
+== Prisma CloudとAWS Security Hubの統合
+Prisma® CloudをAWS Security Hubと統合し、AWS Security Hubでのセキュリティ体制の表示と監視を行えるようにするための方法を学習します。
+
+AWS Security HubをAWS Security Hubのクラウドアセットのセキュリティ体制を表示、監視する、集中コンソールとして使用できます。
+
+Prisma® CloudサービスをAWS Security Hubと統合することで、AWS Security Hubコンソール上でクラウドアセットに関連するセキュリティとコンプライアンス上のリスクを把握することができます。
+
+統合の一環としてPrisma Cloudは、AWSクラウド上のアセットを監視し、リソースの設定誤り、コンプライアンス違反、ネットワークセキュリティ上のリスク、Security Hubコンソールに対する不審なユーザー行動などに関するアラートを送信するため、AWSアカウントで展開されているクラウドアセットの状況を総合的に把握できます。
+
+
+
+
+[.procedure]
+. AWS Security Hub読み取り専用ポリシーをAWS管理ユーザーのロールにアタッチして、この統合をAWSコンソールで有効にしてください。
++
+.. AWSコンソールにログインし、IAMを選択します。
+
+.. *ロール*を選択し、Prisma Cloudでアカウントのオンボーディングに使用したロール名を検索します。
+
+.. ロール名、*Add permissions(権限を追加する) > Attach Policies(ポリシーをアタッチする)*を順にクリックします。
++
+image::administration/securityhub-createrole-user.png[]
+
+.. 検索語として*SecurityHubRead*と入力します。
+
+.. *AWSSecurityHubReadOnlyAccess*を選択し、*ポリシーをアタッチする*]を選択します。
++
+image::administration/securityhub-grant-permissions.png[]
+
+
+
+. AWS Security HubでPrisma Cloud用にサインアップします。
++
+.. AWSコンソールにログインして、*Security Hub*を選択します。
++
+image::administration/securityhub-aws.png[]
+
+.. *統合*に移動し、検索語として「*Prisma Cloud Enterprise*」と入力します。
+
+.. *Palo Alto Networks: Prisma Cloud Enterprise* と *Accept の調査結果*を検索します
++
+image::administration/securityhub-enabled-prisma-cloud.png[]
+
+
+
+. Prisma CloudでAWS Security Hub統合を設定します。
++
+AWSコンソールから、すべてのAWSサービスのセキュリティアラートとコンプライアンスステータスを参照できるように、AWS Security HubをPrisma Cloudの統合チャネルとして設定します。
++
+.. Prisma Cloudにログインします。
+
+.. *Settings（設定） > Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加） > AWS Security Hub*を選択します。モーダルウィザードが開き、AWS Security Hub統合を追加できます。
++
+image::administration/amazon-s3-int-1.png[]
+
+.. *Integration Name（統合名）*に、AWS Security Hubの読み取り専用アクセス権を割り当てたAWSアカウントを設定します。
+
+.. *Description（説明）*を入力して、*Region（地域）*を選択します。
++
+AWS Security Hubでクラウドアカウントに対してPrisma Cloudを有効にした場合にのみ、リージョンを選択することができます。
++
+image::administration/aws-security-hub-int-1.png[]
+
+.. *Next（次へ）*をクリックします。*Summary（サマリー）*を確認し、*編集*して変更を加えるか、*テスト*します。
++
+image::administration/aws-security-hub-int-2.png[]
+
+.. *Save（保存）*を選択して、統合を保存します。
++
+統合を正常にセットアップした後、*Settings（設定） > Integrations（統合）* の Get Status（ステータスを取得） リンクを使用して定期的に統合ステータスを確認できます。
++
+image::administration/get-status.png[]
+
+
+
+. 既存のアラートルールを変更するか、新しいアラートルールを作成して、xref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[アラート通知]を送信する時期を指定します。
++
+[NOTE]
+====
+ Prisma CloudのSecurity HubとAWS Organizationのアカウントを統合した場合、スタンドアロンアカウントとして扱われます。つまり、Security Hubのマスターアカウントのアラートのみを受信し、その子アカウントは受信しません。そのマスターアカウントにリンクされているすべての子アカウントについてアラートを受信する場合は、ステップ 1 ～ 3 を繰り返してから、アカウントごとにアラートルールを設定する必要があります。
+====
+
+. AWS Security HubでPrisma Cloudアラートを参照します。
++
+.. AWSコンソールにログインして、*Security Hub*を選択します。
+
+.. *Findings（検出事項）*をクリックして、アラートを表示します。
+
+.. アラートの説明を表示するには、*Title（タイトル）*を選択します。
++
+image::administration/securityhub-findings-details.png[]
+
+
+
+
+

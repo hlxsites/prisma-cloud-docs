@@ -1,0 +1,61 @@
+
+== KMS policy allows public access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 2e4f4a53-1bdf-4f15-a198-0e3b7d1992f7
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleKMSKeyIsPublic.py[CKV_GCP_112]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that the Key Management Service (KMS) policy does not allow public access. The Key Management Service is a critical component for managing encryption keys that are used to secure your data. If a KMS policy allows public access, it means anyone on the internet could potentially access your encryption keys. This is a significant security risk because if malicious actors gain access to your encryption keys, they can encrypt and decrypt your data, leading to potential data breaches or loss. Therefore, it's essential to keep KMS policies restricted to specific, trusted individuals or services.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* "google_kms_crypto_key_iam_policy", "google_kms_crypto_key_iam_binding", "google_kms_crypto_key_iam_member"
+* *Arguments:* policy_data
+
+To fix the issue, you need to ensure that the KMS policy does not allow public access. This can be done by ensuring that the member in the `bindings` block of KMS crypto keys and KMS key rings is not 'allUsers' or 'allAuthenticatedUsers'.
+
+[source,hcl]
+----
+resource "google_kms_crypto_key_iam_binding" "crypto_key" {
+  crypto_key_id     = google_kms_crypto_key.my_crypto_key.self_link
+  role              = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+
+  members = [
+    "user:jane@example.com"
+  ]
+}
+
+resource "google_kms_key_ring_iam_binding" "key_ring" {
+  key_ring_id       = google_kms_key_ring.my_key_ring.self_link
+  role              = "roles/cloudkms.admin"
+  
+  members = [
+    "user:john@example.com"
+  ]
+}
+----
+
+This updated Terraform code is secure because it doesn't provide public access to the KMS crypto keys and KMS key rings. Instead, access is restricted to specified users, in this case 'jane@example.com' for the crypto key and 'john@example.com' for the key ring.
+

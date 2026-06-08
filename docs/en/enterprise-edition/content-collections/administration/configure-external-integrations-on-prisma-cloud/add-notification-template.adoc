@@ -1,0 +1,241 @@
+== Add Notification Template
+
+Learn how to send Prisma Cloud alert notifications to your existing tools so that you can incorporate cloud security into your existing operational procedures.
+
+Alert rules define which policy violations trigger an alert in a selected set of cloud accounts. When you create an Alert Rule for runtime checks, you can also configure the rule to send the Alert Payload that the rule triggers to one or more third-party tools. For all channels except email, to enable notification of policy violations in your cloud environments in your existing operational workflows, you must xref:configure-external-integrations-on-prisma-cloud.adoc[configure external integrations on Prisma Cloud]. You can either set up an integration before you create the alert rule or use the inline link in the alert rule creation process to set up the integration when you need it.
+
+//On some integrations, such as Google CSCC, AWS Security Hub, PagerDuty, and ServiceNow, Prisma Cloud can send a state-change notification to resolve an incident when the issue that generated the alert is resolved manually or if the resource was updated in the cloud environment and the service learns that the violation is fixed.
+
+Refer to the following topics to enable an alert notification channel with third-party tools:
+
+//* xref:#id84f16f30-a2d0-44b7-85b2-4beaaef2f5bc[Send Alert Notifications to Amazon SQS]
+//* xref:#id2fae8293-c6fa-4a83-90e6-ec4c92bb2afd[Send Alert Notifications to Azure Service Bus Queue]
+* xref:#add-email-notification-template[Send Alert Notifications Through Email]
+//* xref:#id5813ca2f-759a-4464-a561-c995e99779ed[Send Alert Notifications to a Slack Channel]
+//* xref:#iddf5e64a0-630d-4dbd-8cbb-0c9d785f3c25[Send Alert Notifications to Splunk]
+* xref:#add-jira-notification-template[Send Alert Notifications to Jira]
+//* xref:#idd57f95ff-7246-48c9-85d0-4eae0185b827[Send Alert Notifications to Google Cloud SCC]
+* xref:#add-servicenow-notification-template[Send Alert Notifications to ServiceNow]
+//* xref:#id408f7a0a-fcb6-4847-81a1-eca436daa986[Send Alert Notifications to Webhooks]
+//* xref:#idecf7e98c-435e-44ae-a97d-21bd047ff372[Send Alert Notifications to PagerDuty]
+//* xref:#idc8014659-a348-4cf7-b655-5f864c3962b4[Send Alert Notifications to AWS Security Hub]
+//* xref:#id09effce5-3030-43da-aecc-86e86ff88e78[Send Alert Notifications to Microsoft Teams]
+//* xref:#id90a4c3cd-b459-4946-b041-a6b864064797[Send Alert Notifications to Cortex XSOAR]
+
+
+[.task]
+[#add-email-notification-template]
+=== Send Alert Notifications Through Email
+
+To send email notifications for alerts triggered by an alert rule, Prisma Cloud provides a default email notification template. You can customize the message in the template using the in-app rich text editor and attach the template to an alert rule. In the alert notification, you can configure Prisma Cloud to send the alert details as an uncompressed CSV file or as a compressed zip file, of 9 MB maximum attachment size.
+
+All email notifications from Prisma Cloud include the domain name to support Domain-based Message Authentication, Reporting & Conformance (DMARC), and the email address used is noreply@prismacloud.paloaltonetworks.com.
+
+[.procedure]
+. (tt:[Optional]) Set up a custom message for your email notification template.
++
+Prisma Cloud provides a default email template for your convenience, and you can customize the lead-in message within the body of the email using the rich-text editor.
+
+.. Select *Settings > Integrations & Notifications > Notification Templates*.
+
+.. Select *Add Notification Template > Email* notification template from the list.
+
+.. Enter a *Template Name*.
++
+The total length of the template name can be up to 99 characters and should not include special ASCII characters: (‘<’, ‘>’, ‘!’, ‘=’, ‘\n’, ‘\r’).
++
+If you had previously created a template that includes the unsupported characters and you try to update the template, an error message will indicate that the template name is invalid.
+
+.. Enter a *Custom Note* and select *Next*.
++
+The preview on the right gives you an idea of how your content will look.
+//+
+//image::administration/alert-rules-custom-email-notification.png[]
++
+image::administration/add-email-notification-template-1.png[]
+
+.. *Review Status* and *Save Template*.
+//+
+//image::administration/alert-rules-custom-email-review-status.png[]
++
+image::administration/add-email-notification-template-2.png[]
+
+. Select *Alerts > Alert Rules* and either create an Alert Rule for runtime checks or select an existing rule to edit.
+
+. Select *Configure Notifications > Email*.
+
+. Enter or select the *Emails* for which to send the alert notifications.
++
+You can include multiple email addresses and can send email notifications to email addresses in your domain and to guests external to your organization.
+
+. Set the toggle to *Enabled* to send alert notifications and *Next*.
+
+. (tt:[Optional]) Select your custom email *Template*, if you have one.
+
+. Set the *Frequency* at which to send email notifications.
++
+* *Instantly*—Sends an email to the recipient list each time the alert rule triggers an alert.
+* *Recurring*—You can select the time interval as Daily, Weekly, or Monthly. Prisma Cloud sends a single email to the recipient list that lists all alerts triggered by the alert rule on that day, during that week, or the month.
+
+. Specify whether to include an attachment to the email.
++
+Including an attachment provides a way for you to include information on the alerts generated and the remediation steps required to fix the violating resource. When you select *Attach detailed report*, you can choose whether to *Include remediation instructions* to fix the root cause for the policy that triggered each alert, and opt to send it as a zip file (*Compress attachment(s)*).
++
+Each email can include up to 10 attachments. An attachment in the zip file format can have 60000 rows, while a CSV file can have 900 rows. If the number of alerts exceeds the maximum number of attachments, the alerts with the older timestamps are omitted.
++
+image::administration/alerts-alert-rules-set-alert-notification.png[]
+
+. Review the *Summary* and *Save* the new alert rule or changes to an existing alert rule.
+
+. Verify the alert notification emails.
++
+The email alert notification specifies the alert rule, account name, cloud type, policies that were violated, the number of alerts each policy violated, and the affected resources. Click the *<number>* of alerts to view the Prisma Cloud *Alerts > Overview* page.
++
+image::alerts/alerts-email-notification.png[]
+
+[.task]
+[#add-jira-notification-template]
+=== Send Alert Notifications to Jira
+
+You can configure alert notifications triggered by an alert rule to create Jira tickets.
+
+[.procedure]
+. xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-jira.adoc[Integrate Prisma Cloud with Jira].
+
+. Select *Settings > Integrations & Notifications > Notification Templates*.
+
+. Select *Add Notification Template > Jira* notification template from the list.
+
+. Enter a *Template Name* and select your *Integration*.
++
+Use descriptive names to easily identify the notification templates.
++
+The total length of the template name can be up to 99 characters and should not include special ASCII characters: (‘<’, ‘>’, ‘!’, ‘=’, ‘\n’, ‘\r’).
+
+. Select your *Project*.
++
+* (tt:[NOTE]) Select the project where you want to receive Prisma Cloud alerts. As a best practice, create and use a dedicated project for Prisma Cloud ticketing and issue management because every alert converts to a Jira ticket.
+
+* If you want to enable both *Open* and *Resolved* alert notification states on Prisma Cloud, make sure your Jira workflow for the configured project can handle the transition of states from *Open > Resolved > Open* (re-open). Failure to do so will result in the `Jira state transition is not possible for configured state` error. When the project supports these transition states, a new Jira ticket is created for each new alert, and the same ticket is updated once the alert status changes.
+
+. Select your *Issue Type*.
+
+. Optionally, you can use toggle to set the *Resolved* alert state to *Enabled* and click *Next*.
++
+image::administration/add-jira-notification-template-1.png[]
+
+. To *Configure Open State* for alerts in Jira:
+
+.. Select the *Jira Fields* that you would like to populate.
++
+(tt:[NOTE]) The Jira fields that are defined as mandatory in your project are already selected and included in the alert.
++
+image::administration/add-jira-notification-template-2.png[]
+
+.. Select the Jira *State*.
+
+.. Select information that goes in to *Summary* and *Description* from the alert payload.
+
+.. Select the *Reporter* for your alert from users listed in your Jira project.
++
+(tt:[NOTE]) This option is available only if the administrator who set up this integration has the appropriate privileges to modify the reporter settings on Jira.
+
+. If you have *Enabled* the *Resolved* alert state, then repeat the above steps to *Configure Resolved State* for alerts in Jira.
+
+. Select *Next*.
+
+. Check the *Review Status* summary and click *Test Template*.
+
+. *Save Template* after you receive the Notification template tested successfully message.
++
+image::administration/add-jira-notification-template-3.png[]
++
+You can clone, edit, or delete the notification from *Actions*.
++
+After you set up the integration successfully, you can use the Get Status link in *Settings > Integrations & Notifications > Integrations* to periodically check the integration status.
++
+image::administration/get-status.png[]
+
+
+//. xref:../manage-prisma-cloud-alerts/create-an-alert-rule.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Run-Time Checks] or modify an existing rule to send alerts to Jira.
+//. Select *Alerts > Alert Rules* and either xref:create-an-alert-rule.adoc#idd1af59f7-792f-42bf-9d63-12d29ca7a950[Create an Alert Rule for Run-Time Checks] or select an existing rule to edit.
+//. Navigate to *Configure Notifications > Jira*.
+//. Select the Jira *Templates* to use for creating tickets based on the alert payload data for alerts that are triggered by this alert rule.
+//. Set the toggle to *Enabled* to send notifications and *Next*.//+
+//image::administration/alert-rule-jira.png[]
+//. Review the *Summary* and *Save* the new alert rule or your changes to an existing alert rule.
+
+[.task]
+[#add-servicenow-notification-template]
+=== Send Alert Notifications to ServiceNow
+
+You can send alert notifications to ServiceNow. Notification templates allow you to map the Prisma Cloud alert payload to the incident fields (referred to as _ServiceNow fields_ on the Prisma Cloud interface in the screenshot) on your ServiceNow instance. Because the incident, security, and event tables are independent on ServiceNow, to view alerts in the corresponding table, you must set up the notification template for each service type — *Incidents*, *Events* or *Security Incidents* on Prisma Cloud.
+
+If you see errors, review how to xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow.adoc#iddd0aaa90-d099-4a99-a3ed-bde105354340[Interpret Error Messages].
+
+[.procedure]
+. xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow.adoc[Integrate Prisma Cloud with ServiceNow].
+
+. Select *Settings > Integrations & Notifications > Notification Templates*.
+
+. Select *Add Notification Template > ServiceNow* notification template from the list.
++
+image::administration/add-servicenow-notification-template-1.png[]
+
+. Enter a *Template Name* and select your *Integration*.
++
+Use descriptive names to easily identify the notification templates.
++
+The total length of the template name can be up to 99 characters and should not include special ASCII characters: (‘<’, ‘>’, ‘!’, ‘=’, ‘\n’, ‘\r’).
+
+. Set the *Service Type* to *Incident*, *Security*, or *Event*.
++
+The options in this drop-down match what you selected when you enabled the ServiceNow integration on Prisma Cloud.
+
+. Select the alert status for which you want to set up the ServiceNow fields.
++
+You can choose different fields for the Open, Dismissed, or Resolved states. The fields for the Snoozed state are the same as that for the Dismissed state.
+
+. (tt:[Optional]) Enable the checkbox if you want to create a new ServiceNow incident when the alert state changes from *Resolved > Open* (re-open) states.
++
+(tt:[NOTE]) Prisma Cloud will automatically update the incident once the alert is resolved. So, do not manually update the *Incident state* in ServiceNow. Manually changing the incident will stop notifications from being sent. 
++
+image::administration/servicenow-notification-template.png[]
+
+. Click *Next*. 
+
+
+. Select the *ServiceNow Fields* that you want to include in the alert.
++
+Prisma Cloud retrieves the list of fields from your ServiceNow instance dynamically, and it does not store any data. Depending on how your IT administrator has set up your ServiceNow instance, the configurable fields may support a drop-down list, long-text field, or type-ahead. For a type-ahead field, you must enter a minimum of three characters to view a list of available options. When selecting the configurable fields in the notification template, at a minimum, you must include the fields that are defined as mandatory in your ServiceNow implementation.
++
+In this example, *Description* is a long-text field, hence you can select and include the Prisma Cloud Alert Payload fields that you want in your ServiceNow Alerts. You must include a value for each field you select to make sure that it is included in the alert notification. See xref:../../alerts/alert-payload.adoc[Alert Payload] for details on the context you can include in alerts.
++
+If the text in this field exceeds a certain number of characters (limit may differ based on ServiceNow default field size), you must adjust the maximum length for the fields on your ServiceNow implementation to ensure that the details are not truncated when it’s sent from Prisma Cloud.
++
+(tt:[Optional]) To generate a ServiceNow Event, Message Key and Severity are required. The Message key determines whether to create a new alert or update an existing one, and you can map the Message Key to Account Name or to Alert ID based on your preference for logging Prisma Cloud alerts as a single alert or multiple alerts on ServiceNow. Severity is required to ensure that the event is created on ServiceNow and can be processed without error; without severity, the event is in an Error state on ServiceNow.
++
+For *Number*, use AlertID from the Prisma Cloud alert payload for ease of scanning and readability of incidents on ServiceNow.
++
+image::administration/servicenow-notification-template-alert-id.png[]
++
+image::administration/servicenow-notification-template-fields.png[]
+
+. Review the *Summary* status, *Test Template*, and *Save Template*.
++
+image::administration/snow-notification-review-status.png[]
++
+You can clone, edit, or delete the notification from *Actions*.
++
+After you set up the integration and configure the notification template, Prisma Cloud uses this template to send a test alert to your ServiceNow instance. The test workflow creates a ticket that transitions through the different alert states that you have configured in the template. When the communication is successful, a success message displays.
++
+For an on-demand status check, use the *Get Status* icon on *Settings > Integrations*. These checks help you validate that the ServiceNow instance URL is reachable and that your credentials are valid.
++
+image::administration/get-status.png[]
+
+. *Next Steps*
++
+Verify that the integration is working as expected and xref:../configure-external-integrations-on-prisma-cloud/integrate-prisma-cloud-with-servicenow.adoc#id46a9b2b8-8b2a-4b68-b65e-d8c15dd574d2[view alerts].
+
+
+

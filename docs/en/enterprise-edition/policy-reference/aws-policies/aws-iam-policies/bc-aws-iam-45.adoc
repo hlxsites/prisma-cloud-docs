@@ -1,0 +1,117 @@
+== AWS IAM policy allows all principals used by any AWS service from target account to assume role
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 84214659-a01d-48d0-aee8-9b00ce51bfdd
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/resource/aws/IAMRoleAllowAssumeFromAccount.py[CKV_AWS_61]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|CloudFormation,Terraform,TerraformPlan,Serverless
+
+|=== 
+
+
+
+=== Description 
+
+
+The IAM role is an identity with specific permissions.
+An IAM role is similar to an IAM user, it is an AWS identity with permission policies that determine what the identity can and cannot do in AWS.
+When a user assumes a role, it provides temporary security credentials for a bounded session.
+We recommend that you define fine-grained roles for specific services or principles.
+For example, when settings up an AWS service role it is recommended to include only the permissions required for the service to access the AWS resources required.
+Alternatively, you can use a Principal as an entity in AWS that can perform actions and access resources.
+The main benefit of the Principal entity is to limit the use of wildcards in the policy document.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+ 
+* *Resource:* aws_iam_role
+* *Arguments:* assume_role_policy
+
+ 
+To fix this issue, ensure that the `assume_role_policy` in the `aws_iam_role` resource is configured with specific AWS accounts or principals and does not allow assume role permission to any AWS account.
+ 
+
+Example:
+
+[source,go]
+----
+resource "aws_iam_role" "example" {
+ 
+  ...
+
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+-        "AWS": "arn:aws:iam::123456789012:root"
++        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole",
+      ...
+    }
+  ]
+}
+POLICY
+=======
+  name = "example-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::123456789012:role/allowed-role"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+  ...
+ 
+}
+----
+
+
+*CloudFormation* 
+
+
+To fix this issue, ensure that the `AssumeRolePolicyDocument` in the `AWS::IAM::Role` resource is configured with specific AWS accounts or principals and does not allow assume role permission to any AWS account.
+
+
+[source,yaml]
+----
+Resources:
+  ExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        ...
+        AssumeRolePolicyDocument:
+          ...
+          Statement:
+          - Effect: "Allow"
+            Principal:
+                AWS:
+-                 - arn:aws:iam::123456789101:root
+-                 - 123456789101
+----

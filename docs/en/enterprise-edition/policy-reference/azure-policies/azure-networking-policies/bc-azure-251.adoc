@@ -1,0 +1,50 @@
+
+== Azure VM disk configured with public network access
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| fa6e9e09-d02e-418a-a573-baed692391ed
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/VMDiskWithPublicAccess.py[CKV_AZURE_251]
+
+|Severity
+|HIGH
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+Azure Virtual Machine disks configured with public network access pose a significant security risk. Publicly accessible disks expose sensitive data to unauthorized access and potential breaches.
+
+Azure Virtual Machine disks are storage resources attached to Virtual Machines. Enabling public network access allows any entity on the internet to access these disks, bypassing security controls. Attackers can exploit this misconfiguration to steal data, deploy malware, or gain unauthorized access to the Virtual Machine itself.
+
+The impact of this misconfiguration includes data breaches, unauthorized data modification, and potential system compromise. Restricting access to trusted networks only significantly minimizes these risks. This best practice ensures that only authorized users and services can interact with the disks.
+
+To mitigate this risk, disable public network access for all Azure Virtual Machine disks. Utilize Azure Private Link or other secure network configurations to provide controlled access to necessary resources. Regularly review and audit network configurations to identify and remediate any misconfigurations.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+Ensure that the `public_network_access_enabled` setting is set to `false`.
+
+[source,go]
+----
+resource "azurerm_managed_disk" "fail1" {
+  ...
+-  public_network_access_enabled = true 
++  public_network_access_enabled = false
+}
+----
+

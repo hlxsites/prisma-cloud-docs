@@ -1,0 +1,155 @@
+:topic_type: タスク
+[.task]
+[#ide7e2d4b6-c677-4466-a0b0-befc62fb0531]
+== Prisma Cloud異常ポリシーのアラートの抑制
+
+Prisma Cloud上で異常アラートを生成するリソースを除外します。
+
+*異常信頼リスト* を使用して、Prisma Cloud にxref:../governance/anomaly-policies.adoc#id31e46cf0-ad50-471b-b517-6a545b57521e[異常ポリシー]のアラートを生成させたくないリソースのリストを含めます。
+
+リスト内では、アラートを抑制するリソースタイプまたは識別子（クラウドサービス名、ドメイン、IPアドレス、マシンイメージID、ポート、プロトコル、リソースID、サブジェクト名、タグなど）を選択し、リストを一連の異常ポリシーに適用できます。
+
+[NOTE]
+====
+ポリシー読み取り権限を付与されたユーザーのみが、Prisma Cloud管理コンソールで異常信頼リストを閲覧できます。*[設定] > [アクセス制御 ] *へ移動し 、異常信頼リストを表示するために必要なアクセス許可を追加します。
+====
+
+[.procedure]
+. *[設定] > [異常] > [異常信頼リスト]*を順に選択します。
++
+異常設定ページを表示または編集するには、Prisma Cloudでシステム管理者ロールなどの正しいロールを持っている必要があります。アクセス権限を持つロールについては、xref:../administration/prisma-cloud-admin-permissions.adoc[Prisma Cloud 管理者権限] を参照してください。
+
+. [*信頼できるリストを追加*] をクリックします 。
+
+. リソースタイプを選択し、*Next（次へ）*をクリックします。
++
+クラウドサービス名、ドメイン、IPアドレス、マシンイメージID、ポート、プロトコル、リソースID、サブジェクト名、タグなどのリソースタイプまたは識別子を選択します。リストにIPアドレスを追加するには、xref:../administration/trusted-ip-addresses-on-prisma-cloud.adoc#ide7e2d4b6-c677-4466-a0b0-befc62fb0531[Prisma Cloudの信頼できるIPアドレス]を参照してください。
++
+image::alerts/add-anomaly-trusted-list-1.png[]
+
+. *Trusted List Name（信頼リスト名）*を入力し、オプションで*Description（説明）*を入力します。
+
+. アラートを生成しない異常ポリシーを選択します。
++
+image::alerts/anomaly-trusted-subject-1.png[]
+
+. 選択したリソースタイプの値を入力します。
++
+各リソースタイプについて、サポートされる値の詳細については、xref:#id47fecd66-ebcf-4d0b-9c05-a4948ef28a0e[信頼リストのリソース構文]を参照してください。デフォルトでは、信頼済みリストに追加したエントリは、Prisma Cloudにオンボーディングされている（すべての）クラウドアカウントに対するアラートの生成から除外されます。特定のクラウドアカウントを選択した場合は、*Account ID（アカウントID）*と*VPC ID* を選択するか、Any（任意）に設定してPrisma Cloudに追加された任意のアカウントを除外します。
++
+image::alerts/anomaly-trusted-subject-2.png[]
+
+. リストを*保存*します。
++
+image::alerts/anomaly-trusted-subject-3.png[]
++
+リストを保存すると、選択した異常ポリシーについて、Prisma Cloudはこのリストに含まれるリソースのアラートを生成しません。
++
+[NOTE]
+====
+リストを作成した管理者のみが、名前、説明、アカウントID、およびVPC IDを変更できます。正しいロールを持つ他の管理者は、信頼リストのエントリを追加または削除できます。
+====
+
+
+[#id47fecd66-ebcf-4d0b-9c05-a4948ef28a0e]
+=== 信頼リストのリソース構文
+
+RQLを使用して、*Investigate（調査）*ページでリソース設定メタデータを表示します。次の表にいくつかの例を示します。
++++<draft-comment>https://docs.google.com/spreadsheets/d/1Q1b-WUlYi0mh_lSgpn6SuRS5Nhb800kA7WEtXhLOqw8/edit#gid=0</draft-comment>+++
+
+[cols="25%a,25%a,25%a,25%a"]
+|===
+|*リソース タイプ*
+|*リソースURL*
+|*信頼リストの値*
+|*状態の意味*
+
+
+4+|*リソースID*
+
+
+|AWSリソースID
+|/investigate/details?resourceId=rrn::instance:us-east-1:349006084872::i-05c2e0a4cbc970575
+|i-05c2e0a4cbc970575
+|リソースURLの最後の値
+
+
+|GCPリソースID
+|/investigate/details?resourceId=rrn::instance:us-central1:lilit-3:ee45f1eebc4f436939f89374e8d9c33fe4485718:7923637926488106011
+|7923637926488106011
+|リソースURLの最後の値
+
+
+|AzureリソースID
+|/investigate/details?resourceId=rrn::instance:eastus:06f9b271-fa8f-44c3-b597-f3af54ca770d::282b247f-9a03-412a-91e2-afc0c4bbadfb-%2Fsubscriptions%2F06f9b271-fa8f-44c3-b597-f3af54ca770d%2FresourceGroups%2Flilit-ds-resources%2Fproviders%2FMicrosoft.Compute%2FvirtualMachines%2Fds-dnd-lilit-NSG
+|282b247f-9a03-412a-91e2-afc0c4bbadfb-/subscriptions/06f9b271-fa8f-44c3-b597-f3af54ca770d/resourceGroups/lilit-ds-resources/providers/Microsoft.Compute/virtualMachines/ds-dnd-lilit-NSG
+|URLリソースの最後の値のデコードバージョンURL
+
+
+4+|*マシンイメージID*
+
+
+|AWSマシンイメージID
+|"imageId": "ami-0a0ddd875a1ea2c7f"
+|"ami-0a0ddd875a1ea2c7f"
+|resource jsonのキーimageIdの値
+
+
+|GCPマシンイメージID
+|サポートされていません
+|サポートされていません
+|サポートされていません
+
+
+|AzureマシンイメージID
+|"properties.storageProfile": { "imageReference": { ""sku"":"2019-Datacenter", "offer":"WindowsServer", "version": "latest", "publisher":"MicrosoftWindowsServer" } }"
+|MicrosoftWindowsServer-WindowsServer-2019-Datacenter-latest
+|Join the following using a ""-""vm.storageProfile().imageReference().publisher(),vm.storageProfile().imageReference().offer(),vm.storageProfile().imageReference().sku(),vm.storageProfile().imageReference().version());"
+
+
+4+|*タグ*
+
+
+|AWS
+|"""tags"": [ { ""key"": ""Name"", ""value"": ""Flowlogs-Automation-2"" }]"
+|キー = 名前
+
+値 = Flowlogs-Automation-2
+|キーと値をそのまま提供
+
+
+|Azure
+|"""tags"": { ""items"": [ ""http-server"" ]}"
+|キー = http-server
+|キーとしてアイテムリストからの値を提供します。値は必要ありません
+
+
+|GCP
+|"""tags"": { ""purpose"": ""ds-flowlogs-bucket"" }"
+|キー = purpose
+
+値 = ds-flowlogs-bucket
+|キーとしてjson要素のキーを、値としてjson要素の値を提供
+
+
+4+|*クラウド サービス*
+
+
+|AWSサービス
+|s3.amazonaws.com
+|s3.amazonaws.com
+|そのまま
+
+
+|GCPサービス
+|compute.googleapis.com
+|compute.googleapis.com
+|そのまま
+
+
+|Azureサービス
+|microsoft.compute
+|microsoft.compute
+|そのまま
+
+|===

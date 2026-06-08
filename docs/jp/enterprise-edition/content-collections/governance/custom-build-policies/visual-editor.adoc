@@ -1,0 +1,129 @@
+:topic_type: タスク
+
+[.task]
+
+== ビジュアルエディター
+
+Prisma Cloud は、ビジュアルエディターの機能をサポートしており、これにより既存のフィールドを使用して、テンプレートのカスタムビルドポリシーを作成できます。
+ビジュアルエディターは、AND/OR ロジックをサポートする属性チェックを含む、カスタムポリシーを作成する場合に適したオプションです。
+ビジュアルエディターを使用してカスタムポリシーを作成できるように、ログ配信が推奨されない S3 バケット ACL のカスタムビルドポリシーの例を示します。
+
+
+[.procedure]
+
+.. [ポリシー] > [ポリシーの *追加] > [設定] > [ポリシーの詳細の追加]* を選択し、[ *次へ*] を選択します。
++
+この例では、ログ配信が推奨されない S3 バケット ACL のポリシーの詳細が表示されます。
+//+
+//image::governance/visual-editor.png
++
+[コードエディタ] がデフォルトビューとして表示されます。
+
+.. *[ビジュアルエディター] *を選択します。
+//+
+//image::governance/visual-editor-1.png
+
+. *[カテゴリ**タイプ] *を選択します。
++
+*[カテゴリタイプ] *では、ポリシーが下記のいずれかに基づいて、グループ化されます。Elasticsearch、General、IAM、Kubernetes、Logging、Monitoring、Networking、Public、Secrets、Serverless、Storage、および Vulnerabilities。カテゴリタイプを使用して、特定のポリシーを検索またはフィルタリングできます。
+//+
+//image::governance/visual-editor-2.png
+
+. *[クラウド プロバイダ] *を選択します。
++
+Prisma Cloud でサポートされている [クラウド サービスプロバイダ] に対してのみルールを作成できます。
+//+
+//image::governance/visual-editor-3.png
+
+. [*リソース タイプ*] を選択します。
++
+リソース タイプは、クラウド プロバイダーの選択に関連しています。リソースの構文を追加して、同じものを検索することもできます。
+//+
+//image::governance/visual-editor-4.png
++
+この例では、s3 を追加すると、関連するリソースを見つけることができるはずです。
+//+
+//image::governance/visual-editor-5.png
+
+. *[属性] *、* [演算子] * を選択し、クエリの * [値] * を追加します。
++
+クエリは、リソースに特定の値が含まれているかどうか、または特定の値が存在するかどうかを確認するための一致条件を定義します。
+//+
+//image::governance/visual-editor-6.png
++
+この例では、S3 バケット ACL ポリシーのクエリに * [属性] * が `acl`として含まれ、* [演算子] * が `Not equals` で、* [値] * が `log-delivery-write`です。
+//+
+//image::governance/visual-editor-7.png
++
+詳しくは<<examples-on-custom-policies,カスタムポリシーの例>>を参照してください。
++
+NOTE: カスタムポリシー [aws-networking-deny-public-ssh] は、cidr_blocks と to_port の引数を持つ 2 つのルールを使用します。このポリシーには、複数のネストされた引数を作成できます。この例では、AWS セキュリティ グループのより複雑なイングレス ポリシーを表現するために、次のような引数を使用できます。`ingress.from_port`、`ingress.to_port`、`ingress.protocol`、`ingress.cidr_blocks`。
++
+And/OR ロジックを使用して、複数のクエリを含むルールを作成できます。
++
+ポリシーには、定義済みの属性のレイヤーと接続状態のレイヤー、またはその両方のレイヤーを含めることができます。二つの間の接続を定義するために、AND/OR ロジックが使用されます。
+
+この例では、AND ロジックが使用されています。
+//+
+//image::governance/visual-editor-8.png
+
+. [*テスト]* を選択して、カスタムコードを検証します。
++
+カスタムコードにエラーがない場合、Prisma Cloud は 30 件のリソース結果を表示します。
++
+この例では、S3 バケット ACL クエリの結果が表示されます。
+//+
+//image::governance/visual-editor-9.png
+
+. [ *次へ* ] を選択してコンプライアンス標準にアクセスし、プロセスを完了して、カスタムのビルド時チェック ポリシーを作成します。
+//+
+//image::governance/visual-editor-10.png
++
+NOTE: こちらは、ビルド時チェック用のカスタムポリシー作成の ステップ 2 です。Prisma Cloud コンソールで新しいカスタムビルド時間チェック ポリシーを表示するには、残りのステップを完了する必要があります。
+
+[#examples-on-custom-policies]
+=== カスタムポリシーの例
+
+[cols="3,2,1,1,1,1", options="header"]
+|===
+|ポリシー名
+|クラウド プロバイダ
+|リソース タイプ
+|属性
+|オペレーター
+|値
+
+|aws-restrict-all-vpc-traffic
+|aws
+|aws_default_network_acl
+|ingress
+|Equal
+|0
+
+|azurerm-block-allow-all-cidr
+|azurerm
+|azurerm_network_security_group
+|source_address_prefix
+|Not Equal
+|0.0.0.0/0, "*"
+
+|gcp-restrict-machine-type
+|google
+|google_compute_instance
+|machine-type
+|Equal
+|n1-standard-1
+
+|aws-networking-deny-public-ssh
+|aws
+|aws_security_group_rule
+|cidr_blocks
+|次の値と等しくない
+|0.0.0.0/0
+
+|===
+
+
+
+
+

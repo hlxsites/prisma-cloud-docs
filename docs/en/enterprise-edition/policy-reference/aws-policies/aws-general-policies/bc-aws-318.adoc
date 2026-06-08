@@ -1,0 +1,55 @@
+
+== Elasticsearch domains are not configured with a minimum of three dedicated master nodes
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 8461fa0f-f4df-4bb0-8e3e-f69028fa76af
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/ElasticsearchDomainHA.py[CKV_AWS_318]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is ensuring that Elasticsearch domains are configured with at least three dedicated master nodes for high availability. Not having high availability for Elasticsearch domains could lead to unexpected outages and potential data loss. In addition, it provides resilience against system failures and ensures uninterrupted system operations. Therefore, ignoring this policy can cause significant harm to your database infrastructure and compromises the reliability of your services.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_elasticsearch_domain, aws_opensearch_domain
+* *Arguments:* cluster_config.dedicated_master_count
+
+Configure your Elasticsearch domain with at least three dedicated master nodes. This can be achieved by setting the 'dedicated_master_count' value to 3, under 'cluster_config'. Here is how your Terraform code should look:
+
+[source,hcl]
+----
+resource "aws_elasticsearch_domain" "example" {
+  domain_name           = "example"
+  elasticsearch_version = "6.8"
+
+  cluster_config {
+    instance_type = "m4.large.elasticsearch"
+    instance_count = "3"
+
+    dedicated_master_enabled = true
+    dedicated_master_count = '3'
+    dedicated_master_type = "m4.large.elasticsearch"
+  }
+}
+----
+

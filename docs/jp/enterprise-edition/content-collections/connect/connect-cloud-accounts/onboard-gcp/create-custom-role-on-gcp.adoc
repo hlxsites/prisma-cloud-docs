@@ -1,0 +1,82 @@
+:topic_type: タスク
+[.task]
+== カスタム ロールでサービス アカウントを作成する
+
+GCP アカウントのリソースへの読み取り専用アクセス用のビューアー (初期) ロールを付与する Terraform テンプレートを使用する代わりに、xref:onboard-gcp-org.adoc[GCP 組織をオンボードする]か、xref:onboard-gcp-project.adoc[GCP プロジェクトをオンボードする]ためのより細かい権限を持つサービス アカウントを作成する場合GCP アカウントで、次の手順に従います。
+
+[NOTE]
+====
+* きめ細かなアクセス許可を使用する場合、カスタムロールを更新して、Prisma Cloudに追加された新しいサービスからデータを取り込むために必要なアクセス許可を追加する必要があります。
+
+* Dataflowサービスを使ったdataflowログ圧縮を有効にするには、追加のアクセス許可が必要です。ネットワーク ログ データの取り込みの詳細については xref:flow-logs-compression.adoc[GCP でのフロー ログの圧縮] をご覧ください。
+====
+
+[.procedure]
+. カスタムのアクセス許可を持つYAMLファイルを作成します。
++
+.. YAMLファイルを作成し、カスタムロールにきめ細かいxref:prerequisites-to-onboard-gcp.adoc[アクセス許可]を追加します。
++
+このYAMLフォーマットを例として使用してください。上記のリンクから、GCP組織またはプロジェクトをオンボーディングするためのアクセス許可を、このファイルに追加する必要があります。
++
+----
+title: prisma-custom-role	
+description: prisma-custom-role	
+stage: beta	
+includedPermissions:	
+- compute.networks.list
+- compute.backendServices.list
+----
+
+. カスタムロールを作成します。
++
+サービスアカウントを作成する場合、GCPプロジェクトを選択する必要があります。GCPでは、サービスアカウントをGCP組織直下に所属させることが禁止されています。
++
+.. カスタムロールを作成するGCPプロジェクトを選択します。
+
+.. Cloud ShellにYAMLファイルをアップロードします。
+
+.. userinput:[gcloud iam roles create <prisma customrole name> --project <project-ID> --file <YAML file name>]を実行します。
++
+image::connect/gcp-custom-role.png[]
+
+. サービスアカウントを作成して、それにカスタムロールをアタッチします。
++
+.. Google Cloudコンソールで、*IAM & Admin（IAM および管理）> Service Accounts（サービスアカウント）*を選択します。
+
+.. *Create Service Account（サービスアカウントを作成）*で、先ほど作成したロールをそれに追加します。
+
+.. *Create a key（キーを作成）*で、秘密鍵をダウンロードします。
+
+. 引き続き xref:onboard-gcp-project.adoc[GCP プロジェクトをオンボーディング] し、サービス アカウントの秘密鍵を使用してオンボーディングを完了します。
+
+. tt:[GCP組織のみ]のオンボーディングGCP組織レベルで、カスタムロールを作成します。
++
+.. GCP 組織を選択します。
+
+.. 以前作成したYAMLファイルに、GCP Organiztion用の追加のアクセス許可が含まれていることを確認します。
++
+gcloudコマンド`gcloud iam roles create <prisma customrole name> --organization <org ID> --file <YAML File name>`を実行します。
+
+. tt:[GCP組織のみ]のオンボーディングGCP組織内のすべてのGCPフォルダとプロジェクトを監視するために、サービスアカウントをセットアップします。
++
+プロジェクト内に作成したサービスアカウントをGCP Organizationレベルに関連付けて、前のステップで作成したカスタムロールを追加する必要があります。また、Organization Viewerの事前定義ロールを、サービスアカウントに追加する必要があります。これらの作業すべてを行うことで、サービスアカウントがGCP Organization階層内のすべてのGCPプロジェクトを監視できるようになります。
++
+.. サービスアカウントメンバーアドレスをコピーします。
++
+サービスアカウントの作成に使用したプロジェクトを選択し、*IAM > 管理 > IAM*の順に選択して、サービスアカウントメンバーアドレスをコピーします。
++
+image::connect/gcp-service-account-member.png[]
+
+.. Organization（組織）を選択して、*IAM > 管理 > IAM*の順に選択して、サービスアカウントにメンバーを*Add（追加）*します。
+
+.. コピーしたサービスアカウントメンバーアドレスを*New members（新規メンバー）*として貼り付けて、*ロールを選択*します。
+
+.. 上記で作成したカスタムロールを選択し、*+ ADD ANOTHER ROLE（他のロールを追加）*を選択します。
+
+.. *Resource（リソース）> Manager （管理者）>Organization Role Viewer（組織ロール閲覧者）*、*Foler Viewer（フォルダ閲覧者）*ロールを選択して、*Save（保存）*を選択します。
++
+Organization Viewer（組織閲覧者）ロールにより、組織内のすべてのリソースへのアクセス権を与えることなく、組織名を表示できる権限を保有できます。GCPフォルダをオンボードするには、Folder Viewer（フォルダ閲覧者）のロールも必要です。
++
+image::connect/gcp-service-account-organization-update.png[]
+
+. tt:[GCP 組織のみ] の場合は、xref:onboard-gcp-org.adoc[GCP組織のオンボード]に進み、サービス アカウントに関連付けられた秘密キーを使用してオンボードを完了します。

@@ -1,0 +1,36 @@
+== Prisma Cloud を AWS IAM Identity Center と統合する 
+
+IAM Securityモジュールで効果的な権限計算を行うために、Prisma CloudはIdP（Identity Provider）サービスのAWS IAM Identity Centerと連携し、シングルサインオン（SSO）データを取り込みます。IAMクエリを使用して、クラウドアカウント全体のAWS IAM Identity Centerユーザーの有効な権限を一覧表示することにより、クラウドリソースにアクセスするエンティティをより良く可視化するために、この統合を完了します。
+
+Prisma Cloud では、AWS IAM Identity Center の統合をサポートするために、次の追加のアクセス許可が必要です。
+
+* screen:[sso:ListInstances]
+* screen:[sso:ListPermissionSets]
+* screen:[sso:ListAccountForProvisionedPermissionSet]
+* screen:[sso:ListAccountAssignments]
+* screen:[sso:DescribePermissionSets]Sets]
+* screen:[identitystore:ListUsers]
+* screen:[identitystore:ListGroupMemberships]
+* screen:[identitystore:ListGroups]
+
+AWS アカウントのオンボーディングに CloudFormation テンプレートを使用している場合、追加のアクションは必要ありません。必要なアクセス許可は、CloudFormation オンボーディング テンプレートの一部です。
+
+=== *既存のアカウントに必要な権限を追加する*
+
+https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-aws/update-aws-account[オンボーディングされた AWS アカウントを 更新]し、必要な権限を追加するには、それぞれのAWSアカウントのCloudFormationテンプレートの最終更新版を再実行します。
+
+必要に応じ、次の手順に従って、Prisma Cloud ユーザーが想定するロールに対してこれらのアクセス許可を https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-admin/connect-your-cloud-platform-to-prisma-cloud/onboard-aws/manually-set-up-prisma-cloud-role-for-aws[手動]で 追加することもできます。
+
+=== *IAM クエリを実行する*
+
+AWS IAM Identity Center が Prisma Cloud と統合された後、AWS IAM Identity Center の IAM クエリの結果を表示し、クラウド環境の可視性とガバナンスを得ることができます。以下の手順に従って、AWS IAM Identity Center の IAM クエリを実行します。
+
+. Prisma Cloudコンソールから、[*Investigate（調査）*] をクリックします。
+
+. Investigate（調査）タブで、以下のRQLクエリを入力します。
++
+----
+config from iam where source.idp.service = 'AWS Identity Center'
+----
++
+. クエリは、クラウドアカウント内のすべての AWS IAM Identity Center ユーザーのリストを返します。

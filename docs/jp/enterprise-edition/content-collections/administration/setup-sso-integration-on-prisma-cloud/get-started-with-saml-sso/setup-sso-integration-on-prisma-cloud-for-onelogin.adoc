@@ -1,0 +1,101 @@
+:topic_type: タスク
+[.task]
+[#idc011bcde-1fa7-4759-bf86-d857aac95346]
+== Prisma CloudでのOneLogin SSOのセットアップ
+
+Prisma Cloudへの管理者アクセスを保護するには、OneLoginをIdPとしてセットアップしてから、Prisma CloudをSSOのSPとして設定します。
+
+Identity and Access ManagementプロバイダとしてOneLoginを選択した場合は、Prisma CloudでOneLogin認証情報を使用してシングルサインオン（SSO）を有効にできます。SSOを有効にするには、まずOneLoginでセットアップを完了してから、Prisma Cloudにシステム管理者権限でログインしてSSOを設定し、ログイン要求をOneLoginログインページにリダイレクトして、Prisma Cloud管理ユーザーのログインエクスペリエンスを効率化する必要があります。
+
+[.procedure]
+. SSO用にOneLoginをセットアップします。
+
+.. OneLogin設定のセットアップを開始する前に、Prisma Cloudインスタンスにログインし、*Settings（設定）> SSO*を選択して、オーディエンスURI（SPエンティティID）をコピーします。例:https://app.prismacloud.io/settings/sso[https://app.prismacloud.io/settings/sso]。
++
+image::administration/sso-onelogin-01.png[]
+
+.. 管理者としてOneLoginにログインし、*Administration（管理）*をクリックします。
+
+.. *Applications（アプリケーション）> Add App（アプリの追加）*を選択します。
+
+.. 検索バーに*SAML*と入力し、表示されたオプションから、OneLogin、Incが提供する*SAML Custom Connector (Advanced)（SAMLカスタムコネクタ（詳細））*を選択します。
++
+image::administration/sso-onelogin-1.png[]
+
+.. アプリケーションのDisplay Name（表示名）と説明（オプション）を入力し、*Save（保存）*をクリックします。
++
+image::administration/sso-onelogin-2.png[]
+
+.. サイドナビゲーションバーから*SSO*を選択し、次の値をコピーします。
++
+image::administration/sso-onelogin-3.png[]
++
+* *Issuer URL（発行者のURL）*
+* *SAML 2.0 Endpoint (HTTP)（SAML 2.0エンドポイント（HTTP））*
+* *SLO Endpoint (HTTP)（SLOエンドポイント（HTTP））*
+* *Certificate（証明書）*で、*View Details（詳細の表示）*をクリックして、証明書情報をコピーします。
++
+image::administration/sso-onelogin-4.png[]
+
+.. *Configuration（設定）*を選択し、以下の値を入力します。
++
+image::administration/sso-onelogin-5.png[]
++
+* *Audience (EntityID)（オーディエンス（エンティティID））*-上記の手順1でコピーしたオーディエンスURI（SPエンティティID）の値を入力します。
+* *ACS (Consumer) URL Validator（ACS（コンシューマ）URL検証ツール）*-*.**を入力します。正規表現ベースのURL検証ツールを提供することをお勧めします。詳細については、https://onelogin.service-now.com/support?id=kb_article&sys_id=912bb23edbde7810fe39dde7489619de&kb_category=93e869b0db185340d5505eea4b961934[Custom Connector Configuration Page（カスタムコネクタ設定ページ）]を参照してください。
+* *ACS (Consumer) URL（ACS（コンシューマ）URL）*-Prisma CloudのURLを入力しますが、appをapiに置き換え、最後にsamlを追加します。たとえば、https://app.prismacloud.io[https://app.prismacloud.io]からPrisma Cloudにアクセスする場合は、https://api.prismacloud.io/saml[https://api.prismacloud.io/saml]と入力します。
+* *Recipient（受信者）*-ACS（コンシューマ）URLに入力したのと同じ値を入力します。
+* *SAML Signature Element（SAMLシグネチャ要素）*-*Assertion（アサーション）*または*Both（両方）*を選択します。
+
+.. *Save（保存）*をクリックして、更新された設定を保存します。
+
+. Prisma CloudでSSOを設定します。
+
+.. Prisma Cloudにログインして、 *Settings（設定）> SSO*の順に選択します。
+
+.. *Enable SSO（SSOを有効化）*します。
+
+.. 上記の手順6でコピーした値を貼り付けます。
++
+* *Identity Provider Issuer（IDプロバイダ発行者）*-*Issuer URL（発行者のURL）*値を入力します。
+* *Certificate（証明書）*-*Certificate（証明書）*の値を標準のX.509形式で入力します。
+* tt:[(任意）]*Identity Provider Logout URL（IDプロバイダのログアウトURL）*-Prisma Cloudがタイムアウトしたとき、またはユーザーがログアウトしたときに、ユーザーがリダイレクトされる*SAML 2.0 Endpoint (HTTP)（SAML 2.0エンドポイント（HTTP））*値を入力します。
+
+.. *Relay State Param name（Relay Stateパラメータ名）*は、SAML固有のRelay Stateパラメータ名です。このパラメータとPrisma Cloud Access SAML URLを指定すると、Splunk、Slack、SQS、メール、およびレポートなどにあるすべての通知リンクを直接Prisma Cloudアプリケーションにリンクさせることができます。Relay Stateパラメータまたは値は、IDプロバイダ固有のものです。
++
+[NOTE]
+====
+RelayState機能を使用する場合、IDプロバイダのシングル サインオンURLに対応するPrisma Cloud Access SAML URLが「/sso/saml」で終了していることを確認してください。
+====
+
+.. tt:[(任意）]*Enforce DNS Resolution for Prisma Cloud Access SAML URL（Prisma CloudアクセスSAML URLのDNS解決を適用する）*の選択を解除します。
++
+デフォルトでPrisma Cloudは、DNSルックアップを行って、先ほど入力したPrisma Cloud SAML Access URLを解決します。IdPが内部ネットワーク上にあり、DNSルックアップを行う必要がない場合は、このオプションの選択を解除してDNSルックアップを省略することができます。
++
+image::administration/sso-onelogin-7.png[]
+
+.. tt:[(任意）]SSO ユーザーに対して setup-jit-on-onelogin.xml[ジャストインタイム (JIT) プロビジョニング] を有効にします。
++
+OneLoginの認証を受けたユーザーのローカルアカウントを作成する場合は、*Enable JIT Provisioning（JITプロビジョニングを有効にする）*を選択します。JITを使用すると、OneLogin上のユーザーのプロファイルにマップされた最初の5つのロールがユーザーにプロビジョニングされます。
+
+.. 各ユーザーのメールアドレス、ロール、姓名を指定する必要があります。タイムゾーンは任意です。
+
+.. 一部のユーザーを、SSOプロバイダ経由のログインに加えて、Prisma Cloudで登録したメールアドレスとパスワードを使って、Prisma Cloudに直接アクセスするように設定するには、*Allow select users to authenticate directly with Prisma Cloud（選択したユーザーのPrisma Cloudでの直接認証を許可）*を選択します。
++
+SSOを有効にする場合、Prisma Cloudでローカルに登録したメールアドレスとパスワードを使って、一部のユーザーをPrisma Cloudに直接アクセスできるように設定し、SSOの設定誤りでコンソールからロックアウトされ、IdP設定の変更が必要になるような状況を回避するようにしてください。API経由でデータにアクセスする場合は、Prisma Cloudから直接認証を受ける必要があります。
+
+.. Prisma Cloudのローカル認証情報またはSSOを使って、Prisma Cloudにアクセスできる*Users（ユーザー）*を選択します。
++
+許可リストに記載されているユーザーは、SSOを使って、またPrisma Cloudで作成したローカルアカウントのユーザー名とパスワードを使って、ログインすることができます。
++
+image::administration/sso-onelogin-8.png[]
+
+.. 変更を*Save（保存）*します。
+
+.. SSOを使って、アクセスできることを確認します。
++
+SSOが有効になっている管理ユーザーは、IDプロバイダのポータルからPrisma Cloudにアクセスする必要があります。例えば、Prisma CloudをOneLoginと統合したら、管理ユーザーはOneLoginにログインし、ダッシュボードに表示されているPrisma Cloudアプリケーション名（手順1で設定）をクリックして、Prisma Cloudにログインする必要があります。
+
+.. *Last 5 SAML Failures（最近5件のSAMLエラー）*を使って、任意のユーザーのSSO認証の過去5回のログイン上の問題やエラーの詳細を参照することができます。
++
+image::administration/sso-onelogin-9.png[]

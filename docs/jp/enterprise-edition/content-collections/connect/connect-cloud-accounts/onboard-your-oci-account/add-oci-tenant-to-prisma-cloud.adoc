@@ -1,0 +1,173 @@
+:topic_type: タスク
+[.task]
+[#id5ac2883d-d1ed-44a3-bd63-cc3fabedf477]
+== Prisma CloudへのOCIテナントの追加
+
+デフォルトでは、OCIテナントにはルートコンパートメント（テナント）があります。OCI テナントをオンボードするには、ルート コンパートメントの OCID が必要です。
+
+テナント レベルで OCI をオンボードする必要があり、子コンパートメントは Prisma Cloud で自動的にオンボードされます。
+
+各OCIテナントは、ホームリージョンに関連付けられます。Prisma Cloudは、OCIでサポートされているすべてのhttps://docs.oracle.com/en-us/iaas/Content/General/Concepts/regions.htm[クラウドリージョン]でOCIテナントの可視性と監視を行うことができます。
+
+[.procedure]
+
+. *始めましょう*。
++
+.. xref:../../../get-started/access-prisma-cloud.adoc[Prisma Cloudにアクセスします]。
+
+.. [*設定] > [プロバイダー] > [プロバイダーの接続] を選択し、*[クラウド アカウント]*を選択します。
+
+.. オンボードするクラウド・アカウントとして *Oracle Cloud* を選択します。
+
+.. [*スコープ*]で [*テナント*] を選択します。
+
+.. *構成ミス* (基本機能) はデフォルトで有効になっています。クラウド リソースと取り込みメタデータの脆弱性をスキャンします。
+
+.. *次へ*をクリックします。
++
+image::connect/oci-onboarding-get-started.png[]
+
+
+. *アカウントを設定します*。
++
+.. Prisma Cloud上のOCIテナントを一意に識別する*Account Name（アカウント名）*を入力し、*Next（次へ）*をクリックします。
+
+.. *テナント/ルートOCID*を入力
++
+OCI では、管理者リソースはテナント レベルでのみ作成されます。これらのリソースを取り込むには、まずPrisma CloudのOCIテナントに、OCIコンソールからルートコンパートメントのOCIDとホームリージョンを入力してオンボードする必要があります。
++
+... OCIコンソールにログインし、*dentity & Security（ID とセキュリティ）> Identity（ID）> Compartments（コンパートメント）*を順に選択します。
+
+... ルートコンパートメントの*OCID*をコピーします。
++
+image::connect/oci-tenant-console-1.png[]
+
+... Prisma Cloud Onboarding Setup（Prisma Cloudクラウドオンボーディングセットアップ）ページに戻り、OCIDを*Tenant/Root OCID*フィールドに貼り付けます。
+
+.. テナントが作成された*Home Region（ホームリージョン）*を入力します(例えば、us-phoenix-1)。
+
+.. *「アクセスを有効にするユーザーの作成」*の手順に従って、OCIアイデンティティのユーザー名、グループ名およびポリシー名に対応する新しいユーザー、グループおよびポリシーを作成します。
++
+[NOTE]
+====
+適切な権限を持つ既存のユーザー、既存のグループ、および適切なポリシーステートメントを持つ既存のポリシーを使用することができます。ただし、*「アクセスを有効にするユーザーの作成」*の説明に従って、新しいユーザー、グループ、およびポリシーを作成することをお勧めします
+====
+
+.. *アクセスを有効にするユーザーの作成*
++
+Terraformテンプレートを使用して、新しいユーザーOCIDを生成します。ユーザー名、グループ名、およびポリシー名は一意である必要があり、OCIテナントには存在しません。
+
+... *Terraform スクリプトをローカル マシンにダウンロードします* 。
++
+[NOTE]
+====
+Oracle Cloud アカウントをオンボードするには、OCI API にアクセスするための公開鍵が必要です。この公開鍵は Terraform テンプレートに埋め込まれており、テンプレートをダウンロードするたびに変更されます。したがって、スタックを作成するときは、ダウンロードした最新の Terraform ファイルを必ず使用してください。
+====
++
+image::connect/oci-onboard-config-account.png[]
+
+... OCI コンソールをチェックして、[*プライマリ電子メール アドレスが必要*] チェックボックスが無効になっているかどうかを確認します。
++
+Terraform ファイルが正常に実行されるようにするには、[*プライマリ メール アドレスが必要*] チェックボックスをオフにします。
++
+.... OCIテナントコンソールにログインします。
+
+.... *Identity（ID） > Domains（ドメイン） > Default Domain（デフォルト ドメイン > Settings（設定） > Domain Settings（ドメイン設定）*に移動します。
+
+.... [*プライマリ電子メール アドレスが必要* ] チェックボックスが有効になっている場合は無効にします。
++
+image::connect/oci-uncheck-primary-email-address-reqd.png[]
+
+.... *変更内容を保存します *。
++
+コンソールで *プライマリ電子メール アドレス必須* のチェックボックスを有効にしたままにする場合は、OCI テナント管理者の電子メール アドレスを Terraform ファイルの userinput:[oci identity user]を 電子メール フィールドに追加してから実行します。
++
+[userinput]
+----
+resource "oci_identity_user" "user" {
+name           = "oci_user_name_param"
+description    = "user created by terraform"
+email          = "<oci-tenant-administrator-email-address>"
+compartment_id = "oci_tenant_id_param"
+}
+----
+
+... 以下の手順に従って、*ユーザーOCIDを生成*します。
++
+.... [*テナントの詳細の追加*] で入力したホーム リージョンを選択します (例、米西部 (フェニックス))。
+
+.... *Developer Services（デベロッパサービス）> Resource Manager（リソースマネージャ）> Stack（スタック)*に移動し、*Create Stack（スタックの作成）*を選択します。
+
+.... *My Configuration（マイ設定）*を選択して、Terraform設定ファイルをアップロードします。
+
+.... *Stack Configuration（スタック設定）*で、*Zipファイル*を選択し、あらかじめローカルマシンにダウンロードした *terraform.tf.zip*ファイルをアップロードします。
+
+.... PrismaCloudApp などのスタック *名*を入力します。
+
+.... [*コンパートメントに作成*]で、 *ルート* コンパートメントがまだ選択されていない場合は選択し、[*次へ*]をクリックします。
++
+image::connect/oci-tenant-console-2.png[]
+
+.... 設定変数はすでに設定されています。*次へ*をクリックします。
++
+image::connect/oci-tenant-console-3.png[]
+
+.... スタック情報を確認し、[*適用の実行*] を選択してスタックを *作成* します。
++
+Terraform ファイルが実行され、ユーザー OCID が生成されます。
++
+image::connect/oci-tenant-console-4.png[]
++
+.... 現在のジョブの詳細から、*Resources（リソース）>Outputs（出力）*に移動し、user_ocidの *Value（値）*をコピーします。
++
+image::connect/oci-tenant-console-6.png[]
+
+
+.. Prisma Cloud Onboarding Setup（Prisma Cloudクラウドオンボーディングセットアップ）ページに戻り、User OCID（ユーザーOCID）テキストフィールドに*User OCID（ユーザーOCID）*の値を貼り付けます。
+
+.. *アカウントグループの選択*
++
+OCIテナントに関連付けるxref:../../../administration/create-manage-account-groups.adoc[Account Groups（アカウントグループ）]を選択し、*Next（次へ）*をクリックします。
++
+1つのアカウントグループに各クラウドアカウントを割り当てて、ポリシー違反発生時にアラートを生成するために、アカウントグループを関連付けるxref:../../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[アラートルールを作成]する必要があります。
++
+image::connect/oci-onboard-config-account.png[]
+
+. *レビューステータス*。
++
+.. すべてのアカウントの詳細と設定ミスのセキュリティ機能に緑色の *「成功」* または *「有効」* チェックマークが表示されていることを確認します。
++
+ステータス チェックでは、OCI テナントとそのテナントで使用可能なコンパートメントの数が検証されます。Prisma Cloud は、ルート テナントとともに子コンパートメントを取り込みます。
+
+.. [*保存して閉じる*] をクリックしてオンボーディングを完了するか、[*保存して別のアカウントを登録*] をクリックします。
++
+新しくオンボーディングされた AWS アカウントは、*クラウドアカウント*ページで確認できます。
++
+image::connect/oci-onboard-verify-1.png[]
+
+. *次のステップ*
++
+.. 取り込みが完了するまでに最大1時間かかる場合があり、その後、Prisma Cloudでリソースを表示し、確認して、生成されたアラートに対して処理することができます。
+
+.. OCIポリシーを含むようにxref:../../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[アラートルール]を設定します。
+
+.. Prisma Cloudの*Dashboard（ダッシュボード）*では、OCI*クラウドアカウント*でフィルタリングできます。Prisma Cloud は OCI テナントの設定取り込みのみをサポートし、関連する設定取り込みデータのみを表示します。
++
+image::connect/oci-pc-dashboard-1.png[]
+
+.. Prisma Cloudのxref:../../../cloud-and-software-inventory/asset-inventory.adoc[アセットインベントリ]の使用を開始して、表示を確認します。サポートされているサービスのデータを表示するには、*Cloud Type（クラウドタイプ）*フィルタをOCI として設定します。OCI*クラウドリージョン*と*サービス名*に基づいてデータをフィルタリングすることもできます。
++
+image::connect/oci-pc-asset-inv-1.png[]
+
+.. OCI 関連リソースの構成ログが分析されたかどうかを確認するには、*Investigate（調査）*ページでクエリを実行します。
++
+image::connect/oci-investigate-darwin.png[]
+
+.. OCI用のPrisma Cloudのデフォルトの*Policies（ポリシー）*を確認します。
++
+*Governance （ガバナンス）> Overview（概要）*を選択して、*Cloud Type（クラウドタイプ）*フィルタに*OCI*に設定し、インフラ内の設定誤りを検出するために利用できるすべてのConfig（設定）ポリシーを表示します。
++
+image::connect/oci-pc-policy-1.png[]
+
+
+

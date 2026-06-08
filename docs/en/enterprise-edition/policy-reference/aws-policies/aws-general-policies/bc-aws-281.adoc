@@ -1,0 +1,47 @@
+
+== RedShift snapshot copy is not encrypted by KMS using a customer managed Key (CMK).
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 299ed98f-120c-428f-a905-65bd129fdc35
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RedshiftClusterSnapshotCopyGrantEncryptedWithCMK.py[CKV_AWS_281]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that RedShift snapshot copies are encrypted using a Key Management Service (KMS), specifically through a Customer Managed Key (CMK). Non-encrypted or poorly encrypted RedShift snapshot data might expose sensitive information that can lead to data breaches or non-compliance with legal and regulatory mandates. Thus, it's crucial to enforce robust encryption using a Customer Managed Key (CMK) for enhanced security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_redshift_snapshot_copy_grant
+* *Arguments:* kms_key_id
+
+To resolve this issue, you should add the 'KMS Key Id' argument (`kms_key_id`) to your `aws_redshift_snapshot_copy_grant` resources and point it to an existing KMS Key. This will ensure that your RedShift snapshot copies are encrypted with a KMS key that is managed by you. For instance:
+
+[source,go]
+----
+resource "aws_redshift_snapshot_copy_grant" "pass" {
+  snapshot_copy_grant_name = "my-grant"
++ kms_key_id               = aws_kms_key.test.arn
+}
+----
+
+In this code, the 'aws_redshift_cluster' resource includes 'kms_key_id', which is set to the ARN of 'aws_kms_key.mykey'. This means that this KMS key is now used to encrypt snapshot copies of the RedShift cluster. 

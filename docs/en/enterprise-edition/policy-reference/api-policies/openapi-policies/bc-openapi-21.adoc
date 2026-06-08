@@ -1,0 +1,66 @@
+
+== Array does not have a maximum number of items
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| c521be55-0c0d-4544-9764-1a761f9c5f72
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/generic/NoMaximumNumberItems.py[CKV_OPENAPI_21]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|OpenAPI
+
+|===
+
+=== Description
+
+This policy checks whether arrays in OpenAPI definitions have a specified maximum amount of items. This is important for security and performance reasons. If there's no set limit, it might lead to problems like buffer overflow, which can allow unauthorized access or remote code execution. Additionally, huge arrays can cause the system to slow down or even crash due to running out of memory. Therefore, a certain limit should be defined for the number of items in an array to prevent these potential threats.
+
+=== Fix - Buildtime
+
+*OpenAPI*
+
+To fix this issue, you will have to specify a maximum number of items for each array in your API's schema definition.
+
+[source,yaml]
+----
+openapi: "3.0.0"
+info:
+  version: "1.0.0"
+  title: "An API for temperature measurements"
+paths:
+  /temperatures:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: "array"
+                maxItems: 10
+                items:
+                  $ref: "#/components/schemas/Temperature"
+components:
+  schemas:
+    Temperature:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        value:
+          type: "number"
+----
+
+The above code is secure because it ensures that there is a limit on the number of items that can be returned in a response from the "/temperatures" endpoint. Without this limit, larger-than-expected responses could lead to performance issues or even application crashes.
+

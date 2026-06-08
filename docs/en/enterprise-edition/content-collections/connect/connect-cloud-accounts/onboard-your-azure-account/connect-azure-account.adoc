@@ -1,0 +1,212 @@
+== Connect your Azure Account
+
+Effectively monitor your Azure cloud resources and ensure compliance by onboarding your Azure cloud account on Prisma® Cloud. 
+
+Learn how to add your Azure cloud resources to Prisma® Cloud for threat detection, monitoring and compliance. Choose from one of the options outlined below, based on where you are in your journey with Prisma Cloud:
+
+[cols="50%a,50%a"]
+|===
+
+|*What do you want to do?*
+|*Start Here*
+
+|Initial Onboarding
+|* <<prerequisites>>
+*  <<choose-onboard-option>> 
+* xref:connect-azure-tenant.adoc[Add Azure Tenant]
+* xref:connect-azure-subscription.adoc[Add Azure Subscription]
+* xref:connect-azure-active-directory.adoc[Add Azure Active Directory]
+
+|After Onboarding
+|* xref:edit-onboarded-account.adoc[View and Edit a Connected Azure Account]
+* xref:edit-onboarded-account.adoc#ds[Configure Data Security]
+
+|Update an Added Account
+|* xref:update-azure-application-permissions.adoc[Update Azure Application Permissions]
+
+|Additional Resources 
+|* xref:troubleshoot-azure-account-onboarding.adoc[Troubleshoot Azure Account Onboarding]
+* xref:microsoft-azure-apis-ingested-by-prisma-cloud.adoc#idc4e0a68d-4486-478b-9a1f-bbf8f6d8f905[Microsoft Azure API Ingestions and Required Permsissions] 
+
+|===
+
+[#choose-onboard-option]
+=== Onboarding Options
+
+Use one of the following three options to onboard your Azure cloud account on Prisma Cloud:
+
+* *Azure Tenant* (Connects all your Azure resources, accounts with Management Groups, Subscriptions and Active Directory to Prisma Cloud) 
+** xref:connect-azure-tenant.adoc#commercial[Commercial]
+** xref:connect-azure-tenant.adoc#government[Government] 
+** xref:connect-azure-tenant.adoc#china[China]
+
+* *Azure Subscription* (Connects a single subscription)
+** xref:connect-azure-subscription.adoc#commercial[Commercial] 
+** xref:connect-azure-subscription.adoc#government[Government] 
+** xref:connect-azure-subscription.adoc#china[China]
+
+* *Azure Active Directory* (Connects the IAM module at root tenant level)
+** xref:connect-azure-active-directory.adoc#commercial[Commercial]  
+** xref:connect-azure-active-directory.adoc#government[Government]
+** xref:connect-azure-active-directory.adoc#china[China]
+
+
+Using Azure's APIs, Prisma Cloud ingests and processes data from your cloud environment and initiates resource monitoring. During the built-in onboarding process you have the option of using one of the following three methods to create the required Azure resources to authorize Prisma Cloud to access Azure APIs:
+
+* xref:authorize-prisma-cloud.adoc#terraform[Terraform] (Recommended)
+This workflow automates the process of setting up the Prisma Cloud application on Azure Active Directory and enables read-only or read-write access to your Azure subscription.
+
+[NOTE]
+====
+Azure China workflows do not support the use of Terraform templates. Use the Manual or Custom Role JSON method to onboard Azure China.
+====
+* xref:authorize-prisma-cloud.adoc#json[Using Custom Role JSON]
+Using a manually created Custom Role you also have the option to enforce least access privilege to restrict access. To achieve this you will need to manually set up the Prisma Cloud application on Active Directory and Create a Custom Role to authorize access to Azure APIs. 
+* xref:authorize-prisma-cloud.adoc#manual[Manually Authorizing Prisma Cloud]
+If your organization restricts the use of Terraform scripts, you can choose to manually create the required resources for Prisma Cloud to call the Azure APIs.
+
+[NOTE]
+====
+The status of your Azure subscription may impact Prisma Cloud's ability to ingest and onboard your account. Reference the list below to review the impact of your subscription status on ingestion:
+
+* Active/Enabled - Ingestion and Auto Remediation is possible.
+* Expired - Ingestion and Auto Remediation is possible.
+* Past Due - Ingestion and Auto Remediation is possible.
+* Deleted - Ingestion is not possible.
+* Disabled - Ingestion is not possible.
+* Warned - Ingestion is possible, however the Azure portal shows the Subscription as disabled, since it can be deactivated at anytime during the 90 day grace period.
+====
+
+[.task]
+[#prerequisites]
+=== Prerequisites
+
+To successfully onboard and monitor the resources within your Azure subscription, ensure that you have completed the following prerequisites:
+
+[.procedure]
+. Get your Azure Subscription ID from the Azure portal. 
+.. Confirm that you have Account Owner or Contributor privileges to add your Prisma Cloud created application on your Azure Active Directory. 
+.. To onboard your Azure subscription on Prisma Cloud, set up an Active Directory application object (Application Client ID) and an Enterprise Application Object ID that together enable API access. 
+.. The process of setting up Prisma Cloud on Azure Active Directory provides you with the keys and IDs required to establish an identity for sign-in and access to resources in your Azure subscription. 
+.. The Enterprise Application Object ID defines the permissions and scope assumed by Prisma Cloud.			 
+
+. Enable Prisma Cloud access to Azure users and groups by elevating access levels in accordance with your Azure environment as outlined below. This step is required only during initial Azure account onboarding, for ingesting resources associated with subscriptions and management groups. You can disable this option after onboarding is complete.
++
+* *Tenant Onboarding*
+** Active Directory role - Global Administrator
+** Tenant scope - User Access Administrator / Management Group Contributor
+* *Subscription Onboarding*
+** Active Directory role - Application Administrator
+** Subscription scope - Owner
+* *Active Directory Onboarding*
+** Active Directory role - Global Administrator
++
+tt:[NOTE:] Active Directory level permission (Application Administrator) is required to create application registration. This permission level is sufficient to run the Terraform script for Active Directory and Tenant accounts. However, to grant consent to Prisma to ingest users, groups, and policies Global Administrator permission is required.
+
+. Enable Prisma Cloud to ingest Azure Key Vault resources.  This step is required only if you are using the Azure Tenant or Subscription workflow.
++
+The following Azure resources need to have the *Get* and *List* permissions enabled in the Key Management Operations on Azure Portal for Prisma Cloud to ingest them:
++
+** azure-key-vault-list
+
+** azure-key-vault-certificate
++
+Select *All services > Key vaults > (key vault name) > Access policies > + Add Access Policy*. For *Key permissions*, *Secret permissions*, and *Certificate permissions*, add the *Get* and *List* Key Management Operations.
++
+tt:[NOTE:] Get is required to support policies based on Azure Key Vault. Prisma Cloud requires this to ingest Key Vault Data. Keys or secrets are not ingested. Ingestion is limited to IDs and other metadata. Get is required to allow the creation of policies on RSA key strength, EC curve algorithm etc.
++
+image::connect/add-access-policy-azure.png[]
+
+. Authorize Prisma Cloud to ingest storage accounts. On the Azure portal, access your account and select *Configuration*. Enable the *Allow storage account keys* option and complete access key setup. Learn more about https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal[managing storage account keys]. 
+
+. On the Azure portal, you also have the option to authenticate using Microsoft Entra ID. Complete the steps below on the Azure portal to configure Azure Flowlogs using Entra ID.
++
+*NOTE:* Keep the following caveats in mind: +
+* For Flat Namespace (FNS) based storage accounts, Entra ID works only when soft delete is disabled. For more information, reference https://learn.microsoft.com/en-us/fabric/data-factory/connector-troubleshoot-azure-data-lake-storage#error-code-adlsgen2operationfailed[Microsoft documentation]. +
+* Entra ID authentication for Azure flowlogs is only supported for GPV2 https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal[storage accounts]. Legacy GPV1 accounts are not supported. +
+* Grant Storage Blob permissions at the tenant level, to ensure proper data ingestion. You will encounter a missing permissions error if you provide storage account/blob level access without tenant-level permissions. Authentication may show an error, however storage blobs will continue to ingest if permission is provided at the Storage Blob level. +
+
+.. Access your account and select *Configuration*. Disable the *Allow storage account keys* option. This initiates the Prisma Cloud Entra ID configuration flow. 
+.. Navigate to *Home > Access Control IAM > Role Assignments* and ensure that the Storage Blob Data Reader role is added to your application. If you encounter an error when adding the role, download the Terraform file once again to re-onboard your account as mentioned in the steps above.
+
+. On the Azure portal, setup Virtual Network flow logs https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview?tabs=Americas[VNet flow logs] to ensure Prisma Cloud’s Service Principal has access to the storage account.
++
+VNet flow logs, a feature of Network Watcher, allow you to view ingress and egress IP traffic information through a virtual network. This step is required only if you are using the Azure Tenant or Subscription workflow, or if you would optionally like to ingest flow logs. 
++
+*NOTE:* You can also opt to ingest Network Security Group (NSG) flow logs instead of VNet flow logs. However, Microsoft will retire Network Security Group (NSG) flow logs on September 30, 2027. As a result, you will no longer be able to create new NSG flow logs after June 30, 2025. We recommend https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview?tabs=Americas[disabling NSG flow logs] before migrating to VNet flow logs to avoid duplicate alerts, notifications, and added costs. Keep in mind that the option to ingest VNet flow logs is not available for Azure China tenants.
++
+.. On the Azure portal, create one or more virtual networks if you have none.
+
+.. Create Storage Accounts to collect flow logs. Prisma Cloud can ingest flow logs only when:
++
+... The subscriptions belongs to the same Azure AD or Root Management Group (for example, Azure Org).
+
+... The Service Principal that you use to onboard the subscription on Prisma Cloud must be assigned the Storage Blob Data Reader role and must also have access to read the contents of the storage account. 
+
+.. Add the xref:../../../get-started/console-prerequisites.adoc[NAT GatewayIP addresses] for your Prisma Cloud instance to the Storage Account created in the step above. For example, if your instance is on `app.prismacloud.io` use the IP addresses associated with that.
+
+.. Create Azure https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-create[Network Watcher instances] for the virtual networks in every region where you collect flow logs. Network Watcher enables you to monitor, diagnose, and view metrics to enable and disable logs for resources in an Azure virtual network.
+
+.. From the Network Watcher console, navigate to *Flow logs > Create +* to create a flow log. 
++
+... On the *Basics* tab of the Create a flow log workflow, complete the steps below:
+.... Select the Azure subscription of the virtual network that you want to log.
+.... Select *Virtual network > Select +*. 
+.... Select a target resource such as (Virtual network, Subnet, and/or Network interface). Select the resources that you want to obtain flow logs for, and *Confirm* your selection.
+.... Enter a name for the flow log or leave the default name. Azure portal uses {ResourceName}-{ResourceGroupName}-flowlog as a default name for the flow log.
+.... Select the storage account that you want to save the flow logs to. If you want to create a new storage account, select *Create a new storage account*.
+.... Enter a retention time for the logs. This option is only available with standard general-purpose v2 storage accounts.
+
+.. Optionally, you can view and download VNet flow logs. To view VNet flowlogs complete the following steps on the Azure portal:
++
+... Go to storage account previously created and opt to store the logs.
+... Select *Data Storage > Containers*.
+... Select the `insights-logs-flowlogflowevent` container.
+... In the container, navigate the folder hierarchy until you get to the `PT1H.json` flow logs file. Download the file to view flow log events.
+
+[NOTE]
+====
+If *Public Network Access* is set to *Disabled* Prisma Cloud will not be able to ingest the `publicContainersList` field and calculate the `totalPublicContainers` for the Azure Storage account. 
+
+To optionally configure your Azure Storage account settings to identify internet exposed public containers, do the following:
+
+- Option 1 (Recommended): On the Azure portal, set Public Network Access to *Enabled from selected virtual networks and IP addresses*. Add the IP addresses and NAT Gateway source and directory IPs listed xref:../../../get-started/access-prisma-cloud.adoc[here] to the firewall configuration. 
+- Option 2: On the Azure portal, set Public Network Access to *Enabled from all networks*. 
+====
+//+ [commenting out per Madhu Jain - Novartis POC - 6/14 email thread]
+//On the Azure Portal, include the source and the DR Prisma Cloud IP addresses for your Prisma Cloud instance. Select *Azure > services[Storage accounts > (your storage account) > Networking > Selected networks*.
+//+
+//image::connect/azure-selected-networks.png
+//+
+//Replace userinput:[your storage account] with the name of your storage account in Azure portal.
+
+//** Enable Network Watcher and register Microsoft.InsightsResource Provider. Microsoft.Insights is the resource provider namespace for Azure Monitor, which provides features such as metrics, diagnostic logs, and activity logs.
+
+//** Enable NSG flow logs version 1 or 2, based on the regions where NSG flow logs version 2 is supported on Azure.
+
+//** Verify that you can view the flow logs.
+
+=== Required Roles and Permissions
+
+To successfully connect your account to Prisma Cloud you will need to provide the required permissions for both Foundational and Advanced security capabilities. Reference the information below to make sure that you have assigned the appropriate permissions to Prisma Cloud.
+
+* xref:microsoft-azure-apis-ingested-by-prisma-cloud.adoc[Permissions for Security Capabilities]
+
+Reference Azure documentation to learn more about https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader[Reader], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader-and-data-access[Reader and Data Access], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#network-contributor[Network Contributor], https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-blob-data-reader[Storage Blob Data Reader], and https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-account-contributor[Storage Account Contributor] roles.
+
+=== Next: Onboard your Azure Account 
+
+* Azure Tenant (Connects all your Azure resources to Prisma Cloud including Accounts with Management Groups, Subscriptions and Active Directory) 
+** xref:connect-azure-tenant.adoc#commercial[Commercial]
+** xref:connect-azure-tenant.adoc#government[Government] 
+** xref:connect-azure-tenant.adoc#china[China]
+* Azure Subscription (Connects a single subscription)
+** xref:connect-azure-subscription.adoc#commercial[Commercial] 
+** xref:connect-azure-subscription.adoc#government[Government] 
+** xref:connect-azure-subscription.adoc#china[China]
+* Azure Active Directory (Connects an Active Directory)
+** xref:connect-azure-active-directory.adoc#commercial[Commercial]  
+** xref:connect-azure-active-directory.adoc#government[Government]
+** xref:connect-azure-active-directory.adoc#china[China]
+
+

@@ -1,0 +1,99 @@
+:topic_type: タスク
+[.task]
+
+== DNSログを構成
+
+Prisma Cloudは、Amazon Kinesis Data FirehoseからDNSログを取り込み、それらのDNSクエリーログをランダム生成ドメイン（DGA）や暗号マイニングなどのDNS脅威検知のユースケースに活用します。Prisma Cloudは、AWS上のロギングアカウントでAmazon Kinesis Data Firehose Streamでストリーム配信されているアカウントのDNSクエリログを取得します。
+
+[NOTE]
+====
+DNS ログの取り込みは、AWS China および Gov Cloud の Prisma Cloud スタックではサポートされていません。
+====
+
+[.procedure]
+
+. xref:onboard-aws-account.adoc[AWSアカウントのオンボーディング]、*[Settings（設定）] > [Providers（プロバイダー）] > [Cloud Accounts（クラウドアカウント）]*を順に選択します。
+
+. *ビュー*DNS ログAmazon Kinesis Data Firehoseを取り込む AWS アカウントの横にあるアイコンをクリックします。
+
+. *[脅威の検出]*をクリックします。
+
+. [*無効*] ボタンを *DNS Logs*の [*有効*] に切り替えます。
+
+. *DNSログの構成*をクリックします。
++
+image::connect/configure-dns-logs.png[]
+
+. *DNS設定の追加*をクリックします。
++
+image::connect/amazon-dns-logs-2-1.png[]
+
+. DNS 構成の*名前* を入力します。
+
+. *Generate（生成）*をクリックします。
++
+Webhook トークンが生成されます。ドメイン フィルターの指定を選択できます。
++
+image::connect/amazon-dns-logs-4.png[]
+
+. *次へ*をクリックします。
+
+. *ここをクリックして、AWS 管理アカウントにスタックを作成*リンクをクリックし、DNS クエリログを Prisma Cloud にストリーミングします。
++
+image::connect/amazon-dns-logs-5.png[]
+
+.. AWS アカウントにログインし、手順に従ってスタックを作成し、[*AWS CloudFormation がカスタム名で IAM リソースを作成する場合があることを承認します*] を選択し、[*スタックの作成*] をクリックします。
++
+image::connect/amazon-dns-logs-6.png[]
+
+.. ステータスが CREATE_COMPLETE と表示されるまで待ちます。
++
+作成に成功すると、WebhookUrl、BackupS3BucketARN、および KinesisFirehoseRoleARN パラメータが生成されます。値をテキスト ファイルにコピーして保存します。
+
+.. CloudFormation StackSetを使用して、*Route-53クエリログの設定*とリージョンごとの*firehoseパイプライン*を作成します。
++
+[NOTE]
+====
+スタックセットを実行するには、次の 2 つのロールが必要です。https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html[AWS のドキュメント] を参照し、次のセルフマネージド型のアクセス許可を付与してください。
+
+** https://s3.amazonaws.com/cloudformation-stackset-sample-templates-us-east-1/AWSCloudFormationStackSetAdministrationRole.yml[AWS クラウドフォーメーションスタックセット管理ロール]
+
+** https://s3.amazonaws.com/cloudformation-stackset-sample-templates-us-east-1/AWSCloudFormationStackSetExecutionRole.yml[AWS クラウドフォーメーションスタックセット実行ロール]
+====
+
+.. 2 つのロールを設定したら、AWS コンソールで* [設定] > [クラウドフォーメーションテンプレート] > [スタックセット] > [スタックセットの作成]*を選択します。
+
+.. https://redlock-public.s3.amazonaws.com/cft/prisma-dnslogs.onboarding-cft-stack-part-2.template[Amazon S3 URL]を使用して スタックセットを作成するためのテンプレートを選択します。
++
+image::connect/amazon-dns-logs-7.png[]
+
+.. StackSet の詳細を入力します。これらのパラメータは、上記のステップ10.bで取得したものです。
++
+image::connect/amazon-dns-logs-8.png[]
+
+.. DNS クエリ ログ監視のアカウントやリージョンなどのデプロイメントオプションを設定し、[*次へ*] をクリックします 。
++
+[NOTE]
+====
+** アカウント ID は、最初の CFT が実行されたアカウント ID と一致する必要があります。
+** ログ送信にロギングアカウントモデルを使用しているため、ロギングアカウントで両方のCFTを適用し、DNSログを送信する各アカウントでRoute-53クエリロギング設定を共有するようにしてください。
+** DNS Route-53の共有は、AWS組織や複数のアカウントでDNSインジェストを有効にする場合に最適です。
+====
+
+.. 構成を確認します。
+
+.. *[送信]* をクリックして StackSet を作成します。
++
+image::connect/amazon-dns-logs-9.png[]
+
+. AWS 構成の変更が完了したら、Prisma Cloud コンソールに戻ります。
+
+. *同意する...*のチェックボックスを選択して、*「保存」*をクリックします。
+
+. *Done (完了)*をクリックします。
++
+設定が成功すると、Prisma Cloud は Amazon Kinesis Data Firehose から DNS ログの取り込みを開始します。
+
+. スタックセットのデプロイが完了したら、AWS コンソールで *[Route 53] > [リゾルバー] > [クエリログ記録] *を選択し、CFT によって作成された[*Route-53クエリログ記録設定*] をクリックして、Prisma CloudにDNSクエリログを取り込む VPC を選択します。
++
+NOTE: スタックセットがデプロイされているすべてのリージョンについて、ステップ14 を繰り返します。

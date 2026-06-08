@@ -1,0 +1,177 @@
+:topic_type: task
+
+[.task]
+
+== Visual Editor
+
+The Visual Editor supports custom build policies for IaC, Secrets, and Licenses using attribute-based checks with AND/OR logic. IaC policies support both AND/OR logic, while Secrets and License policies currently only support OR logic.
+
+[.procedure]
+
+. Under *Governance*, select *Add Policy* > *Config*.
+. Fill in the fields in the *Add Details* step of the wizard (refer to xref:custom-build-policies.adoc[Custom Build Policies])> *Next*.
++
+The *IaC Policy Code Editor* is displayed by default in the *Create query* step of the wizard. 
+//+
+//In this example, you see the policy details for S3 Bucket ACL where log delivery is not recommended.
+//+
+//image::governance/visual-editor.png
+//+
+//Code Editor appears as a default view.
+
+. Select *Visual Editor* from the menu next to the 'Scan' button.
+. Select a policy type.  
+
+. Configure the policy by selecting values in the provided fields.
++
+* For Licenses, select a license type. Multiple types are supported
++
+* For Secrets, add a Regular expression. Multiple 'OR' expressions are supported
++
+* For IaC, see <<configure-iac,Configure Iac Custom Build Policies>> below. 
+
+. Verify the policy's functionality. Note that test scans are only supported for IaC policies.
+ 
+. Select *Next* to access Compliance Standards, and complete the process for creating a custom Build-time check policy (refer to xref:custom-build-policies.adoc[Custom Build Policies]).
+
+
+[.task]
+[#configure-iac]
+=== Configure IaC Custom Build Policies
+
+*Limitations:*
+
+*  The Visual Editor supports policy creation for cloud service providers supported by Prisma Cloud. For unsupported providers, use the Code Editor
+* The 'Resource Type' and 'Attribute' fields are selection-based, not free text
+* For more advanced policies requiring custom attributes, such as tagging rules with `tags.<tag_key>`, use the Code Editor
+* The Visual Editor does not support connected resources; use the Code Editor for these policies
+
+
+[.procedure]
+. Repeat steps 1-4 above, selecting IaC as the policy type.
+. Select *Category Type*.
++
+Policies are categorized by type. Options include Elasticsearch, General, IAM, Kubernetes, Logging, Monitoring, Networking, Public, Secrets, Serverless, Storage, and Vulnerabilities. 
+//+
+//image::governance/visual-editor-2.png
+
+. Select the target *Framework*.
++
+NOTE: Supported frameworks include Terraform, Kubernetes, CloudFormation, Bicep, and ARM. You can assign multiple frameworks to a single policy. For example, a policy can be configured to support both Bicep and ARM.
+
+. Select a *Cloud Provider*.
+
+. Select a *Resource Type*.
++
+NOTE: The Cloud Provider selection determines the available Resource Types and their corresponding syntax.
+
+. Create a query: Select an *Attribute*, *Operator* and add a *Value*.
++
+This query defines the matching condition to check if a resource contains a specific value or if a specific value exists.
++
+NOTE: This query type allows users to build complex search criteria using multiple attribute-operator-value combinations. The initial query supports both AND and OR conditions for flexible filtering. You can further refine results by applying additional logic, providing granular control over data retrieval.
+
+. Select *Scan* to verify your custom IaC code.
++
+If your custom IaC code contains no errors, Prisma Cloud will display up to 30 resource results.
++
+The following screenshot displays an example of results returned by a verified IaC policy.
++
+image::governance/custom-build-policy-iac.png[]
++
+The same policy could be defined using the Code Editor as follows:
+
+[source,yaml]
+----
+metadata:
+  guidelines: "Example policy"
+  category: "general"
+scope:
+  provider: "aws"
+definition:
+  cond_type: "attribute"
+  resource_types: "aws_instance"
+  attribute: "ami"
+  operator: "equals"
+  value: "foo"
+----
+
+
+
+
+
+
+
+
+//+
+//image::governance/visual-editor-10.png
+////
++
+NOTE: You are in Step 2 of Create Custom Policies for Build-Time Checks. You are required to complete the rest of the steps to see your new custom Build-time check policy on the Prisma Cloud console.
+
+
+[#examples-on-custom-policies]
+=== Custom Build Policies Examples
+
+[cols="3,2,1,1,1,1", options="header"]
+|===
+|Policy name
+|Cloud Provider
+|Resource Type
+|Attribute
+|Operator
+|Value
+
+|aws-restrict-all-vpc-traffic
+|aws
+|aws_default_network_acl
+|ingress
+|Equal
+|0
+
+|azurerm-block-allow-all-cidr
+|azurerm
+|azurerm_network_security_group
+|source_address_prefix
+|Not Equal
+|0.0.0.0/0, "*"
+
+|gcp-restrict-machine-type
+|google
+|google_compute_instance
+|machine_type
+|Equal
+|n1-standard-1
+
+|aws-networking-deny-public-ssh
+|aws
+|aws_security_group_rule
+|cidr_blocks
+|Not equal
+|0.0.0.0/0
+
+|===
+
+
+
+
+
+//was under query builder
+//+
+//image::governance/visual-editor-6.png
+//+
+//In this example the query for S3 Bucket ACL policy will include *Attribute* as `acl`, the *Operator* is `Not equals` and the *Value* is `log-delivery-write`.
+//+
+//image::governance/visual-editor-7.png
+//+
+////+
+NOTE: The Custom Policy "aws-networking-deny-public-ssh" uses 2 rules with arguments for cidr_blocks and to_port. You can create multiple  nested arguments for this policy. In this example,  to express a more complex ingress policy for an AWS security group you can use arguments like; `ingress.from_port`, `ingress.to_port`, `ingress.protocol`, `ingress.cidr_blocks`.
++
+You can use And/OR logic to create a  rule with more than one query.
++
+A policy may include layers of defined Attributes and Connection State, or both. To define the connection between the two AND/OR logic is used.
+
+In this example you see the AND logic used.
+////
+//+
+//image::governance/visual-editor-8.png

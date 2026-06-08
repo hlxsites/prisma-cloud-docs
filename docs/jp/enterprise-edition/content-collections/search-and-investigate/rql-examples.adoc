@@ -1,0 +1,526 @@
+[#id5c31e0cc-2e9f-476d-8a6d-20162d369ca1]
+== RQLの例ライブラリ
+
+このセクションに記載しているRQLの例を使って、クラウドリソースの問題の監視、検出方法を学習してください。
+
+* xref:#id0b390e7c-8e64-419e-a3cb-2bc599c5be77[AWSの例]
+
+* xref:#id14248e30-5e94-4f3a-ae66-6a651451e641[Azureの例]
+
+* xref:#id9657231e-df24-470d-a880-2205832fe9ea[GCPの例]
+
+* xref:#idbd7cb09d-6818-4b3b-9858-93f9a895e63c[一般的に役立つクエリの例]
+
+
+[#id0b390e7c-8e64-419e-a3cb-2bc599c5be77]
+=== AWSの例
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+
+|パブリックIPアドレスを持つEC2インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' and json.rule = publicIpAddress exists
+----
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = publicIpAddress exists and publicIpAddress is not empty
+----
+
+
+|セキュリティグループ名「allow-all」にアタッチされているEC2インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = 'securityGroups contains allow-all'
+----
+
+
+|パブリックにアクセス可能なホスト名を持つすべてのEC2インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' and json.rule = 'publicDnsName exists'
+----
+
+
+|パブリックIPアドレスを持ち、任意のIPアドレスからの接続を許可しているすべてのEC2インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = '$.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0'
+----
+
+
+|特定のセキュリティグループに関連付けられているすべてのEC2インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = securityGroups[*].groupId contains "sg-c57910b7"
+----
+
+
+|パブリックIPアドレスを持ち、パブリックにアクセス可能な（IP範囲が特定のIPアドレスセットに制限されていない）すべてのEC2インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; filter '$.X.publicIpAddress exists and not $.X.publicIpAddress is empty  and $.X.securityGroups[*].groupName == $.Y.groupName and $.Y.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 and $.Y.ipPermissions[*].ipProtocol == -1'; show X;
+----
+
+
+|指定した宛先セキュリティグループに存在せず、指定したタグを持つ内リソースから送信されたトラフィックがある、すべてのEC2インスタンスを表示します（否定のためにNOT IN演算子を使用）。
+|----
+network from vpc.flow_record where accepted.bytes > 10000 AND  dest.resource NOT IN ( resource where securitygroup.name = '2nd_hong_kong_sg' ) AND source.resource NOT IN ( resource where tag ( ANY ) IN ( 'HelloWorld' ) ) 
+----
+
+
+|起動時間が30日以上のEC2インスタンスを検索する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' AND json.rule = '_DateTime.ageInDays($.launchTime) > 30'
+----
+
+
+|データ分類タグを持たないEBSボリュームを検索する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-volumes' AND json.rule =  tags[*].key != DataClassification
+----
+
+
+|Prisma Cloudが監視していないクラウドアカウントと共有されている、すべてのRDSスナップショットを検索する。
+|----
+config from cloud.resource where api.name = 'aws-rds-describe-db-snapshots' AND json.rule = "$.attributes[?(@.attributeName=='restore')].attributeValues[*] size != 0 and _AWSCloudAccount.isRedLockMonitored($.attributes[?(@.attributeName=='restore')].attributeValues) is false"
+----
+
+
+|インターネットにポート22を開いている（そしてEC2インスタンスに接続されている）、すべてのセキュリティグループを検索する。
+|----
+config from cloud.resource where api.name='aws-ec2-describe-security-groups' as X; config from cloud.resource where api.name = 'aws-ec2-describe-instances' as Y;filter '$.X.ipPermissions[*].toPort == 22 and $.X.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 and $.Y.securityGroups[*].groupId == $.X.groupId' ;show X;
+----
+
+
+|パブリックIPアドレスを持つRDSインスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-rds-describe-db-instances' and json.rule = publiclyAccessible is true
+----
+
+
+|タグ内にnull値があるワークロードを表示します。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' and json.rule='$.tags[*] size == 1 and $.tags[*].key contains Name'
+----
+
+
+|出口が0.0.0.0/0でポート制限がないセキュリティグループを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = " $.ipPermissionsEgress[*].ipRanges[*] contains 0.0.0.0/0 and $.ipPermissions[*].toPort !exists"
+----
+
+
+|出口が0.0.0.0/0でfromPort =9009、toPortがないセキュリティグループを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = " $.ipPermissionsEgress[*].ipRanges[*] contains 0.0.0.0/0 and $.ipPermissions[?(@.fromPort==9009)].toPort !exists"
+----
+
+
+|0.0.0.0/0が設定されており、toPortが443ではないセキュリティグループを識別する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = "$.ipPermissions[*].ipRanges[*] size > 0  and $.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 and (not $.ipPermissions[?(@.toPort==443)].ipRanges[*] contains 0.0.0.0/0)"
+----
+
+
+|暗号化されていないsda1およびxvdaボリュームを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-volumes' AND json.rule = ' encrypted is false and attachments[*].device does not contain sda1'
+----
+
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-volumes' AND json.rule = ' encrypted is false and attachments[*].device does not contain xvda'
+----
+
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-volumes' AND json.rule = ' encrypted is false and attachments[*].device does not contain sda1 and attachments[*].device does not contain xvda'
+----
+
+
+|インターネットゲートウェイが接続されているVPCを識別する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-internet-gateways' as X; config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as Y; filter '$.X.attachments[*].vpcId == $.Y.vpcId and $.Y.tags[*].key contains IsConnected and $.Y.tags[*].value contains true';  show Y;
+----
+
+
+|パブリックIPアドレスおよびCIDRが169.254.0.0/16からのトラフィックを検索するが、ICMPおよびICMP6トラフィックは除外する。
+|----
+network from vpc.flow_record where src.publicnetwork IN ('Suspicious IPs','Internet IPs')  AND source.ip IN 169.254.0.0/16 and bytes >  0 and protocol NOT IN ( 'ICMP' , 'ICMP6' ) 
+----
+
+
+|脆弱性「CVE-2015-5600」を持つワークロードを検索する。
+|----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type IN ( 'Host Vulnerability' ) AND finding.name = 'CVE-2015-5600' ) and bytes > 0
+----
+
+
+|Redshiftなどの、ステージまたは実稼働環境のメンバーとしてタグが設定されている、項目のメンバーシップステータスを検索する。
+|----
+config from cloud.resource where api.name = 'aws-redshift-describe-clusters' AND json.rule =  clusterNodes[*].nodeRole is member of ("stage","prod")
+----
+
+
+|ポート443と80以外のポートへのアクセスを許可するIP権限を持つ、EC2セキュリティグループを検索する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule =  ipPermissions[*].toPort is not member of (443,80)
+----
+
+
+|IPアドレスからログインしてrootアクティビティを行った「現実のユーザー」を検索する（自動タスクが実施したアクティビティではない）。
+|----
+event from cloud.audit_logs where user = 'root' and IP EXISTS 
+----
+
+
+|パブリックIPが自動的に割り当てられたサブネット内のインスタンスを検索する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-subnets' as Y; filter '$.X.subnetId == $.Y.subnetId and $.Y.mapPublicIpOnLaunch is true'; show X;
+----
+
+
+|パブリックに暴露されている、値が「Public」のデータ分類タグが設定されていないバケットを確認する。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name='aws-s3api-get-bucket-acl' AND json.rule="($.acl.grants[?(@.grantee=='AllUsers')] size > 0) and websiteConfiguration does not exist and tagSets.DataClassification != Public"
+----
+
+
+|有効な値のデータ分類タグが設定されている、すべてのS3バケットを確認する。
+|データ分類タグを持たないバケットを検索するためのカスタムクエリ：
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name='aws-s3api-get-bucket-acl' AND json.rule= tagSets.DataClassification !exists
+----
+
+無効なデータ分類タグを持つバケットを検索するためのカスタムクエリ：
+
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name='aws-s3api-get-bucket-acl' AND json.rule= tagSets.DataClassification exists and tagSets.DataClassification != Public and tagSets.DataClassification != Private
+----
+
+
+|次のタグセットを持つものを除いて、すべてのユーザーに公開されたS3バケットのアラート：Data Security（データセキュリティ）:Public（パブリック）またはData Security：blank（ブランク）。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name='aws-s3api-get-bucket-acl' AND json.rule="($.acl.grants[?(@.grantee=='AllUsers')] size > 0) and websiteConfiguration does not exist and (['tagSets'].['Data Security'] does not exist or ['tagSets'].['Data Security'] does not contain Public)"	
+----
+
+
+|組織内のアカウントに所属していないプリンシパルへの書き込みアクセスを有効にする、S3バケットポリシーを識別する。
+
+このクエリは、クエリ内で指定したPrincipal Org ID以外の、書き込みアクション（s3:put）を許可するすべてのS3バケットを探すために役立ちます。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-s3api-get-bucket-acl' AND json.rule = "policy.Statement[*].Condition.StringEquals.aws:PrincipalOrgID does not equal \"o-e9mdyuma56\" and (policy.Statement[?(@.Principal=='*' && @.Effect=='Allow')].Action contains s3:* or policy.Statement[?(@.Principal=='*' && @.Effect=='Allow')].Action contains s3:Put)"
+----
+
+
+|期限切れ間近な証明書を持つすべてのAmazon ELB (Elastic Load Balancing) にアラートする。
+|90日以内に期限切れとなる証明書を持つELBに対するカスタムクエリ：
+
+----
+config from cloud.resource where api.name = 'aws-acm-describe-certificate' as X;config from cloud.resource where api.name = 'aws-elb-describe-load-balancers' as Y;filter '_DateTime.ageInDays($.X.notAfter) > -90 and $.Y.listenerDescriptions contains $.X.certificateArn' ; show Y;
+----
+
+90日以内に期限切れとなる証明書を持ち、アタッチされているインスタンスがあるELBに対するカスタムクエリ：
+
+----
+config from cloud.resource where api.name = 'aws-acm-describe-certificate' as X;config from cloud.resource where api.name = 'aws-elb-describe-load-balancers' as Y;filter '_DateTime.ageInDays($.X.notAfter) > -90 and $.Y.listenerDescriptions contains $.X.certificateArn and $.Y.instances exists' ; show Y;
+----
+
+
+|0.0.0.0/0アクセスで、稼働中のインスタンスに接続されているSGを探すクエリ。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; filter '$.X.state.name equals running and $.X.securityGroups[*].groupId contains $.Y.groupId and ($.Y.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 or $.Y.ipPermissions[*].ipv6Ranges[*].cidrIpv6 contains ::/0)' ; show X;
+----
+
+
+|GuardDutyまたはInspector脆弱性があるAWSインスタンスを表示する。
+|----
+config from cloud.resource where finding.type IN ( 'AWS Inspector Runtime Behavior Analysis', 'AWS Inspector Security Best Practices', 'AWS GuardDuty Host' )
+----
+
+
+|特定のメールアドレスを持つ特定のロールを装って、特定のクラウドアカウントにアクセスしている何者かを表示する。
+|この例でアカウントはencsharedtest、ロールはAdminSSO、ユーザーのメールアドレスはabc@xyz.comです。
+
+----
+event from cloud.audit_logs where cloud.account = 'encsharedtest' AND json.rule = $.userIdentity.arn = 'arn:aws:sts::786215072930:assumed-role/AdminSSO/abc@xyz.com'
+----
+
+
+|AWSアカウントが所有するイメージの数
+|---- 
+config from cloud.resource where cloud.account = '<account name>' AND api.name = 'aws-ec2-describe-images' AND json.rule = image.ownerId equals "<accountId>"
+----
+
+
+[TIP]
+====
+` AND cloud.region = '<Region>'`を追加して、リージョンごとの所有イメージ数を一覧表示します
+====
+
+
+
+|AWSアカウント内の各リージョンのプライベートイメージまたは共有イメージの数
+|----
+config from cloud.resource where cloud.account = '<accountId>' AND api.name = 'aws-ec2-describe-images' AND cloud.region = '<Region>' AND json.rule = image.shared is true
+----
+
+
+[TIP]
+====
+`json.rule=image.public is false`で追加または置換して、プライベート画像を含めます。
+====
+
+
+|===
+
+
+
+[#id14248e30-5e94-4f3a-ae66-6a651451e641]
+=== Azureの例
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+
+|タグのないAzureワークロードを表示する。
+|----
+config from cloud.resource where api.name = 'azure-vm-list' and  json.rule='$.tags[*] size == 1 and $.tags[*].key contains Name'
+----
+
+
+|Transparent Data Encryption（透過的なデータ暗号化）が無効になっているAzure SQL DB。
+|----
+config from cloud.resource where api.name = 'azure-sql-db-list' and json.rule = transparentDataEncryption is false
+----
+
+
+|任意のIPアドレスからの接続を許可しているAzure SQLインスタンス。
+|----
+config from cloud.resource where cloud.service = 'Azure SQL' AND api.name = 'azure-sql-server-list' AND json.rule = firewallRules[*] contains "0.0.0.0"
+----
+
+
+|アクセスするためにHTTPSが不要なAzureストレージアカウントを表示する。
+|----
+config from cloud.resource where cloud.account = 'Azure-RedLock-public-demo' AND api.name = 'azure-storage-account-list' AND json.rule = ['properties.supportsHttpsTrafficOnly'] is false
+----
+
+
+|ストレージプロファイルにLinux OSタイプがあるAzure VMを表示する。
+|----
+config from cloud.resource where cloud.account = 'Azure-RedLock-public-demo' AND api.name = 'azure-vm-list' AND json.rule = ['properties.storageProfile'].osDisk.osType contains "Linux"
+----
+
+
+|Azure Network Watcherを表示する（Azureフローログのチェックに使用可能）。
+|----
+config from cloud.resource where cloud.service = 'Azure Network Watcher' AND api.name = 'azure-network-watcher-list' addcolumn  provisioningState
+----
+
+
+|Azure NSGを表示する（Azureフローログのチェックに使用可能）。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' addcolumn provisioningState
+----
+
+
+|Azureストレージアカウントを表示する（Azureフローログのチェックに使用可能）。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-storage-account-list' addcolumn location
+----
+
+
+|NSGを表示する。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-network-nsg-list' addcolumn location name provisioningState securityRules[*]
+----
+
+
+|Azureでのインスタンス/VMのパブリックIPチェック。
+|----
+config from cloud.resource where api.name = 'azure-vm-list' AND json.rule = ['properties.networkProfile'].networkInterfaces[*] contains publicIpAddress and ['properties.networkProfile'].networkInterfaces[*].publicIpAddress none empty
+----
+
+
+|特定のクラウドアカウント内の稼働中ではないVMを検索する。
+|このクエリには、割り当て解除された、起動停止された、または不明なインスタンスが含まれます。
+
+----
+config from cloud.resource where cloud.account = 'Azure-RedLock-public-demo' AND api.name = 'azure-vm-list' AND json.rule = powerState does not contain "running"
+----
+
+
+|インバウンド トラフィックを許可しているAzure NSGを検索する。
+|----
+config from cloud.resource where api.name= 'azure-network-nsg-list' AND json.rule="securityRules[?(@.sourceAddressPrefix=='*' && @.access=='Allow')].direction contains Inbound"
+----
+
+
+|米国東部地域（East-US）以外でAzureに展開されているSQLデータベースを検索する。
+|----
+config from cloud.resource where cloud.type = 'azure' AND api.name = 'azure-sql-db-list' AND json.rule =  sqlDatabase is not member of ("East US")
+----
+
+|===
+
+
+
+[#id9657231e-df24-470d-a880-2205832fe9ea]
+=== GCPの例
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+
+|タグのないGCPワークロードを表示する。
+|----
+config from cloud.resource where api.name = 'gcloud-compute-instances-list' and json.rule='$.tags[*] size == 1 and $.tags[*].key contains Name'
+----
+
+
+|GCPが終了したcomputeインスタンス。
+|----
+config from cloud.resource where api.name = 'gcloud-compute-instances-list' and json.rule = status contains TERMINATED
+----
+
+
+|パブリックIPアドレスを持つすべての VM（Google compute engine）インスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'gcloud-compute-instances-list' AND json.rule = networkInterfaces[*].accessConfigs[*].natIP size greater than 0 and networkInterfaces[*].accessConfigs[*].natIP none empty
+----
+
+
+|タグベースのフィルタリング—クラウドプラットフォームの、指定したクラウドサービスAPI内の、指定した値でタグが設定されているリソースを検索します。
+|----
+config from cloud.resource where api.name = 'gcloud-compute-instances-list' AND json.rule = tags.items[*] contains "production"
+----
+
+
+|タグベースのフィルタリング— Prisma Cloudが監視しているすべてのクラウドプラットフォームにまたがって、指定したタグが設定されているリソースを検索します。
+|----
+config from cloud.resource where tag ( 'items' ) IN ( 'flowlogsautomation', 'dataflow' ) 
+----
+
+| すべてのインスタンスのクエリ（Googleコンピュートエンジン）ネットワークIPアドレス 
+|----
+config from cloud.resource where cloud.type = 'gcp' AND cloud.service = 'Google Compute Engine' AND api.name = 'gcloud-compute-instances-list' AND json.rule = networkInterfaces[*].networkIP exists addcolumn $.networkInterfaces[0].networkIP
+----
+
+|===
+
+
+
+[#idbd7cb09d-6818-4b3b-9858-93f9a895e63c]
+=== 一般的に役立つクエリの例
+次のクエリは、適切な開始点として、または複雑なRQLの例を探している場合に使用できます。
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+
+|任意のクラウド環境にあるネットワークインターフェースに、100Kbを超えるデータを転送した、インターネットまたは不審なIPからのすべてのネットワークトラフィックを表示する。
+|----
+network from vpc.flow_record where source.publicnetwork IN ( 'Internet IPs', 'Suspicious IPs' ) AND bytes > 100000
+----
+
+
+|1GBを超えた、インターネットまたは不審なIPが宛先のすべてのネットワークトラフィック（任意のクラウド環境のデータ抜き取りの試みを識別可能）。
+|----
+network from vpc.flow_record where dest.publicnetwork IN ( 'Internet IPs', 'Suspicious IPs' ) AND bytes > 1000000000
+----
+
+
+|不審なIPから、ホスト脆弱性があるインスタンスへのすべてのネットワークトラフィック。
+|----
+network from vpc.flow_record where source.publicnetwork = 'Suspicious IPs' AND dest.resource IN ( resource where finding.type IN ( 'AWS GuardDuty Host', 'AWS Inspector Runtime Behavior Analysis', 'AWS Inspector Security Best Practices', 'Host Vulnerability' )) AND bytes > 0
+----
+
+
+|フローログが有効になっていないVPCを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-vpcs' as X; config from cloud.resource where api.name = 'aws-ec2-describe-flow-logs' as Y; filter ' not ($.Y.resourceId equals $.X.vpcId)'; show X;
+----
+
+
+|パブリックIPアドレスが割り当てられており、パブリックに公開されているNSGに関連付けられているすべてのインスタンスを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; filter '($.X.publicIpAddress exists and $.X.publicIpAddress is not empty) and ($.X.securityGroups[*].groupName == $.Y.groupName) and ($.Y.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 or $.Y.ipPermissions[*].ipv6Ranges[*].cidrIpv6 contains ::/0)'; show X;
+----
+
+
+|IGWを含むVPC上の、ポート3389でパブリックに公開されているすべてのセキュリティグループを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as X; config from cloud.resource where api.name = 'aws-ec2-describe-internet-gateways' as Y; filter '$.Y.attachments[*].vpcId contains $.X.vpcId and ($.X.ipPermissions[?(@.toPort==3389||@.fromPort==3389)].ipv6Ranges[*].cidrIpv6 contains ::/0 or $.X.ipPermissions[?(@.toPort>3389&@.fromPort<3389)].ipRanges[*] contains 0.0.0.0/0 or $.X.ipPermissions[?(@.toPort>3389&&@.fromPort<3389)].ipv6Ranges[*].cidrIpv6 contains ::/0 or $.X.ipPermissions[?(@.toPort>3389&@.fromPort<3389)].ipRanges[*] contains 0.0.0.0/0)'; show X; 
+----
+
+
+|EC2インスタンスが接続されているIGWを含むVPC上の、ポート22でパブリックに公開されているすべてのセキュリティグループを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as X; config from cloud.resource where api.name = 'aws-ec2-describe-internet-gateways' as Y; config from cloud.resource where api.name = 'aws-ec2-describe-instances' as Z; filter '$.Z.securityGroups[*].groupId contains $.X.groupId and $.Y.attachments[*].vpcId contains $.X.vpcId and ($.X.ipPermissions[?(@.toPort==22||@.fromPort==22)].ipv6Ranges[*].cidrIpv6 contains ::/0 or $.X.ipPermissions[?(@.toPort==22||@.fromPort==22)].ipRanges[*] contains 0.0.0.0/0 or $.X.ipPermissions[?(@.toPort>22&&@.fromPort<22)].ipv6Ranges[*].cidrIpv6 contains ::/0 or $.X.ipPermissions[?(@.toPort>22&&@.fromPort<22)].ipRanges[*] contains 0.0.0.0/0)'; show X;
+----
+
+
+|Mailserverのタグが設定されており、ポート25、110、または443を開いているものを除き、パブリックに公開されているすべてのセキュリティグループを表示する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ((ipPermissions[*].ipRanges[*] contains 0.0.0.0/0 or ipPermissions[*].ipv6Ranges[*].cidrIpv6 contains ::/0) and ( not (tags[?(@.key=='TYPE')].value contains MAILSERVER AND (((ipPermissions[?(@.toPort>25&&@.fromPort<25)].ipRanges[*] contains 0.0.0.0/0) or (ipPermissions[?(@.toPort==25||@.fromPort==25)].ipRanges[*] contains 0.0.0.0/0)) or ((ipPermissions[?(@.toPort>25&&@.fromPort<25)].ipv6Ranges[*].cidrIpv6 contains ::/0) or (ipPermissions[?(@.toPort==25||@.fromPort==25)].ipv6Ranges[*].cidrIpv6 contains ::/0)) or ((ipPermissions[?(@.toPort>443&&@.fromPort<443)].ipRanges[*] contains 0.0.0.0/0) or (ipPermissions[?(@.toPort==443||@.fromPort==443)].ipRanges[*] contains 0.0.0.0/0)) or ((ipPermissions[?(@.toPort>443&&@.fromPort<443)].ipv6Ranges[*].cidrIpv6 contains ::/0) or (ipPermissions[?(@.toPort==443||@.fromPort==443)].ipv6Ranges[*].cidrIpv6 contains ::/0)) or ((ipPermissions[?(@.toPort>110&&@.fromPort<110)].ipRanges[*] contains 0.0.0.0/0) or (ipPermissions[?(@.toPort==110||@.fromPort==110)].ipRanges[*] contains 0.0.0.0/0)) or ((ipPermissions[?(@.toPort>110&&@.fromPort<110)].ipv6Ranges[*].cidrIpv6 contains ::/0) or (ipPermissions[?(@.toPort==110||@.fromPort==110)].ipv6Ranges[*].cidrIpv6 contains ::/0))))))
+----
+
+
+|90日より古いAMIイメージを検出する。
+|----
+config from cloud.resource where cloud.type = 'aws' AND cloud.service = 'EC2' AND api.name = 'aws-ec2-describe-images' AND json.rule = '_DateTime.ageInDays(image.creationDate) > 90'
+----
+
+
+|30日を超えてAMIを稼働させているEC2インスタンスを検出する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' as X; config from cloud.resource where api.name = 'aws-ec2-describe-images' as Y; filter '$.X.imageId==$.Y.image.imageId and _DateTime.ageInDays($.Y.image.creationDate) > 30' ; show X; addcolumn launchTime state
+----
+
+
+|キーローテーションがないKMSを検出する。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-kms-get-key-rotation-status' AND json.rule = keyMetadata.keyState does not equal "PendingDeletion" and rotation_status.keyRotationEnabled is false
+----
+
+
+|パブリックセキュリティグループを作成した、CloudFormationテンプレート（CFT）を検出する。
+|----
+config from cloud.resource where api.name = 'aws-cloudformation-describe-stacks' as X; config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as Y; filter "$.X.stackResources[*].physicalResourceId == $.Y.groupId and ($.Y.ipPermissions[*].ipv6Ranges[*].cidrIpv6 contains ::/0 or $.Y.ipPermissions[*].ipRanges[*] contains 0.0.0.0/0)"; show X;
+----
+
+
+|インターネットに公開されているけれども、特定のタグキー/値のペアを持たないS3バケットを検出する。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name='aws-s3api-get-bucket-acl' AND json.rule="($.acl.grants[?(@.grantee=='AllUsers')] size > 0) and websiteConfiguration does not exist and (['tagSets'].['Name'] does not exist or ['tagSets'].[‘Name'] does not contain Value)"
+----
+
+
+|特定のタグキー/値のペアを除いて、セキュリティグループを検出する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = "tags[?(@.key=='Name')].value does not contain public”
+----
+
+
+|EC2インスタンスを持つVPCのVPCフローログを検索する（ネットワークフローログがあるかどうかを検証するため）。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-flow-logs' as X; config from cloud.resource where api.name = 'aws-ec2-describe-instances' as Y; filter "$.X.resourceId==$.Y.vpcId"; show X;
+----
+
+
+|セキュリティグループにアタッチされていないEC2インスタンスを検索する。
+|----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-security-groups' as X; config from cloud.resource where api.name = 'aws-ec2-describe-instances' as Y; filter ' not ($.Y.securityGroups[*].groupId contains $.X.groupId)'; show X;
+----
+
+
+|セキュリティグループに関連付けられていないENIを検索する。
+|----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' as X; config from cloud.resource where api.name = 'aws-ec2-describe-network-interfaces' as Y; filter 'not($.Y.groups[*].groupId contains $.X.groupId or $.X.groupName == default) '; show X;
+----
+
+|===
+
+
+

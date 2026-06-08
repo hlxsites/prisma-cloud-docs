@@ -1,0 +1,118 @@
+== ネットワーク設定クエリの例
+
+RQLでxref:network-config-query-attributes.adoc[ネットワーク露出クエリ属性]でネットワーク設定の問題を調べる方法をいくつかの例で紹介します。
+
+[cols="40%a,60%a"]
+|===
+|AWSユースケース
+|RQL
+
+|SSH/RDPを介して管理ポート上の信頼されていないインターネット送信元からアクセス可能なすべてのAWS EC2インスタンスを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and effective.action = 'Allow' and protocol.ports in ( 'tcp/22' , 'tcp/3389' )
+----
+
+|HTTP/HTTPS以外の信頼されていないインターネット送信元からアクセス可能なすべてのAWS EC2インスタンスを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )
+----
+
+|あらゆるポート/プロトコル上の信頼されていないインターネット送信元からアクセスできるすべてのAWS Redshift管理ENIを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner in ( 'amazon-redshift' )
+----
+
+|DBポート/プロトコル3306上の、信頼されていないインターネット送信元からアクセスできるすべてのAWS RDS管理ENIを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner in ( 'amazon-rds' ) and protocol.ports in ( 'tcp/3306') 
+----
+
+|信頼されていないインターネット送信元から任意のポート/プロトコル上でアクセスできるすべてのAWS RDS管理ENIを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner in ( 'amazon-rds')
+----
+
+|HTTP/HTTPS以外のポート/プロトコル上の信頼されていないインターネット送信元からアクセスできるすべてのAWS ELB管理ENIを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Interface' and dest.cloud.type = 'AWS' and dest.network.interface.owner in ( 'amazon-elb' )  and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )
+----
+
+|Webトラフィック（HTTP / HTTPS）以外のポート/プロトコル上の信頼されていないインターネット送信元からアクセスできるEC2インスタンスを持つすべてのAWS VPCを検索します。
+
+alert.on RQL属性を使用する場合、この属性はポリシーとアラートにのみ適用され、調査クエリには反映されません。
+|----
+config from network where source.network = '0.0.0.0/0' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' ) and alert.on = 'DestVPC' 
+----
+
+|信頼されていないインターネット宛先へのアウトバウンドアクセス権限のあるすべてのAWS EC2インスタンスを検索します。
+|----
+config from network where source.resource.type = 'Instance' and source.cloud.type = 'AWS' and dest.network = UNTRUST_INTERNET
+----
+
+|VPC-1（ステージング環境）のインスタンスAがVPC-2（実稼働環境）のインスタンスAと通信できるかどうかを確認します。
+
+E-Wネットワーク解析では、少なくとも1つの特定の送信元と宛先VPCを指定します。
+|----
+config from network where source.resource.type = 'Instance' and source.vpc.id = 'vpc-0657741d2470e9869' and source.cloud.type = 'AWS' and source.tag = 'env=staging' and dest.resource.type = 'Instance' and dest.vpc.id = 'vpc-0a8818db3474831ef' and dest.cloud.type = 'AWS' and dest.tag = 'env=prod' 
+----
+
+|ルーティングが存在しても、有効なセキュリティ ポリシーが「拒否」状態の信頼されていないインターネット送信元からアクセス可能なすべてのAWS EC2インスタンスを検索します。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and effective.action = 'Deny'
+----
+
+|VPC-1（ステージング環境）のインスタンスAが、機密情報を含むVPCエンドポイントを使用してプライベートS3バケットと通信できるかどうかを確認します。
+
+E-Wネットワーク解析では、少なくとも1つの特定の送信元と宛先VPCを指定します。
+|----
+config from network where source.resource.type = 'Instance' and source.vpc.id = 'vpc-0a8818db3474831ef' and source.tag = 'env=staging' and dest.resource.type = 'Service' and dest.service.name = 'com.amazonaws.vpce.us-east-1.vpce-svc-0ff33532fa2a4a999' and dest.vpc.id = 'vpc-0a8818db3474831ee'
+----
+
+環境でサポートされているすべてのservice.nameを検索するには、次のRQLを使用します。
+
+----
+config from cloud.resource where api.name = 'aws-describe-vpc-endpoints' AND json.rule = serviceName exists addcolumn serviceName
+----
+
+
+|ポートTCP/22でインターネット上でアクセス可能なすべてのAmazon ELB（ロードバランサー）インターフェースを検索します。
+|----
+config from network where source.network = INTERNET and dest.resource.type = 'Interface' and dest.network.interface.owner = 'amazon-elb' and protocol.ports = 'tcp/22' and effective.action = 'Allow'
+----
+
+
+|無制限アクセス権限（0.0.0.0/0）を持つすべてのAWS EC2インスタンスを、Webトラフィック以外のインターネットから検索します。
+|----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )
+----
+
+
+|ネットワークアクセス権限のあるすべてのAWS EC2インスタンスを、Webトラフィック以外の20.0.0.0/24の範囲のIPから検索します。
+|----
+config from network where source.network = '20.0.0.0/24' and address.match.criteria = 'partial_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AWS' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' )
+----
+
+
+|===
+[cols="40%a,60%a"]
+|===
+|AZUREユースケース
+|RQL
+
+
+|TCPポート5432の信頼できないインターネットソースから到達可能なAzure PostgreSQL（PaaS）インスタンスを検索する。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'PaaS' and dest.cloud.type = 'AZURE' and dest.paas.service.type in ( 'MicrosoftDBforPostgreSQLFlexibleServers', 'MicrosoftDBforPostgreSQLServers' ) and protocol.ports = 'tcp/5432'
+----
+
+|HTTP/HTTPSポート以外の無制限なアクセス権限（0.0.0.0/0）でインターネットで到達可能な実行状態のAzure VMインスタンスを検索する。
+|----
+config from network where source.network = '0.0.0.0/0' and address.match.criteria = 'full_match' and dest.resource.type = 'Instance' and dest.cloud.type = 'AZURE' and protocol.ports in ( 'tcp/0:79', 'tcp/81:442', 'tcp/444:65535' ) and dest.resource.state = 'Active'
+----
+
+|TCPポート3306の信頼できないインターネットソースから到達可能なAzure MySQL（PaaS）インスタンスを検索する。
+|----
+config from network where source.network = UNTRUST_INTERNET and dest.resource.type = 'PaaS' and dest.cloud.type = 'AZURE' and dest.paas.service.type in ( 'MicrosoftDBforMySQLFlexibleServers', 'MicrosoftDBforMySQLServers' ) and protocol.ports = 'tcp/3306'
+----
+
+|===

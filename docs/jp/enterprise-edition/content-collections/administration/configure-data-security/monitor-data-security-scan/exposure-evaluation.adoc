@@ -1,0 +1,77 @@
+[#exposure-evaluation]
+== 公開評価
+Prisma Cloudとクラウドサービスプロバイダ（CSP）の両方が、リソースの構成と中のオブジェクトへのアクセスを監視します。Prisma Cloud Data Securityの公開評価は、リソース内のオブジェクトに定義されたアクセスレベル、つまり誰がオブジェクトにアクセスできるか、そのユーザーがリソースからコンテンツをダウンロードまたは抽出できるかどうかを決定します。Azure または AWS では、公開は CSP のストレージ サービス内のオブジェクトまたはリソースの属性であり、アプリケーションとエンド ユーザーがユース ケースの構造化データにアクセスできるようにします。
+
+//The exposure evaluation can be different from what Prisma Cloud or AWS signify as the Public status of a bucket. Prisma Cloud and AWS both deal with configuration of a bucket and access to its attributes while exposure evaluation strictly looks at permissions that enable download or exfiltration of content from a bucket.
+Prisma Cloud Data Securityは公開レベルを以下のように分類しています。
+
+[cols="47%a,53%a"]
+|===
+|*公開レベル*
+|*状態の意味*
+
+
+|公開
+|ファイルまたはリソースは誰でもアクセスできます。その場合、これは潜在的なリスクである可能性があり、お客様による確認が必要です。
+
+
+|非公開
+|ファイルまたはリソースは内部用であり、公開されていません。これは、顧客にとって最も安全な状態です。ただし、サーバーがホストしているCDNWebテンプレートなど、一部のファイルが公開されている正当な理由があるかもしれません。
+
+
+|条件付き
+
+tt:[AWSのみ]
+|これは通常、ある条件を満たしたときにアクセスを許可するポリシーが付加されているリソースに適用されます。これらの条件は文脈に基づくものであり、お客様の環境に固有のものである可能性があるため、決定論的に解決することはできません。
+
+例として以下のようなものが挙げられます。
+
+* リソースへのアクセスは、特定の時間枠内でのみ許可/拒否されます。
+
+* リソースへのアクセスは、ユーザープリンシパルに一致する場合、または特定のユーザーセットがこのリソースにアクセスする場合にのみ許可されます。
+
+* クライアントのリクエストIPが、許可リストとして言及されている特定の範囲に一致する場合、リソースへのアクセスが許可/拒否されます。
+
+
+|External（外部）
+
+tt:[Azureのみ]
+|リソースが非公開であるが、外部コラボレーターがアクセスできる場合、そのリソースには外部ベンダーもアクセスできます。
+
+|===
+*公開はどのように評価されますか？*
+
+これは各CSPに依存しますが、ここではAWSとS3サービスについて詳しく見ていきます。S3アクセス評価では、最小権限ベースの評価が実行されます。これは、デフォルトのDeny（拒否）を意味し、明示的な拒否が、どのAllow（許可）よりも優先されることを意味します。
+
+image::administration/prisma-cloud-data-security-bucket-evaluation-logic.png[]
+
+*リソース公開評価*
+
+* すべてのコントロールをポリシードキュメント（バケットACL、バケットポリシーなど）に正規化します
+
+* 上記の図で説明した手順に従って、上記で正規化されたすべてのポリシードキュメントを評価します。評価はS3固有のAPIメソッド/アクションの既知のセットに対してチェックされ、許可または拒否がチェックされます。
++
+以下のリソースイベントがサポートされています。
++
+* AWSの場合DeleteBucket、CreateBucket、DeleteBucketPolicy、PutBucketPolicy   
+* Azureの場合Microsoft.Resources.ResourceDeleteSuccess、Microsoft.Resources.ResourceWriteSuccess、Microsoft.Resources.ResourceActionSuccess
+
+* 最終的に、そのリソースがパブリックにアクセス可能である、つまり、許可リストに登録された一連のアクションがグローバルに全員に許可されている場合、判定は「Public（公開）」として表示されます。
+
+* 公開ユーザーのすべてのポリシードキュメントに対する既知のアクションのセットに対する最終結果が「拒否」の場合、判定は「Private（非公開）」と見なされます。
+
+* ポリシードキュメントのいずれかに、特定の条件下でのリソースへのアクセスを示すコンディショナルタグが含まれている場合、返される判定は「Conditional（条件付き）になります。Prisma Cloud は、リソースのリスク体制を評価するためにフィードバックを必要としました。
+
+*オブジェクト公開評価*
+
+* リソース公開がオブジェクトの公開に影響するため、再度同じステップを踏むことになります。正規化されたリソースACLとリソースポリシーに加えて、オブジェクトACLも正規化し、評価に加味しています。
++
+以下のオブジェクトイベントがサポートされています。
++
+** AWSの場合DeleteObject、PutObject、PutObjectAcl、PutObjectTagging、DeleteObjectTagging  
+** Azureの場合Microsoft.Storage.DirectoryDe​​leted、Microsoft.Storage.DirectoryRenamed、CreateFile、PutBlob、PutBlockList、DeleteFile、RenameFile、DeleteBlob
+
+* リソースポリシー評価の全ステップを再度行い、ファイルやオブジェクトの最終的な公開評定を決定します。
+
+
+

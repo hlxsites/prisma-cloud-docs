@@ -1,0 +1,110 @@
+== 監査イベントクエリ属性例
+
+//Some examples for audit event queries for AWS, Azure, and GCP.
+
+以下のクラウドプラットフォームの問題を調査するための、xref:audit-event-query-attributes.adoc[監査イベントクエリ属性]の使用方法の例を記載しています。
+
+* xref:event-query-examples-for-aws[AWSの監査イベントクエリ例]
+* xref:event-query-examples-for-azure[Azureの監査イベントクエリ例]
+* xref:event-query-examples-for-gcp[GCPの監査イベント クエリ例]
+
+[#event-query-examples-for-aws]
+=== AWSの監査イベントクエリ例
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+|非自動化イベントおよび特定のIPアドレスからのアクティビティを検出する。
+|[userinput]
+----
+event from cloud.audit_logs where ip EXISTS AND ip IN ( 152.1.1.1)
+----
+
+|セキュリティ体制に影響を与える重要な、または不審なネットワーク設定の変更を検出する。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ('AuthorizeSecurityGroupEgress', 'AuthorizeSecurityGroupIngress', 'CreateVpc', 'DeleteFlowLogs', 'DeleteVpc', 'ModifyVpcAttribute', 'RevokeSecurityGroupIngress')
+----
+
+|環境設定の重要な、または不審な変更を検出する。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ('DeleteBucket', 'DeleteConfigRule', 'DeleteTrail', 'PutBucketAcl', 'PutBucketLogging', 'PutBucketPolicy')
+----
+
+[userinput]
+----
+event from cloud.audit_logs where operation IN ( 'AddUserToGroup', 'AttachGroupPolicy', 'AttachGroupPolicy', 'AttachUserPolicy' , 'AttachRolePolicy' , 'CreateAccessKey', 'CreateKeyPair', 'DeleteKeyPair', 'DeleteLogGroup' )
+----
+
+|ルートユーザーが実行した、危険な変更を検出する。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ( 'ChangePassword', 'ConsoleLogin', 'DeactivateMFADevice', 'DeleteAccessKey' , 'DeleteAlarms' ) AND user = 'root'
+----
+
+|イベントの詳細で配列内の特定の文字列に一致する結果を除外します。
+
+配列内の特定の文字列を含む結果を除外するには、contains/does not containまたはexists/does not exist.の代わりに、matches/does not match演算子を使用します。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ('AttachGroupPolicy', 'AttachRolePolicy', 'DeleteGroupPolicy', 'DeleteKeyPair', 'DeleteLogGroup') AND json.rule = $.userIdentity.arn does not match "AWSCloudFormationStackSetExecutionRole" or $.userIdentity.arn does not match "INST-SR-EC2-GRAAS-ROLE"
+----
+
+|===
+
+
+[#event-query-examples-for-azure]
+=== Azureの監査イベントクエリ例
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+|特定のAzureアカウントで実施された特定の操作を表示する。
+|[userinput]
+----
+event from cloud.audit_logs where cloud.account = 'Test - Azure Subscription' AND operation IN ( 'AttachRolePolicy', 'AttachLoadBalancers')
+----
+
+|特定のAzureアカウント上で特定のユーザーが実施した、クラシック演算レジスタ操作を表示する。
+|[userinput]
+----
+event from cloud.audit_logs where cloud.account in ( 'Test - Azure Subscription' ) and user = 'abc@xyz.io' and operation IN ('Microsoft.ClassicCompute/register/action (BeginRequest)')
+----
+
+|===
+
+
+[#event-query-examples-for-gcp]
+=== GCPの監査イベント クエリ例
+
+[cols="49%a,51%a"]
+|===
+|説明
+|RQL
+
+|GCPで機密性の高いネットワーク構成の更新を表示する。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ('v1.compute.networks.delete','beta.compute.networks.insert','v1.compute.routes.delete','v1.compute.firewalls.insert','v1.compute.firewalls.delete')
+----
+
+|GCPで機密のSQLインスタンス更新を表示する。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ('cloudsql.instances.update', 'cloudsql.sslCerts.create',' cloudsql.instances.create', 'cloudsql.instances.delete')
+----
+
+|GCPでの機密のユーザーアクションがある、すべてのイベントを表示する。
+|[userinput]
+----
+event from cloud.audit_logs where operation IN ('CreateCryptoKey','DestroyCryptoKeyVersion','v1.compute.disks.createSnapshot')
+----
+
+|===
+
+

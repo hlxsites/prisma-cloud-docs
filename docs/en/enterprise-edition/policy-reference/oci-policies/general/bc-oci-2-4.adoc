@@ -1,0 +1,59 @@
+== OCI File Storage File System access is not restricted to root users
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 457bb40e-ba24-468e-bdbd-f47677971761
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/oci/OCI_NFSaccessRestrictedToRootUsers.yaml[CKV2_OCI_4]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking to ensure that access to the File Storage File System is restricted to root users only. Granting unrestricted access or non-root user access to a File Storage File System can lead to threats like unauthorized access, data leakage, and potential modifications to critical files, which in turn can disrupt system processes and compromise data integrity and security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* oci_file_storage_export
+* *Arguments:* export_options.identity_squash
+
+To fix this policy, you need to set the `identity_squash` attribute to `ROOT` in the "oci_file_storage_export" resource. 
+
+[source,hcl]
+----
+resource "oci_file_storage_export" "fail_1" {
+  export_set_id  = oci_file_storage_export_set.fss_pud_export_set.id
+  file_system_id = oci_file_storage_file_system.fss_pud_file_system.id
+  path           = var.export_path_fss_pud
+
+  export_options {
+    source                         = var.pud_subnet_cidr_block
+    access                         = "READ_WRITE"
+    identity_squash                = "ROOT"
+    require_privileged_source_port = true
+  }
+  export_options {
+    source                         = var.pud_web_subnet_cidr_block
+    access                         = "READ_WRITE"
+    identity_squash                = "NONE"
+    require_privileged_source_port = true
+  }
+}
+----
+

@@ -1,0 +1,97 @@
+:topic_type: タスク
+[.task]
+[#idab93ae38-2d2b-4048-8276-b6a14fb9b21d]
+== Prisma CloudとQualysの統合
+
+Prisma® CloudとQualysの統合方法を学習します。
+
+AWSおよびAzureクラウドプラットフォームにデプロイしたリソース上の、脆弱性データを取り込み、視覚化するために、Prisma® CloudをQualysプラットフォームと統合します。
+
+[.procedure]
+. Qualys 統合をセットアップするために、必要な情報を収集してください。
++
+* Qualys Security Operations Center（SOC）サーバーAPI URL（PODとも呼ばれ、Qualysへのアクセス用に割り当てられ、接続された配信ポイント）を取得する必要があります。
++
+QualysアカウントからAPI URLを取得します（*Help（ヘルプ））>About（バージョン情報）*）。Qualys API URLは、*Qualys Scanner Appliances（Qualysスキャナアプライアンス）*下に記載されています。このURLを*Qualys API Server URL*に入力する場合、:443 の部分は含めないようにしてください。
++
+image::administration/qualys-azure-api-server-url.png[]
+
+* Managerロール、Unit Managerロール、または両方を使って統合を有効にするために必要な、アクセス許可を持つQualysユーザーを指定する必要があります。必要に応じて、読み取り専用アクセス権限のみを持つように、Managerロールを変更することができます。（https://qualysguard.qualys.com/qwebhelp/fo_portal/user_accounts/user_roles_comparison_vm.htm[ユーザーロールの比較（脆弱性管理）]）の詳細についてはQualysのドキュメントを参照。） 
++++<draft-comment>両方のロールが必須かオプションか判断できませんでした；どちらか、または両方を使用することができ、統合を有効にする権限を持っていないマネージャーロールが必要な場合は、ユニットマネージャーロールに限定し、マネージャーロールを読み取り専用に設定することができると思います...が、ご意見をお聞かせください。=)</draft-comment>+++
+
+* Qualysユーザーに対してVulnerability Management（VM）、Cloud Agent（CA）、およびAsset View（AV）を有効にする必要があります。
+
+* Qualysユーザーに対して、Qualys APIとQualys EC2 APIアクセスを有効にする必要があります。
+
+* (tt:[])仮想スキャナアプライアンス、クラウドエージェント、AWSクラウドコネクタ、およびインターネットスキャナーなどの、AWS クラウド用の Qualys センサーを設定する必要があります。クラウドエージェントまたはクラウドコネクタにより、Prisma Cloudによる脆弱性データの取得を有効にして、そのデータをAWSアセットインベントリと相関付けることができます。（詳細は、https://www.qualys.com/[Qualysのドキュメント]を参照してください。)
+
+* (tt:[])Azureアカウントの場合は、Microsoft Azure Resource Manager（ARM）を使用して、Qualys Virtual Scanner Applianceを展開します（https://community.qualys.com/docs/DOC-5725-scanning-in-microsoft-azure-using-resource-manager-arm#group[Qualysのドキュメント]を参照してください）。Azure Security Centerコンソールから、Qualys Cloud Agents (WindowsおよびLinux) for Azureインスタンスを使ってAzure Security CenterとQualysサブスクリプション内の脆弱性評価情報を表示することができます（https://community.qualys.com/docs/DOC-5823-deploying-qualys-cloud-agents-from-microsoft-azure-security-center[Qualysのマニュアル]を参照。）
+
+* (tt:[]) Qualysで*Azure VM情報*を参照できるうようにしてください。
++
+image::administration/qualys-azure-vm-info.png[]
+
+. Prisma CloudでのQualys統合の設定
++
+.. *Settings（設定）>Integrations（統合）*の順に選択します。
+
+.. *Add Integration（統合の追加）>Qualys*を選択します。モーダルウィザードが開き、Qualys統合を追加できます。
+
+.. *統合の名前*と*説明*を入力します。
+
+.. *Qualys API Server URL（http[s]なし）（Qualys APIサーバーURL）*を入力します。
++
+これは、Qualysアカウントの*API URL*です。このURL（http(s))またはポート（:443）を入力する場合です。
+
+.. Qualys *User Login（ユーザーログイン）*と*Password（パスワード）*を入力します。
++
+image::administration/qualys-int-1.png[]
+
+.. *Next（次へ）*をクリックします。
+
+.. 統合を*Test（テスト）*して、*Save（保存）*します。
++
+Integrations（統合）ページに統合が記載されます。ここから、必要に応じて統合を有効化、無効化、または削除することができます。
+
+. Qualysホスト脆弱性データをPrisma Cloudで表示します。
++
+Prisma Cloud のQualys検出事項へのアクセスを設定したら、RQLクエリを使って、Qualysが収集したホスト脆弱性情報を把握することができます。
+
+.. ホスト脆弱性を把握するには、*Config Query（設定クエリ）*を使用します。
++
+screen:[config from cloud.resource where finding.type = 'ホストの脆弱性']
++
+image::administration/qualys-host-vulnerability.png[]
++
+View the *Audit Trail（監査証跡の表示）*をクリックして、CVE番号を参照します。
++
+image::administration/qualys-audit-trail.png[]
++
+*Host Findings（ホスト検出事項）*をクリックすると、脆弱性に関連する情報が表示されます。Host Findings（ホスト検出事項）のSource（ソース）列には、脆弱性検出事項のソースを簡単に識別できるように、Qualysアイコンが表示されます。
++
+image::administration/qualys-host-findings.png[]
++
++++＜draft-comment＞これはサブステップ「b」を想定していると思います（そうでなければ、上のサブステップ「a」はないはずです ） 。そして、"Use Network Query to... "というテキストをサブステップに模倣することができる。そして、ここの太字の項目を削除することができる --過剰分。</draft-comment>。+++
++
+*ネットワーククエリ*screen:[network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'Host Vulnerability' )]
++
+image::administration/qualys-network-query.png[]
+
+. CLIでQualys APIを使って、アカウントのAPIアクセスが有効になっているかどうかを確認することができます。
++
+Qualys APIとの接続に問題がある場合、次のCurlの例にQualysサービスのユーザー名、パスワード、およびURLを入力してください。
++
+[userinput]
+----
+curl -H “X-Requested-With:Curl Sample” -u “Username:Password” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/?action=list&echo_request=1”
+----
++
+[userinput]
+----
+curl -k “https://qualysapi.qg1.apps.qualys.in/msp/asset_group_list.php” -u “Username:Password”
+----
++
+[userinput]
+----
+curl -k -H “X-Requested-With:curl” “https://qualysapi.qg1.apps.qualys.in/api/2.0/fo/scan/stats/?action=list” -u “Username:Password”
+----

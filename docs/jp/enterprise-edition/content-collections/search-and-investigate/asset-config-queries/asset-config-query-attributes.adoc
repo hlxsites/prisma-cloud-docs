@@ -1,0 +1,239 @@
+== アセット構成クエリー属性
+
+//Learn more about Config query attributes.
+
+クエリ`から設定`を使用する場合のオプションを確認します。`cloud.resource`属性は、クラウドサービスプロバイダからPrisma Cloudが取り込んだ設定メタデータを使用します。この属性を使用して、リソース設定のクエリや、アセットのセキュリティ体制の管理を行えます。
+
+各属性を使って、検索基準を絞り込むことができます。これらの属性を使用する場合、自動提案機能が各属性に適した式や演算子を表示します。
+
+//Results on the Investigate page are optimized to load the initial set of results faster. When you enter the query and click *Search*, the interface loads the first 100 search results. Click the *Load More* button to fetch additional results. All config attributes except `cloud.account.group, azure.resource.group, limit search records, aggregate functions (count and group by)`, and all finding type attributes such as `finding.type, finding.severity`, are currently optimized for faster search results.
+
+*  `api.name`
++
+クラウドAPIは、クラウドプラットフォームの一部で、アセット、Virtual Machine ( 仮想マシン - VM)、プラットフォーム、およびソフトウェアのプロビジョニングに用いられるアプリケーションやサービスを開発することができます。
++
+各クラウドプラットフォームでは、アセットに応じて複数のAPIが利用できます。`api.name`属性を使って、アセットに対する特定の設定を識別することができます。各クラウドプラットフォームで利用できるすべてのAPI名のリストについては、「*API リファレンス*」を参照してください。
++
+`cloud.type`属性と一緒に使用する場合、自動入力機能は選択したクラウドタイプに関連するAPI名のみを表示します。
++
+たとえば、Google CloudのSQLインスタンスを一覧表示できます。
++
+[screen]
+----
+config from cloud.resource where cloud.type = 'gcp' AND api.name = 'gcloud-sql-instances-list'
+----
+
+*  `addcolumn`
++
+表示される結果に列を追加するには、`addcolumn`属性を使用します。これにより、クエリに対応するアセットのJSONデータを表示することができます。
++
+たとえば、EC2インスタンスのキー名とイメージIDに対する列を追加することができます。
++
+[screen]
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-instances' addcolumn keyName hypervisor imageId
+----
++
+[NOTE]
+====
+addcolumn属性は、一致するすべてのエントリにフーガ存在している場合にのみ機能します。一致するすべてのエントリのJSONペイロードに、選択したフィールドが存在しない場合、列が表示されない場合があります。
+====
+
+
+*  `azure.resource.group`
++
+特定のAzureリソースグループ内にデプロイされたクラウドリソースを検索するには、`azure.resource.group`属性を使用します。リソースグループは、Azureアカウント内に保管されている関連するリソースをグループ化する、論理コンテナです。たとえば、azure-resource-group-testという名前のAzureリソース グループの一部であるすべての network-vnet リソースを一覧表示できます。
++
+[screen]
+----
+config from cloud.resource where azure.resource.group = 'azure-resource-group-test' and api.name = 'azure-network-vnet-list'
+----
+
+*  `cloud.account`
++
+Prisma Cloudに接続している1つまたは複数のクラウドアカウントに、設定検索を限定するには、`cloud.account`属性を使用します。
++
+たとえば、プロダクションAWSアカウント内のすべてのEC2インスタンスを表示することができます。
++
+[screen]
+----
+config from cloud.resource where cloud.type = 'aws' AND cloud.account = 'Production’ AND api.name = 'aws-ec2-describe-instances'
+----
+
+*  `cloud.account.group`
++
+クラウドアカウントグループ内のクラウドアカウントに、設定の検索を限定するには、`cloud.account.group`属性を使用します。
++
+たとえば、AWSクラウドアカウント内のすべてのAmazon RDSインスタンスを表示することができます。
++
+[screen]
+----
+config from cloud.resource where cloud.account.group = 'All my AWS accounts' AND cloud.region = 'AWS Virginia' AND api.name = 'aws-rds-describe-db-instances' 
+----
+
+*  `cloud.region`
++
+1つまたは複数のクラウド地域に設定の検索を限定するには、`cloud.region`属性を使用します。
++
+たとえば、中央アメリカ地域にあるAzureアカウント内の、すべての仮想マシンのインスタンスを表示することができます。
++
+[screen]
+----
+config from cloud.resource where cloud.type = 'azure' and cloud.account = 'RedLock - Azure Subscription' AND cloud.region = 'Azure Central US' AND api.name = 'azure-vm-list'
+----
+
+*  `cloud.service`
++
+IAM、S3、または仮想マシンなどの特定のクラウドサービスの設定をクエリするには、`cloud.service`属性を使用します。
++
+たとえば、AWSクラウドアカウント内のすべてのS3ストレージバケットアクセス制御リスト（ACL）を表示することができます：
++
+[screen]
+----
+confg from cloud.resource where cloud.type = 'aws' AND cloud.service = 'S3' AND api.name = 'aws-s3api-get-bucketacl'
+----
+
+*  `cloud.type`
++
+検索オプションを特定のクラウドに限定するには、`cloud.type`属性を使用します。サポートされているオプションは、AWS、Azure、GCP、Alibaba、OCIです。
++
+たとえば、AWSクラウドアカウント内のすべてのEC2インスタンスを表示することができます：
++
+[screen]
+----
+config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances'
+----
+
+*  `count`
++
+特定のタイプのリソースの数を集計するには、`count` 属性を使用します。`count `は、 `api.name` 属性を <X、Y、または Z> として使用するか、`json.rule` とともに使用して、クラウドアセットに関連する JSON 構成に含まれる特定の要素を照会またはフィルター処理するために使用できます。
++
+api.name がグローバルサービス (azure-active-directory-app-registration など) の場合、count はクラウドアカウント内のそのサービスのすべてのアセットを含みます。api.name が地域サービス (azure-vm-list など) の場合、count はクラウドアカウントのクラウド地域に関連するリソースのみを含みます。
++
+例えば、利用可能なすべてのAzure Linux仮想マシンのカウントを取得することができます：
++
+[screen]
+----
+config from cloud.resource where api.name = 'azure-vm-list' as X; count(X) greater than 0
+----
++
+または、`json.rule` 属性と組み合わせて、パスワード認証が無効になっているすべての Azure Linux 仮想マシンの数をフィルター処理して取得します。
++
+[screen]
+----
+config from cloud.resource where api.name = 'azure-vm-list' AND json.rule = ['properties.osProfile'].linuxConfiguration.disablePasswordAuthentication is true as X; count(X) greater than 1 
+----
+
+*  `finding.type, finding.severity, finding.source`
++
+1つまたは複数のホスト関連セキュリティ検出事項を持つ、ワークロードの脆弱性（宛先またはソースアセット）をクエリするには、finding属性を使用します。Prisma Cloudは、Qualys、Tenable.io、およびAWS Inspectorなどの外部ソースからのホスト脆弱性データを取り込み、ホストやコンテナにデプロイされているAWS GuardDuty、またはPrisma Cloud DefendersからホストおよびIAMユーザーのセキュリティ関連アラートを取り込みます。
++
+`finding`属性を活用するには、AWS GuardDutyのようなホスト脆弱性プロバイダとの統合を有効にするか、またはご利用の環境にPrisma Cloud Defendersをインストールする必要があります。
++
+たとえば、致命的なホスト脆弱性を持つすべてのホストを表示することができます。
++
+[screen]
+----
+config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.severity = 'critical'
+----
++
+または、送信元別にセキュリティ上の潜在的な問題を探せます。
++
+[screen]
+----
+config from cloud.resource where finding.source = 'AWS Guard Duty' AND finding.type = 'AWS GuardDuty IAM ' AND api.name= 'aws-iam-list-users'
+----
++
+hostfinding属性は、以下のアセットタイプをサポートしています。
+
+** *Prisma Cloud Alert*—1つまたは複数のPrisma Cloudが生成した未解決のアラートを持つすべてのアセットを取得します。
+
+** *Host Vulnerability（ホスト脆弱性）*—AWS Inspector、Qualys、またはTenable.ioなどの外部プロバイダー、またはPrisma Cloud Defendersが報告した1つまたは複数のホスト脆弱性（CVE-2016-8655など）を持つ、すべてのアセットを取得します。
+
+** *Compliance（コンプライアンス）*—外部コンプライアンスホストスキャンシステムが報告した、1つまたは複数のコンプライアンス上の問題に違反しているすべてのアセットを取得します。
+
+** *AWS Inspector Runtime Behavior Analysis（AWS Inspectorランタイム動作分析）*—AWS Runtime Behavior Analysisパッケージが報告した、1つまたは複数のルールに違反しているすべてのアセットを取得します。
+
+** *AWS Inspector Security Best Practices（AWS Inspectorセキュリティベストプラクティス）*—AWS Inspector Security Best Practicesパッケージが報告した、1つまたは複数のルールに違反しているすべてのアセットを取得します。
+
+** *AWS GuardDuty*—AWS GuardDutyが報告した、1つまたは複数の検出事項を持つすべてのアセットを取得します。AWS GuardDutyの場合、finding.typeはIAMまたはホスト（AWS GuardDuty IAMまたはAWS GuardDutyホスト）にすることができます。
+
+
+*  `finding.name`
++
+ホスト脆弱性プロバイダーが定義した名前でホスト脆弱性を検索するには、`finding.name`属性を使用して文字列値を入力します。`finding.name`を指定するためには、自動提案機能に対して`finding.type`を指定します。
++
+たとえば、CVE-2016-8399脆弱性を持つすべてのホストを表示することができます。
++
+[screen]
+----
+config from cloud.resource where finding.type = 'Host Vulnerability' AND finding.name = 'CVE-2016-8399'
+----
++
+または
++
+[screen]
+----
+config from cloud.resource where finding.type = 'AWS GuardDuty IAM' AND finding.name= ‘Recon:IAM/TorIPCaller’
+----
+
+*  `json.rule`
++
+Prisma Cloudはデータを取り込んで、イベントをJSON形式に更新します。
++
+クラウドアセットに関連するJSON設定に含まれている特定のエレメントをクエリまたはフィルタリングするには、`json.rule`属性を使用します。`json.rule`属性により、Prisma Cloudを使って監視しているクラウドアカウントに対して、JSONエンコード値の解析、JSONからのデータの取得、または任意の設定ポリシー内の値の検索など、または特定の設定を探すことができます。この`json.rule`属性を利用して論理式を組み合わせて、アセットを表すJSONデータ内の選択したフィールドにあるデータを検索することができます。
++
+設定クエリで`json.rule`属性を使用する場合、自動入力機能が検索基準に一致するエレメントやアセットを表示します。JSONはネスト構造を持っているため、JSONツリー内または任意の配列オブジェクト内のルートレベルでエレメントを検索することができます。
++
+たとえば、パスワード認証が無効になっているすべてのAzure Linux Virtual Machine ( 仮想マシン - VM)を表示することができます。
++
+[screen]
+----
+config from cloud.resource where api.name = 'azure-vm-list' AND json.rule = ['properties.osProfile'].linuxConfiguration.disablePasswordAuthentication is true
+----
++
+または、指定した宛先ポートでTCPトラフィックを許可するルールを含む、ネットワークセキュリティグループを検索するなど、JSON配列内のデータをクエリするために、Config RQL内のネスト化されたルールを定義します。
++
+[screen]
+----
+config from cloud.resource where api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any( direction equals Inbound and protocol does not equal UDP and access equals Allow and destinationPortRange is member of (22,3389,5432,1521,3306,5000,5984,6379,6380,9042,11211,27017))] exists
+----
++
+または
++
+[screen]
+----
+config from cloud.resource where api.name= 'azure-network-nsg-list' AND json.rule = securityRules[?any(access equals Allow and direction equals Inbound and sourceAddressPrefix equals Internet and (protocol equals Udp or protocol equals *) and destinationPortRange contains _Port.inRange(137,137) )] exists]
+----
++
+または
++
+[screen]
+----
+config from cloud.resource where api.name = 'aws-ec2-describe-security-groups' AND json.rule = ipPermissionsEgress[?any( toPort greater than 22 and ipv4Ranges[?any( cidrIp does not contain "0.0" )] exists )` exists ]
+----
+
+*  `resource.status`
++
+指定した期間内にクラウドプラットフォーム上でアクティブにされた、または削除されたアセットを建徳するには、`resource.status`属性を使用します。指定できる値は、`active`または`deleted`です。例:`config from cloud.resource where resource.status = active`.
++
+クエリ結果は、指定されたアセットが検索対象期間内の任意の時点でアクティブなった、または削除されたかどうかに基づいています。指定した期間内に作成または削除されなかったアセットは、結果に含まれません。
++
+クエリに`resource.status`を指定していない場合は、*Resource Explorer*を使ってアセットの*Deleted（削除）*ステータスがTrueまたはFalseであることを確認してください。
+
+*  `tag`
++
+特定のタグ名または値を持つすべてのリソースを検索するには、`tag`属性を使用します。`config from cloud.resource where tag`で利用できる演算子には、\`('key') = 'value'` , `All` , `Any` , `tag('key') EXISTS` , `tag('key') in ('value1', 'value2', 'value3')`、および否定の!=、does not Exist、not inがあります。
++
+menu:Settings[Resource List]で`タグ`を定義した後、設定クエリでタグ値またはキーを参照できます。サポートされている演算子は、`is member of`、`is not member of`、`intersects`、`does not intersect`です。中括弧を使用して、JSONルールで使用します。
++
+[screen]
+----
+config from cloud.resource where api.name  = 'aws-ec2-describe-instances' AND json.rule = tags[*].key is member of {'Resource List'.keys}
+----
++
+[NOTE]
+====
+* アセットエクスプローラに表示されているタグのみが、照合に使用できます。JSONペイロード内のタグを、tag属性で使用することはできません。
+* タグベースのフィルタリングを使って、*Investigate*（調査）ページのアセットを検索することができます。クエリを保存済み検索として保存したり、カスタムポリシー内で使用したりすることはできません。
+====

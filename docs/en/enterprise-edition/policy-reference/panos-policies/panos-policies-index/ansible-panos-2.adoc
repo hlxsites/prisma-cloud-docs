@@ -1,0 +1,55 @@
+== Plain-text management HTTP enabled for Interface Management Profile in Palo Alto Networks devices
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 848bb701-1ca5-464a-b64d-112fa57a6c30
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/ansible/checks/graph_checks/PanosInterfaceMgmtProfileNoHTTP.yaml[CKV_PAN_2]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Ansible
+
+|=== 
+
+=== Description
+
+This policy detects whether plain-text management HTTP is enabled for Interface Management Profiles in Palo Alto Networks devices. HTTP lacks encryption, therefore enabling HTTP for management purposes exposes the device to interception and man-in-the-middle attacks, potentially exposing sensitive information to unauthorized access.
+
+=== Fix - Buildtime
+
+*Palo Alto Networks*
+
+* *Resource:* panos_management_profile
+* *Attribute:* http
+
+To mitigate this risk, ensure that the http attribute in the panos_management_profile resource is not set to 'true'. If this attribute is necessary, it should be explicitly set to 'false', thereby disabling plain-text HTTP and promoting secure management practices.
+
+Secure Code Example:
+
+[source,yaml]
+----
+- name: Example
+  hosts: all
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Example
+      paloaltonetworks.panos.panos_management_profile:
+        provider: '{{ provider }}'
+        name: 'Test profile'
+-        http: true # http defined as true, which is a fail
++        http: false # http defined as true, which is a fail
+----
+
+In this example, the `http` attribute is set to false or omitting it in the management profile configuration disables plain-text HTTP, and enhances the security posture of the Palo Alto Networks device.

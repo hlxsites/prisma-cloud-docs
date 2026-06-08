@@ -1,0 +1,48 @@
+
+== DataSync Location Object Storage exposes secrets
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| e3bc9262-550f-47f6-96f7-db4bc8f81382
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/DatasyncLocationExposesSecrets.py[CKV_AWS_295]
+
+|Severity
+|HIGH
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy inspects for any instances where DataSync Location object storage might be revealing secrets. Secrets in this context refer to sensitive information like passwords, API keys, and other such private data. If such secrets are exposed, it means unauthorized individuals could potentially access and manipulate targeted data. The exposure of secrets can lead to serious security risks, including data breaches, unauthorized changes, or even potential system shutdowns. Therefore, ensuring this policy is complied with helps maintain the security and integrity of data.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_datasync_location_object_storage
+* *Arguments:* secret_key
+
+To fix this issue, you should never hard code secrets in your Terraform files. Instead, you should store your secrets in a secure secrets manager and reference them in your Terraform files.
+
+[source,go]
+----
+resource "aws_datasync_location_object_storage" "pass" {
+  agent_arns      = [aws_datasync_agent.example.arn]
+  server_hostname = "example"
+  bucket_name     = "example"
+- secret_key      = "OWTHATSBLOWNIT"
+}
+----
+

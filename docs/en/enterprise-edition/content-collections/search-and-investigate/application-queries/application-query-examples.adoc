@@ -1,0 +1,57 @@
+== Application Query Examples
+
+[cols="49%a,51%a"]
+|===
+|*Description*
+|*RQL*
+
+|Find all the applications that have a business criticality.
+|----
+application where business.criticality = 'all'
+----
+
+|Find applications that have a specific business criticality.
+|----
+application where business.criticality = 'high'
+----
+
+|Find all the applications that are deployed in the stage environment..
+|----
+application where environment = 'stage'
+----
+
+|Find all the applications with a specific name. Note that the application names are not case-sensitive.
+|----
+application where name = 'Devops'
+----
+
+|Find all the applications belonging to the same designated business owner.
+|----
+application where owner = 'Cortex'
+----
+
+|Find all applications, their impacted assets, and findings using `finding.type` and `finding.name` attributes
+|----
+application where business.criticality = 'high' AND environment = 'stage' AND owner = 'Cortex' with : (asset with : finding where finding.type IN ( 'INTERNET_EXPOSURE' ) AND finding.name CONTAINS ALL ( 'Aws Api Gateway Endpoints Without Client Certificate Authentication' ) )
+----
+
+|Find all impacted applications, their assets, and vulnerabilities.
+|----
+application where business.criticality = 'all' AND environment = 'stage' AND name = 'Devops' with : (asset with : vuln where cve.id IN ( 'CVE-2016-0718' ) AND cvss.score &gt; 9.1 AND severity IN ( 'Critical', 'High' ) )
+----
+
+|Identify if one of the assets is vulnerable to CVE-XXXX-XXXX.
+|----
+application where business.criticality = 'all' AND environment = 'stage' AND name = 'Devops' with : (asset with : vuln where cve.id IN ( 'CVE-2016-0718' ))
+----
+
+|Find all the vulnerabilities with a CVSS score greater than 9.1.
+|----
+application where business.criticality = 'all' AND environment = 'stage' AND name = 'Devops' with : (asset with : vuln where cvss.score &gt; 9.1) )
+----
+
+|Find all vulnerabilities with critical and high severity.
+|----
+application where business.criticality = 'all' AND environment = 'stage' AND name = 'Devops' with : (asset with : vuln where severity IN ( 'Critical', 'High' ) )
+----
+|===

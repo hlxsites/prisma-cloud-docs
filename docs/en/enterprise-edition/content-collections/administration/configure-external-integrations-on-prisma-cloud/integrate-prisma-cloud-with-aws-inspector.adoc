@@ -1,0 +1,61 @@
+:topic_type: task
+[.task]
+[#id61f76ceb-9311-4af0-b3f8-58ff6598c822]
+== Integrate Prisma Cloud with Amazon Inspector
+Learn how to integrate Prisma® Cloud with Amazon Inspector.
+
+Get a contextual view into cloud assets risks with Prisma Cloud's Amazon Inspector integration. Activate this integration to allow Prisma® Cloud to ingest vulnerability data and security best practice deviations to identify suspicious traffic to sensitive workloads, such as databases with known vulnerabilities.
+
+
+[.procedure]
+. Enable Amazon Inspector on your EC2 instances. To set up Amazon Inspector, see https://aws.amazon.com/premiumsupport/knowledge-center/set-up-amazon-inspector/[Amazon documentation].
+
+. Enable read-access permissions to Amazon GuardDuty on the IAM Role policy.
++
+The Prisma Cloud IAM Role policy you use to onboard your AWS setup needs to include these permissions:
++
+* `inspector:Describe*`
+* `inspector:List*`
++
+tt:[NOTE] If you used the CFT templates to onboard your AWS account, the Prisma Cloud IAM Role policy already has the permissions required for Amazon Inspector.
+
+. After the Prisma Cloud service begins ingesting Amazon Inspector data, you can use RQL queries for visibility into the host vulnerability information collected from it.
++
+.. Navigate to *Investigate > Search* page.
++
+... To search for *Config Query*, enter the following RQL query.  
++
+----
+config from cloud.resource where finding.type = 'AWS Inspector Runtime Behavior Analysis'
+----
++
+*AWS Inspector Runtime Behavior Analysis*— Fetches all resources which are in violation of one or more rules reported by the AWS Runtime Behavior Analysis package.
++
+----
+config from cloud.resource where finding.type = 'AWS Inspector Security Best Practices'
+----
++
+*AWS Inspector Security Best Practices*— Fetches all resources which are in violation of one or more rules reported by the AWS Inspector security best practices package.
+
+... Select an asset to view the *Finding Types* side panel. The panel lists threats or security issues associated with the asset.
++
+image::administration/inspector-audit-trail-query.png[]
++
+image::administration/inspector-findings-query.png[]
+
+.. To search for *Network Query*, enter the following RQL query.
++
+----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS Inspector Runtime Behavior Analysis' )
+----
++
+----
+network from vpc.flow_record where dest.resource IN ( resource where finding.type = 'AWS Inspector Security Best Practices' )
+----
++
+The query returns a visual representation of the assets for further investigation. 
++
+image::administration/inspector-network-query.png[]
+
+
+

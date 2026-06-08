@@ -1,0 +1,219 @@
+== 権限クエリ例
+
+*許可* クエリの例は、次のことに役立ちます。
+
+* `config from iam where`クエリを使用して、クラウドエンティティまたはユーザーに割り当てられた危険または追加の権限を見つける方法を学びます。 
+* クエリを作成し、フィルタを追加することで、検索結果を簡単にカスタマイズすることができます。
+* 強力な *グラフ* ビューを使用すると、幅広いクエリから始めて、そこから検索結果を簡単に絞り込むことができます。
+* クエリを保存しておけば、次回からすぐに再実行できますし、カスタムポリシーを簡単に作成してアラートにすることも可能です。
+
+//userinput:[config from iam where]
+
+一般的な権限の問題と、次のクラウド プラットフォームに特有の問題を調査するためにxref:permissions-query-attributes.adoc[権限クエリ属性]を使用する方法を示す例を確認してください。
+
+
+[#general-permissions-examples]
+=== 一般的な権限の例
+
+[cols="50%a,50%a"]
+|===
+|*状態の意味*
+|*RQL*
+
+|すべてのアセットでアクションを許可するすべての権限を見つける ('*' を使用)
+|\`config from iam where dest.cloud.resource.name = '*'`
+
+|*クラウドアカウントとグループ*
+|
+
+|すべてのID（内部と外部）と、特定のアカウントに対するその有効アクセス権限を検索します。
+|\`config from iam where dest.cloud.account = 'my-cloud-account'`
+
+|すべての ID (内部および外部) とアカウント グループに対するそれらの有効なアクセス許可を検索します (これは、特定の Prisma Cloud アカウント グループに割り当てたすべてのクラウド アカウントを示します)。
+|\`config from iam where dest.cloud.accountgroup =  'my-cloud-account-group'`
+
+|*アクティブアクセスと非アクティブアクセス*
+|
+
+|前回の指定日数を越えたACTIVE IDアクセスと特定のアクションをすべて表示します
+|`config from iam where action.lastaccess.days <= 10`
+
+|グループごとに同じものを表示します、または、「ユーザー」や「ロール」などの他のエンティティ タイプで置き換えます。
+|`config from iam where grantedby.cloud.entity.type = 'group' AND action.lastaccess.days <= 10`
+
+|前回の指定日数を越えたすべての INACTIVE IDとその許可されたアクションを表示します。
+|`config from iam where action.lastaccess.days > 90`
+
+|*IdP/SSO サービスに割り当てられた権限*
+|
+
+|Azure AD ID に割り当てられているすべてのアクセス許可を検索します。 追加のクエリ属性を追加して、クエリをさらにフィルター処理します。
+|\`config from iam where source.idp.service = 'Azure Active Directory'`
+
+`config from iam where source.idp.service = 'Azure Active Directory' AND source.idp.username = 'myuser@example.com'`
+
+`config from iam where source.idp.service = 'Azure Active Directory' AND source.idp.username = 'myuser@example.com' AND dest.cloud.type = 'AWS'`
+
+|=== 
+
+
+[#permissions-query-examples-for-aws]
+=== AWSの権限クエリ例
+
+[cols="50%a,50%a"]
+|===
+|*状態の意味*
+|*RQL*
+
+|次の一連のアクセス許可を付与するすべての AWS グループを検索します。
+
+|\`config from iam where action.name CONTAINS ALL ( 'aws-marketplace-management:uploadFiles', 'aws-marketplace-management:viewSupport' ) and dest.cloud.type = 'AWS' and grantedby.cloud.entity.type = 'group'`
+
+|特定のIAM ユーザーの有効なアクセス権限をすべて検索します。 これで、アタッチされたポリシー/ロールで許される場合でも、アクセス権限を拒否する可能性のある他のポリシー（SCP、アクセス権限境界など）を考慮して、許可された権限のみが計算されます。
+|\`config from iam where source.cloud.service.name = 'iam' and source.cloud.resource.type = 'user' and source.cloud.resource.name = 'my-user'`
+
+|すべてのID（内部と外部）と、特定のアカウントに対するその有効アクセス権限を検索します。
+|\`config from iam where dest.cloud.account = '111122223333'`
+
+|Lambda関数varname:[my-function]を呼び出すことができるすべてのアイデンティティを見つける
+|\`config from iam where dest.cloud.service.name = 'lambda' and dest.cloud.resource.type = 'function' and dest.cloud.resource.name = 'my-function' and action.name = 'lambda:InvokeFunction'`
+
+|Lambda関数自体によって付与されたアクセス権限を見つける。
+|\`config from iam where dest.cloud.service.name = 'lambda' and dest.cloud.resource.type = 'function' and dest.cloud.resource.name = 'my-function' and action.name = 'lambda:InvokeFunction' and grantedby.cloud.policy.type='Resource-based Policy'`
+
+|AWSバージニアリージョンのS3バケットへのパブリックアクセスすべてを見つける。
+|\`config from iam where source.public = true and dest.cloud.service.name = 's3' and dest.cloud.resource.type = 'bucket' and dest.cloud.region = 'AWS Virginia'`
+
+|タグ Severity equals High を持つロールによって付与されたすべてのアクセス許可を検索します。
+|\`config from iam where grantedby.cloud.entity.type = 'role' and grantedby.cloud.entity.tag ( 'Severity') = 'High'`
+
+|*与えられたアクセス権限を検索*
+|
+
+|ロール「my-role」によって与えられたすべての権限をARN IDで検索します。
+|\`config from iam where grantedby.cloud.entity.id = 'arn:aws:iam::123123123:role/my-role'`
+
+|AWS管理ポリシー、AWSインラインポリシーなどの特定のポリシーが与えられているIDとそのアタッチ方法（ロール、グループ、インラインポリシーによるアタッチなど）を検索します。 *グラフ*ビューを利用すれば、結果をすぐに視覚化できます。
+|\`config from iam where grantedby.cloud.policy.name = 'AdministratorAccess'`
+
+|*アクティブアクセスと非アクティブアクセス*
+|
+
+|前回の指定日数を越えたACTIVE IDアクセスと特定のアクションをすべて表示します
+|`config from iam where action.lastaccess.days <= 10 AND dest.cloud.type = 'AWS'`
+
+|過去の指定された日数にわたるすべての非アクティブなAWS IDとそれらのIDに許可されたアクションを表示します。
+|\`config from iam where action.lastaccess.days > 90 AND dest.cloud.type = 'AWS'`
+
+|コンソール経由とアクセスキー経由など、すべてのINACTIVE IDのリストを表示します（上記のクエリとは異なり、これはすべてのアクション/アクセス権限は表示されず、IDのリストのみが表示されます）。
+|\`config from cloud.resource where cloud.type = 'aws' and api.name = 'aws-iam-get-credential-report' AND json.rule = 'user does not equal <root-account> and DateTime.ageInDays(user-creation-time) > 30 and (password-last-used equals N/A or password-last-used equals no-information or DateTime.ageInDays(password-last-used) > 30) and ((access-key-1-last-used-date equals N/A or DateTime.ageInDays(access-key-1-last-used-date) > 30) and (access-key-2-last-used-date equals N/A or DateTime.ageInDays(access-key-2-last-used-date) > 30))'`
+
+|ロールによって与えられた、前回指定した日数で使用したアクセス権限のみを表示します。 この操作は、インラインポリシーがグループに直接アタッチされている可能性のある「グループ」など、その他のエンティティタイプでも実行できます。 このタイプのクエリは、現在のロール/ポリシーで実際に使用されているアクセス権限だけを調べることで、新しい最小権限のカスタムロール/ポリシーを作成するときに便利です。
+|`config from iam where grantedby.cloud.type = 'AWS' AND grantedby.cloud.entity.type = 'role' and action.lastaccess.days <= 90 AND grantedby.cloud.entity.name = 'my-role'`
+
+|*クロスアカウントアクセス*
+|
+
+|自分のアカウントにアクセスできる外部IDを検索する。
+|\`config from iam where source.cloud.account != '111122223333' AND dest.cloud.account = '111122223333'`
+
+|または、Prisma Cloudで指定されたアカウント名を使用する（上記の例と同じ結果）。
+|\`config from iam where source.cloud.account != 'MyAccount' AND dest.cloud.account = 'MyAccount'`
+
+|私のAccountGroupのすべてのアカウントにアクセスできる外部IDを検索します（この場合は、組織内などで複数のアカウントをグループ化するためにPrisma Cloudに入力したアカウントグループ名）。
+|\`config from iam where source.cloud.accountgroup != 'MyOrg' AND dest.cloud.accountgroup = 'MyOrg'` 
+
+|=== 
+
+
+[#permissions-query-examples-for-azure]
+=== Azureの権限クエリ例
+
+[cols="50%a,50%a"]
+|===
+|*状態の意味*
+|*RQL*
+
+
+|Azure ADユーザーvarname:[my-user]のすべての有効なアクセス権限を検索する
+|\`config from iam where dest.cloud.type='AZURE' AND source.cloud.service.name = 'Azure Active Directory' AND source.cloud.resource.type = 'user' AND source.cloud.resource.name = 'my-user'`
+
+
+|カスタムロールvarname:[my-role].によって与えられたすべての権限を検索する
+|\`config from iam where dest.cloud.type = 'AZURE' AND grantedby.cloud.policy.name = 'my-role'`
+
+|*与えられたアクセス権限を検索*
+|
+
+|Azure サービス プリンシパルに付与されたすべてのアクセス権限を検索する。
+|\`config from iam where grantedby.cloud.entity.type = 'Service Principal'`
+
+|Azure 組み込みの所有者ロールが割り当てられているすべての ID を検索する。
+|\`config from iam where grantedby.cloud.type = 'AZURE' AND grantedby.cloud.policy.type = 'Built-in Role' AND grantedby.cloud.policy.name = 'Owner'` 
+
+|カスタムロールを使用してすべての ID を検索する。
+|\`config from iam where grantedby.cloud.type = 'AZURE' AND grantedby.cloud.policy.type = 'Azure Custom Role'`
+
+|MS SQL DB を削除できるすべての ID を検索する。
+|\`config from iam where dest.cloud.type = 'AZURE' AND dest.cloud.resource.name = 'Microsoft.Sql' AND dest.cloud.resource.type = 'servers' AND action.name = 'Microsoft.Sql/servers/delete'`
+
+|ストレージアカウントvarname:[my-storage account]を呼び出すことができるすべての識別情報を検索する
+|\`config from iam where dest.cloud.type='AZURE' AND dest.cloud.service.name = 'Microsoft.Storage' AND dest.cloud.resource.type = 'storageAccounts' AND dest.cloud.resource.name = 'my-storage-account'`
+
+|*アクティブアクセスと非アクティブアクセス*
+|
+
+|userinput:[Microsoft.KeyVault/vaults/write]アクセス権限をもち、10日を超えてこの権限を使用していないすべてのIDを検索する
+|`config from iam where dest.cloud.type='AZURE' AND action.name = 'Microsoft.KeyVault/vaults/write' and action.lastaccess.days > 10`
+
+|===
+
+
+[#permissions-query-examples-for-gcp]
+=== GCPの権限クエリ例
+[cols="50%a,50%a"]
+|===
+|*状態の意味*
+|*RQL*
+
+
+|直接アクセス権限を持つユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group'`
+
+|直接接続された組織レベルで「所有者」のロールを持つGCPユーザーを検索する（すべてのアクセス権限を持つ）。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group' and grantedby.level.type = 'GCP Organization'`
+
+
+|直接接続された組織レベルで「所有者」ロールを持つGCPユーザーを検索する（すべてのユーザーを表示する強化アクションで）。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group' and action.name = 'compute.instances.attachDisk' and grantedby.level.type = 'GCP Organization'`
+
+|GCP Basicロールで直接アクセス権限を持つユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group' AND grantedby.cloud.policy.type = 'GCP Basic Role'`
+
+|GCPの事前定義済みロールで直接アクセス権限を持つユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group' AND grantedby.cloud.policy.type = 'Predefined Role'`
+
+|GCPカスタムロールで直接アクセス権限を持つユーザーを探す。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group' AND grantedby.cloud.policy.type = 'GCP Custom Role'`
+
+|直接アクセス権限と特定のロールを持つユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.type != 'group' AND grantedby.cloud.policy.name = 'your role name'`
+
+|特定のグループのユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.name = 'your group name'`
+
+|特定のグループで特定のロールを持つユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and grantedby.cloud.entity.name = 'your group name' AND grantedby.cloud.policy.name = 'your role name'`
+
+|特定のサービスにアクセスできるユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' AND dest.cloud.service.name = 'storage'`
+
+|特定のリソースタイプにアクセスできるユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' AND dest.cloud.resource.type = 'buckets'`
+
+|特定のリソースにアクセスできるユーザーを検索する。
+|\`config from iam where dest.cloud.type = 'GCP' AND dest.cloud.resource.type = 'your resource name'`
+
+上記のクエリでは、リソースレベルで定義されたアクセス権限を持つリソースの結果のみが表示され、組織、フォルダ、またはプロジェクトレベルで定義されたものは表示されません。
+
+|===

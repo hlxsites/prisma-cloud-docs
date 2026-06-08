@@ -1,0 +1,46 @@
+== AWS Access key enabled on root account
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 88db4b66-4dec-48c0-9013-c7871d61b1c8
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/IAMUserRootAccessKeys.py[CKV_AWS_348]
+
+|Severity
+|HIGH
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+The policy checks that the IAM root user does not have Access Keys. The root user has the highest level of access to all the AWS resources and services. If Access Keys are attached to a root user, they can be used to make programmatic calls to AWS APIs. An unauthorized personnel can misuse this to gain full access to all AWS services and resources, potentially causing severe security breach. Hence, it is essential to ensure that IAM root user doesn't have Access keys to avoid any potential risks or compromises to the system's security.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_iam_access_key
+* *Arguments:* user
+
+To fix this issue, you should remove any access keys associated with the IAM root user account. This can typically be done through the AWS Management Console. This approach is highly recommended as AWS root account is highly privileged and it's not recommended to use routinely.
+
+[source,go]
+----
+resource "aws_iam_access_key" "fail" {
+-    user = "root"
++    user = "someName"
+}
+----
+
+

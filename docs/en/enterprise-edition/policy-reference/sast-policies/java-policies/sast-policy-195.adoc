@@ -1,0 +1,70 @@
+== Class objects with argument name returned by Class.forName() function
+
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 951ff3dc-41fd-4284-b702-d0f6b77b8152
+
+|Checkov ID 
+|CKV3_SAST_195
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Language
+|Java
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/470.html[CWE-470: Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')]
+
+|OWASP Categories
+|https://owasp.org/Top10/A03_2021-Injection/[A03:2021-Injection]
+
+|=== 
+
+
+
+=== Description
+
+This policy detects whether the `Class.forName()` function is used with user-controlled input in Java applications. `Class.forName()` lets applications load classes dynamically based on a provided name. However, using this method with unvalidated user input can be dangerous, as attackers might be able to manipulate the application's behavior.
+
+In this example, user input from request.getParameter("className") is passed directly to Class.forName(), allowing an attacker to load arbitrary classes and potentially change the application logic.
+
+[source,Java]
+----
+import javax.servlet.http.HttpServletRequest;
+
+public class UnsafeReflection {
+    public void loadClass(HttpServletRequest request) throws ClassNotFoundException {
+        String className = request.getParameter("className");
+        Class<?> clazz = Class.forName(className);
+    }
+}
+----
+
+
+=== Fix - Buildtime
+
+Avoid using `Class.forName()` with untrusted input. If this method is required, validate and sanitize the input first.
+
+In this example, only a predefined set of allowed classes can be loaded with Class.forName(). This mitigates the risk of attackers injecting untrusted input to load arbitrary classes.
+
+[source,Java]
+----
+import javax.servlet.http.HttpServletRequest;
+
+public class SafeReflection {
+    public void loadClass(HttpServletRequest request) throws ClassNotFoundException {
+        String className = request.getParameter("className");
+        ClassLoader classLoader = getClass().getClassLoader();
+        Class<?> clazz = classLoader.loadClass(className);
+    }
+}
+----

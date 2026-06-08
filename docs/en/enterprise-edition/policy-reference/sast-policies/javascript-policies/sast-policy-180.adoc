@@ -1,0 +1,65 @@
+
+== Improper certification validation
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 24f848a3-47f4-45b0-9647-5611067d53bf
+
+|Checkov ID 
+|CKV3_SAST_180
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Language
+|JavaScript
+
+|CWEs
+|https://cwe.mitre.org/data/definitions/295.html[CWE-295: Improper Certificate Validation]
+
+|OWASP Categories
+|https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/[A07:2021-Identification and Authentication Failures]
+
+|=== 
+
+
+=== Description
+
+This policy identifies instances where the application either improperly validates or completely omits certificate validation. It specifically targets configurations where the rejection of unauthorized TLS/SSL connections is disabled, potentially exposing the security and integrity of your application by permitting unauthenticated communications.
+
+Vulnerable code example:
+
+[source,javascript]
+----
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+// or
+new https.Agent("www.fake-example.com", {rejectUnauthorized: false} ,"post")
+----
+
+In the above examples, the application is configured to accept TLS/SSL certificates, without verifying their validity. This can lead to man-in-the-middle attacks, enabling attackers to gain unauthorized access to your communication channels. Attackers could exploit this vulnerability to spy, modify or inject malicious data, posing risks of potentially stealing sensitive information and disrupting operations.
+
+
+
+=== Fix - Buildtime
+
+To fix this vulnerability, avoid disabling the validation of unauthorized TLS/SSL connections. Ensure that your Node.js application is properly configured to manage and validate certificates.
+
+Secure code example:
+
+[source,javascript]
+----
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "1"
+// or
+new https.Agent("www.example.com", {rejectUnauthorized: true} ,"post")
+----
+
+In the above examples, the application is configured to reject unauthorized TLS/SSL connections. This enhances security by ensuring that all connections undergo authentication and verification.
+
+

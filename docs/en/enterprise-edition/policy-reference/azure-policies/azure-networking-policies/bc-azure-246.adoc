@@ -1,0 +1,47 @@
+== Azure AKS cluster HTTP application routing enabled
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| 0429670c-5d2d-4d0f-ab33-59eb5e000305
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/azure/KubernetesClusterHTTPApplicationRouting.py[CKV_AZURE_246]
+
+|Severity
+|LOW
+
+|Subtype
+|Run,Build
+
+|Frameworks
+|Terraform,Terraform Plan
+
+|===
+
+=== Description
+
+This policy detects whether ingress controllers in AKS clusters are configured to allow HTTP application routing. While convenient for development and testing within your AKS clusters, enabling HTTP application routing for production deployments can introduce security risks. Because publicly accessible DNS names are automatically created for application endpoints, using HTTP instead of HTTPS for these endpoints could expose sensitive data, as HTTP traffic is not encrypted.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* azurerm_kubernetes_cluster
+* *Arguments:* http_application_routing_enabled
+
+To mitigate this issue, set the `http_application_routing_enabled`` attribute to false in your Terraform configuration.
+
+Example:
+
+[source,go]
+----
+resource "azurerm_kubernetes_cluster" "example" {
+  ...
+-  http_application_routing_enabled = true
++  http_application_routing_enabled = false
+}
+----

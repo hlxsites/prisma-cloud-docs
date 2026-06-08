@@ -1,0 +1,204 @@
+:topic_type: タスク
+[.task]
+[#idee00fe2e-51d4-4d26-b010-69f3c261ad6f]
+== AWSアカウントのデータ セキュリティの設定
+
+Prisma CloudにAWSクラウドアカウントを追加し、S3バケットに保存されているファイルのスキャンを開始する場合は、ここから始めてください。
+
+[.procedure]
+. xref:../../../connect/connect-cloud-accounts/onboard-aws/onboard-aws-account.adoc[AWSアカウントのオンボーディング]。
+
+. データセキュリティを有効化したい AWS アカウント横の*目*アイコン (View Cloud Account) をクリックします。
+
+. [データ セキュリティ]にある *[構成]* をクリックします。
+
+. [*セキュリティ機能とアクセス許可*]の [*データセキュリティ*] を選択します。
++
+Prisma Cloudのデータポリシーは自動修復をサポートしていないため、AWSアカウントでデータセキュリティを設定し、修復を有効にした場合、データポリシーから発生するアラートに対処するため、手動で問題を修正する必要があります。
++
+image::administration/aws-edit-ds-1.png[]
+
+. *次へ*をクリックします。
+
+. [[id82a563a3-ea83-444d-a6ab-f1f8b5e116d8]]Prisma Cloudにバケットへのアクセスを許可します。
++
+アクセスを制限するようにバケットポリシーを設定した場合は、AWS管理コンソールで次のタスクを必ず完了してください。
+
+.. 上記のPrismaCloudでデータセキュリティを有効にするために追加したPrisma CloudロールARNをコピーします。
+
+.. バケットポリシーを編集して、Prisma CloudロールARNを含めます。
++
+次のスニペットは例です。userinput:[s3:GetObject] APIをリクエストするときに、userinput:[監視対象バケット]へのアクセスを拒否するバケットポリシーを考えてみましょう。
++
+[userinput]
+----
+{
+  "バージョン":"2012-10-17",
+  "Statement": [
+    {
+      "Effect":"拒否",
+      "プリンシパル": *",
+      "アクション": "s3:GetObject",
+      "リソース": [
+        "arn:aws:s3:::monitored-bucket",
+        "arn:aws:s3:::monitored-bucket/*"
+      ]
+    }
+  ]
+}
+----
++
+PrismaCloudが userinput:[監視対象バケット]内のオブジェクトにアクセスできるようにするには、バケットポリシーに否定条件を付けて、userinput:[PrismaCloudReadOnlyRoleWithDLP]がバケットにアクセスできるようにします。
++
+[userinput]
+----
+{
+  "バージョン":"2012-10-17",
+  "Statement": [
+    {
+      "Effect":"拒否",
+      "プリンシパル": "*",
+      "アクション": "s3:GetObject",
+      "リソース": [
+        "arn:aws:s3:::monitored-bucket",
+        "arn:aws:s3:::monitored-bucket/*"
+      ],
+      "Condition": {
+        "ArnNotEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::<accountID>:role/<PrismaCloudReadOnlyRoleWithDLP>"
+          ]
+        }
+      }
+    }
+  ]
+}
+----
++
+これらの権限がないと、Prisma Cloudはバケットポリシーが制限されたS3バケットへのアクセスを拒否されます（HTTP 403エラー）。
+
+. *アカウントを設定します*。
++
+image::administration/aws-edit-ds-2.png[]
+
+* *IAM Role CFT をダウンロードし*、*記載されている手順に従ってください*。
+
+. *次へ*をクリックします。
+
+. *データセキュリティの設定*。
++
+image::administration/aws-edit-ds-3.png[]
++
+すべてのリソースをスキャンするか、スキャンする内容をカスタマイズするかを選択できます。
++
+* すべてスキャンするを選択すると、Prisma Cloudは対象となるすべてのオブジェクトを順方向スキャンと逆方向スキャンします。順方向スキャンによって新しいファイルや変更されたファイルが検査され、逆方向スキャンは遡及的なスキャンになります。つまり、ストレージバケットに存在するファイルを検査します。ストレージバケット内でスキャン対象ファイルによって、データセキュリティに使用されるPrisma Cloudクレジットの数が決まります。
+
+* カスタムスキャンを選択すると、Prisma Cloudは選択したリソース内の対象オブジェクトを順方向スキャンと逆方向スキャンします。
+
+. *次へ*をクリックします。
+
+. *前方スキャンを定義します*
++
+image::administration/aws-edit-ds-4.png[]
++
+*Add New（新規追加）*または*既存のCloudTrail、SNSトピック、またはログファイルのバケットを選択できます*。Prisma Cloudライセンスクレジットの消費量は、選択したオブジェクト内のファイルサイズと、順方向スキャンと逆方向スキャンを有効にするかどうかによって異なります。
++
+[NOTE]
+====
+CloudTrailバケットはスキャンされません。スキャン用に、ELBアクセスログ、S3アクセスログ、およびVPCフローログを含むオブジェクトを含むバケットを選択できます。
+====
+
+. *次へ*をクリックします。
+
+. *前方スキャンを設定します*
++
+.. *テンプレートをローカルにダウンロード*テンプレートは、シェルスクリプト、CFT、設定ファイルからなる.zipファイルです。
+
+.. 自分のAmazon CloudShellアカウントにログインし、上記のステップでダウンロードした.zipファイルをアップロードし、次のコマンドを実行して、バケット、SNSトピック、CloudTrailを作成します。
++
+----
+sh pcds_forward_scan_setup.sh -f config.txt
+----
+
+.. CREATE_COMPLETEステータスになるまで待機します。
++
+image::administration/aws-onboard-new-4.png[]
+
+.. 上記のコマンドがAWSで正常に実行されたら、Prisma Cloudで*Validate Setup（セットアップを検証）*をクリックします。
++
+image::administration/aws-edit-ds-5.png[]
+
+.. スクリプトが検証されるかどうかに関係なく、引き続きAWSアカウントのデータセキュリティをオンボーディングして設定できます。検証が失敗した場合は、xref:../troubleshoot-data-security-errors.adoc[データセキュリティエラーのトラブルシューティング]を参照し、AWS CloudTrail & SNSを手動で設定することで解決してください。
+
+. *次へ*をクリックします。
+
+. (tt:[任意]) この手順は、S3バケット内のオブジェクトがCustomer Managed Keys（CMK、カスタマー管理キー）で暗号化されている場合にのみ実行してください。
++
+この手順は、CMKが同じAWSアカウント内にあるか、別のAWSアカウント内にあるかによって異なります。
++
+* オンボーディングしているのと同じAWSアカウントにCMKがある場合、Prisma Cloudロールにはキーにアクセスするための追加のアクセス権限が必要です。Prisma Cloudロールに以下のステートメントを追加して、すべてのCMK ARNでリソース配列を更新します。
++
+[userinput]
+----
+{
+            "Sid":"AllowPrismaCloudToAccessKeys",
+            "効果":"許可",
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "Resource": ["arn:aws:kms:ap-south-123456789101:key/3269f3d0-1820-407f-b67e-73acdd9243f4"]
+}
+----
+
+* オンボーディングしているアカウントとは異なるAWSアカウントにCMKがある場合、暗号化に使用するすべてのCMKに次のポリシーステートメントを最初に追加し、Prisma Cloud ARNで*Principal AWS*フィールドを更新する必要があります。
++
+[userinput]
+----
+{
+            "Sid":"キーの使用を許可",
+            "効果":"許可",
+            "Principal": {
+                "AWS": "arn:aws:iam::726893731529:role/PrismaCloudReadOnlyRoleWithDLP"
+            },
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "Resource": "*"
+}
+----
++
+PrismaCloudReadOnlyRoleWithDLPは、Prismaクラウドでデータセキュリティを有効にするために追加したPrismaクラウドロールARNを指します。このロールには、キーにアクセスするために追加権限が必要です。Prisma Cloudロールに以下のステートメントを追加して、すべてのCMK ARNでリソース配列を更新します。
++
+[userinput]
+----
+{
+            "Sid":"AllowPrismaCloudToAccessKeys",
+            "効果":"許可",
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "Resource": ["arn:aws:kms:ap-south-123456789101:key/3269f3d0-1820-407f-b67e-73acdd9243f4"]
+}
+----
+
+. *レビューステータス*。
++
+image::administration/aws-edit-ds-7.png[]
+
+. *[保存して閉じる]*をクリックします。
+
+. データセキュリティを有効にした AWS アカウントの横にある [*表示*] アイコンをクリックし、[*データセキュリティ*] で詳細を表示します。
++
+image::administration/aws-edit-ds-6.png[]

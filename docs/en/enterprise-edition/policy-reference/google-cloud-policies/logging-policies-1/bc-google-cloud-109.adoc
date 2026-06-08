@@ -1,0 +1,59 @@
+
+== Log levels of the GCP PostgreSQL database are not set to ERROR or lower
+
+=== Policy Details
+
+[width=45%]
+[cols="1,1"]
+|===
+|Prisma Cloud Policy ID
+| be41aab1-d2ea-47a0-802b-e1511109ec08
+
+|Checkov ID
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/gcp/GoogleCloudPostgreSqlLogMinErrorStatement.py[CKV_GCP_109]
+
+|Severity
+|LOW
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|===
+
+=== Description
+
+This policy is checking for the log levels of a Google Cloud Platform (GCP) PostgreSQL database. It makes sure that these log levels are set to ERROR or lower.
+
+Why is this important? In short, it's about maintaining the appropriate level of security and managing the efficiency of your log management. 
+
+If log levels are set too high, you might capture too much unnecessary information, which can create a lot of noise in your logs, making it harder to identify serious issues. On the other hand, it can also lead to increased costs, as a larger volume of data requires more storage and computational power to analyze.
+
+Setting the log level to ERROR or lower ensures that log captures focus mainly on error events or those of higher significance. This way, troubleshooting becomes more efficient, it's easier to identify and rectify problematic issues, and unnecessary expenditure on data analysis can be reduced. Therefore, not adhering to this policy can lead to inefficient resource management and difficulty in identifying critical database issues.
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* google_sql_database_instance
+
+To fix the issue:
+
+You need to set the logging level for your GCP PostgreSQL database to 'ERROR' or lower. This can be done in your Terraform code by setting the `log_min_messages` parameter to ERROR.
+
+[source,hcl]
+----
+resource "google_sql_database_instance" "default" {
+  settings {
+    database_flags {
+      name  = "log_min_messages"
+      value = "ERROR"
+    }
+  }
+}
+----
+
+The provided code is secure because it ensures the GCP PostgreSQL database log levels are set to error or lower. This helps in limiting the amount of logged information, thereby keeping the system secure from unnecessary exposure. It allows to log only critical information which is beneficial from a security and resource standpoint.
+

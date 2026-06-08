@@ -1,0 +1,80 @@
+:topic_type: タスク
+[.task]
+[#id0561b362-921c-4e65-baaf-39a37c78e744]
+== IAMセキュリティの有効化
+
+Prisma CloudでIAMセキュリティを有効にするには、以下の手順を実行します。
+
+[.procedure]
+. IAMを管理しているAWS、Azure、GCPのアカウントをオンボーディングして、Prisma CloudがIAMデータを取り込むことができるようにします。Azure の場合、これは Azure Active Directory テナントでなければなりません。
++
+** クラウド環境に適したオンボーディング手順に従ってください。
+*** AWS：要件に最も合う xref:../../connect/connect-cloud-accounts/onboard-aws/onboard-aws.adoc[AWS オンボーディング]オプションを選択してください。
+
+*** Azure：Azure は IAM を管理するために Active Directory テナントを使用しています。xref:../../connect/connect-cloud-accounts/onboard-your-azure-account/onboard-your-azure-account.adoc[Azureオンボーディング]のオプション選択をします。 
+*** GCP:ご希望のxref:../../connect/connect-cloud-accounts/onboard-gcp/onboard-gcp.adoc[GCPオンボーディング]オプションをお選びください。
+
+** クラウドアカウントをすでにオンボーディングしている場合は、Prisma Cloudアプリ/サービスアカウントにIAMセキュリティに必要な追加権限が付与されているか確認する必要がある場合があります。
++
+*** AWS：追加の権限は必要ありません。クラウドアカウントのオンボードに使用したTerraformテンプレートには、必要な権限が含まれています。
+
+*** Azure：xref:../../connect/connect-cloud-accounts/onboard-your-azure-account/microsoft-azure-apis-ingested-by-prisma-cloud.adoc[Azureアプリケーションの権限]の検証
+
+*** GCP:xref:../../connect/connect-cloud-accounts/onboard-gcp/gcp-apis-ingested-by-prisma-cloud.adoc[Google Workspaceグループ]を取り込むためのアクセス許可を付与する
++
+[NOTE]
+====
+AWS CloudTrailをオンボーディングして、過剰な権限アラートを受信することを確認します。
+====
+
+. IAM Securityモジュールを有効にします。
++
+.. *サブスクリプション*を選択すると、Prisma Cloudテナントで利用可能なすべてのオプションが表示されます。
+
+.. IAM Securityアイコンの下にある*Learn More（詳細）*をクリックします。
++
+.. *Start 30 Day Trial（30日間トライアル開始）*を選択し*Agree & Submit（同意して送信）*をクリックします。
++ 
+IAMセキュリティは30日間無料で試用でき、IAMクエリ、SSO統合、すぐに使えるIAMポリシーなど、すべての機能を試すことができます。
+
+.. IAM セキュリティが有効になっていることを確認します。
++
+image::administration/iam-security-module-is-now-activated.png[]
+
+. RQLで調査します。
++
+IAM セキュリティが正常にアクティブ化されると、RQL はuserinput:[iam] クエリを含むように拡張されます。*Investigate（調査）*タブに特定のクラウド・サービス・プロバイダー（CSP）に以下のクエリを入力して、*iam*モジュールが有効になっていることを確認します。
++
+** AWS: userinput:[config from iam where source.cloud.type = 'AWS' and source.cloud.resource.type = 'user' and source.cloud.resource.name = 'my-user']
+** Azure: userinput:[config from iam where source.cloud.type = 'Azure' and source.cloud.resource.type = 'user' and source.cloud.resource.name = 'my-user']
+** GCP: userinput:[config from iam where source.cloud.type = 'GCP' and source.cloud.resource.type = 'user' and source.cloud.resource.name = 'my-user']
++
+検索フィールドに緑色のチェックマークが表示され、RQLクエリーが成功し、IAMモジュールが有効になったことが示されます。
++
+image::administration/iam-security-verify-test.png[]
+
+
+[.task]
+[#id0cd5f416-924c-4d62-8fad-67fb847dbdb1]
+=== Google Workspaceグループを取り込むためのアクセス許可を付与する
+
+Prisma Cloud Service アカウントにGoogle Workspace (GSuite) 上のグループからデータを取り込む権限を付与するには、Google Workspace (GSuite) の管理者権限が必要です。グループのデータを取り込むために必要な権限は、事前定義されたロール*Group Reader*、または*groups：read*権限を持つカスタムロールのいずれかです。https://cloud.google.com/iam/docs/understanding-roles[Google IAM ロール]について。
+
+[.procedure]
+. https://admin.google.com/u/1/ac/roles/26396648347271175[ワークスペース]にログインします。
+
+. 新しいカスタムロールを作成するか、事前定義された*Group Reader*ロールを使用します。
++
+image::administration/iam-security-create-role-1.png[]
++
+image::administration/iam-security-create-role-2.png[]
++
+image::administration/iam-security-create-role-3.png[]
+
+. Prisma Cloudサービスアカウントに役割を割り当てます。
++
+image::administration/iam-security-assign-role-1.png[]
++
+image::administration/iam-security-assign-role-2.png[]
++
+image::administration/iam-security-assign-role-3.png[]

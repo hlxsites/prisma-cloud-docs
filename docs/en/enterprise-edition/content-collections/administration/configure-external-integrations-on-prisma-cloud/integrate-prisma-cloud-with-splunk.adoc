@@ -1,0 +1,73 @@
+:topic_type: task
+[.task]
+[#idd1d6c8b5-073c-415a-8253-6714e5379dac]
+== Integrate Prisma Cloud with Splunk
+Learn how to integrate Prisma® Cloud with Splunk.
+
+Splunk is a software platform to search, analyze, and visualize machine-generated data gathered from websites, applications, sensors, and devices.
+
+Prisma® Cloud integrates with Splunk and monitors your assets and sends alerts for resource misconfigurations, compliance violations, network security risks, and anomalous user activities to Splunk.
+
+
+[.procedure]
+. Set up Splunk HTTPS Event Collector (HEC) to view alert notifications from Prisma Cloud in Splunk. Note that only HTTPS Splunk integrations are supported.
++
+Splunk HEC lets you send data and application events to a Splunk deployment over secure HTTP (HTTPS) protocols. This helps consolidate alert notifications from Prisma Cloud in to Splunk so that your operations team can review and take action on the alerts. 
++
+If you have a firewall or cloud Network Security Group between the internet and Splunk, you need to ensure network reachability and xref:../../get-started/access-prisma-cloud.adoc[Enable Access to the Prisma Cloud Console].
++
+.. To set up HEC, use instructions in https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector[Splunk documentation].
++
+For *source type*, *_json* is the default; if you specify a custom string on Prisma Cloud, that value will overwrite anything you set here.
++
+[NOTE]
+====
+By default, Splunk restricts the JSON payloads to 10,000 bytes (characters). When the size of Prisma Cloud alert notifications exceeds the default limit, you might receive incomplete payloads due to this limitation.
+====
+
+.. Select *Settings > Data inputs > HTTP Event Collector* and make sure you see HEC added in the list and that the status shows that it is *Enabled*.
+
+
+
+. Set up the Splunk integration in Prisma Cloud.
++
+.. Log in to Prisma Cloud.
+
+.. Select *Settings > Integrations & Notifications > Integrations*.
+
+.. Select *Add Integration > Splunk* from the list.
+
+.. Enter an *Integration Name*, optionally, a *Description*.
+
+.. Enter the *Splunk HEC URL* that you set up earlier.
++
+The Splunk HEC URL is a Splunk endpoint for sending event notifications to your Splunk deployment. You must use HTTPS for this purpose. Since Prisma Cloud sends data about an alert or error in JSON format, make sure to include `/services/collector` endpoint as part of the Splunk HEC URL.
+
+.. Enter *Auth Token*.
++
+The integration uses token-based authentication between Prisma Cloud and Splunk to authenticate connections to Splunk HEC. A token is a 32-bit number that is presented in Splunk.
++
+image::administration/splunk-add-integration-in-prisma-cloud.png[]
+
+.. (tt:[Optional]) Specify the *Source Type* if you want all Prisma Cloud alerts to include this custom name in the alert payload.
+
+.. Click *Next*, review the *Summary*, and then *Test Integration*.
++
+image::administration/splunk-add-integration-in-pc-2.png[]
+
+.. *Save Integration* after the testing is successful.
+
+.. The integration will be listed on the *Integrations* page, where you can *View*, *Edit*, or *Delete* the integration from the *Actions* panel.
++
+image::administration/splunk-add-integration-in-pc-3.png[]
++
+After you set up the integration successfully, you can use the Get Status link to periodically check the integration status.
++
+image::administration/get-status.png[]
+
+
+
+. xref:../../alerts/create-an-alert-rule-cloud-infrastructure.adoc[Create an Alert Rule for Run-Time Checks] or modify an existing rule to xref:../../alerts/send-prisma-cloud-alert-notifications-to-third-party-tools.adoc[receive alerts] in Splunk. 
+
+
+

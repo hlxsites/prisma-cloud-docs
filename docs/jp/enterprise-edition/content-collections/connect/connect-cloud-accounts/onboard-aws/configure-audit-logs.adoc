@@ -1,0 +1,68 @@
+:topic_type: タスク
+[.task]
+
+== 監査ログの構成
+
+デフォルトでは、Prisma Cloud は Amazon CloudTrail サービスを使用して変更イベントを取得します (監査ログを取り込みます)。オンボードAWSアカウントでAmazon EventBridgeを使用して監査ログを取り込むために、Prisma Cloudでほぼリアルタイムの可視化を設定できるようになり、リソースに変更があったときのみ取り込みをトリガーするプル方式からプッシュ方式に移行することができます。
+
+Prisma Cloud 構成の取り込みは、EventBridge とイベントアシストによる取り込みを活用して、設定ミスやポリシー違反を警告する時間を短縮し、API 呼び出し数を減らします。アセット設定が変更された場合にのみ、API 呼び出しを行います。
+
+[NOTE]
+====
+* アカウントを削除または無効にすると、関連付けられている EventBridge ルールが AWS アカウントに対応して削除または無効になり、Prisma Cloud は監査ログを取り込んだり、監査ログ ポリシーの処理を行いません。
+
+* EventBridge を使用した監査ログの取り込みは、組織の一部であるすべてのメンバー アカウントの管理アカウントが有効なリージョンにのみ適用されます。メンバー アカウントを個別に無効にすると、そのメンバー アカウントの特定のルールが無効になります。
+
+* CFT Prisma Cloud を実行すると、管理アカウントが有効になっているリージョンのみのすべてのアカウント (メンバーを含む) にルールが作成されます。
+
+* AWS アカウントから EventBridge ルールを削除すると、Prisma Cloud は監査ログを取り込まず、監査ログポリシーを処理しません。また、設定ポリシーの処理と対応するアラートの生成にも大幅な遅延が発生します。
+
+* AWS リージョンが EventBridge をサポートしていない場合、Prisma Cloud はそのリージョンのイベント アシストによる取り込みをサポートできません。
+
+* 取り込みを高速化するには、EventBridgeを使用することをお勧めします。ただし、CloudTrailの使用にロールバックしたい場合は、Prisma Cloudカスタマーサポート担当者にお問い合わせください。
+====
+
+[.procedure]
+
+. xref:onboard-aws-account.adoc[AWSアカウントのオンボーディング]あるいはxref:onboard-aws-org.adoc[AWS 組織のオンボーディング]した後、*Settings（設定）> Providers（プロバイダー）> Cloud Accounts（クラウドアカウント）*を順に選択します。  
++
+EventBridgeを設定する手順は、クラウドアカウントと組織で同じです。組織用に構成する場合は、必ず管理アカウントで CFT を実行してください。
+
+. *View（ビュー）* EventBridge を使用して監査ログを取り込む AWS アカウントまたは組織の横にあるアイコン。
+
+. *Misconfigurations（設定ミス）*を選択し、*Near Real-Time Visibility（ほぼリアルタイムの可視性）*の下の*Configure（構成）* をクリックします。
++
+image::connect/configure-audit-logs-eb-1-updated.png[]
+
+. *構成の詳細*。
+
+.. *EventBridge CFTのダウンロード*をクリックします。
++
+image::connect/configure-audit-logs-eb-2.png[]
++
+CFTを実行すると、Prisma Cloudは、管理アカウントが有効になっているリージョンのみのすべてのアカウント (メンバーを含む) にルールが作成されます。
++
+* *[EventBridge CFT のダウンロード] *をクリックした際にエラー メッセージが表示される場合、まず *IAM ロール CFT をダウンロード*し 、AWS コンソールで必要な手順を完了してから、EventBridge の設定を続行する必要があります。
+* EventBridg リソースを作成したリージョンが後で無効になり、AWS上のEventBridge CloudFormationスタックを更新する場合、AWS CloudFormationサービスの制限により更新は失敗します。まず既存のCloudFormationスタックを削除し、*EventBridge CFTをダウンロードして*から、新しくダウンロードしたCFTを使用して新しいスタックを作成する必要があります。
+
+.. AWS アカウントにログインし、手順に従ってスタックを作成し、[*AWS CloudFormation がカスタム名で IAM リソースを作成する場合があることを承認します*] を選択し、[*スタックの作成*] をクリックします。
+
+.. ステータスが CREATE_COMPLETE と表示されるまで待ちます。
++
+image::connect/aws-eventbridge-stack-create1.png[]
+
+. Prisma Cloud コンソールに戻ります。
+
+. *次へ*をクリックします。
+
+. *レビューステータス*。
++
+構成のステータスを確認します。アカウントでテンプレートが正常に実行されると、リージョンごとに *成功* メッセージが表示され、Prisma Cloud は Amazon EventBridge から監査ログの取り込みを開始します。
++
+image::connect/aws-eventbridge-status2.png[]
+
+. *Save（保存）*をクリックします。
++
+対応する EventBridge ルールが AWS に表示されます。
++
+image::connect/aws-eventbridge-rules2.png[]

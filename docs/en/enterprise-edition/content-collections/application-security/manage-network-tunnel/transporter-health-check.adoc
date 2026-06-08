@@ -1,0 +1,104 @@
+== Transporter Health Check
+
+The health check provides information about connectivity between the deployed Transporter and your environment, including the most recent connection establishment time. Health checks are run every hour. For manual health checks see <<#transporter-health-check,Health Checks>> below.
+
+Prisma Cloud scans every Transporter configuration for an established network tunnel.
+
+Once a secure connection is authenticated, you can view the health check status of the Transporter:
+
+. In *Application Security*, select *Settings* > *Network Tunnels*.
+. Select your Transporter from the *Transporter* field of the *Manage Integrations* step of the integration wizard.
++
+Your Transporter settings are displayed.
++
+image::application-security/transport-health-check1.1.png[]
+. Verify (under the Transporter field) that your Transporter is connected.
+
+//NOTE: You must run at least three test checks before running the Docker image. Response options: *Pass*: `ok:true`, *Fail*: `ok:false`.
+
+[#transporter-health-check]
+=== Health Checks
+
+You can perform the following health checks to verify Transporter connectivity.
+
+* *Verify Transporter (Tunnel) connectivity from the Prisma Cloud platform*: Select the *refresh* icon to perform a connectivity check. The result is displayed in the UI.
++
+image::application-security/transporter-health-check-refresh1.1.png[]
+
+* *Verify network level connectivity*
+
+Ensure that the host used for configuration has access to the Prisma Cloud portal, the VCS UI using the domain name provided during Transporter setup, and the Transporter URL with its designated port (e.g. https://transporter.customername.com:8000/healthz).
+
+This check verifies network level accessibility (verifies routes, firewall rules/access lists and so on). Run:
+[source,markdown]
+----
+curl -X GET https://transporter.customername.com:8000/healthz -k
+----
+
+
+
+
+
+////
+Prisma cloud supports three types of client health checks: 'Transporter Client at VCS Domain', 'Transporter Client at Prisma Cloud Server' and 'Transporter Client in client environment and Transporter Client at Prisma Cloud environment'.
+
+=== Transporter Client at VCS Domain
+
+The internal check route verifies connectivity with your VCS machine via Transporter. To perform this test, apply additional headers to a 'curl' command:
+
+*Route - /internalcheck*: Verifies connectivity with your VCS machine via Transporter.
+
+// Example: `curl -X GET \https://your-transporter-hostname/internalcheck`.
+
+*Additional Headers*: Apply additional headers to a 'curl' command to specify the target VCS for the check:
+
+* *x-forwarded-host*: Specifies the VCS machine hostname for the check. 
+//+
+// Example: `curl -H "x-forwarded-host: <VCS_machine_hostname>"` 
+
+* *x-forwarded-path*: Defines the path of the request to be sent to the VCS machine. 
+//+
+//Example: `curl -H "x-forwarded-path: <path_to_send>"`
+
+* *x-forwarded-proto*: Specifies the protocol for checking connectivity, either HTTPS or HTTP. 
+//+
+//Example: `curl -H "x-forwarded-proto: <https_or_http>" 
+
+To conduct the test: 
+
+. Log into the VCS server.
+. Run tests back to the Transporter to confirm accessibility.
+. Use the transporter URL and designated port for testing. Example: `curl https://transporter.customername.com:8000/healthz -k`.
++
+A successful test result returns '{"ok":true}'.
++
+image::application-security/transporter-vcs-server-health-check.png[]
+
+=== Transporter Client at Prisma Cloud Server
+
+* *Route - /externalcheck*: This route checks whether there is internet access to the Prisma server from the local machine. It utilizes the /login route with the access key and secret key for authentication.
+
+////
+////
+Example:
+
+[source, bash]
+----
+curl -X POST https://your-prisma-server-url/externalcheck/login \
+     -d "accessKey=your_access_key" \
+     -d "secretKey=your_secret_key"
+----
+////
+////
+==== Transporter Client in Client Environment and Transporter Client at Prisma Cloud Environment
+
+* *Route - /selfcheck*: Checks if the certificates provided are valid for the domain of the machine and runs on request over HTTPS.
+//+
+//Example: `curl -X GET \https://your-machine-domain/selfcheck`.
+
+* */healthz*: Used for Docker `healthcheck` on the internal port `8080`. 
+//+
+//Example: `curl -X GET \http://localhost:8080/healthz`.
+
+
+////

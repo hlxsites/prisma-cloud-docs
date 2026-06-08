@@ -1,0 +1,159 @@
+== SBOM
+
+'SBOM' provides a comprehensive inventory of third-party dependencies detected in your environment, including vulnerabilities and security insights. This information allows you to analyze your software components, libraries, and dependencies, in order to identify and remediate vulnerabilities and security risks. In addition, SBOM provides allows efficient management of patches and updates, and fosters collaboration between development, operations, and security teams.  
+
+For more information about SBOM's, refer to https://www.cisa.gov/sbom[CISA].
+
+[.task]
+
+=== Access SBOM
+
+[.procedure]
+
+. Before you can access the 'SBOM' page and view its resources, you must subscribe to the SCA module. For more on SCA licenses, refer to xref:../../get-started/application-security-license-types.adoc[Application Security Licenses].
+//TODO: Update path
+
+. In *Application Security*, select > *Home* > *SBOM*.
++
+image::application-security/sbom-intro5.1.png[]
+
+The SBOM inventory displays dependencies or packages in your organization, including the following details:
+
+* *Package*: The name of the package
+* *Version*: The version of the package
+* <<#package-op-risk,Package Operational Risks>>
+* *License*: The package license
+* *Found In*: The repositories in which the package was detected. The number in the column represents the amount of repositories in which the package is found
+* *Vulnerabilities*: The vulnerabilities detected in the package, with a link to a CVE database for further information. The number in the column represents the amount of multiple vulnerabilities detected in the package
+//+
+//NOTE: For more details about the vulnerability, click on the package in the inventory table. See below for more on dependency vulnerability details.
+* *Highest Severity*: The highest severity of a vulnerability found in a package when multiple vulnerabilities are detected, or the severity of a single vulnerability
+* <<#aispm,Identify AI/ML Open Source Packages>>
+
+Selecting a package from the inventory table opens the *Resource Explorer* displaying additional information about the entity.
+
+* The *Details* tab (default) provides metadata about the package. Additionally, details of factors that define the package Operational Risk are displayed. See <<#package-op-risk,Package Operational Risk>> for more information 
++
+image::application-security/sbom-details5.0.png[]
+
+* The *Issues* tab includes a list and details of all vulnerabilities detected in the package
++
+image::application-security/sbom-issues-3.0.png[]
+//+
+//To view the issue in more detail, select *View Issue*, which redirects to xref:../risk-management/monitor-and-manage-code-build/monitor-and-manage-code-build.adoc[Projects].
+
+
+* The *Repositories* tab includes details of the repositories hosting the packages 
++
+image::application-security/sbom-repositories3.1.png[]
+
+//and the xref:../supply-chain-security.adoc[Supply Chain Graph]
+//TODO: The content was on line 40. @JBakstPaloAlto -please add it back when the content is up later in the Q.
+
+=== Filters
+
+You can apply the following filters to narrow down a search for a package.
+
+* *Repository*: Filter packages by repository. Only repositories that include packages are listed
+
+* <<#aiml-category,Filter by AI/ML Category>>
+
+* *Ecosystem*: Filter by the package manager hosting the dependency
+
+* *Operational Risk*: Filter by <<#package-op-risk,Package Operational Risk>>. Values: 'high', 'Medium', 'Low'
+
+* *Popularity*: A factor contributing to the Operational Risk rating. Values: 'High', 'Medium', 'Low'
+
+* *Maintenance*: A factor contributing to the Operational Risk rating. Values: 'Frequently Maintained', 'Moderately Maintained', 'Infrequently Maintained', 'Deprecated'
+
+* *License*: Filter packages by their license
+
+* *Vulnerabilities*: Filter vulnerabilities by their CVE ID
+
+* *Severity*: Filter vulnerabilities by their severity
+
+* *'Show only vulnerable'*: Toggle *ON* to display vulnerable packages only 
+
+[#package-op-risk]
+=== Package Operational Risks
+
+'Package Operational Risk' assesses the operational risk and potential impact of each package in your codebase by examining factors such as package maintainers, popularity, and other relevant metrics. This analysis results in open-source package operational risk severity levels categorized into 'High', 'Medium' and 'Low'. By prioritizing risks based on these categories, you can effectively focus remediation efforts on the most critical issues.
+
+*Limitation*: Package operational risk analysis currently supports npm packages stored in GitHub version control systems for Prisma Cloud customers located in US regions.
+
+You can view a package's operational risk through the *Operational Risk* column on the 'SBOM' page. Hover over a risk in the inventory table for details. The expanded card's *Details* tab provides comprehensive details. Additionally, the xref:../repositories.adoc#app-graph[Application Graph] on the 'Repositories' page displays package Operational Risks. You can also filter by Operational Risk, Popularity and Maintenance for targeted searches.
+
+
+[.task]
+
+[#aispm]
+=== AI/ML Open Source Packages
+
+Prisma Cloud identifies AI/ML functionalities within JavaScript and Python open-source packages used in your codebase. It then leverages this information to build a comprehensive inventory of the machine learning packages in your environment, allowing you to make informed security decisions and effectively mitigate associated risks.
+
+The SBOM table includes an *AI/ML Categories* column, displaying the associated AI/ML categories for each relevant package. The *Details* sidecar  provides additional information about the AI/ML categories utilized by that package.
+//To view packages including AI/ML functionalities, navigate to *Application Security* > *SBOM*. The table listing the  packages include an *AI/ML Categories* column, displaying AI/ML categories associated with a package, where applicable.   
+
+//image::application-security/sbom-ai-ml1.1.png[] 
+
+//To view which AI/ML categories are used by a package in your project, navigate to *Application Security* > *SBOM*. The *AI/ML Categories* column displays AI/ML categories associated with a package.  
+
+// NOTE: The *Details* sidecar also provides information about the AI/ML categories utilized by that package.
+
+//TODO add ::image:application-security/sbom-al-ml - discuss with guyg whether this image is necessary
+
+[#aiml-category]
+==== Filter by AI/ML Category
+
+The *AI/ML Category* filter lets you choose specific categories like deep learning or natural language processing. By selecting a category, you'll get a focused view of the packages in your project that are associated with that particular AI/ML functionality.
+
+AI/ML Category values include:
+
+* Generative AI
+* Artificial Intelligence (AI)
+* Machine Learning (ML)
+* Deep Learning
+* Natural Language Processing (NLP)
+* GPT
+* OpenAI
+* Gemini
+* ChatGPT
+* Large Language Models (LLM)
+* LLaMA
+* Neural Network
+* Computer Vision
+* Data Science
+* Reinforcement Learning (RL)
+
+//TODO add ::image:application-security/sbom-al-ml - discuss with guyg whether this image is necessary
+
+==== AI/ML Packages API
+
+The AI/ML Packages API empowers developers and tools to discover AI/ML categories programmatically. This API provides functionalities to retrieve comprehensive information about the AI/ML categories included within software packages used in your environment. For more information refer to the https://pan.dev/prisma-cloud/api/code/sbom/[SBOM] API documentation.
+
+// *Limitation*: The request can handle a maximum of 5000 repositories.
+
+=== Generate SBOM
+
+You can generate a SBOM for you repository. You can choose to generate an SBOM that contains all of the data types in a single file, or you can choose to generate separate SBOMs for each data type. When applying filters, the generated data will only include filtered data.
+
+The following data types are available for SBOM generation:
+
+* All - download all data types in a single file
+* Open source packages
+* Infrastructure-as Code
+* Images
+
+[.procedure]
+
+. In 'Application Security', select *Home* > *Projects > Menu (in the top right corner) > Generate SBOM*.
++
+image::application-security/sbom-menu-generate3.1.png[]
+
+. In the popup.
+.. Select a repository.
+.. Select a type of output. Values: CycloneDX, CSV files.
+.. Select a data type.
+.. Click *Generate*.
++
+image::application-security/sbom-generate-popup3.0.png[]

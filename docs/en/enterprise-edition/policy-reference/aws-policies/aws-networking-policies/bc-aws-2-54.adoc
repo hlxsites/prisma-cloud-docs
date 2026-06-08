@@ -1,0 +1,58 @@
+== AWS CloudFront distribution is using insecure SSL protocols for HTTPS communication
+
+=== Policy Details 
+
+[width=45%]
+[cols="1,1"]
+|=== 
+|Prisma Cloud Policy ID 
+| 39df6f76-fc34-4660-97a1-fc967e3abe33
+
+|Checkov ID 
+| https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/graph_checks/aws/CloudFrontUsesSecureProtocolsForHTTPS.yaml[CKV2_AWS_54]
+
+|Severity
+|MEDIUM
+
+|Subtype
+|Build
+
+|Frameworks
+|Terraform,TerraformPlan
+
+|=== 
+
+=== Description
+
+This policy detects AWS CloudFront distributions that are not configured to use secure SSL protocols for HTTPS communication. 
+
+=== Fix - Buildtime
+
+*Terraform*
+
+* *Resource:* aws_cloudfront_distribution
+* *Arguments:* origin.custom_origin_config.origin_ssl_protocols
+
+[source,go]
+----
+resource "aws_cloudfront_distribution" "example" {
+  # ... other configuration ...
+
+  origin {
+    domain_name = "my-origin.example.com"
+    origin_id   = "myOriginID"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
++      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+
+      # ... other configuration ...
+    }
+  }
+
+  # ... other configuration ...
+----
+
+In the provided Terraform example, the aws_cloudfront_distribution resource is configured to exclude SSLv3 from the origin_ssl_protocols, adhering to the Checkov policy by specifying only secure TLS versions such as TLSv1, TLSv1.1, and TLSv1.2. To further enhance security, the viewer_certificate is set with a minimum protocol version of TLSv1.2_2019, aligning with best security practices and ensuring that both the origin communication and the viewer connection utilize secure SSL protocols. It is important to tailor additional Terraform configurations to your specific requirements and to always prefer the latest supported TLS versions for optimal security.
